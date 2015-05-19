@@ -1,0 +1,2 @@
+<li class="dir-item dir-blog-item"><div class="blog-date">[DATE]</div><div class="blog-title">[[URL]:[TITLE]]</div><div class="blog-preview">[PREVIEW]</div>
+<div class="blog-actions">[USER_ACTIONS]</div> </li>

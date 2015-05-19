@@ -1,0 +1,26 @@
+<?php
+/*
+ * Ideally this module should including as few functions as possible.
+ * Functions should mostly be hooks to be included into modules.
+ */
+
+/**
+ * Return first occurrence of HTML / XML element in a string.
+ */
+function parsetag($string, $tag) {
+  $pattern = "/<" . $tag . ">(.*?)<\/" . $tag . ">/s";
+  preg_match_all($pattern, $string, $matches);
+  return isset($matches[1][0]) ? $matches[1][0] : '';
+}
+
+/**
+ * Generate a password
+ */
+function pwd($pass) {
+  return substr((md5(substr($pass, 0, 5) . 'ABC' . substr($pass, 5, 2) . 'nginE')), 0, 10);
+}
+
+// TODO: make this stuff better.
+function redirect($where) {
+  print '<script>top.location.href="' . $where . '";</script>';
+}

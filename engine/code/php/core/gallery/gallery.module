@@ -1,0 +1,4 @@
+<?php
+require_once('gallery.class.inc');
+require_once('gallery.hook.inc');
+require_once('gallery.wiki.inc');

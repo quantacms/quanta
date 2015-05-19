@@ -1,0 +1,4 @@
+<?php
+require_once("tags.class.inc");
+require_once("tags.hook.inc");
+require_once("tags.wiki.inc");

@@ -1,0 +1,4 @@
+<?php
+require_once('message.hook.inc');
+require_once('message.class.inc');
+require_once('message.wiki.inc');

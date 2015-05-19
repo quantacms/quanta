@@ -1,0 +1,21 @@
+<?php
+require_once('wiki.hook.inc');
+/**
+ * Transform wiki tags in html.
+ */
+function wikize($env, $string) {
+
+  // TODO: Deprecate.
+  preg_match_all("/\[(.+?):(.*?)\]/s", $string, $matches);
+  foreach ($matches[1] as $k => $match) {
+    $node = new Node($env, $match);
+    if ($node->exists) {
+      $string = str_replace($matches[0][$k], '<a class="internal" href="/' . $match . '">' . $matches[2][$k] . '</a>', $string);
+    }
+  }
+
+  //$string = preg_replace("/\_(.+?)\_/", "<i>\\1</i>", $string);
+  $string = preg_replace("/\#\#\#(.+\n?)\#\#\#/s", "<div class=\"address\">\\1</div>", $string);
+  $string = preg_replace('/\-\-\-/', '<div class="page-break">&nbsp;</div>', $string);
+  return $string;
+}

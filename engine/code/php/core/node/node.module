@@ -1,0 +1,3 @@
+<?php
+require_once('node.class.inc');
+require_once('node.hook.inc');

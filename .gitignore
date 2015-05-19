@@ -1,0 +1,10 @@
+.DS_Store
+.idea
+.idea*
+engine/tmp
+engine/tmp/*
+.users
+*/data.html
+sites
+sites/*
+sites*

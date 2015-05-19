@@ -1,0 +1,86 @@
+// Inizializza.
+$('document').ready(function() {
+    pageRefresh();
+    refreshButtons();
+
+});
+
+String.prototype.bookify = function() {
+    return this.replace('---', '<div style="page-break-after: always;">&nbsp;</div>')
+}
+
+
+var refreshButtons = function() {
+    $('.delete-file').unbind().on('click', function() {
+        var file_to_delete = $(this).parent().find('.file-link').attr('href');
+        var parent = $(this).closest('li');
+        if (confirm('Are you sure you want to delete this file? \n' + file_to_delete)) {
+            $.ajax({
+                url: "?delete-file=" + file_to_delete
+            }).done(function() {
+                parent.fadeOut('slow');
+            });
+        }
+        return false;
+    });
+
+    // Open page when clicking abstract
+    $('.abstract').bind('click', function() {
+        var a = $(this).parent().find('a');
+        window.location.href = '/' + a.attr('href');
+    });
+
+    $('.delete-link').bind('click', function() {
+        pageDelete();
+        return false;
+    });
+
+    $('.edit-link').bind('click', function() {
+        pageEdit('node_edit');
+        return false;
+    });
+
+    $('.add-link').bind('click', function() {
+        pageEdit('node_add');
+        return false;
+    });
+
+    // TODO: why on('click') doesn't work?
+    $('.login-link').attr('href', 'javascript:logIn()');
+
+    $('.logout-link').bind('click', function() {
+        logOut();
+        return false;
+    });
+
+    $( "input.hasDatepicker").each(function() {
+        var default_date = ($(this).val());
+        $(this).Zebra_DatePicker({
+            format: 'd-m-Y'
+        });
+    });
+}
+
+// Refresh the page after AJAX loading.
+var pageRefresh = function() {
+    $('.comment-mail-link').attr('href', $('.comment-mail-link').attr('href') + '?subject=[' + $('title').text() + '] Comment on: ' + $('h1').text() + '&body===========%0D%0DWrite your comment here. It will be moderated and published%0D%0D==========');
+    $('.page-title').html($('h1').html());
+    // Do nl2br to special text pages.
+    $('#data').each(function() {
+        // TODO: find a better way to not wikize homepage.
+        if (!($('.fluids').length)) {
+            var html = $(this).html().bookify();
+            $(this).html(html);
+        }
+    });
+
+    // Attach stuff to blocks.
+    $('.block').each(function() {
+       var block_html = $(this).html();
+        if ($(this).hasClass('centered')) {
+            $(this).html('<div class="inner">' + block_html + '</div>')
+        }
+    });
+
+}
+
