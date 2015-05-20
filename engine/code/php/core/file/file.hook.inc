@@ -6,10 +6,8 @@ function file_shadow_node_edit($vars) {
     return FALSE;
   }
 
-  $filelist = new FileList($vars['env'], $vars['env']->getRequestedPath(), 'file_admin');
-  if ($vars['shadow']->getContext() == NODE_ACTION_ADD) {
-    $filelist->clearFiles();
-  }
+  $filelist = new FileList($vars['env'], $vars['shadow']->getContext() == NODE_ACTION_ADD ? NULL : $vars['env']->getRequestedPath(), 'file_admin');
+
   $tmp_files = $vars['env']->getData('node')->getName() . '-' . time() . '-' . rand(0, 1000);
 
   // TODO: access

@@ -136,7 +136,6 @@ class Node {
           $node->tmp_files_dir = $nodedata['tmp_files'];
           $node->save();
           $env->hook('node_save', array('node' => &$node, 'data' => $nodedata));
-
           $redirect = '/' . $node->getName() . '/';
         }
         else {
