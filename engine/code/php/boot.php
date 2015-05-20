@@ -11,7 +11,6 @@
     'wiki',
     'list',
     'image',
-    'tags',
     'gallery',
     'search',
     'shadow',
