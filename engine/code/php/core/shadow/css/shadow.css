@@ -154,7 +154,9 @@
 #shadow-titles ul li.shadow-title.enabled a {
     color: #005;
 }
-
+.shadow-contents {
+    text-align: left;
+}
 .shadow-content {
     display: none;
     min-height: 200px;
@@ -194,9 +196,9 @@
     border-radius: 15px;
     padding: 12px;
     cursor: pointer;
-    float: left;
     text-transform: uppercase;
     font-family: Arial;
+    text-align: left;
 }
 
 #edit-save:hover {

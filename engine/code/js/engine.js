@@ -9,7 +9,6 @@ String.prototype.bookify = function() {
     return this.replace('---', '<div style="page-break-after: always;">&nbsp;</div>')
 }
 
-
 var refreshButtons = function() {
     $('.delete-file').unbind().on('click', function() {
         var file_to_delete = $(this).parent().find('.file-link').attr('href');
@@ -73,14 +72,27 @@ var pageRefresh = function() {
             $(this).html(html);
         }
     });
-
-    // Attach stuff to blocks.
-    $('.block').each(function() {
-       var block_html = $(this).html();
-        if ($(this).hasClass('centered')) {
-            $(this).html('<div class="inner">' + block_html + '</div>')
-        }
-    });
-
 }
 
+var action = function(dataJson) {
+    $.ajax({
+        type: "POST",
+        dataType: 'json',
+        url: '/',
+        data: {json: dataJson},
+        success: actionSuccess,
+        error: actionError
+    });
+}
+
+var actionSuccess = function(data) {
+    if (data.redirect == 'undefined') {
+        alert("There was an error with your submission.");
+    } else {
+        top.location.href = data.redirect;
+    }
+}
+
+var actionError = function(err, exception) {
+    alert(exception);
+}

@@ -570,21 +570,7 @@
                             ) + 2;
 
             this.o.displayInput
-                && this.i.css({
-                        'width' : ((this.o.width / 2 + 4) >> 0) + 'px'
-                        ,'height' : ((this.o.width / 3) >> 0) + 'px'
-                        ,'position' : 'absolute'
-                        ,'vertical-align' : 'middle'
-                        ,'margin-top' : ((this.o.width / 3) >> 0) + 'px'
-                        ,'margin-left' : '-' + ((this.o.width * 3 / 4 + 2) >> 0) + 'px'
-                        ,'border' : 0
-                        ,'background' : 'none'
-                        ,'font' : 'bold ' + ((this.o.width / s) >> 0) + 'px Arial'
-                        ,'text-align' : 'center'
-                        ,'color' : this.o.inputColor || this.o.fgColor
-                        ,'padding' : '0px'
-                        ,'-webkit-appearance': 'none'
-                        })
+                && this.i.attr('class', 'progressBar')
                 || this.i.css({
                         'width' : '0px'
                         ,'visibility' : 'hidden'

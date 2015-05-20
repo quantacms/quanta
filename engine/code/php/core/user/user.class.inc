@@ -42,7 +42,7 @@ class User {
   }
 
   private function checkPassword($password) {
-    return ($this->password == $password);
+    return ($this->password == pwd($password));
   }
 
   /**
@@ -68,16 +68,22 @@ class User {
     new Message($this->env, 'You logged out', MESSAGE_CONFIRM, MESSAGE_TYPE_SCREEN);
     new Message($this->env, 'User ' . $this->name . ' logged out', MESSAGE_CONFIRM, MESSAGE_TYPE_LOG);
     unset($_SESSION['user']);
+     $response = new StdClass();
+     $response->redirect = '/' . $this->env->getRequestedPath();
+     $response_json = json_encode($response);
+     return $response_json;
   }
 
+  /**
+   * Try to login.
+   * @param $password
+   */
   public function logIn($password) {
     // If user dir doesn't exist.
     if (!($this->exists)) {
       new Message($this->env, 'This is not a valid username. Please <a class="login-link" href="#">try again</a>', MESSAGE_WARNING, MESSAGE_TYPE_SCREEN);
       new Message($this->env, 'Someone tried to login with wrong username: ' . $this->name, MESSAGE_WARNING, MESSAGE_TYPE_LOG);
-
     } else {
-
       if ($this->checkPassword($password)) {
         new Message($this->env, 'Welcome ' . $this->name . '! You logged in', MESSAGE_CONFIRM, MESSAGE_TYPE_SCREEN);
         new Message($this->env, 'User ' . $this->name . ' logged in', MESSAGE_CONFIRM, MESSAGE_TYPE_LOG);
@@ -89,6 +95,10 @@ class User {
         new Message($this->env, 'User ' . $this->name . ' tried to login with wrong username or password', MESSAGE_WARNING, MESSAGE_TYPE_LOG);
       }
     }
+    $response = new StdClass();
+    $response->redirect = '/' . $this->env->getRequestedPath();
+    $response_json = json_encode($response);
+    return $response_json;
   }
 
   /**

@@ -5,7 +5,7 @@
         <b>[NODE:title]</b>
         <input type="hidden" id="action" name="action" value="node_delete" />
         <input type="hidden" name="edit-path" id="edit-path" value="[NODE:path]"/><br/><br/>
-        <a onClick="shadowSubmit()" id="edit-save" ><span style="color:green">&check;&nbsp;</span>Delete it</a>
+        <a onClick="if (confirm('Are you sure you want to delete this item?')) shadowSubmit()" id="edit-save" ><span style="color:green">&check;&nbsp;</span>Delete it</a>
       </form>
   </div>
 </div>

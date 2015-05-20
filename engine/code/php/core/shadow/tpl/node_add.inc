@@ -6,5 +6,5 @@
   <div class="shadow-contents">
     [SHADOW:tab-contents]
   </div>
-  <a onClick="if (confirm('Are you sure you want to update this item?')) shadowSubmit()" id="edit-save" ><span style="color:green">&check;&nbsp;</span>Update</a>
+  <a onClick="shadowSubmit()" id="edit-save" ><span style="color:green">&check;&nbsp;</span>Save</a>
 </div>

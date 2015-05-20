@@ -1,24 +1,5 @@
 <?php
 /**
- * Implementation of hook_init
- * Check login and logout requests.
- * @param $vars
- */
-function user_init($vars) {
-  // We have a login request.
-  $user = User::current($vars['env']);
-  if (isset($_REQUEST['action']) && ($_REQUEST['action'] == 'login')) {
-    $tmp_user = new User($vars['env'], $_REQUEST['username']);
-    $tmp_user->logIn(pwd($_REQUEST['password']));
-  }
-
-  // We have a logout request.
-  if (isset($_REQUEST['action']) && ($_REQUEST['action'] == 'logout')) {
-    $user->logOut();
-  }
-}
-
-/**
  * Implements hook_body_classes.
  */
 function user_body_classes($vars) {
@@ -26,4 +7,24 @@ function user_body_classes($vars) {
   foreach ($user->roles as $role) {
     $vars['page']->addBodyClass('user-' . trim($role));
   }
+}
+
+/**
+ * Implementation of hook_action_login.
+ * There is a node delete request.
+ * @param $vars
+ */
+function user_action_login($vars) {
+  $tmp_user = new User($vars['env'], $vars['data']['username']);
+  exit($tmp_user->logIn($vars['data']['password']));
+}
+
+/**
+ * Implementation of hook_action_logout.
+ * There is a node delete request.
+ * @param $vars
+ */
+function user_action_logout($vars) {
+  $user = User::current($vars['env']);
+  exit($user->logOut());
 }

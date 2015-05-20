@@ -9,10 +9,9 @@ function file_shadow_node_edit($vars) {
   $filelist = new FileList($vars['env'], $vars['env']->getRequestedPath(), 'file_admin');
   if ($vars['shadow']->getContext() == NODE_ACTION_ADD) {
     $filelist->clearFiles();
-    $tmp_files = $vars['env']->getData('node')->getName() . '-' . time() . '-' . rand(0, 1000);
-  } else {
-    $tmp_files = $vars['env']->getRequestedPath();
   }
+  $tmp_files = $vars['env']->getData('node')->getName() . '-' . time() . '-' . rand(0, 1000);
+
   // TODO: access
   $form = '
   <form id="upload" method="POST" enctype="multipart/form-data">

@@ -40,7 +40,9 @@ function node_init($vars) {
   $node = new Node($vars['env'], $vars['env']->getRequestedPath());
 
   if (isset($_FILES['upl']) && ($user->checkAccess($node, NODE_ACTION_EDIT))) {
+
     $node->checkUploads();
+
     exit();
   }
 
@@ -97,7 +99,6 @@ function node_shadow_node_edit($vars) {
 
   if ($vars['shadow']->getContext() == NODE_ACTION_ADD) {
     $action = NODE_ACTION_ADD;
-    $vars['shadow']->setContext(NODE_ACTION_EDIT);
     $father = new Node($vars['env'], $vars['env']->getRequestedPath());
     $node = new Node($vars['env'], NULL, $vars['env']->getRequestedPath());
     $has_access = $user->checkAccess($father, $action);
@@ -105,6 +106,7 @@ function node_shadow_node_edit($vars) {
   else {
     $node = new Node($vars['env'], $vars['env']->getRequestedPath());
     $action = NODE_ACTION_EDIT;
+
     $has_access = $user->checkAccess($node, $action);
   }
   if (!$has_access) {

@@ -512,6 +512,15 @@ body.user-anonymous a.edit-link
     The file upload form
 -----------------------------*/
 
+.progressBar {
+    position: absolute;
+    left: -29px;
+    top :26px;
+    background: transparent;
+    border-width: 0;
+    text-align:center;
+    width: 30px;
+    font-size: 0.4em;}
 
 #upload{
     width:100%;

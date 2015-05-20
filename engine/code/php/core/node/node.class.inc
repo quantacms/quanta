@@ -22,11 +22,12 @@ class Node {
   public $title;
   public $permissions;
   public $timestamp;
+  public $father = NULL;
   private $json;
   private $lineage = array();
-  public $father = NULL;
-
+  public $tmp_files_dir;
   // Construct the Node.
+
   public function __construct(&$env, $name, $father = NULL) {
     $this->env = $env;
     $this->setName(strtolower($name));
@@ -36,11 +37,19 @@ class Node {
     $this->path = $this->env->dir['wiki'] . '/' . $this->getName();
 
     $this->exists = is_link($this->path);
-
+    // Todo: make even safer.
     if ($this->exists || $father != NULL) {
       $this->load();
     }
 
+  }
+
+  public function getName() {
+    return $this->name;
+  }
+
+  public function setName($name) {
+    $this->name = $name;
   }
 
   /**
@@ -65,52 +74,11 @@ class Node {
     $this->setTitle(parsetag($this->content, 'h1'));
     if ($this->exists) {
       $this->setTimestamp(filemtime($this->realpath));
-    } else {
-
-        $this->setTimestamp(time());
-      }
-
-  }
-
-  public function isHome() {
-    return $this->name == 'home';
-  }
-
-  public function buildLineage() {
-    if ($this->isHome()) {
-      return;
     }
-    $bca = explode('/', $this->fullpath);
-    foreach ($bca as $bread_node) {
-      if ($bread_node == '') {
-        continue;
-      }
-      $n = new Node($this->env, $bread_node);
-      if (!$n->exists) {
-        break;
-      }
-      $this->lineage[] = $n;
+    else {
+      $this->setTimestamp(time());
     }
-  }
 
-  public function getLineage() {
-    return $this->lineage;
-  }
-
-  public function getTitle() {
-    return $this->title;
-  }
-
-  public function getName() {
-    return $this->name;
-  }
-
-  public function setName($name) {
-    $this->name = $name;
-  }
-
-  public function setSection($section) {
-    $this->section = $section;
   }
 
   public function buildContent() {
@@ -133,188 +101,6 @@ class Node {
     }
   }
 
-  public function getContent() {
-    return $this->content;
-  }
-
-  public function setContent($content) {
-    $this->content = $content;
-  }
-
-  public function getBody() {
-    return trim(preg_replace("/\<h1\>" . $this->getTitle() . "\<\/h1\>/is", "", $this->getContent()));
-  }
-
-  public function getDate() {
-    return date('d-m-Y', $this->getTimestamp());
-  }
-
-  public function getTime() {
-    return date('H:s', $this->getTimestamp());
-  }
-
-  public function getTimestamp() {
-    return $this->timestamp;
-  }
-
-  public function setTimestamp($timestamp) {
-    $this->timestamp = $timestamp;
-  }
-
-  /**
-   * Temporary.
-   */
-  public function render() {
-    return str_replace(chr(13), '', $this->getContent());
-  }
-
-  public function setTitle($title) {
-    $this->title = $title;
-  }
-
-  /**
-   * Save this node on the file system.
-   */
-  public function save() {
-    $this->saveHTML();
-    $this->saveJSON();
-  }
-
-  /**
-   * Save this node on a data.html file.
-   */
-  public function saveHTML() {
-    // Add-edit file.
-    if (!is_dir($this->realpath)) {
-      mkdir($this->realpath) or die('cannot create dir: ' . $this->realpath);
-    }
-    $htmlpath = $this->realpath . '/data.html';
-    $fh = fopen($htmlpath, 'w+');
-    fwrite($fh, '<h1>' . $this->getTitle() . '</h1>') or die('Cannot write on file: ' . $this->realpath);
-    fwrite($fh, $this->getBody());
-    fclose($fh);
-
-    new Message($this->env, 'user edited this file: ' . $_POST['edit-path'], MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
-  }
-
-  /**
-   * Save the JSON dump of the node
-   */
-  public function saveJSON() {
-    if (!is_dir($this->realpath)) {
-      mkdir($this->realpath) or die('cannot create dir: ' . $this->realpath);
-    }
-    $jsonpath = $this->realpath . '/data.json';
-    $fh = fopen($jsonpath, 'w+');
-    fwrite($fh, json_encode($this));
-    fclose($fh);
-  }
-
-  /**
-   * Delete this node from the file system.
-   */
-  public function delete() {
-    $np = explode('/', $this->realpath);
-    $rmname = '__' . $np[count($np) - 1];
-    $np[count($np) - 1] = $rmname;
-    // Delete file is indeed not an immediate deletion: it adds __ to folder name.
-    // This is useful in order to recover a node that was accidentally deleted.
-    rename($this->path, $this->env->dir['wiki'] . '/' . $rmname);
-    rename($this->realpath, implode('/', $np));
-    new Message($this->env, 'user deleted this page: ' . $this->name . '.', MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
-  }
-
-  /**
-   * Load and construct permissions for this node.
-   */
-  private function loadPermissions() {
-    $grants = array();
-    // Load global permissions.
-    $check = array_reverse(explode('/', $this->realpath));
-    // Load specific permissions.
-    foreach ($check as $path) {
-      $n = new Node($this->env, $path);
-      $access_path = ($n->exists ? $n->realpath : $this->env->dir['docroot']);
-      if (is_file($access_path . '/.access')) {
-        $access = file($access_path . '/.access');
-        foreach ($access as $grant_item) {
-          $grants_item = explode(':', $grant_item);
-          if (!isset($grants[$grants_item[0]])) {
-            $grants[$grants_item[0]] = $grants_item[1];
-          }
-        }
-      }
-      if (!($n->exists)) {
-        break;
-      }
-    }
-    $this->permissions = $grants;
-  }
-
-  /**
-   * Get all the permissions for this node.
-   * @return mixed
-   */
-  public function getPermissions() {
-    $this->loadPermissions();
-    return $this->permissions;
-  }
-
-  /**
-   * Check the uploads being made to a node.
-   */
-  public function checkUploads() {
-    $allowed = array(
-      'png',
-      'jpg',
-      'jpeg',
-      'gif',
-      'zip',
-      'pdf',
-      'mov',
-      'rtf',
-      'doc',
-      'docx',
-      'gz',
-      'mp3',
-      'mp4',
-      'mov',
-      'm4a',
-      'txt',
-      'xls',
-      'xlsx'
-    );
-    if (isset($_POST['tmp_files'])) {
-      $upload_dir = ($this->env->dir['tmp_files'] . '/' . $_POST['tmp_files']);
-      if (!is_dir($upload_dir)) {
-        mkdir($upload_dir);
-      }
-    }
-    else {
-      $upload_dir = $this->realpath;
-    }
-    if (isset($_FILES['upl']) && $_FILES['upl']['error'] == 0) {
-      $extension = pathinfo($_FILES['upl']['name'], PATHINFO_EXTENSION);
-      if (!in_array(strtolower($extension), $allowed)) {
-        echo '{"status":"error"}';
-        exit;
-      }
-      if (move_uploaded_file($_FILES['upl']['tmp_name'], $upload_dir . '/' . strip_tags($_FILES['upl']['name']))) {
-        echo '{"status":"success"}';
-        exit;
-      }
-    }
-    echo '{"status":"error"}';
-    exit;
-  }
-
-  /**
-   * Request the deletion of a file.
-   * @param $file File
-   */
-  public function deleteFile($file) {
-    unlink($this->realpath . '/' . $file);
-  }
 
   /**
    * Request to perform an action on the node. Check permissions and
@@ -347,16 +133,17 @@ class Node {
           $node->setTitle($nodedata['edit-title']);
           $node->setContent('<h1>' . $nodedata['edit-title'] . '</h1>' . $nodedata['edit-content']);
           $node->setTimestamp($datetime > 0 ? $datetime : time());
+          $node->tmp_files_dir = $nodedata['tmp_files'];
           $node->save();
           $env->hook('node_save', array('node' => &$node, 'data' => $nodedata));
 
           $redirect = '/' . $node->getName() . '/';
-        } else {
+        }
+        else {
           $redirect = '/403';
         }
 
         break;
-
 
 
       case NODE_ACTION_DELETE:
@@ -367,29 +154,246 @@ class Node {
         }
         break;
     }
-
-    // TODO: refactor.
-    if (isset($nodedata['tmp_files'])) {
-      $tmp_dir = $env->dir['tmp_files'] . '/' . $nodedata['tmp_files'];
-      if (is_dir($tmp_dir)) {
-        $tmp_files = scandir($tmp_dir);
-        foreach ($tmp_files as $file) {
-          $fpath = $tmp_dir . '/' . $file;
-          if (is_file($fpath)) {
-            //print $env->dir['tmp_files'] . '/' . $file;
-            copy($fpath, $node->realpath . '/' . $file);
-            unlink($fpath);
-          }
-        }
-        rmdir($tmp_dir);
-      }
-    }
-
     $response = new StdClass();
     $response->redirect = $redirect;
     $response_json = json_encode($response);
 
     return $response_json;
   }
+
+  /**
+   * Save this node on the file system.
+   */
+  public function save() {
+    $this->saveHTML();
+    $this->saveJSON();
+    $this->saveFiles();
+  }
+
+
+  public function saveFiles() {
+    $fop = fopen("test.txt", "a+");
+    fwrite($fop, "SAVING FILES FOR NODE:" . $this->getName());
+    // TODO: refactor.
+      $tmp_dir = $this->env->dir['tmp_files'] . '/' . $this->tmp_files_dir;
+    fwrite($fop, "TMP DIR: " . $tmp_dir);
+
+    if (is_dir($tmp_dir)) {
+        $tmp_files = scandir($tmp_dir);
+        foreach ($tmp_files as $file) {
+          $fpath = $tmp_dir . '/' . $file;
+          if (is_file($fpath)) {
+            //print $env->dir['tmp_files'] . '/' . $file;
+            copy($fpath, $this->realpath . '/' . $file);
+            unlink($fpath);
+          }
+        }
+        rmdir($tmp_dir);
+      }
+    fclose($fop);
+
+  }
+  /**
+   * Save this node on a data.html file.
+   */
+  public function saveHTML() {
+    // Add-edit file.
+    if (!is_dir($this->realpath)) {
+      mkdir($this->realpath) or die('cannot create dir: ' . $this->realpath);
+    }
+    $htmlpath = $this->realpath . '/data.html';
+    $fh = fopen($htmlpath, 'w+');
+    fwrite($fh, '<h1>' . $this->getTitle() . '</h1>') or die('Cannot write on file: ' . $this->realpath);
+    fwrite($fh, $this->getBody());
+    fclose($fh);
+
+    new Message($this->env, 'user edited this file: ' . $this->getName(), MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
+  }
+
+  public function getBody() {
+    return trim(preg_replace("/\<h1\>" . $this->getTitle() . "\<\/h1\>/is", "", $this->getContent()));
+  }
+
+  public function getTitle() {
+    return $this->title;
+  }
+
+  public function setTitle($title) {
+    $this->title = $title;
+  }
+
+  public function getContent() {
+    return $this->content;
+  }
+
+  /**
+   * Save the JSON dump of the node
+   */
+  public function saveJSON() {
+    if (!is_dir($this->realpath)) {
+      mkdir($this->realpath) or die('cannot create dir: ' . $this->realpath);
+    }
+    $jsonpath = $this->realpath . '/data.json';
+    $fh = fopen($jsonpath, 'w+');
+    fwrite($fh, json_encode($this));
+    fclose($fh);
+  }
+
+  /**
+   * Delete this node from the file system.
+   */
+  public function delete() {
+    $np = explode('/', $this->realpath);
+    $rmname = '__' . $np[count($np) - 1];
+    $np[count($np) - 1] = $rmname;
+    // Delete file is indeed not an immediate deletion: it adds __ to folder name.
+    // This is useful in order to recover a node that was accidentally deleted.
+    rename($this->path, $this->env->dir['wiki'] . '/' . $rmname);
+    rename($this->realpath, implode('/', $np));
+    new Message($this->env, 'user deleted this page: ' . $this->name . '.', MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
+  }
+
+  public function setContent($content) {
+    $this->content = $content;
+  }
+
+  public function buildLineage() {
+    if ($this->isHome()) {
+      return;
+    }
+    $bca = explode('/', $this->fullpath);
+    foreach ($bca as $bread_node) {
+      if ($bread_node == '') {
+        continue;
+      }
+      $n = new Node($this->env, $bread_node);
+      if (!$n->exists) {
+        break;
+      }
+      $this->lineage[] = $n;
+    }
+  }
+
+  public function isHome() {
+    return $this->name == 'home';
+  }
+
+  public function getLineage() {
+    return $this->lineage;
+  }
+
+  public function setSection($section) {
+    $this->section = $section;
+  }
+
+  public function getDate() {
+    return date('d-m-Y', $this->getTimestamp());
+  }
+
+  public function getTimestamp() {
+    return $this->timestamp;
+  }
+
+  public function setTimestamp($timestamp) {
+    $this->timestamp = $timestamp;
+  }
+
+  public function getTime() {
+    return date('H:s', $this->getTimestamp());
+  }
+
+  /**
+   * Temporary.
+   */
+  public function render() {
+    return str_replace(chr(13), '', $this->getContent());
+  }
+
+  /**
+   * Get all the permissions for this node.
+   * @return mixed
+   */
+  public function getPermissions() {
+    $this->loadPermissions();
+    return $this->permissions;
+  }
+
+  /**
+   * Load and construct permissions for this node.
+   */
+  private function loadPermissions() {
+    $grants = array();
+    // Load global permissions.
+    $check = array_reverse(explode('/', $this->realpath));
+    // Load specific permissions.
+    foreach ($check as $path) {
+      $n = new Node($this->env, $path);
+      $access_path = ($n->exists ? $n->realpath : $this->env->dir['docroot']);
+      if (is_file($access_path . '/.access')) {
+        $access = file($access_path . '/.access');
+        foreach ($access as $grant_item) {
+          $grants_item = explode(':', $grant_item);
+          if (!isset($grants[$grants_item[0]])) {
+            $grants[$grants_item[0]] = $grants_item[1];
+          }
+        }
+      }
+      if (!($n->exists)) {
+        break;
+      }
+    }
+    $this->permissions = $grants;
+  }    /**
+   * Check the uploads being made to a node.
+   */
+  public function checkUploads() {
+    $allowed = array(
+      'png',
+      'jpg',
+      'jpeg',
+      'gif',
+      'zip',
+      'pdf',
+      'mov',
+      'rtf',
+      'doc',
+      'docx',
+      'gz',
+      'mp3',
+      'mp4',
+      'mov',
+      'm4a',
+      'txt',
+      'xls',
+      'xlsx'
+    );
+
+
+    $upload_dir = ($this->env->dir['tmp_files'] . '/' . $_REQUEST['tmp_files']);
+    if (!is_dir($upload_dir)) {
+      mkdir($upload_dir);
+    }
+
+    if (isset($_FILES['upl']) && $_FILES['upl']['error'] == 0) {
+      $extension = pathinfo($_FILES['upl']['name'], PATHINFO_EXTENSION);
+      if (!in_array(strtolower($extension), $allowed)) {
+        echo '{"status":"error"}';
+        exit;
+      }
+      if (move_uploaded_file($_FILES['upl']['tmp_name'], $upload_dir . '/' . strip_tags($_FILES['upl']['name']))) {
+        echo '{"status":"success"}';
+        exit;
+      }
+    }
+    echo '{"status":"error"}';
+    exit;
+  }   /**
+   * Request the deletion of a file.
+   * @param $file File
+   */
+  public function deleteFile($file) {
+    unlink($this->realpath . '/' . $file);
+  }
+
 }
 
