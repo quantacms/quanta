@@ -81,7 +81,7 @@ abstract class ListObject {
         $this->dirs[$data_url]['wiki'] = $this->env->dir['wiki'] . '/' . $data_url . '/data.html';
         $this->dirs[$data_url]['content'] = file_get_contents($this->dirs[$data_url]['wiki']);
         $this->dirs[$data_url]['title'] = parsetag($this->dirs[$data_url]['content'], 'h1');
-        $this->dirs[$data_url]['time_created'] = filectime($this->dirs[$data_url]['wiki']);
+        $this->dirs[$data_url]['timestamp'] = filemtime($this->dirs[$data_url]['wiki']);
       } else {
         $file = new File($this->env, $data_url, $this->node);
         if ($file->isPublic()) {
@@ -103,6 +103,10 @@ abstract class ListObject {
           $this->dirs = array_reverse($this->dirs);
           break;
         }
+        case 'sortbytime':
+
+          uasort($this->dirs, 'ListObject::sortByTime');
+        break;
           default:
             // Unkown attribute for generic list - do nothing.
           break;
@@ -145,4 +149,8 @@ abstract class ListObject {
     return $this->type;
   }
 
+  static function sortByTime($x, $y) {
+
+    return ($x['timestamp'] < $y['timestamp']) ? 1 : -1;
+  }
 }

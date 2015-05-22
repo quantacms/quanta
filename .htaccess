@@ -2,7 +2,7 @@ Options +FollowSymlinks
 Options -Indexes
 DirectoryIndex engine/code/php/boot.php
 RewriteEngine on
-
+RewriteBase /
 RewriteCond %{REQUEST_URI} /+[^\.]+$
 RewriteRule ^(.+[^/])$ %{REQUEST_URI}/ [R=301,L]
 

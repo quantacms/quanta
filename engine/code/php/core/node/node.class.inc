@@ -23,6 +23,7 @@ class Node {
   public $permissions;
   public $timestamp;
   public $father = NULL;
+  public $thumbnail = NULL;
   private $json;
   private $lineage = array();
   public $tmp_files_dir;
@@ -394,5 +395,13 @@ class Node {
     unlink($this->realpath . '/' . $file);
   }
 
+  // TODO: check validity.
+  public function setThumbnail($thumbnail) {
+    $this->thumbnail = $thumbnail;
+  }
+
+  public function getThumbnail() {
+    return $this->thumbnail;
+  }
 }
 

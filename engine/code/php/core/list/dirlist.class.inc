@@ -26,7 +26,7 @@ class DirList extends ListObject {
         $tpl_item = preg_replace ("/\[TITLE\]/is", $dir['title'], $tpl_item);
         $tpl_item = preg_replace ("/\[COUNTER\]/is", $i, $tpl_item);
         $tpl_item = preg_replace ("/\[URL\]/is", $dir_url, $tpl_item);
-        $tpl_item = preg_replace ("/\[DATE\]/is", date('d-M-Y H:i:s', $dir['time_created']), $tpl_item);
+        $tpl_item = preg_replace ("/\[DATE\]/is", date('d-M-Y H:i:s', $dir['timestamp']), $tpl_item);
         $tpl_item = preg_replace ("/\[PREVIEW\]/is", strip_tags(substr($dir['content'], 0, 300), 'img'), $tpl_item);
         $tpl_item = preg_replace ("/\[IMG\:/is", '[IMG:/' . $dir_url . '/', $tpl_item);
         $this->tpl_items[] = $tpl_item;
