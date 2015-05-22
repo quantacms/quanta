@@ -3,8 +3,6 @@
 
 function pageEdit(action) {
     openShadow(action);
-    $.getScript('/engine/code/php/core/file/js/jquery.fileupload.js');
-    $.getScript('/engine/code/php/core/file/js/file-upload.js');
 }
 
 function pageDelete() {
@@ -13,6 +11,8 @@ function pageDelete() {
 
 function openShadow(context) {
     $('#shadow-item').html('').attr('rel', context).load('?shadow=' + context, function() {
+        $.getScript('/engine/code/php/core/file/js/jquery.fileupload.js');
+        $.getScript('/engine/code/php/core/file/js/file-upload.js');
         pageRefresh();
         refreshButtons();
         $('.shadow-title').find('a').on('click', function () {
