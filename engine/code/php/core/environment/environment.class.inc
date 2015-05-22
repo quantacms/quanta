@@ -102,7 +102,7 @@ class Environment {
   private function load() {
     foreach ($this->dir as $folder) {
       if (!is_dir($folder)) {
-        mkdir($folder);
+        mkdir($folder) or die("Error: can not create " . $folder . '. Check permission and path.');
       }
     }
     $this->loadCoreModules();
