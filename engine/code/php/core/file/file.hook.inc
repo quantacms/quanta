@@ -14,6 +14,7 @@ function file_shadow_node_edit($vars) {
   $form = '
   <form id="upload" method="POST" enctype="multipart/form-data">
   <input type="hidden" name="tmp_files" value="'. $tmp_files .'" />
+  <input type="hidden" id="edit-thumbnail" name="edit-thumbnail" value="' . $node->getThumbnail() . '"/>
   <input type="hidden" name="thumbnail" value="" />
   <div id="drop">Drop here files<a>or press here</a><input type="file" name="upl" id="file-upload" multiple /></div>' . $filelist->render() . '</form>';
 

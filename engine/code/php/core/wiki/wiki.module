@@ -14,6 +14,7 @@ function wikize($env, $string) {
     }
   }
 
+
   //$string = preg_replace("/\_(.+?)\_/", "<i>\\1</i>", $string);
   $string = preg_replace("/\#\#\#(.+\n?)\#\#\#/s", "<div class=\"address\">\\1</div>", $string);
   $string = preg_replace('/\-\-\-/', '<div class="page-break">&nbsp;</div>', $string);

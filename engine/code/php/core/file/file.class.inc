@@ -9,6 +9,7 @@ class File {
   public $path;
   public $extension;
   public $type;
+  public $exists;
   /**
    * @var Node
    */
@@ -16,16 +17,16 @@ class File {
 
   // Construct the Node.
   public function __construct(&$env, $file_path, $node = NULL) {
-    $this->path = $file_path;
-    $exp = explode('.', $this->path);
+    $fpath_full = explode('/', $file_path);
+    $file_path = $fpath_full[count($fpath_full) - 1];
+    $this->path = '/' . $node->getName() . '/' . $file_path;
+    $exp = explode('.', $file_path);
     $this->name = $exp[0];
     $this->extension = strtolower($exp[count($exp) - 1]);
     $this->type = File::getFileType($this->extension);
     $this->node = $node;
-    if ($node->getName() == 'home') {
-      $this->path = '/home/' . $file_path;
-    }
 
+    $this->exists = is_file($this->node->realpath . '/' . $file_path);
   }
 
   /**
@@ -39,7 +40,7 @@ class File {
     $is_public =
       ($this->path != 'data.html') &&
       ($this->path != 'data.json') &&
-      ($this->name != '');
+      ($this->name != 'data');
     return $is_public;
   }
 

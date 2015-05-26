@@ -760,3 +760,39 @@ body.user-logged .login-link {
 body.user-anonymous .logout-link {
     display: none;
 }
+
+.blog-thumb .thumb {
+    float: left;
+    max-width: 100px;
+    margin-right: 10px;
+    margin-top: 10px;
+}
+
+.selected-thumbnail {
+    display: inline-block;
+    background: green;
+    color: yellow;
+}
+
+#show-thumbnail {
+    position: absolute;
+    right: 50px;
+    top: 50px;
+    background: #ddd;
+    width: 150px;
+
+}
+
+#show-thumbnail span {
+    width: 150px;
+    height: 150px;
+    display: block;
+    padding: 4px;
+    vertical-align: middle;
+    text-align: center;
+}
+
+
+#show-thumbnail img {
+    width: 100%;
+}

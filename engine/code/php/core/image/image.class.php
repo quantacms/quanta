@@ -24,9 +24,12 @@ class Image extends File {
         $this->css[] = 'height:' . $this->height . ((strpos($this->height, '%') > 0) ? '' : 'px');
       }
 
-      else switch($attr[0]) {
+      else switch(strtolower($attr[0])) {
         case 'class':
           $this->class = explode(',', $attr[1]);
+          break;
+        case 'float':
+          $this->css[] = 'float:' . $attr[1];
           break;
         default:
           break;

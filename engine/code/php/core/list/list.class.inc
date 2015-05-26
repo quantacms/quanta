@@ -77,11 +77,9 @@ abstract class ListObject {
     $list_pages = $this->env->scanDirectory($this->node->realpath);
 
     foreach ($list_pages as $data_url) {
-      if (is_dir($list_dir = $this->env->dir['wiki'] . '/' . $data_url)) {
-        $this->dirs[$data_url]['wiki'] = $this->env->dir['wiki'] . '/' . $data_url . '/data.html';
-        $this->dirs[$data_url]['content'] = file_get_contents($this->dirs[$data_url]['wiki']);
-        $this->dirs[$data_url]['title'] = parsetag($this->dirs[$data_url]['content'], 'h1');
-        $this->dirs[$data_url]['timestamp'] = filemtime($this->dirs[$data_url]['wiki']);
+      $node = new Node($this->env, $data_url);
+      if ($node->exists) {
+        $this->dirs[$data_url] = $node;
       } else {
         $file = new File($this->env, $data_url, $this->node);
         if ($file->isPublic()) {
@@ -151,6 +149,6 @@ abstract class ListObject {
 
   static function sortByTime($x, $y) {
 
-    return ($x['timestamp'] < $y['timestamp']) ? 1 : -1;
+    return ($x->getTimestamp() < $y->getTimestamp()) ? 1 : -1;
   }
 }

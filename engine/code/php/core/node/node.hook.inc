@@ -117,7 +117,7 @@ function node_shadow_node_edit($vars) {
 
     // TODO: refactor / hook
     $vars['shadow']->addTab($action . ' content', '
- <form id="shadow-form" method="POST" action="/' . $vars['env']->getRequestedPath() . '"><div class="edit-thumbnail">' . $thumbnail . '</div><input type="hidden" name="edit-thumbnail" value="' . $node->getThumbnail() . '"/><input type="hidden" id="action" name="action" value="' . $action . '"><input type="hidden" name="edit-father" value="' . $vars['env']->getRequestedPath() . '">
+ <form id="shadow-form" method="POST" action="/' . $vars['env']->getRequestedPath() . '"><div id="show-thumbnail">' . $thumbnail . '</div><input type="hidden" name="edit-thumbnail" value="' . $node->getThumbnail() . '"/><input type="hidden" id="action" name="action" value="' . $action . '"><input type="hidden" name="edit-father" value="' . $vars['env']->getRequestedPath() . '">
  <label for="edit-title">Title</label><input type="text" name="edit-title" id="edit-title" value="' . $node->getTitle() . '"/>
  <label for="edit-content">Content</label><textarea id="edit-content" name="edit-content">' . $node->getBody() . '</textarea>
  <input type="hidden" id="edit-action" name="edit-action" value="' . $action . '" />

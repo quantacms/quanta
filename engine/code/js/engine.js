@@ -23,6 +23,14 @@ var refreshButtons = function() {
         return false;
     });
 
+    $('.set-thumbnail').bind('click', function() {
+        $('#edit-thumbnail').attr('value', $(this).attr('rel'));
+        $('.selected-thumbnail').removeClass('selected-thumbnail');
+        $(this).addClass('selected-thumbnail');
+        $('.show-thumbnail').html('<img src="' + $(this).attr('rel') + '" />');
+        return false;
+    })
+
     // Open page when clicking abstract
     $('.abstract').bind('click', function() {
         var a = $(this).parent().find('a');

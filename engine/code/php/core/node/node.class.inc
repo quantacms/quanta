@@ -98,6 +98,9 @@ class Node {
       if (is_file($this->path . '/data.json')) {
         $this->json = json_decode(file_get_contents($this->path . '/data.json'));
         $this->setTimestamp($this->json->timestamp);
+        if (isset($this->json->thumbnail)) {
+          $this->setThumbnail($this->json->thumbnail);
+        }
       }
     }
   }
@@ -128,6 +131,9 @@ class Node {
       case NODE_ACTION_ADD:
       case NODE_ACTION_EDIT:
         $parent = new Node($env, $nodedata['edit-father']);
+        if (isset($nodedata['edit-thumbnail'])) {
+          $node->setThumbnail($nodedata['edit-thumbnail']);
+        }
         $datetime = strtotime($nodedata['edit-date'] . ' ' . $nodedata['edit-time']);
         $has_access = ($user->checkAccess(($action == NODE_ACTION_ADD) ? $parent : $node, $action));
         if ($has_access) {
@@ -233,6 +239,7 @@ class Node {
     if (!is_dir($this->realpath)) {
       mkdir($this->realpath) or die('cannot create dir: ' . $this->realpath);
     }
+    unset($this->request_json);
     $jsonpath = $this->realpath . '/data.json';
     $fh = fopen($jsonpath, 'w+');
     fwrite($fh, json_encode($this));
@@ -286,6 +293,9 @@ class Node {
     $this->section = $section;
   }
 
+  public function getDateTime() {
+    return date('d M Y - H:i:s', $this->getTimestamp());
+  }
   public function getDate() {
     return date('d-m-Y', $this->getTimestamp());
   }
@@ -306,7 +316,11 @@ class Node {
    * Temporary.
    */
   public function render() {
-    return str_replace(chr(13), '', $this->getContent());
+    $pattern = "/(?i)\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))/";
+    $content = $this->getContent();
+    $content = preg_replace($pattern, '<a href="$1">$1</a>', $content);
+
+    return str_replace(chr(13), '', $content);
   }
 
   /**
