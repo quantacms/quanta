@@ -21,6 +21,16 @@ function wiki_BLOG($replace, $attributes, $value, $string, $page) {
 }
 
 /**
+ * Detect content BLOG and eventually create HTML.
+ */
+function wiki_SLIDER($replace, $attributes, $value, $string, $page) {
+  $dirlist = new DirList($page->env, $value, 'slider', array('sortbytime') + $attributes);
+  $output = $dirlist->render();
+  $string = str_replace($replace, $output, $string);
+  return $string;
+}
+
+/**
  * Detect content FILES and eventually create HTML.
  */
 function wiki_FILES($replace, $attributes, $value, $string, $page) {
