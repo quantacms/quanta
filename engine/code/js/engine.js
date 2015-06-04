@@ -102,5 +102,6 @@ var actionSuccess = function(data) {
 }
 
 var actionError = function(err, exception) {
+    err.responseText;
     alert(exception);
 }

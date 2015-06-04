@@ -97,12 +97,15 @@ function node_shadow_node_add($vars) {
 function node_shadow_node_edit($vars) {
   $user = User::current($vars['env']);
 
+  // ADD a node.
   if ($vars['shadow']->getContext() == NODE_ACTION_ADD) {
     $action = NODE_ACTION_ADD;
     $father = new Node($vars['env'], $vars['env']->getRequestedPath());
-    $node = new Node($vars['env'], NULL, $vars['env']->getRequestedPath());
+    $node = new Node($vars['env'], NULL, $father);
+    print_r($node);
     $has_access = $user->checkAccess($father, $action);
   }
+  // EDIT a node.
   else {
     $node = new Node($vars['env'], $vars['env']->getRequestedPath());
     $action = NODE_ACTION_EDIT;
