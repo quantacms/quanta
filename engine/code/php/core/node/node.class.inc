@@ -42,7 +42,6 @@ class Node {
     if ($this->exists || $father != NULL) {
       $this->load();
     }
-
   }
 
   public function getName() {
@@ -59,8 +58,7 @@ class Node {
   public function load() {
     // Create symlink - wiki redirect.
     if ($this->father != NULL) {
-      $fatherpath = $this->env->dir['wiki'] . '/' . $this->father;
-      $this->realpath = readlink($fatherpath) . '/' . $this->getName();
+      $this->realpath = $this->father->realpath . '/' . $this->getName();
     }
     else {
       $this->realpath = readlink($this->path);
@@ -124,18 +122,17 @@ class Node {
     else {
       $path = $nodedata['edit-path'];
     }
-    $node = new Node($env, $path, ($action == NODE_ACTION_ADD) ? $nodedata['edit-father'] : '');
+    $node = new Node($env, $path, ($action == NODE_ACTION_ADD) ? new Node($env, $nodedata['edit-father']) : NULL);
 
 
     switch ($action) {
       case NODE_ACTION_ADD:
       case NODE_ACTION_EDIT:
-        $parent = new Node($env, $nodedata['edit-father']);
         if (isset($nodedata['edit-thumbnail'])) {
           $node->setThumbnail($nodedata['edit-thumbnail']);
         }
         $datetime = strtotime($nodedata['edit-date'] . ' ' . $nodedata['edit-time']);
-        $has_access = ($user->checkAccess(($action == NODE_ACTION_ADD) ? $parent : $node, $action));
+        $has_access = ($user->checkAccess(($action == NODE_ACTION_ADD) ? $node->father : $node, $action));
         if ($has_access) {
           $node->setTitle($nodedata['edit-title']);
           $node->setContent('<h1>' . $nodedata['edit-title'] . '</h1>' . $nodedata['edit-content']);
