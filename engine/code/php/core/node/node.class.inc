@@ -178,11 +178,9 @@ class Node {
 
 
   public function saveFiles() {
-    $fop = fopen("test.txt", "a+");
-    fwrite($fop, "SAVING FILES FOR NODE:" . $this->getName());
     // TODO: refactor.
       $tmp_dir = $this->env->dir['tmp_files'] . '/' . $this->tmp_files_dir;
-    fwrite($fop, "TMP DIR: " . $tmp_dir);
+
 
     if (is_dir($tmp_dir)) {
         $tmp_files = scandir($tmp_dir);
@@ -196,7 +194,6 @@ class Node {
         }
         rmdir($tmp_dir);
       }
-    fclose($fop);
 
   }
   /**
