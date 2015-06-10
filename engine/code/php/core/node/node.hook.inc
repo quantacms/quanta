@@ -112,15 +112,8 @@ function node_shadow_node_edit($vars) {
     new Message($vars['env'], 'User ' . $user->name . ' attempted to ' . $action . ' a node without access', MESSAGE_WARNING, MESSAGE_TYPE_LOG, 'node');
   }
   else {
-    $thumbnail = $node->getThumbnail() ? '<img src="' . $node->getThumbnail() . '" />' : '<span>Upload files to select a thumbnail</span>';
-
-    // TODO: refactor / hook
-    $vars['shadow']->addTab($action . ' content', '
- <form id="shadow-form" method="POST" action="/' . $vars['env']->getRequestedPath() . '"><div id="show-thumbnail">' . $thumbnail . '</div><input type="hidden" name="edit-thumbnail" value="' . $node->getThumbnail() . '"/><input type="hidden" id="action" name="action" value="' . $action . '"><input type="hidden" name="edit-father" value="' . $vars['env']->getRequestedPath() . '">
- <label for="edit-title">Title</label><input type="text" name="edit-title" id="edit-title" value="' . $node->getTitle() . '"/>
- <label for="edit-content">Content</label><textarea id="edit-content" name="edit-content">' . $node->getBody() . '</textarea>
- <input type="hidden" id="edit-action" name="edit-action" value="' . $action . '" />
- <label for="edit-path">Path</label><input type="text" name="edit-path" id="edit-path" value="' . $node->getName() . '"/><div class="edit-date-wrapper"><label for="edit-date">Date</label><input size="10" type="text" name="edit-date" id="edit-date" class="hasDatepicker" value="' . $node->getDate() . '"/> <input size="5" name="edit-time" value="' . $node->getTime() . '" /></div></form>', 1);
+    $action_name = ($action == NODE_ACTION_ADD ? 'create' : 'edit') . ' content';
+    $vars['shadow']->addTab($action_name, $node->renderEditForm($action), 1);
   }
 }
 

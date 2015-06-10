@@ -10,16 +10,8 @@
  */
 function wiki_MESSAGES($replace, $attributes, $var, $string, $page) {
   $type = isset($attributes[1]) ? $attributes[1] : MESSAGE_TYPE_SCREEN;
-  $output = '';
-  if (isset($_SESSION['messages'])) {
-    foreach($_SESSION['messages'] as $k => $mess) {
-      $message = unserialize($mess);
-      if ($message->type == $type) {
-        $output .= '<div class="message message-severity-' . $message->severity . '">' . $message->body . '</div>';
-        unset($_SESSION['messages'][$k]);
-      }
-    }
-  }
+  $output = Message::burnMessages($type);
+
   $string = str_replace($replace, $output, $string);
   return $string;
 }

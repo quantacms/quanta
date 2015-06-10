@@ -2,15 +2,19 @@
 // TODO: this has all to be refactored.
 
 function pageEdit(action) {
-    openShadow(action);
+    openShadow({ module : 'node', context: action, type: 'tabs'});
 }
 
 function pageDelete() {
-    openShadow('node_delete');
+    openShadow({ module : 'node', context: 'node_delete', type: 'tabs'});
 }
 
-function openShadow(context) {
-    $('#shadow-item').html('').attr('rel', context).load('?shadow=' + context, function() {
+function openShadow(shadow) {
+    if (shadow.type == 'undefined') {
+        shadow.type = 'tabs';
+    }
+    $('#shadow-item').html('').attr('rel', shadow.context).load(
+        '?shadow=' + JSON.stringify(shadow), function() {
         $.getScript('/engine/code/php/core/file/js/jquery.fileupload.js');
         $.getScript('/engine/code/php/core/file/js/file-upload.js');
         pageRefresh();
@@ -27,14 +31,6 @@ function openShadow(context) {
     $('#shadow-outside').fadeIn('slow');
 }
 
-function logIn() {
-    openShadow('user_login');
-}
-
-function logOut() {
-   action('{"action": "logout"}');
-}
-
 /**
  * Submit a shadow form.
  */
@@ -44,9 +40,7 @@ function shadowSubmit() {
         form_items[$(this).attr('name')] = $(this).val();
     });
     var formData = JSON.stringify(form_items);
-        //$('body').html(formData);
-        //return;
-        action(formData);
+    action(formData);
 }
 
 

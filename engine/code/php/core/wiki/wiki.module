@@ -1,22 +1,47 @@
 <?php
 require_once('wiki.hook.inc');
+
 /**
  * Transform wiki tags in html.
  */
-function wikize($env, $string) {
+function wikize($env, &$page) {
+  preg_match_all("/\<nowiki\>(.*)<\/nowiki\>/is", $page->html, $nowiki);
+  foreach ($nowiki[0] as $k => $v) {
+    $page->html = str_replace($nowiki[0][$k], '{nw:' . $k . '}', $page->html);
+  }
 
-  // TODO: Deprecate.
-  preg_match_all("/\[(.+?):(.*?)\]/s", $string, $matches);
-  foreach ($matches[1] as $k => $match) {
-    $node = new Node($env, $match);
-    if ($node->exists) {
-      $string = str_replace($matches[0][$k], '<a class="internal" href="/' . $match . '">' . $matches[2][$k] . '</a>', $string);
+  preg_match_all("/\[(.*?)]/", $page->html, $matches);
+  foreach ($matches[1] as $tag_value) {
+    $replace = '[' . $tag_value . ']';
+    $tag = explode(':', $tag_value);
+    if (count($tag) == 1) {
+      $tag[1] = $page->env->getRequestedPath();
+    }
+    $tag_arr = explode('|', $tag[0]);
+    $tag_name = $tag_arr[0];
+    $attributes = explode('|', $tag[0]);
+    unset($attributes[0]);
+    if ($tag_name == strtoupper($tag_name) && function_exists('wiki_' . $tag_name)) {
+      $func = 'wiki_' . $tag_name;
+      $page->html = $func($replace, $attributes, $tag[1], $page->html, $page);
     }
   }
 
+  // Render node links.
+  preg_match_all("/\[(.+?):(.*?)\]/s", $page->html, $matches);
+  foreach ($matches[1] as $k => $match) {
+    $node = new Node($env, $match);
+    if ($node->exists) {
+      $page->html = str_replace($matches[0][$k], '<a class="internal" href="/' . $match . '">' . $matches[2][$k] . '</a>', $page->html);
+    }
+  }
 
-  //$string = preg_replace("/\_(.+?)\_/", "<i>\\1</i>", $string);
-  $string = preg_replace("/\#\#\#(.+\n?)\#\#\#/s", "<div class=\"address\">\\1</div>", $string);
-  $string = preg_replace('/\-\-\-/', '<div class="page-break">&nbsp;</div>', $string);
-  return $string;
+  // Render page breaks.
+  $page->html = preg_replace('/\-\-\-/', '<div class="page-break">&nbsp;</div>', $page->html);
+
+  foreach ($nowiki[0] as $k => $v) {
+    $page->html = str_replace('{nw:' . $k . '}', $nowiki[0][$k], $page->html);
+  }
+
+  return $page->html;
 }

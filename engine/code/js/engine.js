@@ -52,10 +52,11 @@ var refreshButtons = function() {
         return false;
     });
 
-    // TODO: why on('click') doesn't work?
-    $('.login-link').attr('href', 'javascript:logIn()');
+    $('.register-link').attr('href', "javascript:register()");
 
-    $('.logout-link').bind('click', function() {
+    $('.login-link').attr('href', "javascript:logIn()");
+
+    $('.logout-link').unbind().bind('click', function() {
         logOut();
         return false;
     });
@@ -71,15 +72,6 @@ var refreshButtons = function() {
 // Refresh the page after AJAX loading.
 var pageRefresh = function() {
     $('.comment-mail-link').attr('href', $('.comment-mail-link').attr('href') + '?subject=[' + $('title').text() + '] Comment on: ' + $('h1').text() + '&body===========%0D%0DWrite your comment here. It will be moderated and published%0D%0D==========');
-    $('.page-title').html($('h1').html());
-    // Do nl2br to special text pages.
-    $('#data').each(function() {
-        // TODO: find a better way to not wikize homepage.
-        if (!($('.fluids').length)) {
-            var html = $(this).html().bookify();
-            $(this).html(html);
-        }
-    });
 }
 
 var action = function(dataJson) {
@@ -94,7 +86,14 @@ var action = function(dataJson) {
 }
 
 var actionSuccess = function(data) {
-    if (data.redirect == 'undefined') {
+    if (data.errors) {
+        $('.messages').html(data.errors).fadeIn('slow');
+        setTimeout(function() {
+            $('.messages').fadeOut('slow');
+        }, 6000);
+
+    }
+    else if (data.redirect == undefined) {
         alert("There was an error with your submission.");
     } else {
         top.location.href = data.redirect;
@@ -102,6 +101,6 @@ var actionSuccess = function(data) {
 }
 
 var actionError = function(err, exception) {
-    alert(err.responseText);
+    console.log(err.responseText);
     alert(exception);
 }

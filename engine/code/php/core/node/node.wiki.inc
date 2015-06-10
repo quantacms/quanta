@@ -1,6 +1,5 @@
 <?php
 /**
- * // TODO: use this for list tags replacement.
  * @param $replace string
  * @param $tagname string
  * @param $attributes string
@@ -8,8 +7,9 @@
  * @param $page Page
  * @return mixed
  */
-function wiki_NODE($replace, $tagname, $attributes, $string, $page) {
-
-
+function wiki_NODE($replace, $tagname, $var, $string, $page) {
+  if ($var == 'content') {
+    $string = str_replace($replace, $page->getVariable('node')->getRawContent(), $string);
+  }
   return $string;
 }

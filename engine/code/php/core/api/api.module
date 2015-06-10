@@ -17,10 +17,24 @@ function parsetag($string, $tag) {
  * Generate a password
  */
 function pwd($pass) {
-  return substr((md5(substr($pass, 0, 5) . 'ABC' . substr($pass, 5, 2) . 'nginE')), 0, 10);
+  return substr((md5(substr($pass, 0, 5) . 'ABC' . substr($pass, 5, 2) . 'nginE')) . md5($pass), 0, 50);
 }
 
 // TODO: make this stuff better.
 function redirect($where) {
   print '<script>top.location.href="' . $where . '";</script>';
 }
+
+function is_alphanumeric($string) {
+
+}
+
+function valid_email($string) {
+  return (!filter_var($string, FILTER_VALIDATE_EMAIL) === FALSE);
+
+  }
+
+function valid_url($string) {
+  return (!filter_var($string, FILTER_VALIDATE_URL) === FALSE);
+
+  }

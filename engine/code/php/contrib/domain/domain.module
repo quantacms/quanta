@@ -1,0 +1,5 @@
+<?php
+require_once('Domain.class.inc');
+require_once('DomainSearch.class.inc');
+require_once('domain.hook.inc');
+require_once('domain.wiki.inc');

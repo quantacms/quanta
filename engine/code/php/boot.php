@@ -1,23 +1,5 @@
 <?php
   include_once('core/environment/environment.module');
-  $core_modules = array(
-    'api',
-    'user',
-    'file',
-    'environment',
-    'node',
-    'cache',
-    'page',
-    'wiki',
-    'list',
-    'image',
-    'gallery',
-    'search',
-    'shadow',
-    'message',
-    'manager',
-  );
-
   $env = new Environment(NULL);
   $env->addInclude('engine/code/css/engine.css');
   $env->addInclude('engine/code/js/lib/jquery.js');
@@ -41,6 +23,8 @@
   $page->buildHTML();
   print $page->render();
   $env->hook('complete');
+//print pwd("blacklore");
 
   exit();
+
 ?>

@@ -51,6 +51,12 @@ class Environment {
     $core_modules = $this->scanDirectory('core');
     $this->setModules('core', $core_modules);
   }
+
+  private function loadContribModules() {
+    $contrib_modules = $this->scanDirectory('contrib');
+    $this->setModules('contrib', $contrib_modules);
+  }
+
   /**
    * Setup modules
    * @param $modules
@@ -62,8 +68,10 @@ class Environment {
   public function getModules($mod_type = NULL) {
     $modules = array();
     if ($mod_type == NULL) {
-      foreach($this->modules as $k => $modules_dir) {
-        $modules += $modules_dir;
+      foreach($this->modules as $modules_dir) {
+        foreach ($modules_dir as $module) {
+          $modules[] = $module;
+        }
       }
     } else {
       $modules = $this->modules[$mod_type];
@@ -106,11 +114,13 @@ class Environment {
       }
     }
     $this->loadCoreModules();
+    $this->loadContribModules();
   }
 
   public function dir($variable) {
     return $this->dir[$variable];
   }
+
   public function get($variable) {
     return $this->{$variable};
   }

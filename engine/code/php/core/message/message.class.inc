@@ -41,4 +41,19 @@ class Message {
       $_SESSION['messages'][] = serialize($this);
     }
   }
+
+  public static function burnMessages($type = MESSAGE_TYPE_SCREEN) {
+    $output = '';
+    if (isset($_SESSION['messages'])) {
+      foreach($_SESSION['messages'] as $k => $mess) {
+        $message = unserialize($mess);
+        if ($message->type == $type) {
+          $output .= '<div class="message message-severity-' . $message->severity . '">' . $message->body . '</div>';
+          unset($_SESSION['messages'][$k]);
+        }
+      }
+    }
+  return $output;
+  }
+
 }

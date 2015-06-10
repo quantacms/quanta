@@ -2,8 +2,8 @@
 class Shadow {
   private $tabs = array();
   private $context;
-  private $id;
   private $env;
+  private $type;
   /**
    * @var Node $node.
    */
@@ -13,11 +13,12 @@ class Shadow {
    * @param $context String
    * @param null $id
    */
-  public function __construct($env, $context, $id = NULL) {
+  public function __construct($env, $data) {
     $this->env = $env;
-    $this->context = $context;
-    $this->id = $id;
+    $this->context = $data->context;
+    $this->type = $data->type;
     $this->node = new Node($env, $env->getRequestedPath());
+    $this->env->hook('shadow_' . $this->context, array('shadow' => &$this));
   }
 
   /**
@@ -27,12 +28,11 @@ class Shadow {
     $tabs = $this->getTabs();
     $tab_titles = '';
     $tab_contents = '';
-    // TODO: refactor this crap.
-    $shadow_page = new Page($this->env, NULL, 'Editing node:',
-      str_replace('[NODE:body]', $this->node->getBody(),
-      str_replace('[NODE:title]', $this->node->getTitle(),
-        str_replace('[NODE:path]', $this->node->name,
-        file_get_contents('core/shadow/tpl/' . $this->getContext() . '.inc')))));
+    // TODO: SUPER @URGENT URGENT refactor this crap.
+    $shadow_page = new Page($this->env, NULL, 'Shadow', file_get_contents('core/shadow/tpl/' . $this->getType() . '.inc'));
+    $shadow_page->setVariable('node', $this->node);
+    $shadow_page->setVariable('nowiki', TRUE);
+
     $i = 0;
     ksort($tabs);
     foreach ($tabs as $weight => $wtabs) {
@@ -42,14 +42,13 @@ class Shadow {
         if ($tab['title'] != NULL) {
           $tab_titles .= '<li class="shadow-title ' . (($i == 1) ? 'enabled' : '') . '" ><a href="#tab' . $i . '" rel="' . $i . '" id="shadow-title-' . $i . '">' . $tab['title'] . '</a></li>';
         }
-        $tab_contents .= '<div class="shadow-content ' . (($i == 1) ? 'enabled' : '') . '" id="shadow-content-' . $i . '">' . $tab['content'] . '</div>';
+        $tab_contents .= '<div class="shadow-content ' . (($i == 1) ? 'enabled' : '') . '" id="shadow-content-' . $i . '"><nowiki>' . $tab['content'] . '</nowiki></div>';
       }
     }
-
     $shadow_page->setVariable('tab_titles', $tab_titles);
     $shadow_page->setVariable('tab_contents', $tab_contents);
-    $shadow_page->setVariable('no_wiki', TRUE);
     $shadow_page->buildHTML();
+
     return $shadow_page->render();
 
   }
@@ -70,6 +69,11 @@ class Shadow {
   public function getContext() {
     return $this->context;
   }
+
+  public function getType() {
+    return $this->type;
+  }
+
   public function setContext($context) {
     $this->context = $context;
   }

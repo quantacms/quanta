@@ -56,16 +56,10 @@
 }
 
 .shadow-content {
-    border-radius: 30px;
-    padding-top: 2%;
-    padding-left: 5%;
-    padding-right: 5%;
-    padding-bottom: 2%;
-    background: white;
-    margin-bottom: 40px;
+    padding: 20px;
     text-align: left;
     font-family: Arial;
-    min-height: 140px;
+    width: auto;
 }
 
 #edit-content {
@@ -81,16 +75,16 @@
     display: block;
 }
 
-#shadow-login {
+#shadow-single {
     position: relative;
-    max-width: 300px;
     background: white;
     border-radius: 30px;
     padding: 20px;
     margin: auto;
-    display: block;
+    display: inline-block;
     margin-top: 80px;
     z-index: 200;
+    width: auto;
 }
 
 #shadow-login div {
@@ -101,11 +95,11 @@
     margin-right: 20px;
 }
 
-#shadow-edit-page {
+#shadow-inner {
     width: 73%;
-    position: fixed;
+    position: absolute;
     left: 22%;
-    top: 120px;
+    top: 5%;
     z-index: 500;
 }
 
@@ -113,7 +107,7 @@
     position: fixed;
     left: 4%;
     width: 18%;
-    top: 150px;
+    top: 12%;
     z-index: 700;
     text-align: center;
     overflow: hidden;
@@ -156,10 +150,19 @@
 }
 .shadow-contents {
     text-align: left;
+    background: white;
+    position: absolute;
+    top:8%;
+    z-index: 999;
+    left:22%;
+    width: 70%;
+    border-radius: 30px;
+    min-height: 300px;
+
+
 }
 .shadow-content {
     display: none;
-    min-height: 200px;
 }
 
 .shadow-content.enabled {
@@ -199,6 +202,7 @@
     text-transform: uppercase;
     font-family: Arial;
     text-align: left;
+    line-height: 65px;
 }
 
 #edit-save:hover {
@@ -209,9 +213,10 @@
     color: #aaa;
 }
 
-#shadow-form input {
+.shadow-content form input {
     display: block;
     margin-bottom: 5px;
+    font-size: 1em;
 }
 
 
@@ -234,5 +239,13 @@
     display: inline-block;
     position: static;
     float: left;
+}
+
+.description-row {
+   padding-bottom:30px;
+    padding-top: 8px;
+    font-style: italic;
+    font-size: 0.8em;
+    color: #777;
 }
 

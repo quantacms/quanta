@@ -1,6 +1,6 @@
 $(document).ready(function() {
     $('.open-manager').on('click', function() {
-        openShadow('manager');
+        openShadow('manager', 'manager');
     })
 });
 

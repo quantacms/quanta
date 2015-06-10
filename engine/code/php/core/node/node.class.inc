@@ -15,6 +15,8 @@ class Node {
   public $name;
   public $section;
   public $content = NULL;
+  public $content_raw = NULL;
+  private $context;
   public $path;
   public $fullpath;
   public $realpath;
@@ -93,6 +95,7 @@ class Node {
         fclose($fh);
       }
       $this->content = file_get_contents($this->path . '/data.html');
+      $this->content_raw = $this->content;
       if (is_file($this->path . '/data.json')) {
         $this->json = json_decode(file_get_contents($this->path . '/data.json'));
         $this->setTimestamp($this->json->timestamp);
@@ -124,7 +127,6 @@ class Node {
     }
     $node = new Node($env, $path, ($action == NODE_ACTION_ADD) ? new Node($env, $nodedata['edit-father']) : NULL);
 
-
     switch ($action) {
       case NODE_ACTION_ADD:
       case NODE_ACTION_EDIT:
@@ -145,9 +147,7 @@ class Node {
         else {
           $redirect = '/403';
         }
-
         break;
-
 
       case NODE_ACTION_DELETE:
         $has_access = ($user->checkAccess($node, NODE_ACTION_DELETE));
@@ -226,6 +226,9 @@ class Node {
     return $this->content;
   }
 
+  public function getRawContent() {
+    return $this->content_raw;
+  }
   /**
    * Save the JSON dump of the node
    */
@@ -410,5 +413,78 @@ class Node {
   public function getThumbnail() {
     return $this->thumbnail;
   }
-}
 
+  // TODO: refactor.
+  public function renderEditForm($context) {
+    $this->context = $context;
+    $edit_node = $this->wikize(file_get_contents('core/node/tpl/node_edit.inc'));
+  return $edit_node;
+  }
+
+
+  private function wikize($edit_node) {
+  preg_match_all('/\[NODE\:(.*)\]/', $edit_node, $m);
+  foreach ($m[1] as $k => $nodepart) {
+    switch($nodepart) {
+
+      case 'action':
+        $part = $this->context;
+        break;
+      case 'title':
+        $part = $this->getTitle();
+        break;
+
+      case 'body':
+        $part = $this->getBody();
+        break;
+
+      case 'thumbnail':
+        $part = $this->getThumbnail();
+        break;
+
+      case 'thumbnail-img':
+        $thumb = new Image($this->env, $this->getThumbnail(), $this);
+        if ($thumb->exists) {
+          $part = $thumb->render();
+        } else {
+          $part = 'No thumbnail uploaded';
+        }
+        break;
+
+      case 'time':
+        $part = $this->getTime();
+        break;
+
+      case 'date':
+        $part = $this->getDate();
+        break;
+
+      case 'name':
+        $part = $this->getName();
+        break;
+
+      case 'filelist':
+        $fl = new FileList($this->env, $this->context == NODE_ACTION_ADD ? NULL : $this->getName(), 'file_admin');
+        $part = $fl->render();
+        break;
+
+      default:
+        // The item in [NODE:item] is unknown.
+        $part = '?';
+        break;
+    }
+
+    $edit_node = str_replace($m[0][$k], $part, $edit_node);
+  }
+    return $edit_node;
+  }
+
+  public function renderUploadForm($context) {
+    $this->context = $context;
+    $tmp_files = $this->getName() . '-' . time() . '-' . rand(0, 1000);
+    $up_form = $this->wikize(file_get_contents('core/node/tpl/upload_form.inc'));
+
+    return $up_form;
+    }
+
+}
