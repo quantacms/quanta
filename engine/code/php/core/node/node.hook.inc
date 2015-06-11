@@ -97,23 +97,22 @@ function node_shadow_node_edit($vars) {
 
   // ADD a node.
   if ($vars['shadow']->getContext() == NODE_ACTION_ADD) {
-    $action = NODE_ACTION_ADD;
     $father = new Node($vars['env'], $vars['env']->getRequestedPath());
     $node = new Node($vars['env'], NULL, $father);
-    $has_access = $user->checkAccess($father, $action);
+    $has_access = $user->checkAccess($father, $vars['shadow']->getContext());
   }
   // EDIT a node.
   else {
     $node = new Node($vars['env'], $vars['env']->getRequestedPath());
-    $action = NODE_ACTION_EDIT;
-    $has_access = $user->checkAccess($node, $action);
+    $has_access = $user->checkAccess($node, $vars['shadow']->getContext());
   }
+  $action_name = ($vars['shadow']->getContext() == NODE_ACTION_ADD ? 'create' : 'edit') . ' content';
+
   if (!$has_access) {
-    new Message($vars['env'], 'User ' . $user->name . ' attempted to ' . $action . ' a node without access', MESSAGE_WARNING, MESSAGE_TYPE_LOG, 'node');
+    new Message($vars['env'], 'User ' . $user->name . ' attempted to ' . $action_name . ' a node without access', MESSAGE_WARNING, MESSAGE_TYPE_LOG, 'node');
   }
   else {
-    $action_name = ($action == NODE_ACTION_ADD ? 'create' : 'edit') . ' content';
-    $vars['shadow']->addTab($action_name, $node->renderEditForm($action), 1);
+    $vars['shadow']->addTab($action_name, $node->renderEditForm($vars['shadow']->getContext()), 1);
   }
 }
 

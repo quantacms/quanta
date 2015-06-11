@@ -28,7 +28,7 @@ class Node {
   public $thumbnail = NULL;
   private $json;
   private $lineage = array();
-  public $tmp_files_dir;
+  public $tmp_files_dir = NULL;
   // Construct the Node.
 
   public function __construct(&$env, $name, $father = NULL) {
@@ -37,7 +37,7 @@ class Node {
     if ($father != NULL) {
       $this->father = $father;
     }
-    $this->path = $this->env->dir['wiki'] . '/' . $this->getName();
+   $this->path = $this->env->dir['wiki'] . '/' . $this->getName();
 
     $this->exists = is_link($this->path);
     // Todo: make even safer.
@@ -139,7 +139,7 @@ class Node {
           $node->setTitle($nodedata['edit-title']);
           $node->setContent('<h1>' . $nodedata['edit-title'] . '</h1>' . $nodedata['edit-content']);
           $node->setTimestamp($datetime > 0 ? $datetime : time());
-          $node->tmp_files_dir = $nodedata['tmp_files'];
+          $node->tmp_files_dir = $nodedata['tmp_files_dir'];
           $node->save();
           $env->hook('node_save', array('node' => &$node, 'data' => $nodedata));
           $redirect = '/' . $node->getName() . '/';
@@ -377,7 +377,7 @@ class Node {
     );
 
 
-    $upload_dir = ($this->env->dir['tmp_files'] . '/' . $_REQUEST['tmp_files']);
+    $upload_dir = ($this->env->dir['tmp_files'] . '/' . $_REQUEST['tmp_files_dir']);
     if (!is_dir($upload_dir)) {
       mkdir($upload_dir);
     }
@@ -427,6 +427,9 @@ class Node {
 
       case 'action':
         $part = $this->context;
+        break;
+      case 'father':
+        $part = $this->father->name;
         break;
       case 'title':
         $part = $this->getTitle();
@@ -479,7 +482,7 @@ class Node {
 
   public function renderUploadForm($context) {
     $this->context = $context;
-    $tmp_files = $this->getName() . '-' . time() . '-' . rand(0, 1000);
+    $this->tmp_files_dir = $this->getName() . '-' . time() . '-' . rand(0, 1000);
     $up_form = $this->wikize(file_get_contents('core/node/tpl/upload_form.inc'));
 
     return $up_form;

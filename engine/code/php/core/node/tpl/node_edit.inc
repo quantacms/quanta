@@ -4,7 +4,7 @@
   <input
     type="hidden" id="action" name="action" value="[NODE:action]">
   <input
-    type="hidden" name="edit-father" value="[NODE:name]">
+    type="hidden" name="edit-father" value="[NODE:father]">
   <label for="edit-title">Title</label>
   <input type="text" name="edit-title"
          id="edit-title"

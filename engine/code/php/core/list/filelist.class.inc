@@ -34,7 +34,7 @@
         }
         $wikitag = $file->type == 'image' ? '[IMG:' . $file->path . ']' : ' [FILE:' . $file->path . ']';
         $tpl_item = preg_replace ("/\[USER_ACTIONS\]/is", implode('', $user_actions), $tpl_item);
-        $tpl_item = preg_replace ("/\[URL\]/is", '/' . $this->node->name . '/' . $file->path, $tpl_item);
+        $tpl_item = preg_replace ("/\[URL\]/is", $file->path, $tpl_item);
         $tpl_item = preg_replace ("/\[EXT\]/is", $file->extension, $tpl_item);
         $tpl_item = preg_replace ("/\[PAGE_URL\]/is", $file->node->getName(), $tpl_item);
         $tpl_item = preg_replace ("/\[TITLE\]/is", $file->name, $tpl_item);
