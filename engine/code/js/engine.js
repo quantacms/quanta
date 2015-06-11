@@ -44,7 +44,7 @@ var refreshButtons = function() {
 
     $('.edit-link').bind('click', function() {
         pageEdit('node_edit');
-        return false;
+        //return false;
     });
 
     $('.add-link').bind('click', function() {

@@ -35,6 +35,12 @@ function openShadow(shadow) {
  * Submit a shadow form.
  */
 function shadowSubmit() {
+
+    // TODO: this goes into ckeditor.
+    var editor = CKEDITOR.instances.content;
+    var edata = editor.getData();
+    $('#content').html('<!--@nobr-->' + edata);
+
     var form_items = {};
     $('#shadow-outside').find('input, textarea, select').each(function() {
         form_items[$(this).attr('name')] = $(this).val();

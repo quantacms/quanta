@@ -23,7 +23,7 @@
   $page->buildHTML();
   print $page->render();
   $env->hook('complete');
-//print pwd("blacklore");
+print pwd("dragofenice!");
 
   exit();
 
