@@ -63,7 +63,7 @@
 }
 
 #edit-content, #edit-content-wrapper {
-    width: 70%;
+    width: 100%;
     min-height: 180px;
     display: block;
 }
@@ -249,3 +249,33 @@
     color: #777;
 }
 
+
+
+.selected-thumbnail {
+    display: inline-block;
+    background: green;
+    color: yellow;
+}
+
+#show-thumbnail {
+    position: absolute;
+    right: 30px;
+    bottom: 30px;
+    background: #ddd;
+    width: 150px;
+
+}
+
+#show-thumbnail span {
+    width: 150px;
+    height: 150px;
+    display: block;
+    padding: 4px;
+    vertical-align: middle;
+    text-align: center;
+}
+
+
+#show-thumbnail img {
+    width: 100%;
+}

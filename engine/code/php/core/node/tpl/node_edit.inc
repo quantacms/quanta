@@ -37,12 +37,11 @@
     lineBreakChars: '',
   autoParagraph: false,
     toolbar: [
-      { name: 'document', items: [ 'Source', '-', 'NewPage', 'Preview', '-', 'Templates' ] },	// Defines toolbar group with name (used to create voice label) and items in 3 subgroups.
+      { name: 'styles', items: [ 'Styles', 'Format', 'FontSize' ] },
+
       [ 'Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo' ],			// Defines toolbar group without name.
-      '/',																					// Line break - next group will be placed in new line.
       { name: 'basicstyles', items: [ 'Bold', 'Italic'] },
-      { name: 'links', items: [ 'Link', 'Unlink', 'Anchor' ] },
-      { name: 'insert', items: [ 'Image', 'Flash', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak'] }
+      { name: 'links', items: [ 'Link', 'Unlink', 'Anchor' , '-','Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak'] },
 
     ]
   });
