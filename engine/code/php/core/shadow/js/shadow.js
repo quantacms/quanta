@@ -40,7 +40,7 @@ function shadowSubmit() {
     if ($('textarea#content').length) {
     var editor = CKEDITOR.instances.content;
     var edata = editor.getData();
-    $('#content').html('<!--@nobr-->' + edata);
+    $('#content').html('<!--@nobr-->' + edata.replace('<!--@nobr-->', ''));
     }
     var form_items = {};
     $('#shadow-outside').find('input, textarea, select').each(function() {

@@ -29,7 +29,7 @@
 </form>
 <script>
   CKEDITOR.replace( 'content', {
-    enterMode: CKEDITOR.ENTER_BR,
+    enterMode: CKEDITOR.ENTER_DIV,
     shiftEnterMode : CKEDITOR.ENTER_P,
     toolbar: [
       { name: 'document', items: [ 'Source', '-', 'NewPage', 'Preview', '-', 'Templates' ] },	// Defines toolbar group with name (used to create voice label) and items in 3 subgroups.
