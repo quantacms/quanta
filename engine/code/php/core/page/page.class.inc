@@ -53,7 +53,7 @@ class Page {
     $html = new DOMDocument();
     $this->vars['content'] = '<div id="data" class="data-' . $this->env->getRequestedPath() . '">' . $this->content . '</div>';
       @$html->loadHTML('<meta http-equiv="content-type" content="text/html; charset=utf-8">' . $this->vars['content']);
-      $this->vars['content'] = $html->saveXML($html->getElementsByTagName('div')->item(0), LIBXML_NOEMPTYTAG);
+      $this->vars['content'] = $html->saveXML($html->getElementsByTagName('div')->item(0));
 
       // TODO: better way to use tags.
       // this exmaple is for not applying nl2br on certain nodes.
@@ -78,6 +78,7 @@ class Page {
     else {
       $this->html = $this->content;
     }
+
     $this->env->hook('page_init', array("page" => &$this));
     //TODO log_action($page, '!username is viewing this page: ' . $page['name'] . '.');
   }

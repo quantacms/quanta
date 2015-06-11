@@ -30,7 +30,12 @@
 <script>
   CKEDITOR.replace( 'content', {
     enterMode: CKEDITOR.ENTER_DIV,
-    shiftEnterMode : CKEDITOR.ENTER_P,
+    shiftEnterMode : CKEDITOR.ENTER_DIV,
+    fillEmptyBlocks : false,
+    fullPage : false,
+    enterMode : CKEDITOR.ENTER_BR,
+    lineBreakChars: '',
+  autoParagraph: false,
     toolbar: [
       { name: 'document', items: [ 'Source', '-', 'NewPage', 'Preview', '-', 'Templates' ] },	// Defines toolbar group with name (used to create voice label) and items in 3 subgroups.
       [ 'Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo' ],			// Defines toolbar group without name.
