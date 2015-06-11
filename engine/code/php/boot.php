@@ -23,7 +23,6 @@
   $page->buildHTML();
   print $page->render();
   $env->hook('complete');
-print pwd("dragofenice!");
 
   exit();
 
