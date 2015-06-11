@@ -29,6 +29,8 @@
 </form>
 <script>
   CKEDITOR.replace( 'content', {
+    enterMode: CKEDITOR.ENTER_BR,
+    shiftEnterMode : CKEDITOR.ENTER_P,
     toolbar: [
       { name: 'document', items: [ 'Source', '-', 'NewPage', 'Preview', '-', 'Templates' ] },	// Defines toolbar group with name (used to create voice label) and items in 3 subgroups.
       [ 'Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo' ],			// Defines toolbar group without name.
