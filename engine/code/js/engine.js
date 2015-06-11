@@ -49,7 +49,7 @@ var refreshButtons = function() {
 
     $('.add-link').bind('click', function() {
         pageEdit('node_add');
-        return false;
+        //return false;
     });
 
     $('.register-link').attr('href', "javascript:register()");
