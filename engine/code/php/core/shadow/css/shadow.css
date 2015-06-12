@@ -192,30 +192,14 @@
 
 }
 
-#edit-save {
-    font-size: 1.1em;
-    text-decoration: none;
-    background: white;
-    border-radius: 15px;
-    padding: 12px;
-    cursor: pointer;
-    text-transform: uppercase;
-    font-family: Arial;
-    text-align: left;
-    line-height: 65px;
-}
-
-#edit-save:hover {
-    opacity: 0.9;
-}
 
 #edit-path {
     color: #aaa;
 }
 
-.shadow-content form input {
-    display: block;
-    margin-bottom: 5px;
+.shadow-content  input {
+    margin-bottom: 8px;
+    margin-left: 8px;
     font-size: 1em;
 }
 
@@ -278,4 +262,33 @@
 
 #show-thumbnail img {
     width: 100%;
+}
+
+#shadow-buttons {
+    position: relative;
+    z-index: 1999;
+}
+#shadow-buttons a {
+    font-size: 1.1em;
+    text-decoration: none;
+    border-radius: 15px;
+    padding: 12px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-family: Arial;
+    text-align: left;
+    line-height: 65px;
+    margin-right: 15px;
+    background: #f3f3f4;
+    border: 1px solid #aaa
+}
+
+
+#shadow-buttons a:hover {
+    opacity: 0.7;
+    background: #fafafa;
+}
+
+#shadow-buttons {
+    margin-left: 4%;
 }

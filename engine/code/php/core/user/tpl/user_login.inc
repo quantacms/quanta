@@ -8,7 +8,4 @@
     <input type="password" id="password" name="password" />
   </div>
   <input type="hidden" id="login-action" name="action" value="login" />
-  <a onClick="shadowSubmit()" id="edit-save" >
-    <span style="color:green">&check;&nbsp;</span>Login
-  </a>
 </form>

@@ -19,10 +19,12 @@
     $env->hook('action_' . $env->request_json->action, array('data' => (array) $env->request_json));
   }
   $env->hook('init');
+
   $page = new Page($env, 'index.html', $env->getData('title'), $env->getData('content'));
   $page->buildHTML();
   print $page->render();
   $env->hook('complete');
+
 
   exit();
 

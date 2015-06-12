@@ -28,6 +28,7 @@ function user_shadow_user_register($vars) {
   $user = User::current($vars['env']);
   $tab = $user->renderEditForm($vars['shadow']->getContext());
   $vars['shadow']->addTab('Insert your data', $tab, 1);
+  $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Sign Up!');
 }
 
 
@@ -37,12 +38,16 @@ function user_shadow_user_edit($vars) {
 
   $tab = $user->renderEditForm($vars['shadow']->getContext());
   $vars['shadow']->addTab('Your Profile', $tab, 1);
+  $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Update');
+
 }
 
 function user_shadow_user_login($vars) {
   $user = User::current($vars['env']);
   $tab = $user->renderLoginForm();
   $vars['shadow']->addTab('Your Login Data', $tab, 1);
+  $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Login');
+
 }
 
 /**

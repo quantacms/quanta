@@ -767,3 +767,15 @@ body.user-anonymous .logout-link {
     margin-right: 10px;
     margin-top: 10px;
 }
+
+.description {
+    font-style: italic;
+    font-size: 0.8em;
+    color: #666;
+    display: block;
+    margin-top: 8px;
+    margin-bottom: 20px;
+    border-top: 1px dotted #ddd;
+    padding: 6px;
+    border-bottom: 1px dotted #ddd;
+}

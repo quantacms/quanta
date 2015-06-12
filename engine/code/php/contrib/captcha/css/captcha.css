@@ -1,0 +1,9 @@
+.captcha {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.captcha-challenge {
+    background: seashell;
+    padding: 5px;
+}

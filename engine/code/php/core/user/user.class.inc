@@ -5,6 +5,7 @@ define("ROLE_LOGGED", "logged");
 define("USER_PASSWORD_MIN_LENGTH", 8);
 define("USER_ACTION_EDIT", "user_edit");
 define("USER_ACTION_REGISTER", "user_register");
+define("USER_VALIDATION_ERROR", "validation_error");
 
 
 /**
@@ -18,6 +19,9 @@ class User {
   public $roles = array();
   public $exists;
   private $json;
+  /**
+   * @var Environment
+   */
   private $env;
   private $dir;
   public $password;
@@ -163,15 +167,15 @@ class User {
 
   /**
    * User registration / signup.
-   * @param $userdata
+   * @param $form_data
    * @return bool|void
    */
-  private function register($userdata) {
-    $this->password = pwd($userdata['edit-password']);
-    $this->email = $userdata['edit-email'];
-    $this->setData('first_name', $userdata['edit-first_name']);
-    $this->setData('last_name', $userdata['edit-last_name']);
-    if ($valid = $this->validate($userdata)) {
+  private function register($form_data) {
+    $this->password = pwd($form_data['edit-password']);
+    $this->email = $form_data['edit-email'];
+    $this->setData('first_name', $form_data['edit-first_name']);
+    $this->setData('last_name', $form_data['edit-last_name']);
+    if ($valid = $this->validate($form_data)) {
       $valid = $this->save();
       new Message($this->env, 'User ' . $this->name . ' was registered correctly!', MESSAGE_CONFIRM, MESSAGE_TYPE_SCREEN, 'user');
     }
@@ -180,8 +184,8 @@ class User {
 
   // Todo:update() and register() look too much similar.
 
-  private function update($userdata) {
-    foreach ($userdata as $k => $value) {
+  private function update($form_data) {
+    foreach ($form_data as $k => $value) {
       $field = str_replace('edit-', '', $k);
       switch ($field) {
         case 'name':
@@ -200,9 +204,9 @@ class User {
           break;
       }
     }
-    if ($valid = $this->validate($userdata)) {
-      if (strlen($userdata['edit-password']) > 0) {
-        $this->password = pwd($userdata['edit-password']);
+    if ($valid = $this->validate($form_data)) {
+      if (strlen($form_data['edit-password']) > 0) {
+        $this->password = pwd($form_data['edit-password']);
       }
       $valid = $this->save();
     }
@@ -215,13 +219,13 @@ class User {
   /**
    * @param Environment $env
    * @param $action
-   * @param $userdata
+   * @param $form_data
    */
-  public static function requestAction($env, $action, $userdata) {
+  public static function requestAction($env, $action, $form_data) {
     // This variable is used to check eventual errors in the user save process.
     $valid = FALSE;
     $curr_user = User::current($env);
-    $edit_same_user = $curr_user->name == $userdata['edit-name'];
+    $edit_same_user = $curr_user->name == $form_data['edit-name'];
     $response = new StdClass();
     $can_edit =
       ($action == USER_ACTION_REGISTER && $curr_user->checkAccess(NULL, USER_ACTION_REGISTER)) ||
@@ -231,13 +235,13 @@ class User {
       new Message($env, 'Sorry, you don\'t have the permissions to perform this action.', MESSAGE_WARNING, MESSAGE_TYPE_SCREEN);
     }
     else {
-      $user = new User($env, $userdata['edit-name'], array(ROLE_LOGGED => ROLE_LOGGED));
-
+      $user = new User($env, $form_data['edit-name'], array(ROLE_LOGGED => ROLE_LOGGED));
+      $user->context = $action;
       if ($action == USER_ACTION_REGISTER) {
-        $valid = $user->register($userdata);
+        $valid = $user->register($form_data);
       }
       elseif ($action == USER_ACTION_EDIT) {
-        $valid = $user->update($userdata);
+        $valid = $user->update($form_data);
       }
     }
 
@@ -251,11 +255,14 @@ class User {
     return $response_json;
   }
 
-  public function validate($userdata) {
+  public function validate($form_data) {
     $valid = FALSE;
-    $check_password = !$this->exists || strlen($userdata['edit-password']) > 0;
+    if ($this->exists) {
+      $existing_user = new User($this->env, $this->name);
+    }
+    $check_password = !$this->exists || strlen($form_data['edit-password']) > 0;
 
-    exec( "grep -r -i -o -P -m100  --include \*.json  '.{0,140}" . $userdata['edit-email'] . ".{0,140}' " . $this->env->dir['docroot'] . '/_users', $mail_exists);
+    exec('grep -r -i -o --include \*.json "\"email\"\:\"' . $form_data['edit-email'] . '\"" ' . $this->env->dir['docroot'] . '/_users', $mail_exists);
 
     // TODO: check also special characters.
     if ($this->name == '') {
@@ -266,24 +273,25 @@ class User {
       new Message($this->env, 'Username ' . $this->name . ' already exists!', MESSAGE_WARNING);
     }
 
-    elseif ($mail_exists && $this->email != $this->email) {
+    elseif ($mail_exists && (!$this->exists || ($this->email != $existing_user->email))) {
       new Message($this->env, 'Email ' . $this->email . ' already exists!', MESSAGE_WARNING);
     }
     elseif(!valid_email($this->email)) {
       new Message($this->env, 'Please enter a valid E-mail address!', MESSAGE_WARNING);
     }
-    elseif ($check_password && $this->exists && ($this->password != pwd($userdata['edit-old_password']))) {
+    elseif ($check_password && $this->exists && ($this->password != pwd($form_data['edit-old_password']))) {
       new Message($this->env, 'The old password you entered is not valid. Please try again.', MESSAGE_WARNING);
     }
-    elseif ($check_password && strlen($userdata['edit-password']) < USER_PASSWORD_MIN_LENGTH) {
+    elseif ($check_password && strlen($form_data['edit-password']) < USER_PASSWORD_MIN_LENGTH) {
       new Message($this->env, 'Password should be at least ' . USER_PASSWORD_MIN_LENGTH . ' characters long.', MESSAGE_WARNING);
     }
-    elseif ($check_password && pwd($userdata['edit-password_rp']) != pwd($userdata['edit-password'])) {
+    elseif ($check_password && pwd($form_data['edit-password_rp']) != pwd($form_data['edit-password'])) {
       new Message($this->env, 'Password fields are not the same.', MESSAGE_WARNING);
     }
-
     else {
-      $valid = TRUE;
+      $this->env->hook('user_validate', array('user' => $this, 'form_data' => $form_data));
+
+      $valid = !($this->env->getData(USER_VALIDATION_ERROR));
     }
     return $valid;
 

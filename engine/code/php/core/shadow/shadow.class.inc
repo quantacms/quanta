@@ -4,6 +4,8 @@ class Shadow {
   private $context;
   private $env;
   private $type;
+  private $buttons = array();
+
   /**
    * @var Node $node.
    */
@@ -35,7 +37,7 @@ class Shadow {
 
     $i = 0;
     ksort($tabs);
-    foreach ($tabs as $weight => $wtabs) {
+    foreach ($tabs as $wtabs) {
       foreach ($wtabs as $tab) {
         $i++;
         // A tab can be null in case of single-page Shadows.
@@ -47,6 +49,8 @@ class Shadow {
     }
     $shadow_page->setVariable('tab_titles', $tab_titles);
     $shadow_page->setVariable('tab_contents', $tab_contents);
+    $shadow_page->setVariable('buttons', $this->buttons);
+
     $shadow_page->buildHTML();
 
     return $shadow_page->render();
@@ -54,18 +58,43 @@ class Shadow {
   }
 
   /**
+   * Add a submit button to the shadow
+   */
+  public function addButton($action, $button) {
+    $this->buttons[$action] = $button;
+  }
+
+  public function getButtons() {
+    return $this->buttons;
+  }
+  /**
    * @param string $title
    * @param string $content
    * @param int $weight
    */
   public function addTab($title, $content, $weight = 1) {
-    $this->tabs[$weight][] = array('title' => $title, 'content' => $content);
+    $this->tabs[$weight][$this->getContext()] = array('title' => $title, 'content' => $content);
   }
 
   public function getTabs() {
     return $this->tabs;
   }
 
+  public function prependToTab($context, $text) {
+    $tab = $this->getTab($context);
+    $this->tabs[1]['user_register']['content'] = $this->tabs[1]['user_register']['content'] . $text;
+  }
+
+  public function getTab($context) {
+    foreach ($this->tabs as $weight => $tab) {
+      foreach ($tab as $tab_context => $content) {
+        if ($context == $tab_context) {
+          return $this->tabs[$weight][$tab_context];
+        }
+      }
+    }
+    return FALSE;
+  }
   public function getContext() {
     return $this->context;
   }

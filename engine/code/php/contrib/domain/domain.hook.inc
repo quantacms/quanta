@@ -105,7 +105,7 @@ function domain_shadow_user_edit($vars) {
   }
   $tab .= '</table>';
 
-  $vars['shadow']->addTab('Your Favorites', $tab, 10);
+  $vars['shadow']->addTab('Your Shots', $tab, 10);
 }
 
 
