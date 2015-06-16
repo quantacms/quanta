@@ -29,6 +29,8 @@ class Node {
   private $json;
   private $lineage = array();
   public $tmp_files_dir = NULL;
+  private $valid;
+
   // Construct the Node.
 
   public function __construct(&$env, $name, $father = NULL) {
@@ -37,7 +39,7 @@ class Node {
     if ($father != NULL) {
       $this->father = $father;
     }
-   $this->path = $this->env->dir['wiki'] . '/' . $this->getName();
+    $this->path = $this->env->dir['wiki'] . '/' . $this->getName();
 
     $this->exists = is_link($this->path);
     // Todo: make even safer.
@@ -69,7 +71,7 @@ class Node {
       $this->father = ($father == $this->env->host) ? 'home' : $father;
     }
     $this->fullpath = str_replace($this->env->dir['docroot'], '', $this->realpath);
-    if ($this->content == NULL) {
+    if ($this->content == NULL && $this->exists) {
       $this->buildContent();
     }
     $this->setTitle(parsetag($this->content, 'h1'));
@@ -83,27 +85,23 @@ class Node {
   }
 
   public function buildContent() {
-    // Build HTML file if it exists, or throw error instead.
-    if (!is_dir($this->path)) {
-      $this->content = '<h1>404: Page not found</h1><br />Uh oh :( This file or this page doesn\'t exist:<br>' . $this->path . '<br>[home:Go Home!]';
+
+    // Create data.html if it doesn't exist.
+    if (!is_file($this->path . '/data.html')) {
+      $fh = fopen($this->path . '/data.html', 'w+');
+      fwrite($fh, '<h1>' . $this->name . '</h1>');
+      fclose($fh);
     }
-    else {
-      // Create data.html if it doesn't exist.
-      if (!is_file($this->path . '/data.html')) {
-        $fh = fopen($this->path . '/data.html', 'w+');
-        fwrite($fh, '<h1>' . $this->name . '</h1>');
-        fclose($fh);
-      }
-      $this->content = file_get_contents($this->path . '/data.html');
-      $this->content_raw = $this->content;
-      if (is_file($this->path . '/data.json')) {
-        $this->json = json_decode(file_get_contents($this->path . '/data.json'));
-        $this->setTimestamp($this->json->timestamp);
-        if (isset($this->json->thumbnail)) {
-          $this->setThumbnail($this->json->thumbnail);
-        }
+    $this->content = file_get_contents($this->path . '/data.html');
+    $this->content_raw = $this->content;
+    if (is_file($this->path . '/data.json')) {
+      $this->json = json_decode(file_get_contents($this->path . '/data.json'));
+      $this->setTimestamp($this->json->timestamp);
+      if (isset($this->json->thumbnail)) {
+        $this->setThumbnail($this->json->thumbnail);
       }
     }
+
   }
 
 
@@ -115,6 +113,8 @@ class Node {
    * @return string
    */
   public static function requestAction($env, $action, $nodedata) {
+    $response = new StdClass();
+
     $user = User::current($env);
     // TODO: refactor this stuff.
 
@@ -130,6 +130,8 @@ class Node {
     switch ($action) {
       case NODE_ACTION_ADD:
       case NODE_ACTION_EDIT:
+        $valid = FALSE;
+        // TODO complete validation code.
         if (isset($nodedata['edit-thumbnail'])) {
           $node->setThumbnail($nodedata['edit-thumbnail']);
         }
@@ -140,9 +142,14 @@ class Node {
           $node->setContent('<h1>' . $nodedata['edit-title'] . '</h1>' . $nodedata['edit-content']);
           $node->setTimestamp($datetime > 0 ? $datetime : time());
           $node->tmp_files_dir = $nodedata['tmp_files_dir'];
-          $node->save();
-          $env->hook('node_save', array('node' => &$node, 'data' => $nodedata));
-          $redirect = '/' . $node->getName() . '/';
+          if ($valid = $node->validate()) {
+            $node->save();
+            $env->hook('node_save', array('node' => &$node, 'data' => $nodedata));
+            $response->redirect = '/' . $node->getName() . '/';
+          } else {
+            // TODO: make this good.
+            $response->errors = Message::burnMessages();
+          }
         }
         else {
           $redirect = '/403';
@@ -157,12 +164,18 @@ class Node {
         }
         break;
     }
-    $response = new StdClass();
-    $response->redirect = $redirect;
     $response_json = json_encode($response);
 
     return $response_json;
   }
+
+  /**
+   * Save this node on the file system.
+   */
+  public function validate() {
+
+  }
+
 
   /**
    * Save this node on the file system.
@@ -176,23 +189,22 @@ class Node {
 
   public function saveFiles() {
     // TODO: refactor.
-      $tmp_dir = $this->env->dir['tmp_files'] . '/' . $this->tmp_files_dir;
-
-
+    $tmp_dir = $this->env->dir['tmp_files'] . '/' . $this->tmp_files_dir;
     if (is_dir($tmp_dir)) {
-        $tmp_files = scandir($tmp_dir);
-        foreach ($tmp_files as $file) {
-          $fpath = $tmp_dir . '/' . $file;
-          if (is_file($fpath)) {
-            //print $env->dir['tmp_files'] . '/' . $file;
-            copy($fpath, $this->realpath . '/' . $file);
-            unlink($fpath);
-          }
+      $tmp_files = scandir($tmp_dir);
+      foreach ($tmp_files as $file) {
+        $fpath = $tmp_dir . '/' . $file;
+        if (is_file($fpath)) {
+          //print $env->dir['tmp_files'] . '/' . $file;
+          copy($fpath, $this->realpath . '/' . $file);
+          unlink($fpath);
         }
-        rmdir($tmp_dir);
       }
+      rmdir($tmp_dir);
+    }
 
   }
+
   /**
    * Save this node on a data.html file.
    */
@@ -229,6 +241,7 @@ class Node {
   public function getRawContent() {
     return $this->content_raw;
   }
+
   /**
    * Save the JSON dump of the node
    */
@@ -293,6 +306,7 @@ class Node {
   public function getDateTime() {
     return date('d M Y - H:i:s', $this->getTimestamp());
   }
+
   public function getDate() {
     return date('d-m-Y', $this->getTimestamp());
   }
@@ -351,7 +365,9 @@ class Node {
       }
     }
     $this->permissions = $grants;
-  }    /**
+  }
+
+  /**
    * Check the uploads being made to a node.
    */
   public function checkUploads() {
@@ -395,7 +411,9 @@ class Node {
     }
     echo '{"status":"error"}';
     exit;
-  }   /**
+  }
+
+  /**
    * Request the deletion of a file.
    * @param $file File
    */
@@ -416,67 +434,74 @@ class Node {
   public function renderEditForm($context) {
     $this->context = $context;
     $edit_node = $this->wikize(file_get_contents('core/node/tpl/node_edit.inc'));
-  return $edit_node;
+    return $edit_node;
   }
 
+// TODO: refactor.
+  public function renderDeleteForm($context) {
+    $this->context = $context;
+    $edit_node = $this->wikize(file_get_contents('core/node/tpl/node_delete.inc'));
+    return $edit_node;
+  }
 
   private function wikize($edit_node) {
-  preg_match_all('/\[NODE\:(.*)\]/', $edit_node, $m);
-  foreach ($m[1] as $k => $nodepart) {
-    switch($nodepart) {
+    preg_match_all('/\[NODE\:(.*)\]/', $edit_node, $m);
+    foreach ($m[1] as $k => $nodepart) {
+      switch ($nodepart) {
 
-      case 'action':
-        $part = $this->context;
-        break;
-      case 'father':
-        $part = $this->father->name;
-        break;
-      case 'title':
-        $part = $this->getTitle();
-        break;
+        case 'action':
+          $part = $this->context;
+          break;
+        case 'father':
+          $part = $this->father->name;
+          break;
+        case 'title':
+          $part = $this->getTitle();
+          break;
 
-      case 'body':
-        $part = $this->getBody();
-        break;
+        case 'body':
+          $part = $this->getBody();
+          break;
 
-      case 'thumbnail':
-        $part = $this->getThumbnail();
-        break;
+        case 'thumbnail':
+          $part = $this->getThumbnail();
+          break;
 
-      case 'thumbnail-img':
-        $thumb = new Image($this->env, $this->getThumbnail(), $this);
-        if ($thumb->exists) {
-          $part = $thumb->render();
-        } else {
-          $part = 'No thumbnail uploaded';
-        }
-        break;
+        case 'thumbnail-img':
+          $thumb = new Image($this->env, $this->getThumbnail(), $this);
+          if ($thumb->exists) {
+            $part = $thumb->render();
+          }
+          else {
+            $part = 'No thumbnail uploaded';
+          }
+          break;
 
-      case 'time':
-        $part = $this->getTime();
-        break;
+        case 'time':
+          $part = $this->getTime();
+          break;
 
-      case 'date':
-        $part = $this->getDate();
-        break;
+        case 'date':
+          $part = $this->getDate();
+          break;
 
-      case 'name':
-        $part = $this->getName();
-        break;
+        case 'name':
+          $part = $this->getName();
+          break;
 
-      case 'filelist':
-        $fl = new FileList($this->env, $this->context == NODE_ACTION_ADD ? NULL : $this->getName(), 'file_admin');
-        $part = $fl->render();
-        break;
+        case 'filelist':
+          $fl = new FileList($this->env, $this->context == NODE_ACTION_ADD ? NULL : $this->getName(), 'file_admin');
+          $part = $fl->render();
+          break;
 
-      default:
-        // The item in [NODE:item] is unknown.
-        $part = '?';
-        break;
+        default:
+          // The item in [NODE:item] is unknown.
+          $part = '?';
+          break;
+      }
+
+      $edit_node = str_replace($m[0][$k], $part, $edit_node);
     }
-
-    $edit_node = str_replace($m[0][$k], $part, $edit_node);
-  }
     return $edit_node;
   }
 
@@ -486,6 +511,6 @@ class Node {
     $up_form = $this->wikize(file_get_contents('core/node/tpl/upload_form.inc'));
 
     return $up_form;
-    }
+  }
 
 }

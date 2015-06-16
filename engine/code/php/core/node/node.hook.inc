@@ -54,7 +54,6 @@ function node_init($vars) {
   if ($node->exists) {
     if ($user->checkAccess($node, NODE_ACTION_VIEW)) {
       new Message($vars['env'], 'user is viewing this page: ' . $node->name . '.', MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
-
       // TODO: right place to build bc?
       $breadcrumb = array();
       $node->buildLineage();
@@ -71,10 +70,6 @@ function node_init($vars) {
       $vars['env']->setData('content', 'You don\'t have access to this page.', 'node');
       $vars['env']->setData('title', '403: Access Denied', 'node');
     }
-  }
-  else {
-    $vars['env']->setData('content', 'This page doesn\'t exist.', 'node');
-    $vars['env']->setData('title', '404: Page not found', 'node');
   }
 
 }
@@ -114,8 +109,31 @@ function node_shadow_node_edit($vars) {
   else {
     $vars['shadow']->addTab($action_name, $node->renderEditForm($vars['shadow']->getContext()), 1);
   }
+  $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Save');
+
 }
 
+
+
+
+/**
+ * Implements hook_shadow_node_edit.
+ * @param $vars
+ */
+function node_shadow_node_delete($vars) {
+  $node = new Node($vars['env'], $vars['env']->getRequestedPath());
+  $user = User::current($vars['env']);
+  $has_access = $user->checkAccess($node, $vars['shadow']->getContext());
+
+  if (!$has_access) {
+    new Message($vars['env'], 'User ' . $user->name . ' attempted to delete a node without access', MESSAGE_WARNING, MESSAGE_TYPE_LOG, 'node');
+  }
+  else {
+    $vars['shadow']->addTab('Delete', $node->renderDeleteForm($vars['shadow']->getContext()), 1);
+  }
+  $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Delete');
+
+}
 
 function node_body_classes($vars) {
   if ($vars['page']->env->getData('node')) {

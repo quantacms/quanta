@@ -39,17 +39,14 @@ var refreshButtons = function() {
 
     $('.delete-link').bind('click', function() {
         pageDelete();
-        return false;
     });
 
     $('.edit-link').bind('click', function() {
         pageEdit('node_edit');
-        //return false;
     });
 
     $('.add-link').bind('click', function() {
         pageEdit('node_add');
-        //return false;
     });
 
     $('.register-link').attr('href', "javascript:register()");
@@ -75,6 +72,7 @@ var pageRefresh = function() {
 }
 
 var action = function(dataJson) {
+
     $.ajax({
         type: "POST",
         dataType: 'json',

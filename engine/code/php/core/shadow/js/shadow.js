@@ -6,7 +6,7 @@ function pageEdit(action) {
 }
 
 function pageDelete() {
-    openShadow({ module : 'node', context: 'node_delete', type: 'tabs'});
+    openShadow({ module : 'node', context: 'node_delete', type: 'single'});
 }
 
 function openShadow(shadow) {

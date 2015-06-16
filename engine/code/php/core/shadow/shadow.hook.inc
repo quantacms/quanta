@@ -8,11 +8,6 @@ function shadow_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/shadow/css/shadow.css');
   if (isset($_REQUEST['shadow'])) {
     $shadow_json = json_decode($_REQUEST['shadow']);
-    // Use same hooks for node add and delete. TODO: better way? out of here?
-    if ($shadow_json->context == NODE_ACTION_ADD) {
-      //$shadow_json->context = NODE_ACTION_EDIT;
-    }
-
     $shadow = new Shadow($vars['env'], $shadow_json);
     print $shadow->render();
     exit();
