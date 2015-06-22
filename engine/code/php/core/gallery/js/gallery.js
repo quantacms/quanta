@@ -11,6 +11,7 @@ $('document').ready(function() {
 // Gallery functions.
 function thumbsRefresh() {
     $('a.gallery-thumb').bind('click', function() {
+        top.location.href='#';
         galleryOpen($(this));
         return false;
     });
