@@ -51,7 +51,7 @@ var refreshButtons = function() {
 
     $('.register-link').attr('href', "javascript:register()");
 
-    $('.login-link').attr('href', "javascript:logIn()");
+    $('.login-link').attr('onclick', "logIn()");
 
     $('.logout-link').unbind().bind('click', function() {
         logOut();
@@ -92,6 +92,7 @@ var actionSuccess = function(data) {
 
     }
     else if (data.redirect == undefined) {
+        console.log(data);
         alert("There was an error with your submission.");
     } else {
         top.location.href = data.redirect;

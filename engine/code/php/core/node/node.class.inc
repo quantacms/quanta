@@ -152,15 +152,16 @@ class Node {
           }
         }
         else {
-          $redirect = '/403';
+          $response->redirect = '/403';
         }
         break;
 
       case NODE_ACTION_DELETE:
+        new Message($node->env, $node->getName() . ' was deleted correctly');
         $has_access = ($user->checkAccess($node, NODE_ACTION_DELETE));
         if ($has_access) {
           $node->delete();
-          $redirect = '/' . $node->father . '/';
+          $response->redirect = '/' . $node->father . '/';
         }
         break;
     }
@@ -173,7 +174,13 @@ class Node {
    * Save this node on the file system.
    */
   public function validate() {
-
+    $valid = FALSE;
+    if ($this->getTitle() == '') {
+      new Message($this->env, 'Node title can not be empty.', MESSAGE_WARNING);
+    } else {
+      $valid = TRUE;
+    }
+    return $valid;
   }
 
 
