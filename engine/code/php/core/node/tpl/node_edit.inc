@@ -37,11 +37,12 @@
     lineBreakChars: '',
   autoParagraph: false,
     toolbar: [
+      {name: 'source', items: ['Source']},
       { name: 'styles', items: [ 'Styles', 'Format', 'FontSize' ] },
 
       [ 'Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo' ],			// Defines toolbar group without name.
       { name: 'basicstyles', items: [ 'Bold', 'Italic'] },
-      { name: 'links', items: [ 'Link', 'Unlink', 'Anchor' , '-','Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak'] },
+      { name: 'links', items: [ 'Link', 'Unlink', 'Anchor' , '-','Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak'] }
 
     ]
   });

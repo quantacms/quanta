@@ -126,6 +126,7 @@ class Node {
       $path = $nodedata['edit-path'];
     }
     $node = new Node($env, $path, ($action == NODE_ACTION_ADD) ? new Node($env, $nodedata['edit-father']) : NULL);
+    $node->context = $action;
 
     switch ($action) {
       case NODE_ACTION_ADD:
@@ -180,6 +181,7 @@ class Node {
     } else {
       $valid = TRUE;
     }
+
     return $valid;
   }
 
