@@ -5,10 +5,9 @@ require_once('wiki.hook.inc');
  * Transform wiki tags in html.
  */
 function wikize($env, &$page) {
-  preg_match_all("/\<nowiki\>(.*)<\/nowiki\>/is", $page->html, $nowiki);
-  foreach ($nowiki[0] as $k => $v) {
-    $page->html = str_replace($nowiki[0][$k], '{nw:' . $k . '}', $page->html);
-  }
+  $nw = array();
+  $nwid = 0;
+
 
   preg_match_all("/\[(.*?)]/", $page->html, $matches);
   foreach ($matches[1] as $tag_value) {
@@ -21,10 +20,20 @@ function wikize($env, &$page) {
     $tag_name = $tag_arr[0];
     $attributes = explode('|', $tag[0]);
     unset($attributes[0]);
+
+    preg_match_all("/\<nowiki\>(.*)\<\/nowiki\>/is", $page->html, $nowiki);
+    foreach ($nowiki[0] as $k => $v) {
+      $nwid++;
+      $nw[$nwid] = $nowiki[0][$k];
+      $page->html = str_replace($nowiki[0][$k], '{nw:' . $nwid . '}', $page->html);
+    }
+
     if ($tag_name == strtoupper($tag_name) && function_exists('wiki_' . $tag_name)) {
       $func = 'wiki_' . $tag_name;
       $page->html = $func($replace, $attributes, $tag[1], $page->html, $page);
     }
+
+
   }
 
   // Render node links.
@@ -39,8 +48,8 @@ function wikize($env, &$page) {
   // Render page breaks.
   $page->html = preg_replace('/\-\-\-/', '<div class="page-break">&nbsp;</div>', $page->html);
 
-  foreach ($nowiki[0] as $k => $v) {
-    $page->html = str_replace('{nw:' . $k . '}', $nowiki[0][$k], $page->html);
+  foreach ($nw as $k => $v) {
+    $page->html = str_replace('{nw:' . $k . '}', $nw[$k], $page->html);
   }
 
   return $page->html;

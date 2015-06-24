@@ -66,9 +66,6 @@ class Node {
     }
     else {
       $this->realpath = readlink($this->path);
-      $rpath_arr = explode('/', $this->realpath);
-      $father = ($rpath_arr[count($rpath_arr) - 2]);
-      $this->father = ($father == $this->env->host) ? 'home' : $father;
     }
     $this->fullpath = str_replace($this->env->dir['docroot'], '', $this->realpath);
     if ($this->content == NULL && $this->exists) {
@@ -462,7 +459,7 @@ class Node {
           $part = $this->context;
           break;
         case 'father':
-          $part = $this->father->name;
+          $part = $this->getFather();
           break;
         case 'title':
           $part = $this->getTitle();
@@ -512,6 +509,23 @@ class Node {
       $edit_node = str_replace($m[0][$k], $part, $edit_node);
     }
     return $edit_node;
+  }
+
+  public function getFather() {
+    if (!isset($this->father)) {
+      $this->buildFather();
+    }
+    return $this->father;
+  }
+
+  public function buildFather() {
+    if (isset($this->father)) {
+      return $this->father;
+    } else {
+      $rpath_arr = explode('/', $this->realpath);
+      $father = ($rpath_arr[count($rpath_arr) - 2]);
+      $this->father = ($father == $this->env->host) ? 'home' : $father;
+    }
   }
 
   public function renderUploadForm($context) {

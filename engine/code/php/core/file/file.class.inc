@@ -40,6 +40,7 @@ class File {
     $is_public =
       ($this->path != 'data.html') &&
       ($this->path != 'data.json') &&
+      ($this->getType() != 'swap') &&
       ($this->name != 'data');
     return $is_public;
   }
@@ -108,6 +109,10 @@ class File {
       case 'tar':
       case '7z':
         $type = 'archive';
+        break;
+
+      case 'swp':
+        $type = 'swap';
         break;
 
       default:

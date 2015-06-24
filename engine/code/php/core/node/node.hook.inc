@@ -89,7 +89,6 @@ function node_shadow_node_add($vars) {
  */
 function node_shadow_node_edit($vars) {
   $user = User::current($vars['env']);
-
   // ADD a node.
   if ($vars['shadow']->getContext() == NODE_ACTION_ADD) {
     $father = new Node($vars['env'], $vars['env']->getRequestedPath());

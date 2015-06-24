@@ -20,13 +20,12 @@
 
     $file_types = $this->getAttribute('file_types');
     foreach ($this->files as $file) {
-      if (($file_types == FALSE) || $file_types == $file->getType()) {
+      if ((($file_types == FALSE) || $file_types == $file->getType()) && $file->isPublic()) {
         $tpl = file_get_contents('core/list/tpl/' . $this->getTheme() . '.tpl.php');
         $tpl_item = $tpl;
         $user_actions = array();
         // TODO: get useractions from file.
         if ($user->checkAccess($this->node, NODE_ACTION_EDIT)) {
-
           $user_actions[] = '<a title="Set as thumbnail" rel="' . $file->path . '" href="#" style="text-decoration: none" class="set-thumbnail ' . (($this->node->getThumbnail() == $file->path) ? 'selected-thumbnail' : '') . '">&#9786;</a>';
         }
         if ($user->checkAccess($this->node, NODE_ACTION_DELETE)) {

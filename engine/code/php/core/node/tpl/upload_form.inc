@@ -7,3 +7,5 @@
   <div id="drop">Drop here files<a>or press here</a><input type="file" name="upl" id="file-upload" multiple /></div>
     [NODE:filelist]</form>
   </div>
+<script src="/engine/code/php/core/file/js/jquery.fileupload.js"></script>
+<script src="/engine/code/php/core/file/js/file-upload.js"></script>
