@@ -3,8 +3,8 @@
 /**
 * Detect content LIST and eventually create HTML.
 */
-function wiki_LIST($replace, $attributes, $value, $string, $page) {
-  $dirlist = new DirList($page->env, $value, 'dir', $attributes);
+function wiki_LIST($replace, $attributes, $path, $string, $page) {
+  $dirlist = new DirList($page->env, $path, 'dir', $attributes);
   $output = $dirlist->render();
   $string = str_replace($replace, $output, $string);
   return $string;

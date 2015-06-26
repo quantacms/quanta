@@ -13,6 +13,8 @@ function domain_action_domain_search($vars) {
 
 
 function domain_init($vars) {
+  $user = User::current($vars['env'], TRUE);
+
   $vars['env']->addInclude('engine/code/php/contrib/domain/js/search.js');
   $vars['env']->addInclude('engine/code/php/contrib/domain/css/domain.css');
 
@@ -53,8 +55,18 @@ function domain_init($vars) {
           break;
 
         case 'search':
-          $search = new DomainSearch($vars['env'], $_GET['domain'], User::current($vars['env']));
-          print json_encode($search->domain);
+          $energy_current = Points::remove($vars['env'], $user, 'energy', '1');
+          if (!$energy_current) {
+            print json_encode(array('error' => 'Your energy is finished!'));
+          } else {
+            $exp_current = Points::add($vars['env'], $user, 'experience', '1');
+            $search = new DomainSearch($vars['env'], $_GET['domain'], $user);
+            $result = $search->domain;
+            $result->energy_current = $energy_current;
+            $result->exp_current = $exp_current;
+
+            print json_encode($result);
+          }
           break;
 
         default:

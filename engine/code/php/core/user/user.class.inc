@@ -6,7 +6,7 @@ define("USER_PASSWORD_MIN_LENGTH", 8);
 define("USER_ACTION_EDIT", "user_edit");
 define("USER_ACTION_REGISTER", "user_register");
 define("USER_VALIDATION_ERROR", "validation_error");
-
+define("USER_MIN_NAME_LENGTH", 4);
 
 /**
  * This class represents an user in the system.
@@ -55,19 +55,23 @@ class User {
   }
 
   public function getData($key) {
-    return (isset($this->data[$key]) ? $this->data[$key] : FALSE);
+    return (isset($this->data[$key]) ? $this->data[$key] : NULL);
   }
 
   /**
    * Get the current navigating user.
    */
-  static function current($env) {
+  static function current($env, $reload = FALSE) {
     if (!isset($_SESSION['user'])) {
       $_SESSION['user'] = serialize(new User($env));
     }
-
     $user = unserialize($_SESSION['user']);
+
+    if ($reload) {
+      $user = new User($env, $user->name);
+    }
     $user->env = $env;
+
     return $user;
   }
 
@@ -137,9 +141,16 @@ class User {
     return $response_json;
   }
 
+  public function isCurrent() {
+    $curr_user = User::current($this->env);
+    return ($curr_user->getName() == $this->getName());
+  }
   public function save() {
     $this->env->hook('user_save', array('user' => $this));
     $this->saveJSON();
+    if ($this->isCurrent()) {
+      $this->rebuildSession();
+    }
     return TRUE;
   }
 
@@ -147,6 +158,7 @@ class User {
    * Save the JSON dump of the node
    */
   public function saveJSON() {
+
     if (!is_dir($this->dir)) {
       mkdir($this->dir) or die('cannot create dir: ' . $this->dir);
     }
@@ -158,6 +170,8 @@ class User {
     unset($user_json->json);
     unset($user_json->exists);
 
+    //print_r($user_json->getData('points'));
+    //dies("FFF");
     $fh = fopen($jsonpath, 'w+');
     fwrite($fh, json_encode($user_json));
     fclose($fh);
@@ -265,8 +279,11 @@ class User {
     exec('grep -r -i -o --include \*.json "\"email\"\:\"' . $form_data['edit-email'] . '\"" ' . $this->env->dir['docroot'] . '/_users', $mail_exists);
 
     // TODO: check also special characters.
-    if ($this->name == '') {
-      new Message($this->env, 'The username: ' . $this->name . ' is invalid!', MESSAGE_WARNING);
+    if (strlen($this->name) < USER_MIN_NAME_LENGTH) {
+      new Message($this->env, 'Your username should have at least ' . USER_MIN_NAME_LENGTH . ' characters', MESSAGE_WARNING);
+    }
+    elseif (!is_alphanumeric($this->name)) {
+      new Message($this->env, 'Please use only letters and numbers for your username', MESSAGE_WARNING);
     }
 
     elseif ($this->exists && $this->context == USER_ACTION_REGISTER) {

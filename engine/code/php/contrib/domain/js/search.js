@@ -22,6 +22,7 @@ $(document).ready(function() {
     });
 
     refreshSearchButtons();
+    refreshBars();
 });
 
 var domainError = function(data, error) {
@@ -43,8 +44,18 @@ var openWindow = function(page) {
     });
 }
 
-var refreshSearchButtons = function() {
+var refreshBars = function() {
+    var energy_curr = $('#energy-curr-val').val();
+    var energy_max = $('#energy-max-val').val();
+    var exp_curr = $('#exp-curr-val').val();
+    var exp_tonext = $('#exp-tonext-val').val();
+    var exp_perc = 100 - parseInt(exp_tonext / exp_curr * 100);
+    var energy_perc = parseInt(energy_curr / energy_max * 100);
+    $('#energy-perc').css('width', energy_perc + '%');
+    $('#exp-tonext').css('width', exp_perc + '%');
+}
 
+var refreshSearchButtons = function() {
     $('#window-close').click(function() {
        $('#window').hide();
        $('#results').show();
@@ -137,20 +148,33 @@ function checkDomain(domains,  i, search_id) {
             }, 3000);
         }),
         success: (function(data) {
-            $('#key-used').text(data.used);
-            $('#key-limit').text(data.limit);
             var actions = '';
-
             actions += getStar(domains[i], data.favorite == 1);
 
+
+
+
+            // DOMAIN FREE.
             if (data.status == 'OK') {
                 $('#OK-body').append('<tr><td>' + i + '</td><td class="OK-domain">' + domains[i] + '</td><td class="backlinks">' + data.startpage + '</td><td class="nettaken-' + data.otherext.net + '">' + data.otherext.net + '</td><td>' + actions + '</td></tr>');
 
-            } else {
+
+            }
+
+
+
+            // DOMAIN NOT FREE.
+            else if (data.status == 'KO') {
                 $('#KO').append('<tr><td>' + i + '</td><td class="KO-domain">' + domains[i] + '</td><td>' + data.expire_date+ '</td><td class="email">' + data.email + '</td><td>'+ actions +'</td></tr>');
+
+
             }
 
             $(".tablesorter").trigger("update").trigger('appendCache');
+            $('#exp-curr-val').val(data.exp_current);
+            $('#energy-curr-val').val(data.energy_current);
+
+            refreshBars(data);
             refreshSearchButtons();
             checkDomain(domains, i+1, search_id);
         })

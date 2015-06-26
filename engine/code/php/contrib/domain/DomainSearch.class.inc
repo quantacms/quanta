@@ -23,6 +23,7 @@ class DomainSearch {
     $this->env = $env;
     $this->user = $user;
     $this->domain = new Domain($domain);
+
     if (!$this->searchLocalDB()) {
       $this->search();
     }
@@ -33,7 +34,7 @@ class DomainSearch {
     if ($this->domain->status == 'KO') {
       $this->domain->saveDB($this->search_id);
     }
-    $this->user->setData('credits', ($this->user->getData('credits') - 1));
+
   }
 
 

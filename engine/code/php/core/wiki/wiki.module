@@ -13,13 +13,15 @@ function wikize($env, &$page) {
   foreach ($matches[1] as $tag_value) {
     $replace = '[' . $tag_value . ']';
     $tag = explode(':', $tag_value);
-    if (count($tag) == 1) {
-      $tag[1] = $page->env->getRequestedPath();
-    }
     $tag_arr = explode('|', $tag[0]);
     $tag_name = $tag_arr[0];
     $attributes = explode('|', $tag[0]);
+    $attr_arr = array();
     unset($attributes[0]);
+    foreach ($attributes as $attr_item) {
+    $split = explode('=', $attr_item);
+      $attr_arr[$split[0]] = $split[1];
+    }
 
     preg_match_all("/\<nowiki\>(.*)\<\/nowiki\>/is", $page->html, $nowiki);
     foreach ($nowiki[0] as $k => $v) {
@@ -30,7 +32,7 @@ function wikize($env, &$page) {
 
     if ($tag_name == strtoupper($tag_name) && function_exists('wiki_' . $tag_name)) {
       $func = 'wiki_' . $tag_name;
-      $page->html = $func($replace, $attributes, $tag[1], $page->html, $page);
+      $page->html = $func($replace, $attr_arr, isset($tag[1]) ? $tag[1] : NULL, $page->html, $page);
     }
 
 

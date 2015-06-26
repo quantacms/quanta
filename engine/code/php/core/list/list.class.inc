@@ -30,19 +30,18 @@ abstract class ListObject {
   // Construct the List.
 
   public function __construct(&$env, $path, $type, $attr_arr = array()) {
+    if ($path == NULL) {
+      $path = $env->getRequestedPath();
+    }
+;
     $this->env = $env;
     // TODO: no need to rebuild node when it's current page.
     $this->node = new Node($this->env, $path);
     $this->dir = $path;
     $this->type = strtolower($type);
     $this->path = $this->env->dir('wiki') . '/' . $path;
-    foreach ($attr_arr as $attr_item) {
-      $attr_item_arr = explode('=', $attr_item);
-      if (count($attr_item_arr) == 2) {
-        $this->setAttribute($attr_item_arr[0], $attr_item_arr[1]);
-      } elseif (count($attr_item_arr) == 1) {
-        $this->setAttribute($attr_item_arr[0], TRUE);
-      }
+    foreach ($attr_arr as $attr_key => $attr_val) {
+        $this->setAttribute($attr_key, $attr_val);
     }
     $this->load();
   }

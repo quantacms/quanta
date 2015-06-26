@@ -53,7 +53,7 @@ class Environment {
   }
 
   private function loadContribModules() {
-    $contrib_modules = $this->scanDirectory('contrib');
+    $contrib_modules = $this->scanDirectory($this->dir['docroot'] . '/_modules');
     $this->setModules('contrib', $contrib_modules);
   }
 
@@ -96,6 +96,9 @@ class Environment {
    * Get all dirs inside a given dir.
    */
   public function scanDirectory($base_dir = '', $exclude_dirs = DIR_INACTIVE) {
+    if (!is_dir($base_dir)) {
+      return array();
+    }
     $dirs = array_diff(scandir($base_dir), array('.', '..'));
     if ($exclude_dirs != NULL) {
       foreach ($dirs as $k => $dir) {

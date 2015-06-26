@@ -6,12 +6,6 @@
       </div>
     </h2>
     <div id="domain-messages"></div>
-
-    <div id="key-info">
-      <span id="key-used"></span> /
-      <span id="key-limit">[USER:credits]</span> shots (<span id="key-percent"></span> %) left.
-    </div>
-
     <div id="searchbox">
       <input id="domain" size="20">
       <select id="extension">
