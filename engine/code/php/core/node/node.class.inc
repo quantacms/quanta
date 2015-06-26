@@ -159,7 +159,7 @@ class Node {
         $has_access = ($user->checkAccess($node, NODE_ACTION_DELETE));
         if ($has_access) {
           $node->delete();
-          $response->redirect = '/' . $node->father . '/';
+          $response->redirect = '/' . $node->father->getName() . '/';
         }
         break;
     }
@@ -524,8 +524,8 @@ class Node {
       return $this->father;
     } else {
       $rpath_arr = explode('/', $this->realpath);
-      $father = ($rpath_arr[count($rpath_arr) - 2]);
-      $this->father = ($father == $this->env->host) ? 'home' : $father;
+      $fatherpath = ($rpath_arr[count($rpath_arr) - 2]);
+      $this->father = ($fatherpath == $this->env->host) ? new Node($this->env, 'home') : new Node($this->env, $fatherpath);
     }
   }
 
