@@ -5,6 +5,7 @@
  * Page edit action. TODO: move in page module.
  */
 function pageEdit(action) {
+
     openShadow({ module : 'node', context: action, type: 'tabs'});
 
 }

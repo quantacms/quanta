@@ -453,13 +453,14 @@ class Node {
   private function wikize($edit_node) {
     preg_match_all('/\[NODE\:(.*)\]/', $edit_node, $m);
     foreach ($m[1] as $k => $nodepart) {
+      print $nodepart;
       switch ($nodepart) {
 
         case 'action':
           $part = $this->context;
           break;
         case 'father':
-          $part = $this->getFather();
+          $part = $this->getFather()->getName();
           break;
         case 'title':
           $part = $this->getTitle();
