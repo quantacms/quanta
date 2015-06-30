@@ -1,21 +1,23 @@
 /**
  * Created by aldotripiciano on 20/05/15.
  */
-$(document).ready(function() {
+$(document).ready(function () {
     var search_id = 0;
-    $('#search').click(function() {
+    $('#search').click(function () {
         search_id++;
         $.ajax({
             dataType: 'json',
             url: '/searchbox/?i=' + search_id + '&domain=' + $('#domain').val() + '&extension=' + $('#extension').val(),
-            success: (function(data) {
+            success: (function (data) {
 
                 var searchbox = '<div class="searchbox" id="search-' + search_id + '"><div class="searching"><div class="domainstring">' + $('#domain').val() + '</div></div><div class="progressbar"><div class="percent">0%</div><div class="progress"></div></div><div class="progress-numbers"><span class="domains-checked">0</span> / <span class="domains-total"></span> done.</div><span style="display: none" class="starting-time"></span><div class="elapsed-time">Elapsed time: <span class="elapsed-time-span"></span></div><div class="average-time">Average time: <span class="average-time-span"></span></div><div class="actions"><a href="#" class="action" id="close">X</a><a href="#" class="action" id="pause">◼</a><a href="#" class="action" id="play">▶</a></div></div>';
                 $('#searches').prepend(searchbox);
                 generateDomains($('#domain').val(), $('#extension').val(), search_id);
                 $('#domain').val('');
             }),
-            error: function(error) { domainError(error); }
+            error: function (error) {
+                domainError(error);
+            }
         });
 
         return false;
@@ -25,48 +27,63 @@ $(document).ready(function() {
     refreshBars();
 });
 
-var domainError = function(data, error) {
+
+var domainError = function (data, error) {
     setDomainMessage('ERR;Error: ' + data.responseText);
 }
-var setDomainMessage = function(data) {
+
+
+var setDomainMessage = function (data) {
     msgarr = data.split(';');
     $('#domain-messages').attr('class', 'message message-' + msgarr[0].toLowerCase()).html(msgarr[1]).show();
-    setTimeout(function() {
+    setTimeout(function () {
         $('#domain-messages').fadeOut('slow');
-    }, 8000);
+    }, 100000);
 }
 
-var openWindow = function(page) {
+
+var openWindow = function (page) {
     $('#results').hide();
-    $('#window-inner').load(page, function() {
+    $('#window-inner').load(page, function () {
         $('#window').fadeIn('medium');
         refreshSearchButtons();
     });
 }
 
-var refreshBars = function() {
+var levelUp = function() {
+    alert("You reached a new Level!");
+}
+
+var refreshBars = function () {
     var energy_curr = $('#energy-curr-val').val();
     var energy_max = $('#energy-max-val').val();
     var exp_curr = $('#exp-curr-val').val();
     var exp_tonext = $('#exp-tonext-val').val();
-    var exp_perc = 100 - parseInt(exp_tonext / exp_curr * 100);
+    var exp_perc = parseInt(exp_curr / exp_tonext * 100);
     var energy_perc = parseInt(energy_curr / energy_max * 100);
+    if (energy_perc > 100) {
+        energy_perc == 100;
+        levelUp();
+    }
+
     $('#energy-perc').css('width', energy_perc + '%');
     $('#exp-tonext').css('width', exp_perc + '%');
+
 }
 
-var refreshSearchButtons = function() {
-    $('#window-close').click(function() {
-       $('#window').hide();
-       $('#results').show();
+
+var refreshSearchButtons = function () {
+    $('#window-close').click(function () {
+        $('#window').hide();
+        $('#results').show();
     });
 
 
-    $('.check-favorites').unbind().bind('click', function() {
-        openShadow({ module : 'user', context: 'user_edit', type: 'tabs'});
+    $('.check-favorites').unbind().bind('click', function () {
+        openShadow({ module: 'user', context: 'user_edit', type: 'tabs'});
     });
 
-    $('.favorite').unbind('click').bind('click', function() {
+    $('.favorite').unbind('click').bind('click', function () {
         if ($(this).parent('li').hasClass('.favorite-item')) {
             $(this).parent('li').fadeOut('fast');
         }
@@ -76,21 +93,22 @@ var refreshSearchButtons = function() {
         var fav_domain = $(this).attr('rel');
         $.ajax({
             dataType: 'json',
-            url: '/domainAction/?action=favorite&domain=' + fav_domain + '&key=' + $('#key').val()+'&value=' + fav_status,
-            success: (function(data) {
-               fav_star.replaceWith(getStar(fav_domain, fav_status));
-               refreshSearchButtons();
+            url: '/domainAction/?action=favorite&domain=' + fav_domain + '&key=' + $('#key').val() + '&value=' + fav_status,
+            success: (function (data) {
+                fav_star.replaceWith(getStar(fav_domain, fav_status));
+                refreshSearchButtons();
             })
         });
         return false;
     });
 }
 
-var getStar = function(domain, fav_status) {
+
+var getStar = function (domain, fav_status) {
     if (fav_status == 1) {
-      var star = '<a href="#" rel="'  + domain +'" class="favorite selected">&#9733;</a>';
+        var star = '<a href="#" rel="' + domain + '" class="favorite selected">&#9733;</a>';
     } else {
-        var star = '<a href="#" rel="'  + domain +'" class="favorite">&#9734;</a>';
+        var star = '<a href="#" rel="' + domain + '" class="favorite">&#9734;</a>';
     }
     return star;
 }
@@ -100,21 +118,24 @@ function generateDomains(domains, ext, search_id) {
     $.ajax({
         dataType: 'json',
         url: "/domainAction/?action=generate&regex=" + domains + '&key=' + $('#key').val(),
-        success: (function(data) {
+        success: (function (data) {
             var domain_items = [];
             $('#search-start').show();
-            $.each(data.domains, function(i, domain) {
+            $.each(data.domains, function (i, domain) {
                 domain_items[i] = domain + '.' + ext;
             });
-            $('#search-'+ search_id).find('.domains-total').text(domain_items.length);
+            $('#search-' + search_id).find('.domains-total').text(domain_items.length);
             checkStatistics(search_id);
             $('#OK-wrapper').fadeIn('slow');
             $('#KO-wrapper').fadeIn('slow');
             checkDomain(domain_items, 0, search_id);
         }),
-        error: function(error) { domainError(error); }
+        error: function (error) {
+            domainError(error);
+        }
     });
 }
+
 
 function checkStatistics(search_id) {
     var elapsed = parseInt((Date.now() - $('#search-' + search_id).find('.starting-time').text()) / 1000);
@@ -129,54 +150,66 @@ function checkStatistics(search_id) {
     }
 }
 
-function checkDomain(domains,  i, search_id) {
-    $('#search-'+search_id).find('.domains-checked').text(i);
+function infoBox(message) {
+    openShadow({
+        module : "namearcher",
+        context: 'namearcher_message',
+        data: {'message' : message },
+        type: "single"}
+    );
+}
+
+function checkDomain(domains, i, search_id) {
+    $('#search-' + search_id).find('.domains-checked').text(i);
     var percent = parseInt(i / (domains.length) * 100);
-    $('#search-'+search_id).find('.percent').html(percent + '%');
-    $('#search-'+search_id).find('.progress').css('width', percent+'%');
-    if (i>=domains.length) {
+    $('#search-' + search_id).find('.percent').html(percent + '%');
+    $('#search-' + search_id).find('.progress').css('width', percent + '%');
+    if (i >= domains.length) {
         return 0;
     }
 
     $.ajax({
         dataType: "json",
-        url: "/domainAction/?action=search&domain=" + domains[i]+"&key=" + $('#key').val(),
-        error: (function(error) {
-            setDomainMessage('ERR;We have an error in getting data from the server: <b>' + error.responseText +'</b>. <br />Trying again in some seconds...');
-            setTimeout(function() {
+        url: "/domainAction/?action=search&domain=" + domains[i] + "&key=" + $('#key').val(),
+        error: (function (error) {
+            setDomainMessage('ERR;We have an error in getting data from the server: <b>' + error.responseText + '</b>. <br />Trying again in some seconds...');
+            setTimeout(function () {
                 checkDomain(domains, i, search_id);
             }, 3000);
         }),
-        success: (function(data) {
+        success: (function (data) {
             var actions = '';
             actions += getStar(domains[i], data.favorite == 1);
 
 
+            if (data.status == 'ERROR') {
+                setDomainMessage('ERR;' + data.error);
+            } else {
+
+                // DOMAIN FREE.
+                if (data.status == 'OK') {
+                    $('#OK-body').append('<tr><td>' + i + '</td><td class="OK-domain">' + domains[i] + '</td><td class="backlinks">' + data.startpage + '</td><td class="nettaken-' + data.otherext.net + '">' + data.otherext.net + '</td><td>' + actions + '</td></tr>');
 
 
-            // DOMAIN FREE.
-            if (data.status == 'OK') {
-                $('#OK-body').append('<tr><td>' + i + '</td><td class="OK-domain">' + domains[i] + '</td><td class="backlinks">' + data.startpage + '</td><td class="nettaken-' + data.otherext.net + '">' + data.otherext.net + '</td><td>' + actions + '</td></tr>');
+                }
 
 
+
+                // DOMAIN NOT FREE.
+                else if (data.status == 'KO') {
+                    $('#KO').append('<tr><td>' + i + '</td><td class="KO-domain">' + domains[i] + '</td><td>' + data.expire_date + '</td><td class="email">' + data.email + '</td><td>' + actions + '</td></tr>');
+
+                }
+
+                $(".tablesorter").trigger("update").trigger('appendCache');
+                $('#exp-curr-val').val(data.exp_current);
+                $('#energy-curr-val').val(data.energy_current);
+                //$('#exp-curr-val').val(data.exp_tonext);
+                $('#energy-max-val').val(data.energy_max);
+                refreshBars(data);
+                refreshSearchButtons();
+                checkDomain(domains, i + 1, search_id);
             }
-
-
-
-            // DOMAIN NOT FREE.
-            else if (data.status == 'KO') {
-                $('#KO').append('<tr><td>' + i + '</td><td class="KO-domain">' + domains[i] + '</td><td>' + data.expire_date+ '</td><td class="email">' + data.email + '</td><td>'+ actions +'</td></tr>');
-
-
-            }
-
-            $(".tablesorter").trigger("update").trigger('appendCache');
-            $('#exp-curr-val').val(data.exp_current);
-            $('#energy-curr-val').val(data.energy_current);
-
-            refreshBars(data);
-            refreshSearchButtons();
-            checkDomain(domains, i+1, search_id);
         })
     })
 

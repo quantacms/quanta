@@ -10,10 +10,8 @@ define('NODE_ACTION_DELETE_FILE', 'file_delete');
  * This class represents a Node (corrisponding to a folder in the file system).
  * This is the core of the engine.
  */
-class Node {
-  public $env;
+class Node extends DataContainer {
   public $name;
-  public $section;
   public $content = NULL;
   public $content_raw = NULL;
   private $context;
@@ -29,10 +27,13 @@ class Node {
   private $json;
   private $lineage = array();
   public $tmp_files_dir = NULL;
-  private $valid;
 
-  // Construct the Node.
-
+  /**
+   * Constructs a node object.
+   * @param $env
+   * @param $name
+   * @param null $father
+   */
   public function __construct(&$env, $name, $father = NULL) {
     $this->env = $env;
     $this->setName(strtolower($name));
@@ -48,16 +49,24 @@ class Node {
     }
   }
 
+  /**
+   * Gets the name (equal to folder name) of the node.
+   * @return mixed
+   */
   public function getName() {
     return $this->name;
   }
 
+  /**
+   * Sets the name (equal to folder name) of the node.
+   * @param $name
+   */
   public function setName($name) {
     $this->name = $name;
   }
 
   /**
-   * Load node variables internally.
+   * Load node with its variables internally.
    */
   public function load() {
     // Create symlink - wiki redirect.
@@ -78,11 +87,12 @@ class Node {
     else {
       $this->setTimestamp(time());
     }
-
   }
 
+  /**
+   * Builds node content.
+   */
   public function buildContent() {
-
     // Create data.html if it doesn't exist.
     if (!is_file($this->path . '/data.html')) {
       $fh = fopen($this->path . '/data.html', 'w+');
@@ -98,7 +108,6 @@ class Node {
         $this->setThumbnail($this->json->thumbnail);
       }
     }
-
   }
 
 
@@ -124,11 +133,9 @@ class Node {
     }
     $node = new Node($env, $path, ($action == NODE_ACTION_ADD) ? new Node($env, $nodedata['edit-father']) : NULL);
     $node->context = $action;
-
     switch ($action) {
       case NODE_ACTION_ADD:
       case NODE_ACTION_EDIT:
-        $valid = FALSE;
         // TODO complete validation code.
         if (isset($nodedata['edit-thumbnail'])) {
           $node->setThumbnail($nodedata['edit-thumbnail']);
@@ -140,7 +147,7 @@ class Node {
           $node->setContent('<h1>' . $nodedata['edit-title'] . '</h1>' . $nodedata['edit-content']);
           $node->setTimestamp($datetime > 0 ? $datetime : time());
           $node->tmp_files_dir = $nodedata['tmp_files_dir'];
-          if ($valid = $node->validate()) {
+          if ($node->validate()) {
             $node->save();
             $env->hook('node_save', array('node' => &$node, 'data' => $nodedata));
             $response->redirect = '/' . $node->getName() . '/';
@@ -155,11 +162,11 @@ class Node {
         break;
 
       case NODE_ACTION_DELETE:
-        new Message($node->env, $node->getName() . ' was deleted correctly');
         $has_access = ($user->checkAccess($node, NODE_ACTION_DELETE));
         if ($has_access) {
           $node->delete();
-          $response->redirect = '/' . $node->father->getName() . '/';
+          new Message($node->env, $node->getName() . ' was deleted correctly');
+          $response->redirect = '/' . $node->getFather()->getName() . '/';
         }
         break;
     }
@@ -305,26 +312,42 @@ class Node {
     return $this->lineage;
   }
 
-  public function setSection($section) {
-    $this->section = $section;
-  }
-
+  /**
+   * Get the formatted datetime of the node.
+   * @return bool|string
+   */
   public function getDateTime() {
     return date('d M Y - H:i:s', $this->getTimestamp());
   }
 
+  /**
+   * Get the formatted date of the node.
+   * @return bool|string
+   */
   public function getDate() {
     return date('d-m-Y', $this->getTimestamp());
   }
 
+  /**
+   * Get the timestamp of the node.
+   * @return mixed
+   */
   public function getTimestamp() {
     return $this->timestamp;
   }
 
+  /**
+   * Set the timestamp of the node.
+   * @param $timestamp
+   */
   public function setTimestamp($timestamp) {
     $this->timestamp = $timestamp;
   }
 
+  /**
+   * Get the formatted timestamp of the node.
+   * @return bool|string
+   */
   public function getTime() {
     return date('H:s', $this->getTimestamp());
   }
@@ -398,7 +421,6 @@ class Node {
       'xlsx'
     );
 
-
     $upload_dir = ($this->env->dir['tmp_files'] . '/' . $_REQUEST['tmp_files_dir']);
     if (!is_dir($upload_dir)) {
       mkdir($upload_dir);
@@ -427,33 +449,55 @@ class Node {
     unlink($this->realpath . '/' . $file);
   }
 
-  // TODO: check validity.
+  /**
+   * Set the thumbnail of a node.
+   * TODO: maybe not needed, and use setData() is better.
+   * @param $thumbnail
+   */
   public function setThumbnail($thumbnail) {
     $this->thumbnail = $thumbnail;
   }
 
+  /**
+   * Return the thumbnail of a node.
+   * @return null
+   */
   public function getThumbnail() {
     return $this->thumbnail;
   }
 
-  // TODO: refactor.
+  /**
+   * Renders a node edit form.
+   * @param $context
+   * @return mixed
+   */
   public function renderEditForm($context) {
     $this->context = $context;
     $edit_node = $this->wikize(file_get_contents('core/node/tpl/node_edit.inc'));
     return $edit_node;
   }
 
-// TODO: refactor.
+
+  /**
+   * Renders a node delete form.
+   * @param $context
+   * @return mixed
+   */
   public function renderDeleteForm($context) {
     $this->context = $context;
     $edit_node = $this->wikize(file_get_contents('core/node/tpl/node_delete.inc'));
     return $edit_node;
   }
 
+  /**
+   * Substitute node tokens in a template.
+   *
+   * @param $edit_node
+   * @return mixed
+   */
   private function wikize($edit_node) {
     preg_match_all('/\[NODE\:(.*)\]/', $edit_node, $m);
     foreach ($m[1] as $k => $nodepart) {
-      print $nodepart;
       switch ($nodepart) {
 
         case 'action':
@@ -512,13 +556,22 @@ class Node {
     return $edit_node;
   }
 
+  /**
+   * Returns the father of a node (eventually after building it).
+   * @return null
+   */
   public function getFather() {
-    if (!isset($this->father)) {
+    if (!isset($this->father) || $this->father == NULL) {
       $this->buildFather();
     }
     return $this->father;
   }
 
+  /**
+   * Builds the father of a node.
+   * Usually only done on-request when calling getFather.
+   * @return null
+   */
   public function buildFather() {
     if (isset($this->father)) {
       return $this->father;
@@ -529,12 +582,15 @@ class Node {
     }
   }
 
+  /**
+   * Renders a file upload form for a node.
+   * @param $context
+   * @return mixed
+   */
   public function renderUploadForm($context) {
     $this->context = $context;
     $this->tmp_files_dir = $this->getName() . '-' . time() . '-' . rand(0, 1000);
     $up_form = $this->wikize(file_get_contents('core/node/tpl/upload_form.inc'));
-
     return $up_form;
   }
-
 }

@@ -3,13 +3,9 @@
  * Class Page
  * This class represents a Page (corrisponding to a rendered html page).
  */
-class Page {
+class Page extends DataContainer {
   public $html;
   public $includes;
-  /**
-   * @var Environment
-   */
-  public $env;
   public $body_classes = array();
   public $file;
   public $vars = array('head' => '', 'content' => '');
@@ -95,17 +91,6 @@ class Page {
     return $this->vars['title'];
   }
 
-  public function setVariable($name, $content) {
-    $this->vars[$name] = $content;
-  }
-
-  public function getVariable($name) {
-    if (isset($this->vars[$name])) {
-      return $this->vars[$name];
-    } else {
-      return FALSE;
-    }
-  }
   /**
    * Returns the rendered HTML page.
    * @return $string.

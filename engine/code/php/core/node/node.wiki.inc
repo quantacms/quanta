@@ -9,7 +9,7 @@
  */
 function wiki_NODE($replace, $tagname, $var, $string, $page) {
   if ($var == 'content') {
-    $string = str_replace($replace, $page->getVariable('node')->getRawContent(), $string);
+    $string = str_replace($replace, $page->getData('node')->getRawContent(), $string);
   }
   return $string;
 }

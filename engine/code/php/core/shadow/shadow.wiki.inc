@@ -8,11 +8,11 @@
  * @return mixed
  */
 function wiki_SHADOW($replace, $tagname, $attributes, $string, $page) {
-  $string = str_replace('[SHADOW:tab-titles]', $page->getVariable('tab_titles'), $string);
-  $string = str_replace('[SHADOW:tab-contents]', $page->getVariable('tab_contents'), $string);
+  $string = str_replace('[SHADOW:tab-titles]', $page->getData('tab_titles'), $string);
+  $string = str_replace('[SHADOW:tab-contents]', $page->getData('tab_contents'), $string);
 
   $buttons = '';
-  foreach ($page->getVariable('buttons') as $action => $button) {
+  foreach ($page->getData('buttons') as $action => $button) {
     $buttons .= '<a onClick="shadowSubmit()" id="' . $action . '">' . $button . '</a>';
   }
   $string = str_replace('[SHADOW:buttons]', '<div id="shadow-buttons">' . $buttons . '</div>', $string);

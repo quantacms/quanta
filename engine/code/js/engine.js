@@ -15,10 +15,15 @@ var refreshButtons = function() {
         var parent = $(this).closest('li');
         if (confirm('Are you sure you want to delete this file? \n' + file_to_delete)) {
             $.ajax({
-                url: "?delete-file=" + file_to_delete
-            }).done(function() {
-                parent.fadeOut('slow');
-            });
+                url: "?file_delete=" + file_to_delete,
+                success: function() {
+                    parent.fadeOut('slow');
+
+                },
+                error: function() {
+                    alert("ERROR");
+                }
+                });
         }
         return false;
     });

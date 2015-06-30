@@ -6,13 +6,12 @@ define("DIR_ALL", '');
  * Class Environment
  * This class represents an Environment with his directories etcetera.
  */
-class Environment {
+class Environment extends DataContainer {
   public $host = array();
   public $dir = array();
   public $request_uri;
   public $request_json;
   public $request = array();
-  private $data = array();
   private $modules = array();
   private $includes = array();
   private $items = array();
@@ -142,19 +141,6 @@ class Environment {
 
   public function startSession() {
     session_start();
-  }
-
-  public function setData($label, $content, $module) {
-    $this->data[$label]['module'] = $module;
-    $this->data[$label]['value'] = $content;
-  }
-
-  public function getData($label) {
-    if (isset($this->data[$label]['value'])) {
-      return $this->data[$label]['value'];
-    } else {
-      return FALSE;
-    }
   }
 
   public function getIncludes() {

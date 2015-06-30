@@ -11,7 +11,7 @@ define("USER_MIN_NAME_LENGTH", 4);
 /**
  * This class represents an user in the system.
  */
-class User {
+class User extends DataContainer {
   public $name;
   public $email;
   // Action being performed on the user
@@ -19,13 +19,8 @@ class User {
   public $roles = array();
   public $exists;
   private $json;
-  /**
-   * @var Environment
-   */
-  private $env;
   private $dir;
   public $password;
-  public $data = array();
 
   // Construct the Node.
   public function __construct(&$env, $name = USER_ANONYMOUS, $roles = array(ROLE_ANONYMOUS => ROLE_ANONYMOUS)) {
@@ -48,14 +43,6 @@ class User {
       }
       $this->load();
     }
-  }
-
-  public function setData($key, $value) {
-    $this->data[$key] = $value;
-  }
-
-  public function getData($key) {
-    return (isset($this->data[$key]) ? $this->data[$key] : NULL);
   }
 
   /**

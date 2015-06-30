@@ -1,11 +1,9 @@
 <?php
-class Shadow {
+class Shadow extends DataContainer {
   private $tabs = array();
   private $context;
-  private $env;
   private $type;
   private $buttons = array();
-
   /**
    * @var Node $node.
    */
@@ -19,6 +17,11 @@ class Shadow {
     $this->env = $env;
     $this->context = $data->context;
     $this->type = $data->type;
+    if (isset($data->data)) {
+      foreach ($data->data as $key => $value) {
+        $this->setData($key, $value);
+      }
+    }
     $this->node = new Node($env, $env->getRequestedPath());
     $this->env->hook('shadow_' . $this->context, array('shadow' => &$this));
   }
@@ -32,8 +35,7 @@ class Shadow {
     $tab_contents = '';
     // TODO: SUPER @URGENT URGENT refactor this crap.
     $shadow_page = new Page($this->env, NULL, 'Shadow', file_get_contents('core/shadow/tpl/' . $this->getType() . '.inc'));
-    $shadow_page->setVariable('node', $this->node);
-
+    $shadow_page->setData('node', $this->node);
     $i = 0;
     ksort($tabs);
     foreach ($tabs as $wtabs) {
@@ -44,16 +46,13 @@ class Shadow {
           $tab_titles .= '<li class="shadow-title ' . (($i == 1) ? 'enabled' : '') . '" ><a href="#tab' . $i . '" rel="' . $i . '" id="shadow-title-' . $i . '">' . $tab['title'] . '</a></li>';
         }
         $tab_contents .= '<div class="shadow-content ' . (($i == 1) ? 'enabled' : '') . '" id="shadow-content-' . $i . '"><nowiki>' . $tab['content'] . '</nowiki></div>';
-
       }
     }
-    $shadow_page->setVariable('tab_titles', $tab_titles);
-    $shadow_page->setVariable('tab_contents', $tab_contents);
-    $shadow_page->setVariable('buttons', $this->buttons);
+    $shadow_page->setData('tab_titles', $tab_titles);
+    $shadow_page->setData('tab_contents', $tab_contents);
+    $shadow_page->setData('buttons', $this->buttons);
     $shadow_page->buildHTML();
-
     return $shadow_page->render();
-
   }
 
   /**

@@ -56,13 +56,18 @@ function domain_init($vars) {
 
         case 'search':
           $energy_current = Points::remove($vars['env'], $user, 'energy', '1');
+          $energy_max = Points::get($vars['env'], $user, 'energy', 'max');
           if (!$energy_current) {
-            print json_encode(array('error' => 'Your energy is finished!'));
+            print json_encode(array(
+              'status' => 'ERROR',
+              'error' => 'Your energy is finished! You <a href="#" onclick="infoBox(\'zero_points\')">I want more!</a> a',
+            ));
           } else {
             $exp_current = Points::add($vars['env'], $user, 'experience', '1');
             $search = new DomainSearch($vars['env'], $_GET['domain'], $user);
             $result = $search->domain;
             $result->energy_current = $energy_current;
+            $result->energy_max = $energy_max;
             $result->exp_current = $exp_current;
 
             print json_encode($result);

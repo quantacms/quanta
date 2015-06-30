@@ -44,8 +44,8 @@ function node_init($vars) {
     exit();
   }
 
-  if (isset($_REQUEST[NODE_ACTION_DELETE_FILE])) {
-    $split_file_to_delete = explode('/', $_GET['delete-file']);
+  if (isset($_REQUEST[NODE_ACTION_DELETE_FILE]) && ($user->checkAccess($node, NODE_ACTION_EDIT))) {
+    $split_file_to_delete = explode('/', $_REQUEST[NODE_ACTION_DELETE_FILE]);
     $node->deleteFile($split_file_to_delete[count($split_file_to_delete) - 1]);
     exit();
   }
@@ -61,14 +61,14 @@ function node_init($vars) {
         $breadcrumb[$n->getName()] = $n->getTitle();
       }
 
-      $vars['env']->setData('node', $node, 'node');
-      $vars['env']->setData('breadcrumb', $breadcrumb, 'node');
-      $vars['env']->setData('content', $node->render(), 'node');
-      $vars['env']->setData('title', $node->getTitle(), 'node');
+      $vars['env']->setData('node', $node);
+      $vars['env']->setData('breadcrumb', $breadcrumb);
+      $vars['env']->setData('content', $node->render());
+      $vars['env']->setData('title', $node->getTitle());
     }
     else {
-      $vars['env']->setData('content', 'You don\'t have access to this page.', 'node');
-      $vars['env']->setData('title', '403: Access Denied', 'node');
+      $vars['env']->setData('content', 'You don\'t have access to this page.');
+      $vars['env']->setData('title', '403: Access Denied');
     }
   }
 

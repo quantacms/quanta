@@ -5,7 +5,6 @@
         <span class="logo-color1">Name</span><span class="logo-color2">Archer</span>
       </div>
     </h2>
-    <div id="domain-messages"></div>
     <div id="searchbox">
       <input id="domain" size="20">
       <select id="extension">
@@ -23,6 +22,7 @@
     <div id="searches">
     </div>
   </div>
+  <div id="domain-messages"></div>
 
   <div id="results">
     <!-- Wrappers per OK tables -->
