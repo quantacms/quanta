@@ -267,7 +267,10 @@
 #shadow-buttons {
     position: relative;
     z-index: 1999;
+    display: inline-block;
+    margin-left: 4%;
 }
+
 #shadow-buttons a {
     font-size: 1.1em;
     text-decoration: none;
@@ -287,8 +290,4 @@
 #shadow-buttons a:hover {
     opacity: 0.7;
     background: #fafafa;
-}
-
-#shadow-buttons {
-    margin-left: 4%;
 }

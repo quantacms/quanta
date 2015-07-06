@@ -6,6 +6,7 @@
       </div>
     </h2>
     <div id="searchbox">
+      [DOMAINCOLLECTIONS]
       <input id="domain" size="20">
       <select id="extension">
         <option value="com">.com</option>

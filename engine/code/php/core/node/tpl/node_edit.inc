@@ -28,14 +28,13 @@
   </div>
 </form>
 <script>
-  CKEDITOR.replace( 'content', {
-    enterMode: CKEDITOR.ENTER_DIV,
+  CKEDITOR.replace('content', {
     shiftEnterMode : CKEDITOR.ENTER_DIV,
     fillEmptyBlocks : false,
     fullPage : false,
     enterMode : CKEDITOR.ENTER_BR,
     lineBreakChars: '',
-  autoParagraph: false,
+    autoParagraph: false,
     toolbar: [
       {name: 'source', items: ['Source']},
       { name: 'styles', items: [ 'Styles', 'Format', 'FontSize' ] },
@@ -46,6 +45,5 @@
 
     ]
   });
-  console.log(CKEDITOR.instances.content);
 
 </script>

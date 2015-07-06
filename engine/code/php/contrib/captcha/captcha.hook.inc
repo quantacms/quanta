@@ -3,6 +3,7 @@
 function captcha_init($vars) {
   $vars['env']->addInclude('engine/code/php/contrib/captcha/css/captcha.css');
 }
+
 function captcha_shadow_user_register($vars) {
   $captcha = new Captcha($vars['env'], CAPTCHA_MATH);
   $vars['shadow']->prependToTab(USER_ACTION_REGISTER, $captcha->render());

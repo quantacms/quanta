@@ -18,6 +18,7 @@ function parsetag($string, $tag) {
  */
 function pwd($pass) {
   return substr((md5(substr($pass, 0, 5) . 'ABC' . substr($pass, 5, 2) . 'nginE')) . md5($pass), 0, 50);
+  
 }
 
 // TODO: make this stuff better.

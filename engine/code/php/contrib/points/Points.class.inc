@@ -11,7 +11,6 @@
  *
  */
 class Points {
-
   /**
    * @param User $user
    * @param $type

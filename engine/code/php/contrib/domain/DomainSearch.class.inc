@@ -124,4 +124,18 @@ class DomainSearch {
     mysql_query($query) or die('ERR;' . mysql_error());
     $this->search_id = mysql_insert_id();
   }
+
+  /**
+   * @param Environment $env
+   * @return string
+   */
+  public static function getCollections($env) {
+    $files = $env->scanDirectory('contrib/domain/collections');
+    $collections = array();
+    foreach ($files as $file) {
+      $carr = explode('.', $file);
+      $collections[] = $carr[0];
+    }
+    return $collections;
+  }
 }
