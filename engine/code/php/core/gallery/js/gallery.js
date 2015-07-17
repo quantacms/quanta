@@ -15,9 +15,7 @@ function thumbsRefresh() {
         galleryOpen($(this));
         return false;
     });
-    $('#shadow-inside, #shadow-image').bind('click', function() {
-        $('#shadow-outside, .shadow-element').hide();
-    });
+
     $(document).keydown(function(e) {
         if (!($('#shadow-image').length)) {return;}
         switch (e.which) {

@@ -24,6 +24,9 @@ class Shadow extends DataContainer {
     }
     $this->node = new Node($env, $env->getRequestedPath());
     $this->env->hook('shadow_' . $this->context, array('shadow' => &$this));
+    if ($this->getTabs() == NULL) {
+      new Message($this->env, 'There is no hook_shadow_' . $this->context . ' defined', MESSAGE_ERROR);
+    }
   }
 
   /**

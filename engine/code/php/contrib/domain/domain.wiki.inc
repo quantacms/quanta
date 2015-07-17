@@ -12,13 +12,3 @@ function wiki_DOMAINSEARCH($replace, $attributes, $value, $string, $page) {
   return $string;
 }
 
-function wiki_DOMAINCOLLECTIONS($replace, $attributes, $value, $string, $page) {
-  $collections = DomainSearch::getCollections($page->env);
-  $output = '<div id="collections">';
-  foreach ($collections as $collection) {
-    $output .= '<div class="collection" id="' . $collection . '.txt">' . $collection . '</div>';
-  }
-  $output .= '</div>';
-  $string = str_replace($replace, $output, $string);
-  return $string;
-}

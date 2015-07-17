@@ -25,7 +25,7 @@ function wiki_TONEXTLEVEL($replace, $attributes, $usr, $string, $page) {
 
   $exp = Points::get($page->env, $user, 'experience');
   $level = getLevel($exp);
-  $tonext = expToLevel($exp, $level+1);
+  $tonext = expToLevel($level+1);
   return str_replace($replace, $tonext, $string);
 }
 
@@ -40,25 +40,29 @@ function wiki_PERCTONEXTLEVEL($replace, $attributes, $usr, $string, $page) {
   }
   $exp = Points::get($page->env, $user, 'experience');
   $level = getLevel($exp);
-  $tonext = expToLevel($exp, $level+1);
-
-  $perc = 100 - (intval($exp / $tonext * 100) + 1);
+  $perc = percToLevel($exp, $level + 1);
   return str_replace($replace, $perc, $string);
 }
 
 function getLevel($exp) {
-  $level = intval(log($exp / 1000 + 1, 2)) + 1;
-  print "LEVEL: " . $level;
+  if ($exp <= 100) {
+    return 1;
+  }
+  $level = intval(log(intval($exp / 100), 2)) + 1;
   return $level;
 }
 
-function expToLevel($exp, $level) {
-  $need = pow(2, $level) * 100 + 1;
+function expToLevel($level) {
+  if ($level < 2) {
+    return 0;
+  }
+  $need = pow(2, $level - 1) * 100;
   return ($need);
 }
 
 function percToLevel($exp, $level) {
-
-  $need = pow(2, $level) * 100;
-  return ($need - $exp);
+  $prev = expToLevel($level - 1);
+  $need = expToLevel($level);
+  return intval(($exp - $prev) / ($need - $prev) * 100);
 }
+

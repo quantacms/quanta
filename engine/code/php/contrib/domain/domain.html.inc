@@ -6,7 +6,9 @@
       </div>
     </h2>
     <div id="searchbox">
-      [DOMAINCOLLECTIONS]
+      <div id="domain-search">
+
+      </div>
       <input id="domain" size="20">
       <select id="extension">
         <option value="com">.com</option>
@@ -17,6 +19,7 @@
         <option value="it">.it</option>
         <option value="domains">.domains</option>
       </select>
+      <input type="button" id="domain-piece-add" value="Add+"/>
       <input type="button" id="search" value="Search"/>
     </div>
 

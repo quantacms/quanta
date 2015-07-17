@@ -50,24 +50,43 @@ var openWindow = function (page) {
     });
 }
 
-var levelUp = function() {
-    alert("You reached a new Level!");
+var levelUp = function(level) {
+    $('#exp-level').html(level);
+    $('#exp-level').animate({
+        width: '40px',
+        height: '40px',
+        lineHeight: '40px',
+        fontSize: '2em',
+        background: '#afa'
+    }, 1000, function() {
+        $('#exp-level').animate({
+            width: '22px',
+            height: '22px',
+            lineHeight: '22px',
+            fontSize: '1em'
+        }, 1000);
+    });
 }
 
 var refreshBars = function () {
+
+
     var energy_curr = $('#energy-curr-val').val();
     var energy_max = $('#energy-max-val').val();
     var exp_curr = $('#exp-curr-val').val();
     var exp_tonext = $('#exp-tonext-val').val();
-    var exp_perc = parseInt(exp_curr / exp_tonext * 100);
+    var exp_perc = $('#exp-perctonext-val').val();
+    var old_level = parseInt($('#exp-level').html());
+    var level = parseInt($('#exp-level-val').val());
+
     var energy_perc = parseInt(energy_curr / energy_max * 100);
-    if (energy_perc > 100) {
-        energy_perc == 100;
-        levelUp();
+    if (old_level != level) {
+        levelUp(level);
     }
 
+    $('#exp-perc-val').val(exp_perc);
     $('#energy-perc').css('width', energy_perc + '%');
-    $('#exp-tonext').css('width', exp_perc + '%');
+    $('#exp-tonext').css('width', (exp_perc) + '%');
 
 }
 
@@ -204,9 +223,12 @@ function checkDomain(domains, i, search_id) {
                 $(".tablesorter").trigger("update").trigger('appendCache');
                 $('#exp-curr-val').val(data.exp_current);
                 $('#energy-curr-val').val(data.energy_current);
-                //$('#exp-curr-val').val(data.exp_tonext);
+                $('#exp-tonext-val').val(data.exp_tonext);
+                $('#exp-perctonext-val').val(data.exp_perctonext);
                 $('#energy-max-val').val(data.energy_max);
-                refreshBars(data);
+                $('#exp-level-val').val(data.level);
+
+                refreshBars();
                 refreshSearchButtons();
                 checkDomain(domains, i + 1, search_id);
             }

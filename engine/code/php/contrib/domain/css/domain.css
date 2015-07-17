@@ -298,3 +298,21 @@ h2 {
     margin-top: 20px;
     line-height: 1.5em;
 }
+
+
+#domain-collections {
+    max-width: 720px;
+}
+.domain-collection {
+    display: inline-block;
+    width: 150px;
+    padding: 6px;
+    border-radius: 6px;
+    background: #ddd;
+    margin: 8px;
+}
+
+.domain-collection:hover {
+    background: #fda;
+    font-weight: bold;
+}

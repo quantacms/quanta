@@ -132,9 +132,13 @@ class DomainSearch {
   public static function getCollections($env) {
     $files = $env->scanDirectory('contrib/domain/collections');
     $collections = array();
+
     foreach ($files as $file) {
-      $carr = explode('.', $file);
-      $collections[] = $carr[0];
+      $carr = array(
+        'name' => explode('.', $file)[0],
+        'number' => count(file('contrib/domain/collections/' . $file))
+      );
+      $collections[] = $carr;
     }
     return $collections;
   }

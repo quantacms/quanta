@@ -10,6 +10,9 @@ function pageEdit(action) {
 
 }
 
+function closeShadow() {
+        $('#shadow-outside, .shadow-element').hide();
+}
 /**
  * Page delete action. TODO: move in page module.
  */
@@ -28,6 +31,14 @@ function openShadow(shadow) {
     console.log(shadow);
     $('#shadow-item').html('').attr('rel', shadow.context).load(
         '?shadow=' + JSON.stringify(shadow), function() {
+
+            if (shadow.callback != undefined) {
+                shadow.callback();
+            }
+
+            $('#shadow-inside, #shadow-image').bind('click', function() {
+                closeShadow();
+            });
 
         pageRefresh();
         refreshButtons();

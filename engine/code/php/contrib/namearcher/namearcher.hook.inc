@@ -32,3 +32,20 @@ function namearcher_shadow_namearcher_message($vars) {
   $vars['shadow']->addTab('Info', $text, 1);
 }
 
+/**
+ * @param $vars
+ */
+function namearcher_shadow_domain_collections($vars) {
+  $collections = DomainSearch::getCollections($vars['shadow']->env);
+  $output = '<div id="domain-collections">';
+  foreach ($collections as $collection) {
+    $output .= '<div class="domain-collection"><a href="#" rel="' . $collection['name'] . '">' . $collection['name'] . ' (' . $collection['number'] . ')</a></div>';
+  }
+  $output .= '</div>';
+  $text = file_get_contents('contrib/namearcher/tpl/collections.inc');
+  $vars['shadow']->addTab('Collections', $output . $text, 1);
+}
+
+function namearcher_init($vars) {
+  $vars['env']->addInclude('engine/code/php/contrib/namearcher/js/namearcher.js');
+}

@@ -14,11 +14,8 @@ function domain_action_domain_search($vars) {
 
 function domain_init($vars) {
   $user = User::current($vars['env'], TRUE);
-
   $vars['env']->addInclude('engine/code/php/contrib/domain/js/search.js');
   $vars['env']->addInclude('engine/code/php/contrib/domain/css/domain.css');
-
-
   switch ($vars['env']->getRequestedPath()) {
 
     case 'searchbox':
@@ -60,15 +57,19 @@ function domain_init($vars) {
           if (!$energy_current) {
             print json_encode(array(
               'status' => 'ERROR',
-              'error' => 'Your energy is finished! You <a href="#" onclick="infoBox(\'zero_points\')">I want more!</a> a',
+              'error' => 'Your energy is finished! <a href="#" onclick="infoBox(\'zero_points\')">I want more!</a>',
             ));
           } else {
-            $exp_current = Points::add($vars['env'], $user, 'experience', '1');
+            $exp = Points::add($vars['env'], $user, 'experience', '1');
             $search = new DomainSearch($vars['env'], $_GET['domain'], $user);
             $result = $search->domain;
             $result->energy_current = $energy_current;
             $result->energy_max = $energy_max;
-            $result->exp_current = $exp_current;
+            $level = getLevel($exp);
+            $result->exp_current = $exp;
+            $result->exp_tonext = expToLevel($level+1);
+            $result->exp_perctonext = percToLevel($exp, $level+1);
+            $result->level = $level;
 
             print json_encode($result);
           }

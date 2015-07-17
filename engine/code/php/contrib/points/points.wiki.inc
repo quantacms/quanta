@@ -8,7 +8,7 @@
 
 function wiki_POINTS($replace, $attributes, $usr, $string, $page) {
   if ($usr == NULL) {
-    $user = User::current($page->env);
+    $user = User::current($page->env, TRUE);
   } else {
     $user = new User($page->env, $usr);
   }
