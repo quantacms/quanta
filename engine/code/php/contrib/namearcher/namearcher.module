@@ -1,4 +1,4 @@
 <?php
-  require_once('namearcher.class.inc');
+  require_once('NameArcher.class.inc');
   require_once('namearcher.hook.inc');
   require_once('namearcher.wiki.inc');
