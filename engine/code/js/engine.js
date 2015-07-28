@@ -63,6 +63,12 @@ var refreshButtons = function() {
         return false;
     });
 
+    $('.user-edit-link').unbind().bind('click', function () {
+        openShadow({ module: 'user', context: 'user_edit', type: 'tabs'});
+    });
+
+
+
     $( "input.hasDatepicker").each(function() {
         var default_date = ($(this).val());
         $(this).Zebra_DatePicker({
