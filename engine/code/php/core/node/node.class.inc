@@ -204,17 +204,24 @@ class Node extends DataContainer {
     // TODO: refactor.
     $tmp_dir = $this->env->dir['tmp_files'] . '/' . $this->tmp_files_dir;
     if (is_dir($tmp_dir)) {
-      $tmp_files = scandir($tmp_dir);
+      $tmp_files = $this->env->scanDirectory($tmp_dir);
+      // TODO: message not displayed. To double check.
+      new Message($this->env,var_export($tmp_files, TRUE));
+
       foreach ($tmp_files as $file) {
         $fpath = $tmp_dir . '/' . $file;
-        if (is_file($fpath)) {
-          //print $env->dir['tmp_files'] . '/' . $file;
+        $fileobj = new File($this->env, $fpath, $this);
+        new Message($this->env, 'check file ' . $fpath);
+        if (!$fileobj->isPublic()) {
+          new Message($this->env, 'The file <b>' . $file . '</b> has an invalid name. Please use a different name.', MESSAGE_WARNING);
+        } elseif (is_file($fpath)) {
           copy($fpath, $this->realpath . '/' . $file);
           unlink($fpath);
         }
-      }
+        }
       rmdir($tmp_dir);
-    }
+      }
+
 
   }
 

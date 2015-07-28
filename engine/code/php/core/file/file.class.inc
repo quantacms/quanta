@@ -25,7 +25,6 @@ class File {
     $this->extension = strtolower($exp[count($exp) - 1]);
     $this->type = File::getFileType($this->extension);
     $this->node = $node;
-
     $this->exists = is_file($this->node->realpath . '/' . $file_path);
   }
 
@@ -38,9 +37,9 @@ class File {
    */
   public function isPublic() {
     $is_public =
-      ($this->path != 'data.html') &&
-      ($this->path != 'data.json') &&
       ($this->getType() != 'swap') &&
+      ($this->extension != 'access') &&
+      ($this->name != '') &&
       ($this->name != 'data');
     return $is_public;
   }
