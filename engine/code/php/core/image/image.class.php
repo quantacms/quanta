@@ -14,10 +14,11 @@ class Image extends File {
   public $class = array();
 
   public function loadAttributes($attributes) {
-    foreach($attributes as $attribute) {
+    foreach($attributes as $attname => $attribute) {
       $attr = explode('=', $attribute);
-      if (preg_match_all('/[0-9\%]+x[0-9\%]+/', $attr[0], $matches)) {
-        $size = explode("x", $matches[0][0]);
+
+      if (preg_match_all('/[0-9]x[0-9]/', $attname, $matches)) {
+        $size = explode('x', $attname);
         $this->width = $size[0];
         $this->height = $size[1];
         $this->css[] = 'width:' . $this->width . ((strpos($this->width, '%') > 0) ? '' : 'px');
