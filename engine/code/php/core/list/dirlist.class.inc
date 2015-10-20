@@ -35,7 +35,7 @@ class DirList extends ListObject {
       $tpl_item = preg_replace("/\[COUNTER\]/is", $i, $tpl_item);
       $tpl_item = preg_replace("/\[NODE:name\]/is", $dir_url, $tpl_item);
       $tpl_item = preg_replace("/\[NODE:date\]/is", $node->getDateTime(), $tpl_item);
-      $tpl_item = preg_replace("/\[NODE:teaser\]/is", strip_tags(substr(preg_replace('/\[(.*)\]/', '', $node->render()), 0, 300)), $tpl_item);
+      $tpl_item = preg_replace("/\[NODE:teaser\]/is", strip_tags(substr(preg_replace('/\[(.*)\]/', '', $node->getBody()), 0, 300)), $tpl_item);
       $tpl_item = preg_replace("/\[IMG\:/is", '[IMG:/' . $dir_url . '/', $tpl_item);
       $this->tpl_items[] = '<li class="dir-list-item list-' . $this->getTheme() . '-item list-item-' . $i . '">' . $tpl_item . '</li>';
     }
