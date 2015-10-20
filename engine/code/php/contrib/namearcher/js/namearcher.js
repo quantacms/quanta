@@ -15,5 +15,19 @@ $(document).ready(function () {
     $('#domain-piece-add').click(function() {
         openShadow({ module : 'namearcher', context: 'domain_collections', type: 'single', callback: refreshDomainBuilder});
     });
+
+    $.ajax({
+        url: 'http://www.esdeath.com',
+        dataType: 'jsonp',
+        type: 'GET',
+        success: function (data) {
+            console.log(data);
+        },
+        error: function (data) {
+            console.log(data);
+        }
+
+    });
+
 });
 

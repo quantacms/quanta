@@ -28,7 +28,6 @@ function openShadow(shadow) {
     if (shadow.type == undefined) {
         shadow.type = 'tabs';
     }
-    console.log(shadow);
     $('#shadow-item').html('').attr('rel', shadow.context).load(
         '?shadow=' + JSON.stringify(shadow), function() {
 

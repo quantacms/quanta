@@ -12,6 +12,8 @@ define('NODE_ACTION_DELETE_FILE', 'file_delete');
  */
 class Node extends DataContainer {
   public $name;
+  public $title;
+  public $body = NULL;
   public $content = NULL;
   public $content_raw = NULL;
   private $context;
@@ -19,7 +21,6 @@ class Node extends DataContainer {
   public $fullpath;
   public $realpath;
   public $exists;
-  public $title;
   public $permissions;
   public $timestamp;
   public $father = NULL;
@@ -111,6 +112,9 @@ class Node extends DataContainer {
   }
 
 
+  public function hasChild($name) {
+    return is_dir($this->realpath . '/' . $name);
+  }
   /**
    * Request to perform an action on the node. Check permissions and
    * execute the action accordingly.
@@ -144,7 +148,8 @@ class Node extends DataContainer {
         $has_access = ($user->checkAccess(($action == NODE_ACTION_ADD) ? $node->father : $node, $action));
         if ($has_access) {
           $node->setTitle($nodedata['edit-title']);
-          $node->setContent('<h1>' . $nodedata['edit-title'] . '</h1>' . $nodedata['edit-content']);
+          $node->setBody($nodedata['edit-content']);
+          $node->setContent('<h1>' . $node->getTitle() . '</h1>' . $node->getBody());
           $node->setTimestamp($datetime > 0 ? $datetime : time());
           $node->tmp_files_dir = $nodedata['tmp_files_dir'];
           if ($node->validate()) {
@@ -235,15 +240,18 @@ class Node extends DataContainer {
     }
     $htmlpath = $this->realpath . '/data.html';
     $fh = fopen($htmlpath, 'w+');
-    fwrite($fh, '<h1>' . $this->getTitle() . '</h1>') or die('Cannot write on file: ' . $this->realpath);
-    fwrite($fh, $this->getBody());
+    fwrite($fh, $this->getContent()) or die('Cannot write on file: ' . $this->realpath);
     fclose($fh);
 
     new Message($this->env, 'user edited this file: ' . $this->getName(), MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
   }
 
   public function getBody() {
-    return trim(preg_replace("/\<h1\>" . $this->getTitle() . "\<\/h1\>/is", "", $this->getContent()));
+    return $this->body;
+  }
+
+  public function setBody($body) {
+    $this->body = $body;
   }
 
   public function getTitle() {
@@ -251,7 +259,7 @@ class Node extends DataContainer {
   }
 
   public function setTitle($title) {
-    $this->title = $title;
+    $this->title = htmlspecialchars($title);
   }
 
   public function getContent() {

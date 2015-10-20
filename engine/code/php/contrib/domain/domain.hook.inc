@@ -65,10 +65,10 @@ function domain_init($vars) {
             $result = $search->domain;
             $result->energy_current = $energy_current;
             $result->energy_max = $energy_max;
-            $level = getLevel($exp);
+            $level = NameArcher::getLevel($exp);
             $result->exp_current = $exp;
-            $result->exp_tonext = expToLevel($level+1);
-            $result->exp_perctonext = percToLevel($exp, $level+1);
+            $result->exp_tonext = NameArcher::expToLevel($level+1);
+            $result->exp_perctonext = NameArcher::percToLevel($exp, $level+1);
             $result->level = $level;
 
             print json_encode($result);

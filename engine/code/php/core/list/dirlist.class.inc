@@ -41,4 +41,8 @@ class DirList extends ListObject {
     }
   }
 
+  public function getDirs() {
+    return $this->dirs;
+  }
+
 }

@@ -8,7 +8,6 @@ function wikize($env, &$page) {
   $nw = array();
   $nwid = 0;
 
-
   preg_match_all("/\[(.*?)]/", $page->html, $matches);
   foreach ($matches[1] as $tag_value) {
     $replace = '[' . $tag_value . ']';
@@ -18,9 +17,14 @@ function wikize($env, &$page) {
     $attributes = explode('|', $tag[0]);
     $attr_arr = array();
     unset($attributes[0]);
+    // Assign attributes as specified in the tag.
     foreach ($attributes as $attr_item) {
-    $split = explode('=', $attr_item);
-      $attr_arr[$split[0]] = $split[1];
+      $split = explode('=', $attr_item);
+      if (isset($split[1])) {
+        $attr_arr[$split[0]] = $split[1];
+      } else {
+        $attr_arr[$split[0]] = TRUE;
+      }
     }
 
     preg_match_all("/\<nowiki\>(.*)\<\/nowiki\>/is", $page->html, $nowiki);
@@ -34,8 +38,6 @@ function wikize($env, &$page) {
       $func = 'wiki_' . $tag_name;
       $page->html = $func($replace, $attr_arr, isset($tag[1]) ? $tag[1] : NULL, $page->html, $page);
     }
-
-
   }
 
   // Render node links.

@@ -3,6 +3,7 @@
 function file_shadow_node_add($vars) {
   file_shadow_node_edit($vars);
 }
+
 function file_shadow_node_edit($vars) {
   $user = User::current($vars['env']);
   $node = $vars['env']->getData('node');

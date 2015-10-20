@@ -4,6 +4,7 @@
  */
 function wiki_IMG($replace, $attributes, $var, $string, $page) {
   $node = ($page->env->getData('node'));
+
   $image = new Image($page->env, $var, $node);
   $image->loadAttributes($attributes);
   $string = str_replace($replace, $image->render(), $string);
