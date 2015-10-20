@@ -14,6 +14,7 @@
 abstract class ListObject {
   public $loaded = FALSE;
   protected $path;
+  protected $realpath;
   /**
    * @var Environment $env
    */
@@ -33,13 +34,22 @@ abstract class ListObject {
     if ($path == NULL) {
       $path = $env->getRequestedPath();
     }
-;
+
     $this->env = $env;
     // TODO: no need to rebuild node when it's current page.
-    $this->node = new Node($this->env, $path);
     $this->dir = $path;
     $this->type = strtolower($type);
-    $this->path = $this->env->dir('wiki') . '/' . $path;
+
+    if ($path == 'root') {
+      $this->path = $env->dir['docroot'];
+      $this->realpath = $env->dir['docroot'];
+      $this->node = NULL;
+    } else {
+      $this->path = ($this->env->dir('wiki') . '/' . $path);
+      $this->node = new Node($this->env, $path);
+      $this->realpath = $this->node->realpath;
+    }
+
     foreach ($attr_arr as $attr_key => $attr_val) {
         $this->setAttribute($attr_key, $attr_val);
     }
@@ -47,7 +57,7 @@ abstract class ListObject {
   }
 
   /**
-   * Set attribtues, typically passed in the wiki tag.
+   * Set attributes, typically passed in the wiki tag.
    * @param $attr_name
    * @param $attr_value
    */
@@ -67,19 +77,19 @@ abstract class ListObject {
   }
 
   public function load() {
-    if (!is_dir($this->node->realpath)) {
+    if (!is_dir($this->realpath)) {
       $this->loaded = TRUE;
-      new Message($this->env, $this->node->name . ' is not a valid page. Full path: ' . $this->node->realpath, MESSAGE_ERROR);
+      new Message($this->env, $this->node->name . ' is not a valid page. Path: ' . $this->path . ' Full path: ' . $this->realpath, MESSAGE_ERROR);
       return FALSE;
     }
 
-    $list_pages = $this->env->scanDirectory($this->node->realpath);
+    $list_pages = $this->env->scanDirectory($this->realpath);
 
     foreach ($list_pages as $data_url) {
       $node = new Node($this->env, $data_url);
       if ($node->exists) {
         $this->dirs[$data_url] = $node;
-      } else {
+      } elseif ($this->node != NULL) {
         $file = new File($this->env, $data_url, $this->node);
         if ($file->isPublic()) {
           $this->files[] = $file;

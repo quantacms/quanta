@@ -19,7 +19,7 @@ class Manager {
     $this->node = $node;
   }
 
-  public function renderTree($path = 'editoriale') {
+  public function renderTree($path = 'root') {
     $list = new DirList($this->env, $path, 'simple');
     $leaves = $list->getDirs();
     $lines = array();
