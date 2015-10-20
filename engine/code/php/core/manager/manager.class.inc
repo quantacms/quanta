@@ -24,9 +24,8 @@ class Manager {
     $leaves = $list->getDirs();
     $lines = array();
     foreach ($leaves as $leaf) {
-      if ($leaf->name != $this->node->name) {
-        $lines[] = $this->renderLeaf($leaf);
-      }
+      $lines[] = $this->renderLeaf($leaf);
+
     }
     return '<ul id="tree-' . $path . '">' . implode('', $lines) . '</ul><script>refreshManagerLeaves();</script></ul>';
   }
@@ -38,7 +37,15 @@ class Manager {
     if ($leaf->hasChildren()) {
       $classes .= " has-children";
     }
-    return '<li><a href="#" rel="leaf-' . $leaf->name. '" class="manager-leaf ' . $classes . ' ' . ($selected ? 'selected' : '') . '">' . $leaf->title . '</a> ' . ($is_father ? ' (main category)' : ('<input type="checkbox" ' . ($selected ? 'checked' : '') . ' name="leaf-' . $leaf->name . '" id="leaf-' . $leaf->name . '" />')) .'</li>';
+
+    if ($leaf->name == $this->node->name) {
+      $txt = '(current node)';
+    } elseif ($is_father) {
+      $txt = '(main category)';
+    } else {
+      $txt = '<input value="' . $leaf->name . '" type="checkbox" ' . ($selected ? 'checked' : '') . ' name="leaf-' . $leaf->name . '" id="leaf-' . $leaf->name . '" />';
+    }
+    return '<li><a href="#" rel="leaf-' . $leaf->name. '" class="manager-leaf ' . $classes . ' ' . ($selected ? 'selected' : '') . '">' . $leaf->title . '</a> ' . $txt .'</li>';
   }
 
 }

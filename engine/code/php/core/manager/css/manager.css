@@ -1,8 +1,15 @@
 .manager-tree li {
     display: block;
+    padding-left: 20px;
+    margin-left: 0;
+}
+.manager-tree ul {
+    padding: 0;
+    margin: 0;
 }
 .manager-tree  li.expanded ul {
-    margin-left: 20px;
+    margin-left: 4px;
+    border-bottom: 1px solid #dedede;
 }
 .manager-tree li a {
     display: inline-block;
@@ -19,14 +26,18 @@
 }
 
 
-.manager-tree li a.has-children {
+.manager-tree li > a.has-children {
     background-image: url('plus.gif');
     background-repeat: no-repeat;
     background-position: center left;
 
 }
 
-.manager-tree li.expanded a.has-children {
+.manager-tree li.expanded > a.has-children {
+    border: 1px solid #ddd;
     background-image: url('minus.gif');
 }
 
+.manager-tree li.expanded > ul > li {
+    border-left: 1px solid #ddd;
+}

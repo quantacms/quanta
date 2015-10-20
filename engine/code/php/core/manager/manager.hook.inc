@@ -31,3 +31,21 @@ function manager_shadow_node_edit($vars) {
   $vars['shadow']->addTab('manage categories', $manager->renderTree(), 3, 'manager-tree');
 }
 
+
+function manager_action_node_add($vars) {
+manager_action_node_edit($vars);
+}
+
+function manager_node_save($vars) {
+  foreach($vars['data'] as $label => $val) {
+    if (substr($label, 0, 8) == 'add-leaf') {
+      $leaf = substr($label, 9);
+      $leafnode = new Node($vars['env'], $leaf);
+      symlink($vars['node']->realpath, $leafnode->realpath . '/' . $vars['node']->name);
+    } elseif (substr($label, 0, 8) == 'rem-leaf') {
+      $leaf = substr($label, 9);
+      $leafnode = new Node($vars['env'], $leaf);
+      unlink($leafnode->realpath . '/' . $vars['node']->name);
+    }
+  }
+}
