@@ -18,11 +18,11 @@ function wiki_PAGE($replace, $attributes, $var, $string, $page) {
 /**
  * Wiki Hook for BREADCRUMB.
  */
-function wiki_BREADCRUMB($replace, $attribuets, $var, $string, $page) {
+function wiki_BREADCRUMB($replace, $attributes, $var, $string, $page) {
   $themed_bc = '';
   $breadcrumb = $page->env->getData('breadcrumb');
   if (count($breadcrumb) > 0 && $breadcrumb != '') {
-    $themed_bc = '<div class="breadcrumb-block">You are in: <ul class="breadcrumb"><li>[home:Home]</li>';
+    $themed_bc = '<div class="breadcrumb-block">' . (isset($attributes['label']) ? $attributes['label'] : 'You are in:') . '<ul class="breadcrumb"><li>[home:Home]</li>';
       foreach ($breadcrumb as $path => $title) {
         $themed_bc .= '<li>[' . $path . ':' . $title . ']</li>';
       }
