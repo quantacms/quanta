@@ -24,8 +24,9 @@ class Manager {
     $leaves = $list->getDirs();
     $lines = array();
     foreach ($leaves as $leaf) {
-      $lines[] = $this->renderLeaf($leaf);
-
+      if ($leaf->name != 'home' && $leaf->name != 'files') {
+        $lines[] = $this->renderLeaf($leaf);
+      }
     }
     return '<ul id="tree-' . $path . '">' . implode('', $lines) . '</ul><script>refreshManagerLeaves();</script></ul>';
   }
