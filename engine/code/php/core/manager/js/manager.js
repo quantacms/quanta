@@ -23,14 +23,12 @@ function refreshManagerLeaves() {
 
     $('.manager-tree').find('input').each(function() {
        $(this).unbind().bind('click', function() {
-
-
          if ($(this).prop('checked')) {
              $('input[name=rem-' + $(this).attr('name') + ']').remove();
-             $('.manager-tree').append('<input type="text" name="add-' + $(this).attr('name') + '" value="add-' + $(this).val() + '" />');
+             $('.manager-tree').append('<input type="hidden" name="add-' + $(this).attr('name') + '" value="add-' + $(this).val() + '" />');
          } else {
              $('input[name=add-' + $(this).attr('name')+']').remove();
-             $('.manager-tree').append('<input type="text" name="rem-' + $(this).attr('name') + '" value="remove-' + $(this).val() + '" />');
+             $('.manager-tree').append('<input type="hidden" name="rem-' + $(this).attr('name') + '" value="remove-' + $(this).val() + '" />');
          }
        });
     });
