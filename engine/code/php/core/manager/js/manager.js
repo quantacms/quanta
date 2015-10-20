@@ -9,7 +9,7 @@ function refreshManagerLeaves() {
             if (expanded) {
                 leafobj.parent().removeClass('expanded');
             } else {
-                var openurl = '/expand/?path=' + leaf + '&node=sabaudia';
+                var openurl = '/expand/?path=' + leaf + '&node=' + $('#edit-path').val();
                 $.ajax({
                     url: openurl
                 }).done(function(data) {
