@@ -28,6 +28,6 @@ function manager_shadow_node_edit($vars) {
     return FALSE;
   }
   $manager = new Manager($vars['env'], $node);
-  $vars['shadow']->addTab('manage categories', $manager->renderTree(), 3);
+  $vars['shadow']->addTab('manage categories', $manager->renderTree(), 3, 'manager-tree');
 }
 

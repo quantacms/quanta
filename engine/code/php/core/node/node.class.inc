@@ -113,6 +113,15 @@ class Node extends DataContainer {
     }
   }
 
+  public function hasChildren() {
+    $scan = $this->env->scanDirectory($this->realpath);
+    foreach ($scan as $dir) {
+      if (is_dir($this->realpath . '/' . $dir)) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
 
   public function hasChild($name) {
     return is_dir($this->realpath . '/' . $name);

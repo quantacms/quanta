@@ -1,0 +1,32 @@
+.manager-tree li {
+    display: block;
+}
+.manager-tree  li.expanded ul {
+    margin-left: 20px;
+}
+.manager-tree li a {
+    display: inline-block;
+    padding: 3px;
+    border-radius: 8px;
+}
+.manager-tree li a:hover {
+    background-color: #ddd;
+}
+
+.manager-tree li a {
+    text-decoration: none;
+    padding-left: 18px;
+}
+
+
+.manager-tree li a.has-children {
+    background-image: url('plus.gif');
+    background-repeat: no-repeat;
+    background-position: center left;
+
+}
+
+.manager-tree li.expanded a.has-children {
+    background-image: url('minus.gif');
+}
+

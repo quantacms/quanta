@@ -48,7 +48,7 @@ class Shadow extends DataContainer {
         if ($tab['title'] != NULL) {
           $tab_titles .= '<li class="shadow-title ' . (($i == 1) ? 'enabled' : '') . '" ><a href="#tab' . $i . '" rel="' . $i . '" id="shadow-title-' . $i . '">' . $tab['title'] . '</a></li>';
         }
-        $tab_contents .= '<div class="shadow-content ' . (($i == 1) ? 'enabled' : '') . '" id="shadow-content-' . $i . '"><nowiki>' . $tab['content'] . '</nowiki></div>';
+        $tab_contents .= '<div class="shadow-content shadow-content-' . $this->getContext() . ' ' . $tab['classes'] . ' ' . (($i == 1) ? 'enabled' : '') . '" id="shadow-content-' . $i . '"><nowiki>' . $tab['content'] . '</nowiki></div>';
       }
     }
     $shadow_page->setData('tab_titles', $tab_titles);
@@ -73,8 +73,8 @@ class Shadow extends DataContainer {
    * @param string $content
    * @param int $weight
    */
-  public function addTab($title, $content, $weight = 1) {
-    $this->tabs[$weight][$this->getContext()] = array('title' => $title, 'content' => $content);
+  public function addTab($title, $content, $weight = 1, $classes = NULL) {
+    $this->tabs[$weight][$this->getContext()] = array('title' => $title, 'content' => $content, 'classes' => $classes);
   }
 
   public function getTabs() {
