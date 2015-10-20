@@ -100,7 +100,9 @@ class Node extends DataContainer {
       fwrite($fh, '<h1>' . $this->name . '</h1>');
       fclose($fh);
     }
-    $this->content = file_get_contents($this->path . '/data.html');
+    $this->setContent(file_get_contents($this->path . '/data.html'));
+    // TODO: needed to remove the h1 from the body... to double check.
+    $this->setBody(preg_replace('!<\s*(h1).*?>((.*?)</\1>)?!is', '', $this->getContent()));
     $this->content_raw = $this->content;
     if (is_file($this->path . '/data.json')) {
       $this->json = json_decode(file_get_contents($this->path . '/data.json'));
