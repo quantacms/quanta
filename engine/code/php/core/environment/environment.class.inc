@@ -120,6 +120,7 @@ class Environment extends DataContainer {
     return $dirs;
   }
 
+
   /**
    * Get all dirs inside a given dir, at a leaf level.
    */
