@@ -83,8 +83,12 @@ abstract class ListObject {
       return FALSE;
     }
 
-    $list_pages = $this->env->scanDirectory($this->realpath);
+    if ($this->getAttribute('level') == 'leaf') {
+      $list_pages = $this->env->scanDirectoryDeep($this->realpath, '', array(), DIR_INACTIVE);
 
+    } else {
+      $list_pages = $this->env->scanDirectory($this->realpath, DIR_INACTIVE);
+    }
     foreach ($list_pages as $data_url) {
       $node = new Node($this->env, $data_url);
       if ($node->exists) {
