@@ -1,6 +1,8 @@
 <?php
 define("DIR_INACTIVE", '_');
 define("DIR_ALL", '');
+define("DIR_DIRS", 'dirs');
+define("DIR_FILES", 'files');
 
 /**
  * Class Environment
@@ -94,16 +96,49 @@ class Environment extends DataContainer {
   /**
    * Get all dirs inside a given dir.
    */
-  public function scanDirectory($base_dir = '', $exclude_dirs = DIR_INACTIVE) {
+  public function scanDirectory($base_dir = '', $exclude_dirs = DIR_INACTIVE, $type = DIR_ALL) {
     if (!is_dir($base_dir)) {
       return array();
     }
     $dirs = array_diff(scandir($base_dir), array('.', '..'));
     if ($exclude_dirs != NULL) {
       foreach ($dirs as $k => $dir) {
+        // Remove inactive if requested.
         if (substr($dir, 0, 1) == $exclude_dirs) {
           unset ($dirs[$k]);
         }
+
+        if ($type == DIR_DIRS && !is_dir($base_dir . '/' . $dir)) {
+          unset ($dirs[$k]);
+        }
+
+        if ($type == DIR_FILES && !is_file($base_dir . '/' . $dir)) {
+          unset ($dirs[$k]);
+        }
+      }
+    }
+    return $dirs;
+  }
+
+  /**
+   * Get all dirs inside a given dir, at a leaf level.
+   */
+  public function scanDirectoryDeep($base_dir, $dir, $dirs = array(), $exclude_dirs = DIR_INACTIVE) {
+    $scan = ($this->scanDirectory($base_dir . '/' . $dir, DIR_INACTIVE, DIR_ALL));
+    if (count($scan) == 0) {
+      $dirs[] = $dir;
+    } else {
+      $i = 0;
+      foreach ($scan as $scandir) {
+        $next_dir = ($base_dir . '/' . $dir . '/' . $scandir);
+        if (is_dir($next_dir) && !is_link($next_dir)) {
+          $dirs = $this->scanDirectoryDeep($base_dir .'/' . $dir, $scandir, $dirs, $exclude_dirs);
+          $i++;
+        }
+      }
+      // If $i didn't grow, means the directory contains only files, so it's a leaf.
+      if ($i == 0) {
+        $dirs[] = $dir;
       }
     }
     return $dirs;
