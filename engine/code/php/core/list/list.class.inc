@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: aldotripiciano
@@ -83,9 +84,8 @@ abstract class ListObject {
       return FALSE;
     }
 
-    if ($this->getAttribute('level') == 'leaf') {
-      $list_pages = $this->env->scanDirectoryDeep($this->realpath, '', array(), DIR_INACTIVE);
-
+    if ($this->getAttribute('level') == 'leaf' || $this->getAttribute('level') == 'tree') {
+      $list_pages = $this->env->scanDirectoryDeep($this->realpath, '', array(), array('exclude_dirs' => DIR_INACTIVE, 'type' => DIR_ALL, 'level' => $this->getAttribute('level')));
     } else {
       $list_pages = $this->env->scanDirectory($this->realpath, DIR_INACTIVE);
     }
