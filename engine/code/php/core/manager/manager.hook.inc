@@ -33,7 +33,7 @@ function manager_shadow_node_edit($vars) {
 
 
 function manager_action_node_add($vars) {
-manager_action_node_edit($vars);
+//manager_action_node_edit($vars);
 }
 
 function manager_node_save($vars) {

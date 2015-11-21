@@ -126,6 +126,7 @@ class Node extends DataContainer {
   public function hasChild($name) {
     return is_dir($this->realpath . '/' . $name);
   }
+
   /**
    * Request to perform an action on the node. Check permissions and
    * execute the action accordingly.
@@ -165,9 +166,13 @@ class Node extends DataContainer {
           $node->tmp_files_dir = $nodedata['tmp_files_dir'];
           if ($node->validate()) {
             $node->save();
-            $env->hook('node_save', array('node' => &$node, 'data' => $nodedata));
+            $env->hook('node_save', array(
+              'node' => &$node,
+              'data' => $nodedata
+            ));
             $response->redirect = '/' . $node->getName() . '/';
-          } else {
+          }
+          else {
             // TODO: make this good.
             $response->errors = Message::burnMessages();
           }
@@ -198,7 +203,8 @@ class Node extends DataContainer {
     $valid = FALSE;
     if ($this->getTitle() == '') {
       new Message($this->env, 'Node title can not be empty.', MESSAGE_WARNING);
-    } else {
+    }
+    else {
       $valid = TRUE;
     }
 
@@ -226,15 +232,14 @@ class Node extends DataContainer {
         $fileobj = new File($this->env, $fpath, $this);
         if (!$fileobj->isPublic()) {
           new Message($this->env, 'The file <b>' . $file . '</b> has an invalid name. Please use a different name.', MESSAGE_WARNING);
-        } elseif (is_file($fpath)) {
+        }
+        elseif (is_file($fpath)) {
           copy($fpath, $this->realpath . '/' . $file);
           unlink($fpath);
         }
-        }
-      rmdir($tmp_dir);
       }
-
-
+      rmdir($tmp_dir);
+    }
   }
 
   /**
@@ -347,6 +352,9 @@ class Node extends DataContainer {
    * @return bool|string
    */
   public function getDate() {
+    // TODO: warning thrown.
+    date_default_timezone_set('UTC');
+
     return date('d-m-Y', $this->getTimestamp());
   }
 
@@ -569,7 +577,7 @@ class Node extends DataContainer {
 
         default:
           // The item in [NODE:item] is unknown.
-          $part = '?';
+          $part = 'undefined:' . $nodepart;
           break;
       }
 
@@ -597,7 +605,8 @@ class Node extends DataContainer {
   public function buildFather() {
     if (isset($this->father)) {
       return $this->father;
-    } else {
+    }
+    else {
       $rpath_arr = explode('/', $this->realpath);
       $fatherpath = ($rpath_arr[count($rpath_arr) - 2]);
       $this->father = ($fatherpath == $this->env->host) ? new Node($this->env, 'home') : new Node($this->env, $fatherpath);

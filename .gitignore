@@ -8,3 +8,5 @@ engine/tmp/*
 sites
 sites/*
 sites*
+_sites
+_sites/*
