@@ -4,7 +4,7 @@ define('NODE_ACTION_ADD', 'node_add');
 define('NODE_ACTION_EDIT', 'node_edit');
 define('NODE_ACTION_DELETE', 'node_delete');
 define('NODE_ACTION_DELETE_FILE', 'file_delete');
-
+date_default_timezone_set('UTC');
 /**
  * Class Node
  * This class represents a Node (corrisponding to a folder in the file system).
@@ -41,6 +41,7 @@ class Node extends DataContainer {
     if ($father != NULL) {
       $this->father = $father;
     }
+
     $this->path = $this->env->dir['wiki'] . '/' . $this->getName();
 
     $this->exists = is_link($this->path);
@@ -301,12 +302,14 @@ class Node extends DataContainer {
    */
   public function delete() {
     $np = explode('/', $this->realpath);
+
     $rmname = '__' . $np[count($np) - 1];
     $np[count($np) - 1] = $rmname;
     // Delete file is indeed not an immediate deletion: it adds __ to folder name.
     // This is useful in order to recover a node that was accidentally deleted.
     rename($this->path, $this->env->dir['wiki'] . '/' . $rmname);
     rename($this->realpath, implode('/', $np));
+
     new Message($this->env, 'user deleted this page: ' . $this->name . '.', MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
   }
 

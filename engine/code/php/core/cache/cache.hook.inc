@@ -13,7 +13,10 @@
   function cachewiki($vars, $base = '') {
     $docroot = $vars['env']->dir['docroot'];
     $wikiroot = $vars['env']->dir['wiki'];
-    $scan = $vars['env']->scanDirectory($docroot . '/' . $base);
+    $scan = $vars['env']->scanDirectory($docroot . '/' . $base, array(
+      'exclude_dirs' => DIR_ALL,
+      'type' => DIR_DIRS,
+    ));
     foreach ($scan as $folder) {
       $this_folder = $docroot . '/' . $base . '/' . $folder;
       if (is_dir($this_folder) && !is_link($this_folder)) {
