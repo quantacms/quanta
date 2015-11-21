@@ -1,6 +1,8 @@
 <?php
 define("DIR_INACTIVE", '_');
-define("DIR_ALL", '');
+define("DIR_ALL", 'all');
+define("DIR_DIRS", 'dirs');
+define("DIR_FILES", 'files');
 
 /**
  * Class Environment
@@ -98,30 +100,27 @@ class Environment extends DataContainer {
     if (!is_dir($base_dir)) {
       return array();
     }
-    $attributes = array();
     if (!isset($attributes['exclude_dirs'])) {
       $attributes['exclude_dirs'] = DIR_INACTIVE;
     }
     if (!isset($attributes['type'])) {
       $attributes['type'] = DIR_ALL;
     }
+
     $dirs = array_diff(scandir($base_dir), array('.', '..'));
-    if ($attributes['exclude_dirs'] != NULL) {
-      foreach ($dirs as $k => $dir) {
+    foreach ($dirs as $k => $dir) {
         // Remove inactive if requested.
         if (substr($dir, 0, 1) == $attributes['exclude_dirs']) {
           unset ($dirs[$k]);
         }
-
         if ($attributes['type'] == DIR_DIRS && !is_dir($base_dir . '/' . $dir)) {
           unset ($dirs[$k]);
         }
-
         if ($attributes['type'] == DIR_FILES && !is_file($base_dir . '/' . $dir)) {
           unset ($dirs[$k]);
         }
       }
-    }
+
     return $dirs;
   }
 
@@ -158,9 +157,7 @@ class Environment extends DataContainer {
 
   private function load() {
     foreach ($this->dir as $folder) {
-      if (!is_dir($folder)) {
-        mkdir($folder) or die("Error: can not create " . $folder . '. Check permission and path.');
-      }
+      $this->sysdir($folder);
     }
     $this->loadCoreModules();
     $this->loadContribModules();
@@ -241,6 +238,13 @@ class Environment extends DataContainer {
       $path = $candidate_path . '-' . $i;
     }
     return $path;
+  }
+
+  public function sysdir($folder) {
+    if (!is_dir($folder)) {
+      mkdir($folder) or die("Error: can not create " . $folder . '. Check permission and path.');
+    }
+    return $folder;
   }
 
 }
