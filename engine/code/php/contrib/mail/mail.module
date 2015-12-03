@@ -1,6 +1,6 @@
 <?php
 require_once('Mail.class.php');
-require_once('mail.wiki.inc');
 require_once('mail.hook.inc');
+require_once('mail.wiki.inc');
 
 

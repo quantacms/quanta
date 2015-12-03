@@ -15,6 +15,6 @@ function mail_cron($vars) {
 
   foreach ($mail_nodes as $k) {
     $mail_node = new Mail($vars['env'], $k);
-    // $mail_node->send();
+    $mail_node->send();
   }
 }
