@@ -156,9 +156,6 @@ class User extends DataContainer {
     unset($user_json->env);
     unset($user_json->json);
     unset($user_json->exists);
-
-    //print_r($user_json->getData('points'));
-    //dies("FFF");
     $fh = fopen($jsonpath, 'w+');
     fwrite($fh, json_encode($user_json));
     fclose($fh);

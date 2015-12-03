@@ -11,8 +11,8 @@ abstract class DataContainer {
     $this->data[$key] = $value;
   }
 
-  public function getData($key) {
-    return (isset($this->data[$key]) ? $this->data[$key] : NULL);
+  public function getData($key, $default = NULL) {
+    return (isset($this->data[$key]) ? $this->data[$key] : $default);
   }
 
 }

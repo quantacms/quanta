@@ -24,16 +24,17 @@ class Mail extends Node {
     $mail->Password = 'blacklore3X';
     $mail->Port = 587;
     $mail->setFrom('aldo.tripiciano@gmail.com', 'Mailer');
-    $mail->addAddress('bladesty@yahoo.it', 'Joe User');
+    // $mail->addAddress($this->getData('to'), $this->getData('to'));
+    // $mail->addAddress('info@pucarasicurezza.it', 'info@pucarasicurezza.it');
+    $mail->addAddress('aldo.tripiciano@gmail.com', 'aldo.tripiciano@gmail.com');
     $mail->isHTML(true);
-    $mail->Subject = $this->getTitle();
-    $mail->Body    = $this->getContent();
+    // $mail->Subject = $this->getTitle();
+    $mail->Subject = 'Nuova richiesta dal sito';
+    $mail->Body    = 'Hai ricevuto questa richiesta dal sito:<br/><br/>' . $this->getContent();
     $mail->AltBody = $this->getContent();
     if(!$mail->send()) {
-      echo 'Message could not be sent.';
-      echo 'Mailer Error: ' . $mail->ErrorInfo;
+      new Message($this->env, 'Mailer Error: ' . $mail->ErrorInfo, MESSAGE_ERROR);
     } else {
-      echo 'Message has been sent';
       $this->delete();
     }
   }

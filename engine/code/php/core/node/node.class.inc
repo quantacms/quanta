@@ -298,19 +298,25 @@ class Node extends DataContainer {
   }
 
   /**
-   * Delete this node from the file system.
+   * Delete this node and disable it by adding __ to the folder.
    */
   public function delete() {
     $np = explode('/', $this->realpath);
-
     $rmname = '__' . $np[count($np) - 1];
     $np[count($np) - 1] = $rmname;
     // Delete file is indeed not an immediate deletion: it adds __ to folder name.
     // This is useful in order to recover a node that was accidentally deleted.
-    rename($this->path, $this->env->dir['wiki'] . '/' . $rmname);
+    unlink($this->path);
     rename($this->realpath, implode('/', $np));
-
     new Message($this->env, 'user deleted this page: ' . $this->name . '.', MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
+  }
+
+  /**
+   * Delete this node definitely from the file system.
+   * Will delete all subnodes and subfiles. Use with EXTREME care.
+   */
+  public function deleteHard() {
+    // TODO: maybe this function is too dangerous to really enable it.
   }
 
   public function setContent($content) {
