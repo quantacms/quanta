@@ -49,12 +49,12 @@ class Environment extends DataContainer {
   }
 
   private function loadCoreModules() {
-    $core_modules = $this->scanDirectory('core');
+    $core_modules = $this->scanDirectory('core', array('exclude_dirs' => DIR_INACTIVE, 'type' => DIR_DIRS));
     $this->setModules('core', $core_modules);
   }
 
   private function loadContribModules() {
-    $contrib_modules = $this->scanDirectory($this->dir['docroot'] . '/_modules');
+    $contrib_modules = $this->scanDirectory($this->dir['docroot'] . '/_modules', array('exclude_dirs' => DIR_INACTIVE, 'type' => DIR_DIRS));
     $this->setModules('contrib', $contrib_modules);
   }
 
@@ -109,17 +109,17 @@ class Environment extends DataContainer {
 
     $dirs = array_diff(scandir($base_dir), array('.', '..'));
     foreach ($dirs as $k => $dir) {
-        // Remove inactive if requested.
-        if (substr($dir, 0, 1) == $attributes['exclude_dirs']) {
-          unset ($dirs[$k]);
-        }
-        if ($attributes['type'] == DIR_DIRS && !is_dir($base_dir . '/' . $dir)) {
-          unset ($dirs[$k]);
-        }
-        if ($attributes['type'] == DIR_FILES && !is_file($base_dir . '/' . $dir)) {
-          unset ($dirs[$k]);
-        }
+      // Remove inactive if requested.
+      if (substr($dir, 0, 1) == $attributes['exclude_dirs']) {
+        unset ($dirs[$k]);
       }
+      if ($attributes['type'] == DIR_DIRS && !is_dir($base_dir . '/' . $dir)) {
+        unset ($dirs[$k]);
+      }
+      if ($attributes['type'] == DIR_FILES && !is_file($base_dir . '/' . $dir)) {
+        unset ($dirs[$k]);
+      }
+    }
 
     return $dirs;
   }
