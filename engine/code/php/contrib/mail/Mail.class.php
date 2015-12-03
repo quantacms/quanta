@@ -13,7 +13,7 @@ class Mail extends Node {
    * @throws phpmailerException
    */
   public function send() {
-    require_once('PHPMailer/PHPMailerAutoload.php');
+    require_once('mailer/PHPMailerAutoload.php');
     // $mail->SMTPDebug  = 2;
     $mail = new PHPMailer();
     $mail->isSMTP();
