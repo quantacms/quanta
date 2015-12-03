@@ -96,11 +96,12 @@ class Node extends DataContainer {
    */
   public function buildContent() {
     // Create data.html if it doesn't exist.
-    if (!is_file($this->path . '/data.html')) {
+    /*if (!is_file($this->path . '/data.html')) {
       $fh = fopen($this->path . '/data.html', 'w+');
       fwrite($fh, '<h1>' . $this->name . '</h1>');
       fclose($fh);
     }
+    */
     $this->setContent(file_get_contents($this->path . '/data.html'));
     // TODO: needed to remove the h1 from the body... to double check.
     $this->setBody(preg_replace('!<\s*(h1).*?>((.*?)</\1>)?!is', '', $this->getContent()));
