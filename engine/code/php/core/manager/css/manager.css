@@ -3,6 +3,7 @@
     display: block;
     padding-left: 20px;
     margin-left: 0;
+    margin-top: 4px;
 }
 .manager-tree ul {
     padding: 0;
@@ -41,4 +42,8 @@
 
 .manager-tree li.expanded > ul > li {
     border-left: 1px solid #ddd;
+}
+
+.manager-main-category {
+    font-weight: bold;
 }

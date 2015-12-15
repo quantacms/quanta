@@ -17,7 +17,10 @@
     $env->hook('action_' . $env->request_json->action, array('data' => (array) $env->request_json));
   }
   $env->hook('init');
-
+  if ($env->getData('content') == NULL) {
+    $env->setData('title', '404 - Page not found');
+    $env->setData('content', '404 - Page not found. This page doesn\'t exist or has been removed!');
+  }
   $page = new Page($env, 'index.html', $env->getData('title'), $env->getData('content'));
   $page->buildHTML();
   print $page->render();

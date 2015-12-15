@@ -23,6 +23,7 @@ class Node extends DataContainer {
   public $exists;
   public $permissions;
   public $timestamp;
+  public $empty;
   public $father = NULL;
   public $thumbnail = NULL;
   private $json;
@@ -41,9 +42,7 @@ class Node extends DataContainer {
     if ($father != NULL) {
       $this->father = $father;
     }
-
     $this->path = $this->env->dir['wiki'] . '/' . $this->getName();
-
     $this->exists = is_link($this->path);
     // Todo: make even safer.
     if ($this->exists || $father != NULL) {
@@ -82,7 +81,6 @@ class Node extends DataContainer {
     if ($this->content == NULL && $this->exists) {
       $this->buildContent();
     }
-    $this->setTitle(parsetag($this->content, 'h1'));
     if ($this->exists) {
       $this->setTimestamp(filemtime($this->realpath));
     }
@@ -96,16 +94,18 @@ class Node extends DataContainer {
    */
   public function buildContent() {
     // Create data.html if it doesn't exist.
-    /*if (!is_file($this->path . '/data.html')) {
-      $fh = fopen($this->path . '/data.html', 'w+');
-      fwrite($fh, '<h1>' . $this->name . '</h1>');
-      fclose($fh);
+    if (is_file($this->path . '/data.html')) {
+      $this->setContent(file_get_contents($this->path . '/data.html'));
+      $this->setBody(preg_replace('!<\s*(h1).*?>((.*?)</\1>)?!is', '', $this->getContent()));
+      // TODO: needed to remove the h1 from the body... to double check.
+      $this->content_raw = $this->content;
+      $this->setTitle(parsetag($this->content, 'h1'));
+      $this->empty = FALSE;
+    } else {
+      $this->setTitle($this->name);
+      $this->empty = TRUE;
     }
-    */
-    $this->setContent(file_get_contents($this->path . '/data.html'));
-    // TODO: needed to remove the h1 from the body... to double check.
-    $this->setBody(preg_replace('!<\s*(h1).*?>((.*?)</\1>)?!is', '', $this->getContent()));
-    $this->content_raw = $this->content;
+
     if (is_file($this->path . '/data.json')) {
       $this->json = json_decode(file_get_contents($this->path . '/data.json'));
       $this->setTimestamp($this->json->timestamp);
@@ -115,6 +115,18 @@ class Node extends DataContainer {
     }
   }
 
+  /**
+   * Check if the node is empty.
+   * @return mixed
+   */
+  public function isEmpty() {
+    return $this->empty;
+  }
+
+  /**
+   * Check if the node has any children.
+   * @return bool
+   */
   public function hasChildren() {
     $scan = $this->env->scanDirectory($this->realpath);
     foreach ($scan as $dir) {
@@ -125,8 +137,21 @@ class Node extends DataContainer {
     return FALSE;
   }
 
+  /**
+   * Check if the node's folder has a subfolder (subnode).
+   * @param $name
+   * @return bool
+   */
   public function hasChild($name) {
     return is_dir($this->realpath . '/' . $name);
+  }
+
+  /**
+   * Checks if the node is the currently viewed one.
+   * @return bool
+   */
+  public function isCurrent() {
+    return ($this->name == $this->env->getRequestedPath());
   }
 
   /**

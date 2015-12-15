@@ -3,6 +3,8 @@ define("DIR_INACTIVE", '_');
 define("DIR_ALL", 'all');
 define("DIR_DIRS", 'dirs');
 define("DIR_FILES", 'files');
+define("DIR_MODULES", 'modules');
+
 
 /**
  * Class Environment
@@ -49,12 +51,12 @@ class Environment extends DataContainer {
   }
 
   private function loadCoreModules() {
-    $core_modules = $this->scanDirectory('core');
+    $core_modules = $this->scanDirectory('core', array('type' => DIR_MODULES));
     $this->setModules('core', $core_modules);
   }
 
   private function loadContribModules() {
-    $contrib_modules = $this->scanDirectory($this->dir['docroot'] . '/_modules');
+    $contrib_modules = $this->scanDirectory($this->dir['docroot'] . '/_modules', array('type' => DIR_MODULES));
     $this->setModules('contrib', $contrib_modules);
   }
 
@@ -116,7 +118,11 @@ class Environment extends DataContainer {
       if ($attributes['type'] == DIR_DIRS && !is_dir($base_dir . '/' . $dir)) {
         unset ($dirs[$k]);
       }
-      if ($attributes['type'] == DIR_FILES && !is_file($base_dir . '/' . $dir)) {
+      elseif ($attributes['type'] == DIR_FILES && !is_file($base_dir . '/' . $dir)) {
+        unset ($dirs[$k]);
+      }
+      elseif ($attributes['type'] == DIR_MODULES &&
+        (!is_dir($base_dir . '/' . $dir) || !is_file($base_dir . '/' . $dir . '/' . $dir . '.module')) ) {
         unset ($dirs[$k]);
       }
     }
