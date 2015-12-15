@@ -38,7 +38,6 @@ function node_action_node_delete($vars) {
 function node_init($vars) {
   $user = User::current($vars['env']);
   $node = new Node($vars['env'], $vars['env']->getRequestedPath());
-
   if (isset($_FILES['upl']) && ($user->checkAccess($node, NODE_ACTION_EDIT))) {
     $node->checkUploads();
     exit();
@@ -51,7 +50,13 @@ function node_init($vars) {
   }
 
   // Print the parsed HTML.
-  if ($node->exists) {
+  if ($node->isEmpty()) {
+    $vars['env']->setData('content', 'This is an empty page, here is nothing to show.');
+    $vars['env']->setData('title', '404 - Empty page.');
+
+  }
+  elseif ($node->exists) {
+
     if ($user->checkAccess($node, NODE_ACTION_VIEW)) {
       new Message($vars['env'], 'user is viewing this page: ' . $node->name . '.', MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
       // TODO: right place to build bc?
@@ -67,6 +72,7 @@ function node_init($vars) {
       $vars['env']->setData('title', $node->getTitle());
     }
     else {
+
       $vars['env']->setData('content', 'You don\'t have access to this page.');
       $vars['env']->setData('title', '403: Access Denied');
     }

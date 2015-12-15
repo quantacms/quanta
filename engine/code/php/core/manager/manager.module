@@ -1,5 +1,4 @@
 <?php
 require_once('manager.class.inc');
 require_once('manager.hook.inc');
-require_once('manager.wiki.inc');
 
