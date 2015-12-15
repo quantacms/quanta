@@ -1,9 +1,8 @@
 <?php
 
 /**
- * Class Node
- * This class represents a Node (corrisponding to a folder in the file system).
- * This is the core of the engine.
+ * Class Manager
+ * This class represents a Manager for categorizing nodes.
  */
 class Manager {
 
@@ -12,7 +11,6 @@ class Manager {
    * Constructs a manager object.
    * @param $env
    * @param $name
-   * @param null $father
    */
   public function __construct(&$env, $node = NULL) {
     $this->env = $env;
@@ -23,6 +21,7 @@ class Manager {
     $list = new DirList($this->env, $path, 'simple');
     $leaves = $list->getDirs();
     $lines = array();
+
     foreach ($leaves as $leaf) {
       if ($leaf->name != 'home' && $leaf->name != 'files') {
         $lines[] = $this->renderLeaf($leaf);
@@ -31,22 +30,28 @@ class Manager {
     return '<ul id="tree-' . $path . '">' . implode('', $lines) . '</ul><script>refreshManagerLeaves();</script></ul>';
   }
 
-  public function renderLeaf($leaf, $classes = NULL) {
+  /**
+   * Renders a leaf of the tree.
+   * @param $leaf
+   * @return string
+   */
+  public function renderLeaf($leaf) {
     $selected = $leaf->hasChild($this->node->name);
     $is_father = ($leaf->name == $this->node->getFather()->name);
-
+    $classes = array('manager-leaf');
     if ($leaf->hasChildren()) {
-      $classes .= " has-children";
+      $classes[] = "has-children";
     }
 
     if ($leaf->name == $this->node->name) {
       $txt = '(current node)';
     } elseif ($is_father) {
       $txt = '(main category)';
+      $classes[] = 'manager-main-category';
     } else {
       $txt = '<input value="' . $leaf->name . '" type="checkbox" ' . ($selected ? 'checked' : '') . ' name="leaf-' . $leaf->name . '" id="leaf-' . $leaf->name . '" />';
     }
-    return '<li><a href="#" rel="leaf-' . $leaf->name. '" class="manager-leaf ' . $classes . ' ' . ($selected ? 'selected' : '') . '">' . $leaf->title . '</a> ' . $txt .'</li>';
+    return '<li><a href="#" rel="leaf-' . $leaf->name. '" class="' . implode(' ', $classes) . ' ' . ($selected ? 'selected' : '') . '">' . $leaf->title . '</a> ' . $txt .'</li>';
   }
 
 }

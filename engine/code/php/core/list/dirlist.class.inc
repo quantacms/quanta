@@ -23,6 +23,10 @@ class DirList extends ListObject {
     $user_actions[] = '[[NODE:name]:Read all&rarr;]';
     foreach ($this->dirs as $dir_url => $node) {
       $i++;
+      $classes = array('dir-list-item', 'list-' . $this->getTheme() . '-item', 'list-item-' . $i);
+      if ($node->isCurrent()) {
+        $classes[] = 'list-selected';
+      }
       $tpl_item = $tpl;
       $thumbfile = new Image($this->env, $node->getThumbnail(), $node);
       $thumbnail = ($thumbfile->exists) ? $thumbfile->render() : '';
@@ -37,7 +41,7 @@ class DirList extends ListObject {
       $tpl_item = preg_replace("/\[NODE:date\]/is", $node->getDateTime(), $tpl_item);
       $tpl_item = preg_replace("/\[NODE:teaser\]/is", strip_tags(substr(preg_replace('/\[(.*)\]/', '', $node->getBody()), 0, 300)), $tpl_item);
       $tpl_item = preg_replace("/\[IMG\:/is", '[IMG:/' . $dir_url . '/', $tpl_item);
-      $this->tpl_items[] = '<li class="dir-list-item list-' . $this->getTheme() . '-item list-item-' . $i . '">' . $tpl_item . '</li>';
+      $this->tpl_items[] = '<li class="' . implode(' ', $classes) . '">' . $tpl_item . '</li>';
     }
   }
 
