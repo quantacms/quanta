@@ -27,6 +27,12 @@ class DirList extends ListObject {
       if ($node->isCurrent()) {
         $classes[] = 'list-selected';
       }
+
+      if (Node::current($this->env)->getFather()->name == $node->name) {
+        $classes[] = 'list-selected-father';
+      }
+
+
       $tpl_item = $tpl;
       $thumbfile = new Image($this->env, $node->getThumbnail(), $node);
       $thumbnail = ($thumbfile->exists) ? $thumbfile->render() : '';
