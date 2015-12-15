@@ -155,6 +155,14 @@ class Node extends DataContainer {
   }
 
   /**
+   * Gets the current viewed node.
+   * @return bool
+   */
+  public static function current($env) {
+    return new Node($env, $env->getRequestedPath());
+  }
+
+  /**
    * Request to perform an action on the node. Check permissions and
    * execute the action accordingly.
    * @param $env Environment
