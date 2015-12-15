@@ -74,7 +74,7 @@ function wiki_FORM($replace, $attributes, $form_id, $string, $page) {
   }
 
     $label = ($attributes['type'] != 'hidden') ? ('<div class="form-item-label"><label>' . $attributes['label'] . '</label></div>') : '';
-    $form_items[] = '<div>' . $label . $obj . '</div>';
+    $form_items[] = '<div class="form-item form-item-' . $attributes['type'] . '">' . $label . $obj . '</div>';
 }
 
   $html = '<form method="post">' . implode('', $form_items) . '</form>';
