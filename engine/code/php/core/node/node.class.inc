@@ -48,6 +48,7 @@ class Node extends DataContainer {
     if ($this->exists || $father != NULL) {
       $this->load();
     }
+
   }
 
   /**
@@ -70,7 +71,17 @@ class Node extends DataContainer {
    * Load node with its variables internally.
    */
   public function load() {
-    // Create symlink - wiki redirect.
+    // Load node from cache (RAM) if it has been already loaded.
+    if ($cached = Cache::get($this->env, 'node', $this->name)) {
+      foreach (get_object_vars($cached) as $key => $value) {
+        $this->$key = $value;
+      }
+      $this->env->hook('node_load_cache', array(
+        'node' => &$this,
+      ));
+    }
+
+      // Create symlink - wiki redirect.
     if ($this->father != NULL) {
       $this->realpath = $this->father->realpath . '/' . $this->getName();
     }
@@ -78,6 +89,11 @@ class Node extends DataContainer {
       $this->realpath = readlink($this->path);
     }
     $this->fullpath = str_replace($this->env->dir['docroot'], '', $this->realpath);
+
+    $this->env->hook('node_load', array(
+      'node' => &$this,
+    ));
+
     if ($this->content == NULL && $this->exists) {
       $this->buildContent();
     }
@@ -87,6 +103,7 @@ class Node extends DataContainer {
     else {
       $this->setTimestamp(time());
     }
+
   }
 
   /**
@@ -113,6 +130,11 @@ class Node extends DataContainer {
         $this->setThumbnail($this->json->thumbnail);
       }
     }
+
+    $this->env->hook('node_build', array(
+      'node' => &$this,
+    ));
+    Cache::set($this->env, 'node', $this->name, $this);
   }
 
   /**

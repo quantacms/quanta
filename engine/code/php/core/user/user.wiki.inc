@@ -1,6 +1,6 @@
 <?php
   /**
-   * Wiki Hook for IMG.
+   * Wiki Hook for USER.
    */
   function wiki_USER($replace, $userfull, $var, $string, $page) {
     $user = User::current($page->env);
