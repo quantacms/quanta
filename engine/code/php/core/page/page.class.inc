@@ -76,6 +76,7 @@ class Page extends DataContainer {
     }
 
     $this->env->hook('page_init', array("page" => &$this));
+    $this->env->hook('page_complete', array("page" => &$this));
 
     //TODO log_action($page, '!username is viewing this page: ' . $page['name'] . '.');
 

@@ -18,3 +18,25 @@ function mail_cron($vars) {
     $mail_node->send();
   }
 }
+
+/**
+ * Submitting a mail form.
+ * @param $vars
+ */
+function mail_mailform_form_submit($vars) {
+  $queue = new Node($vars['env'], '_mailqueue');
+  // TODO: better way to create unique id for mail.
+  $mail = new Mail($vars['env'], time() . '_' . rand(10000, 99999), $queue);
+  $body = '-----<br />';
+  // TODO: Check that form field exists. Validate. Security. XSS. Everything.
+  foreach ($_REQUEST as $k => $v) {
+    if (isset($inputs[$k])) {
+      $mail->setData($k, $v);
+    } else {
+      $body .= $k .': ' . $v . '<br/>';
+    }
+  }
+  $mail->setTitle('New email received from ' . $_SERVER['HTTP_HOST']);
+  $mail->setContent($body);
+  $mail->save();
+}
