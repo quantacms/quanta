@@ -199,7 +199,6 @@ h2 {
 
 #data {
     display: block;
-    min-height: 100%;
     line-height: 180%;
     font-size: 100%;
     margin-bottom: 0px;
@@ -779,4 +778,10 @@ body.user-anonymous .logout-link {
 
 .file_admin {
     font-size: 0.8em;
+}
+
+.form-item.required label:after {
+    content: " *";
+    color: red;
+
 }

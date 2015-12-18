@@ -7,9 +7,9 @@
  * @param $page Page
  * @return mixed
  */
-function wiki_NODE($replace, $tagname, $var, $string, $page) {
+function wiki_NODE($tagname, $var, $string, $page) {
   if ($var == 'content') {
-    $string = str_replace($replace, $page->getData('node')->getRawContent(), $string);
+    return $page->getData('node')->getRawContent();
   }
-  return $string;
+  // TODO what happens here?!
 }

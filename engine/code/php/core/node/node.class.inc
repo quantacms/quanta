@@ -606,7 +606,7 @@ class Node extends DataContainer {
           break;
 
         case 'body':
-          $part = $this->getBody();
+          $part = unwikize($this->env, $this->getBody());
           break;
 
         case 'thumbnail':

@@ -2,17 +2,16 @@
   /**
    * Wiki Hook for USER.
    */
-  function wiki_USER($replace, $userfull, $var, $string, $page) {
+  function wiki_USER($userfull, $var, $string, $page) {
     $user = User::current($page->env);
     if (isset($user->{$var})) {
       // If var is an user property...
-      $string = str_replace($replace, $user->{$var}, $string);
+      return $user->{$var};
     } elseif ($user->getData($var) !== NULL) {
       // If var is in User data (external modules)...
-      $string = str_replace($replace, $user->getData($var), $string);
+      return $user->getData($var);
     } else {
       // Last emergency option - print var name itself.
-      $string = str_replace($replace, $var, $string);
+      return $var;
     }
-    return $string;
   }
