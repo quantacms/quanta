@@ -76,7 +76,9 @@ class Page extends DataContainer {
     }
 
     $this->env->hook('page_init', array("page" => &$this));
+
     //TODO log_action($page, '!username is viewing this page: ' . $page['name'] . '.');
+
   }
 
   private function setTitle($title) {
@@ -97,5 +99,6 @@ class Page extends DataContainer {
    */
   public function render() {
     return $this->html;
+
   }
 }

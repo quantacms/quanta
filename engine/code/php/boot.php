@@ -11,8 +11,12 @@
   $env->addInclude('engine/code/css/zebra.css');
   $env->startSession();
   $env->runModules();
+  $env->hook('boot');
+
   // TODO: determine when to run cron.
-  $env->hook('cron');
+  if (isset($_GET['cron'])) {
+    $env->hook('cron');
+  }
   if (isset($env->request_json->action)) {
     $env->hook('action_' . $env->request_json->action, array('data' => (array) $env->request_json));
   }
@@ -21,10 +25,12 @@
     $env->setData('title', '404 - Page not found');
     $env->setData('content', '404 - Page not found. This page doesn\'t exist or has been removed!');
   }
+
   $page = new Page($env, 'index.html', $env->getData('title'), $env->getData('content'));
   $page->buildHTML();
-  print $page->render();
-  $env->hook('complete');
 
+  print $page->render();
+
+  $env->hook('complete');
   exit();
 ?>

@@ -1,4 +1,13 @@
 <?php
+
+
+/**
+ * Cache wiki page. Implements hook_cron
+ */
+function cache_boot($vars) {
+  $vars['env']->setData('cache', new Cache($vars['env']));
+}
+
   /**
    * Cache wiki page. Implements hook_cron
    */

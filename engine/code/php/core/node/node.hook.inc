@@ -119,8 +119,6 @@ function node_shadow_node_edit($vars) {
 }
 
 
-
-
 /**
  * Implements hook_shadow_node_edit.
  * @param $vars
