@@ -1,5 +1,5 @@
 <?php
-class Shadow extends DataContainer {
+class Shadow extends Page {
   private $tabs = array();
   private $context;
   private $type;
@@ -41,6 +41,7 @@ class Shadow extends DataContainer {
     $shadow_page->setData('node', $this->node);
     $i = 0;
     ksort($tabs);
+
     foreach ($tabs as $wtabs) {
       foreach ($wtabs as $tab) {
         $i++;
@@ -48,13 +49,14 @@ class Shadow extends DataContainer {
         if ($tab['title'] != NULL) {
           $tab_titles .= '<li class="shadow-title ' . (($i == 1) ? 'enabled' : '') . '" ><a href="#tab' . $i . '" rel="' . $i . '" id="shadow-title-' . $i . '">' . $tab['title'] . '</a></li>';
         }
-        $tab_contents .= '<div class="shadow-content shadow-content-' . $this->getContext() . ' ' . $tab['classes'] . ' ' . (($i == 1) ? 'enabled' : '') . '" id="shadow-content-' . $i . '"><nowiki>' . $tab['content'] . '</nowiki></div>';
+        $tab_contents .= '<div class="shadow-content shadow-content-' . $this->getContext() . ' ' . $tab['classes'] . ' ' . (($i == 1) ? 'enabled' : '') . '" id="shadow-content-' . $i . '">' . $tab['content'] . '</div>';
       }
     }
     $shadow_page->setData('tab_titles', $tab_titles);
     $shadow_page->setData('tab_contents', $tab_contents);
     $shadow_page->setData('buttons', $this->buttons);
     $shadow_page->buildHTML();
+
     return $shadow_page->render();
   }
 

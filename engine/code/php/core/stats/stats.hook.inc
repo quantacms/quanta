@@ -5,6 +5,7 @@ define("STATS_NODE_LOADED", 'stats_node_loaded');
 define("STATS_NODE_LOADED_CACHE", 'stats_node_loaded_cache');
 define("STATS_NODE_BUILT", 'stats_node_built');
 define("STATS_NODE_LIST", 'stats_node_list');
+define("STATS_WIKITAG_LOADED", 'stats_wikitag_loaded');
 
 
 /**
@@ -50,4 +51,12 @@ function stats_node_load($vars) {
  */
 function stats_node_load_cache($vars) {
   $vars['env']->setData(STATS_NODE_LOADED_CACHE, ($vars['env']->getData(STATS_NODE_LOADED_CACHE, 0) + 1));
+}
+
+/**
+ * Implements hook_wikitag().
+ * @param $vars
+ */
+function stats_wikitag($vars) {
+  $vars['env']->setData(STATS_WIKITAG_LOADED, ($vars['env']->getData(STATS_WIKITAG_LOADED, 0) + 1));
 }

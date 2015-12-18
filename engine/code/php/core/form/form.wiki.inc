@@ -7,11 +7,11 @@
  * @param $page Page
  * @return mixed
  */
-function wiki_INPUT($replace, $attributes, $form_id, $string, $page) {
+function wiki_INPUT($attributes, $form_id, $string, $page) {
   $form = $page->getData('form_' . $form_id, array());
   $form[] = $attributes;
   $page->setData('form_' . $form_id, $form);
-  return str_replace($replace, '', $string);
+  return '';
 }
 
 /**
@@ -22,61 +22,76 @@ function wiki_INPUT($replace, $attributes, $form_id, $string, $page) {
  * @param $page Page
  * @return mixed
  */
-function wiki_FORM($replace, $attributes, $form_id, $string, $page) {
-  $form = $page->getData('form_' . $form_id);
+function wiki_FORM($attributes, $form_id, $string, $page) {
 
+  $form = $page->getData('form_' . $form_id);
+  $form[] = array(
+    'name' => 'form',
+    'value' => $form_id,
+    'type' => 'hidden',
+    );
   foreach ($form as $k => $attributes) {
-  $defaults = array(
-    'length' => 30,
-    'cols' => 100,
-    'rows' => 10,
-    'type' => isset($attributes['values']) ? 'select' : 'string',
-    'title' => str_replace('-', ' ', $attributes['name']) . ':',
-  );
+
+    $defaults = array(
+      'length' => 30,
+      'cols' => 100,
+      'rows' => 10,
+      'type' => isset($attributes['values']) ? 'select' : 'string',
+      'title' => str_replace('-', ' ', $attributes['name']) . ':',
+    );
 
 
     foreach ($defaults as $k => $v) {
-    if (!isset($attributes[$k])) {
-      $attributes[$k] = $v;
-    }
-  }
-  $attributes['label'] = ($attributes['type'] != 'submit') ? $attributes['title'] : '';
-
-
-  switch ($attributes['type']) {
-    case 'select':
-      $input = explode(',', $attributes['values']);
-      $obj = '<select name="' . $attributes['name'] . '">';
-      foreach ($input as $v) {
-        $obj .= '<option value="' . trim($v) . '">' . trim($v) . '</option>';
+      if (!isset($attributes[$k])) {
+        $attributes[$k] = $v;
       }
-      $obj .= '</select>';
-      break;
+    }
 
-    case 'hidden':
-      $obj = '<input type="hidden" name="' . $attributes['name'] . '" length="' . $attributes['length'] . '" value="' . $attributes['value'] . '"/>';
-      break;
-    case 'string':
-      $obj = '<input type="text" name="' . $attributes['name'] . '" length="' . $attributes['length'] . '" />';
-      break;
+    $classes_item = array('form-item', 'form-item-' . $attributes['name'], 'form-type-' . $attributes['type']);
+    $classes_element = array('form-element');
 
-    case 'submit':
-      $obj = '<input type="submit" name="' . $attributes['submit'] . '" value="' . $attributes['title'] . '" />';
-      break;
+    $attributes['label'] = ($attributes['type'] != 'submit') ? $attributes['title'] : '';
+    if (!empty($attributes['required'])) {
+      $classes_element[] = 'required';
+      $classes_item[] = 'required';
+    }
 
-    case 'text':
-      $obj = '<textarea name="' . $attributes['name'] . '" cols="' . $attributes['cols'] . '"  rows="' . $attributes['rows'] . '"></textarea>';
-      break;
+    $classes_element_str = implode(' ', $classes_element);
+    $classes_item_str = implode(' ', $classes_item);
+    switch ($attributes['type']) {
+      case 'select':
+        $input = explode(',', $attributes['values']);
+        $obj = '<select name="' . $attributes['name'] . '" class="' . $classes_element_str . '">';
+        foreach ($input as $v) {
+          $obj .= '<option value="' . trim($v) . '">' . trim($v) . '</option>';
+        }
+        $obj .= '</select>';
+        break;
 
-    default:
-      print "Unknown type:" . $attributes['type'];
-      break;
-  }
+      case 'hidden':
+        $obj = '<input type="hidden" name="' . $attributes['name'] . '" length="' . $attributes['length'] . '" value="' . $attributes['value'] . '"  class="' . $classes_element_str . '"/>';
+        break;
+      case 'string':
+        $obj = '<input type="text" name="' . $attributes['name'] . '" length="' . $attributes['length'] . '"  class="' . $classes_element_str . '"/>';
+        break;
+
+      case 'submit':
+        $obj = '<input type="submit" name="' . $attributes['submit'] . '" value="' . $attributes['title'] . '"  class="' . $classes_element_str . '"/>';
+        break;
+
+      case 'text':
+        $obj = '<textarea name="' . $attributes['name'] . '" cols="' . $attributes['cols'] . '"  rows="' . $attributes['rows'] . '"  class="' . $classes_element_str . '"></textarea>';
+        break;
+
+      default:
+        print "Unknown type:" . $attributes['type'];
+        break;
+    }
 
     $label = ($attributes['type'] != 'hidden') ? ('<div class="form-item-label"><label>' . $attributes['label'] . '</label></div>') : '';
-    $form_items[] = '<div class="form-item form-item-' . $attributes['type'] . '">' . $label . $obj . '</div>';
-}
+    $form_items[] = '<div class="' . $classes_item_str . '">' . $label . $obj . '</div>';
+  }
 
-  $html = '<form method="post">' . implode('', $form_items) . '</form>';
-  return str_replace($replace, $html, $string);
+  $html = '<form method="post"><input type="hidden" name="form_submit"/> ' . implode('', $form_items) . '</form>';
+  return $html;
 }

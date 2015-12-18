@@ -6,7 +6,7 @@
  * Time: 12:50
  */
 
-function wiki_POINTS($replace, $attributes, $usr, $string, $page) {
+function wiki_POINTS($attributes, $usr, $string, $page) {
   if ($usr == NULL) {
     $user = User::current($page->env, TRUE);
   } else {
@@ -14,6 +14,6 @@ function wiki_POINTS($replace, $attributes, $usr, $string, $page) {
   }
 
     $show = isset($attributes['show']) ? $attributes['show'] : 'current';
-    return str_replace($replace, Points::get($page->env, $user, $attributes['type'], $show), $string);
+    return Points::get($page->env, $user, $attributes['type'], $show);
 
  }

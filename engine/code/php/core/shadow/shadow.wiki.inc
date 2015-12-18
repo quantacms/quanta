@@ -7,15 +7,21 @@
  * @param $page Page
  * @return mixed
  */
-function wiki_SHADOW($replace, $tagname, $attributes, $string, $page) {
-  $string = str_replace('[SHADOW:tab-titles]', $page->getData('tab_titles'), $string);
-  $string = str_replace('[SHADOW:tab-contents]', $page->getData('tab_contents'), $string);
-
-  $buttons = '';
-  foreach ($page->getData('buttons') as $action => $button) {
-    $buttons .= '<a onClick="shadowSubmit()" id="' . $action . '">' . $button . '</a>';
+function wiki_SHADOW($tagname, $attribute, $string, $page) {
+  switch ($attribute) {
+    case 'tab-titles':
+      return $page->getData('tab_titles');
+    break;
+    case 'tab-contents':
+      return $page->getData('tab_contents');
+    break;
+    case 'buttons':
+      $buttons = '<div id="shadow-buttons">';
+      foreach ($page->getData('buttons') as $action => $button) {
+        $buttons .= '<a onClick="shadowSubmit()" id="' . $action . '">' . $button . '</a>';
+      }
+      $buttons .= '</div>';
+      return $buttons;
+      break;
   }
-  $string = str_replace('[SHADOW:buttons]', '<div id="shadow-buttons">' . $buttons . '</div>', $string);
-
-  return $string;
 }
