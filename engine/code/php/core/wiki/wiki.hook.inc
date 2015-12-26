@@ -1,12 +1,4 @@
 <?php
-
-/**
- * Implements hook_page_init()
- * @param $vars
- */
-function wiki_page_init($vars) {
-  wikize($vars['env'], $vars['page'], $vars['page']->html);
-}
 /**
  * Implementas hook_page_complete()
  *

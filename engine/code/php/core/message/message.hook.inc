@@ -1,6 +1,10 @@
 <?php
 
-function message_complete($vars) {
+/**
+ * Implements hook_page_after_build().
+ * @param $vars
+ */
+function message_page_after_build($vars) {
     $messages = $vars['env']->getItems('message');
   foreach ($messages as $message) {
     if ($message->type == MESSAGE_TYPE_LOG) {
@@ -11,4 +15,12 @@ function message_complete($vars) {
       fclose($fh);
     }
   }
+}
+
+/**
+ * Implements hook_page_complete().
+ * @param $vars
+ */
+function message_page_complete($vars) {
+  $vars['page']->html = str_replace('[MESSAGES]', Message::burnMessages(MESSAGE_TYPE_SCREEN), $vars['page']->html);
 }

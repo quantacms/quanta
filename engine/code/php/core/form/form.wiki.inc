@@ -23,7 +23,12 @@ function wiki_INPUT($attributes, $form_id, $string, $page) {
  * @return mixed
  */
 function wiki_FORM($attributes, $form_id, $string, $page) {
-
+  if (isset($_REQUEST['form_submit'])) {
+    $validate_ok = form_form_load($page, $_REQUEST['form']);
+    if ($validate_ok) {
+      return (isset($attributes['ok_message']) ? $attributes['ok_message'] : 'Your form has been submitted.');
+    }
+  }
   $form = $page->getData('form_' . $form_id);
   $form[] = array(
     'name' => 'form',
@@ -40,7 +45,6 @@ function wiki_FORM($attributes, $form_id, $string, $page) {
       'title' => str_replace('-', ' ', $attributes['name']) . ':',
     );
 
-
     foreach ($defaults as $k => $v) {
       if (!isset($attributes[$k])) {
         $attributes[$k] = $v;
@@ -56,14 +60,20 @@ function wiki_FORM($attributes, $form_id, $string, $page) {
       $classes_item[] = 'required';
     }
 
+    if (isset($_SESSION['validation_errors'][$_REQUEST['form']][$attributes['name']])) {
+      $classes_item[] = 'validation-error';
+    }
     $classes_element_str = implode(' ', $classes_element);
     $classes_item_str = implode(' ', $classes_item);
+    $default = (isset($_REQUEST[$attributes['name']])) ? $_REQUEST[$attributes['name']] : NULL;
+
     switch ($attributes['type']) {
       case 'select':
         $input = explode(',', $attributes['values']);
         $obj = '<select name="' . $attributes['name'] . '" class="' . $classes_element_str . '">';
         foreach ($input as $v) {
-          $obj .= '<option value="' . trim($v) . '">' . trim($v) . '</option>';
+          $v = trim($v);
+          $obj .= '<option value="' . $v . '" ' . (($v == $default) ? 'selected' : '') . '>' . trim($v) . '</option>';
         }
         $obj .= '</select>';
         break;
@@ -72,7 +82,7 @@ function wiki_FORM($attributes, $form_id, $string, $page) {
         $obj = '<input type="hidden" name="' . $attributes['name'] . '" length="' . $attributes['length'] . '" value="' . $attributes['value'] . '"  class="' . $classes_element_str . '"/>';
         break;
       case 'string':
-        $obj = '<input type="text" name="' . $attributes['name'] . '" length="' . $attributes['length'] . '"  class="' . $classes_element_str . '"/>';
+        $obj = '<input value="' . $default . '" type="text" name="' . $attributes['name'] . '" length="' . $attributes['length'] . '"  class="' . $classes_element_str . '"/>';
         break;
 
       case 'submit':
@@ -80,7 +90,7 @@ function wiki_FORM($attributes, $form_id, $string, $page) {
         break;
 
       case 'text':
-        $obj = '<textarea name="' . $attributes['name'] . '" cols="' . $attributes['cols'] . '"  rows="' . $attributes['rows'] . '"  class="' . $classes_element_str . '"></textarea>';
+        $obj = '<textarea name="' . $attributes['name'] . '" cols="' . $attributes['cols'] . '"  rows="' . $attributes['rows'] . '"  class="' . $classes_element_str . '">' . $default . '</textarea>';
         break;
 
       default:
