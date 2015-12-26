@@ -1,0 +1,6 @@
+.form-item.validation-error input,
+.form-item.validation-error select,
+.form-item.validation-error textarea
+{
+    border: 1px solid red !important;
+}
