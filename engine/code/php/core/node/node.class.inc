@@ -273,9 +273,11 @@ class Node extends DataContainer {
    * Save this node on the file system.
    */
   public function save() {
+    $this->env->hook('node_preinsert');
     $this->saveHTML();
     $this->saveJSON();
     $this->saveFiles();
+    $this->env->hook('node_insert');
   }
 
 
