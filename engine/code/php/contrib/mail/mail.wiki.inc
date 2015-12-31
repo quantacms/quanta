@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  * Implements hook_cron().
  * @param $vars
