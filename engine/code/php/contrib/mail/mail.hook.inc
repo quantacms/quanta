@@ -8,7 +8,6 @@ function mail_init($vars) {
   $mail_tmp = $vars['env']->dir['docroot'] . '/_mailqueue';
   $vars['env']->sysdir($mail_tmp);
   // Get the mails to queue.
-  print $mail_tmp;
   $mail_nodes = ($vars['env']->scanDirectory($mail_tmp, array(
     'exclude_dirs' => DIR_INACTIVE,
     'type' => DIR_DIRS,
