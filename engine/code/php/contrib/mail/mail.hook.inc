@@ -4,10 +4,11 @@
  * Implements hook_cron().
  * @param $vars
  */
-function mail_cron($vars) {
+function mail_init($vars) {
   $mail_tmp = $vars['env']->dir['docroot'] . '/_mailqueue';
   $vars['env']->sysdir($mail_tmp);
   // Get the mails to queue.
+  print $mail_tmp;
   $mail_nodes = ($vars['env']->scanDirectory($mail_tmp, array(
     'exclude_dirs' => DIR_INACTIVE,
     'type' => DIR_DIRS,
@@ -24,6 +25,9 @@ function mail_cron($vars) {
  * @param $vars
  */
 function mail_mailform_form_submit($vars) {
+  $mail_tmp = $vars['env']->dir['docroot'] . '/_mailqueue';
+  $vars['env']->sysdir($mail_tmp);
+
   $queue = new Node($vars['env'], '_mailqueue');
   // TODO: better way to create unique id for mail.
   $mail = new Mail($vars['env'], time() . '_' . rand(10000, 99999), $queue);
@@ -39,4 +43,7 @@ function mail_mailform_form_submit($vars) {
   $mail->setTitle('New email received from ' . $_SERVER['HTTP_HOST']);
   $mail->setContent($body);
   $mail->save();
+  // TODO: very bad. No way to send mail?
+  $vars['env']->hook('cron');
 }
+

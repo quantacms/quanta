@@ -25,7 +25,7 @@ class Mail extends Node {
     $mail->Port = 587;
     $mail->setFrom('aldo.tripiciano@gmail.com', 'Mailer');
     // $mail->addAddress($this->getData('to'), $this->getData('to'));
-    // $mail->addAddress('info@pucarasicurezza.it', 'info@pucarasicurezza.it');
+    $mail->addAddress('info@pucarasicurezza.it', 'info@pucarasicurezza.it');
     $mail->addAddress('aldo.tripiciano@gmail.com', 'aldo.tripiciano@gmail.com');
     $mail->isHTML(true);
     // $mail->Subject = $this->getTitle();
