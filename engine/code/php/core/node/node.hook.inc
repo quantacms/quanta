@@ -21,7 +21,7 @@ function node_action_node_edit($vars) {
 
 
 /**
- * Implementation of hook_action_node_add.
+ * Implementation of hook_action_node_delete.
  * There is a node delete request.
  * @param $vars
  */
@@ -94,6 +94,7 @@ function node_shadow_node_add($vars) {
  * @param $vars
  */
 function node_shadow_node_edit($vars) {
+
   $user = User::current($vars['env']);
   // ADD a node.
   if ($vars['shadow']->getContext() == NODE_ACTION_ADD) {
