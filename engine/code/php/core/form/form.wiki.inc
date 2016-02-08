@@ -84,7 +84,9 @@ function wiki_FORM($attributes, $form_id, $string, $page) {
       case 'string':
         $obj = '<input value="' . $default . '" type="text" name="' . $attributes['name'] . '" length="' . $attributes['length'] . '"  class="' . $classes_element_str . '"/>';
         break;
-
+      case 'checkbox':
+        $obj = '<input value="' . $default . '" type="checkbox" name="' . $attributes['name'] . '" class="' . $classes_element_str . '"/>' . $attributes['label'];
+        break;
       case 'submit':
         $obj = '<input type="submit" name="' . $attributes['submit'] . '" value="' . $attributes['title'] . '"  class="' . $classes_element_str . '"/>';
         break;
