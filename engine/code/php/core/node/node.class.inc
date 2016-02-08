@@ -335,6 +335,7 @@ class Node extends DataContainer {
   }
 
   public function getContent() {
+    // TODO: < and > break in the body. Urgent fix to do.
     return str_replace('< ', '&lt; ', str_replace('> ', '&gt; ', $this->content));
   }
 
@@ -346,13 +347,16 @@ class Node extends DataContainer {
    * Save the JSON dump of the node
    */
   public function saveJSON() {
-    if (!is_dir($this->realpath)) {
-      mkdir($this->realpath) or die('cannot create dir: ' . $this->realpath);
+    $node = clone $this;
+    if (!is_dir($node->realpath)) {
+      mkdir($node->realpath) or die('cannot create dir: ' . $node->realpath);
     }
-    unset($this->request_json);
-    $jsonpath = $this->realpath . '/data.json';
+    unset($node->request_json);
+    unset($node->env);
+    $jsonpath = $node->realpath . '/data.json';
     $fh = fopen($jsonpath, 'w+');
-    fwrite($fh, json_encode($this));
+    fwrite($fh, json_encode($node));
+    fwrite($fh, 'PROVA');
     fclose($fh);
   }
 
@@ -617,6 +621,7 @@ class Node extends DataContainer {
           break;
 
         case 'thumbnail-img':
+          print "THUMB:" . $this->getThumbnail();
           $thumb = new Image($this->env, $this->getThumbnail(), $this);
           if ($thumb->exists) {
             $part = $thumb->render();
