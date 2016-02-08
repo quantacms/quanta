@@ -356,7 +356,6 @@ class Node extends DataContainer {
     $jsonpath = $node->realpath . '/data.json';
     $fh = fopen($jsonpath, 'w+');
     fwrite($fh, json_encode($node));
-    fwrite($fh, 'PROVA');
     fclose($fh);
   }
 
@@ -621,7 +620,6 @@ class Node extends DataContainer {
           break;
 
         case 'thumbnail-img':
-          print "THUMB:" . $this->getThumbnail();
           $thumb = new Image($this->env, $this->getThumbnail(), $this);
           if ($thumb->exists) {
             $part = $thumb->render();
