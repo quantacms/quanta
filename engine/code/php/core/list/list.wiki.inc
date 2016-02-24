@@ -12,7 +12,7 @@ function wiki_LIST($attributes, $path, $string, $page) {
  * Detect content BLOG and eventually create HTML.
  */
 function wiki_BLOG($attributes, $value, $string, $page) {
-  $dirlist = new DirList($page->env, $value, 'blog', array('sortbytime') + $attributes);
+  $dirlist = new DirList($page->env, $value, 'blog', array('sortbytime' => 'desc') + $attributes);
   return $dirlist->render();
 }
 
@@ -28,7 +28,7 @@ function wiki_FILETABLE($attributes, $value, $string, $page) {
  * Detect content BLOG and eventually create HTML.
  */
 function wiki_SLIDER($attributes, $value, $string, $page) {
-  $dirlist = new DirList($page->env, $value, 'slider', array('sortbytime') + $attributes);
+  $dirlist = new DirList($page->env, $value, 'slider', array('sortbytime' => 'desc') + $attributes);
   return $dirlist->render();
 }
 

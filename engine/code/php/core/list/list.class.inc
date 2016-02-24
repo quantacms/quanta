@@ -109,13 +109,12 @@ abstract class ListObject {
    */
   private function loadAttributes() {
     foreach ($this->getAttributes() as $attr_name => $attr) {
-      switch ($attr_name) {
+			switch ($attr_name) {
         case 'reverse': {
           $this->dirs = array_reverse($this->dirs);
           break;
         }
         case 'sortbytime':
-
           uasort($this->dirs, 'ListObject::sortByTime');
         break;
           default:
@@ -161,7 +160,6 @@ abstract class ListObject {
   }
 
   static function sortByTime($x, $y) {
-
-    return ($x->getTimestamp() < $y->getTimestamp()) ? 1 : -1;
+		return ($x->getTimestamp() < $y->getTimestamp()) ? 1 : -1;
   }
 }
