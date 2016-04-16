@@ -4,6 +4,10 @@ function user_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/user/js/user.js');
 }
 
+function user_node_load($vars) {
+
+}
+
 /**
  * Implements hook_body_classes.
  */
