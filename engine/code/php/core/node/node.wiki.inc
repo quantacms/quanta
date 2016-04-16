@@ -1,15 +1,34 @@
 <?php
 /**
- * @param $replace string
- * @param $tagname string
- * @param $attributes string
- * @param $string string
- * @param $page Page
  * @return mixed
  */
 function wiki_NODE($tagname, $var, $string, $page) {
-  if ($var == 'content') {
-    return $page->getData('node')->getRawContent();
+  $node = $page->env->getData('node');
+  if (is_object($node)) {
+    switch ($var) {
+      case 'content':
+        $item = $node->getRawContent();
+        break;
+
+      case 'date':
+        $item = $node->getDate();
+        break;
+
+      default:
+        $item = '?';
+        break;
+    }
+    return $item;
   }
-  // TODO what happens here?!
+}
+
+/**
+ * @return mixed
+ */
+function wiki_AUTHOR($tagname, $var, $string, $page) {
+  $node = $page->env->getData('node');
+  if (is_object($node)) {
+    $author = $page->env->getData('node')->getAuthor();
+    return wiki_USER($tagname, $var, $string, $page, $author);
+  }
 }

@@ -13,6 +13,7 @@ date_default_timezone_set('UTC');
 class Node extends DataContainer {
   public $name;
   public $title;
+  public $author;
   public $body = NULL;
   public $content = NULL;
   public $content_raw = NULL;
@@ -126,6 +127,7 @@ class Node extends DataContainer {
     if (is_file($this->path . '/data.json')) {
       $this->json = json_decode(file_get_contents($this->path . '/data.json'));
       $this->setTimestamp($this->json->timestamp);
+      $this->setAuthor($this->json->author);
       if (isset($this->json->thumbnail)) {
         $this->setThumbnail($this->json->thumbnail);
       }
@@ -222,6 +224,8 @@ class Node extends DataContainer {
           $node->setContent('<h1>' . $node->getTitle() . '</h1>' . $node->getBody());
           $node->setTimestamp($datetime > 0 ? $datetime : time());
           $node->tmp_files_dir = $nodedata['tmp_files_dir'];
+          $node->setAuthor($user->getName());
+
           if ($node->validate()) {
             $node->save();
             $env->hook('node_save', array(
@@ -274,11 +278,15 @@ class Node extends DataContainer {
    * Save this node on the file system.
    */
   public function save() {
-    $this->env->hook('node_preinsert');
+    $this->env->hook('node_preinsert', array(
+      'node' => &$this,
+    ));
     $this->saveHTML();
     $this->saveJSON();
     $this->saveFiles();
-    $this->env->hook('node_insert');
+    $this->env->hook('node_insert', array(
+      'node' => &$this,
+    ));
   }
 
 
@@ -341,6 +349,14 @@ class Node extends DataContainer {
 
   public function getRawContent() {
     return $this->content_raw;
+  }
+
+  public function setAuthor($author) {
+    $this->author = $author;
+  }
+
+  public function getAuthor() {
+    return ($this->author == NULL) ? USER_ANONYMOUS : $this->author;
   }
 
   /**
