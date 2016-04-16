@@ -23,7 +23,12 @@ function wiki_BREADCRUMB($attributes, $var, $string, $page) {
   if (count($breadcrumb) > 0 && $breadcrumb != '') {
     $themed_bc = '<div class="breadcrumb-block">' . (isset($attributes['label']) ? $attributes['label'] : 'You are in:') . '<ul class="breadcrumb"><li>[home:Home]</li>';
       foreach ($breadcrumb as $path => $title) {
-        $themed_bc .= '<li>[' . $path . ':' . $title . ']</li>';
+        if ($path == '_users') {
+        $themed_bc .= '<li>Users</li>';
+        }
+        else {
+          $themed_bc .= '<li>[' . $path . ':' . $title . ']</li>';
+        }
       }
     $themed_bc .= '</ul></div>';
   }
