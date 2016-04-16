@@ -135,9 +135,8 @@ class Environment extends DataContainer {
    * Get all dirs inside a given dir, at a leaf level.
    */
   public function scanDirectoryDeep($base_dir, $dir, $dirs = array(), $attributes = array('exclude_dirs' => DIR_INACTIVE, 'type' => DIR_ALL, 'level' => 'leaf'), $depth = 0) {
-
     $scan = ($this->scanDirectory($base_dir . '/' . $dir, $attributes));
-    if (count($scan) == 0) {
+    if (count($scan) == 0 || is_link($base_dir)) {
       $dirs[] = $dir;
     } else {
       $i = 0;
@@ -148,7 +147,7 @@ class Environment extends DataContainer {
       foreach ($scan as $scandir) {
 
         $next_dir = ($base_dir . '/' . $dir . '/' . $scandir);
-        if (is_dir($next_dir) && !is_link($next_dir)) {
+        if (is_dir($next_dir)) {
           $dirs = $this->scanDirectoryDeep($base_dir .'/' . $dir, $scandir, $dirs, $attributes, $depth);
           $i++;
         }
