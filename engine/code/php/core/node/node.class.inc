@@ -344,7 +344,7 @@ class Node extends DataContainer {
 
   public function getContent() {
     // TODO: < and > break in the body. Urgent fix to do.
-    return str_replace('< ', '&lt; ', str_replace('> ', '&gt; ', $this->content));
+    return $this->content;
   }
 
   public function getRawContent() {

@@ -38,6 +38,7 @@
     toolbar: [
       {name: 'source', items: ['Source']},
       { name: 'styles', items: [ 'Styles', 'Format', 'FontSize' ] },
+      { name: 'paragraph', items: [ 'List', 'Indent', 'Align'] },
 
       [ 'Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo' ],			// Defines toolbar group without name.
       { name: 'basicstyles', items: [ 'Bold', 'Italic'] },
