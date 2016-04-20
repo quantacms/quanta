@@ -40,7 +40,7 @@ function wikize($env, &$page, $html) {
   }
 
   // Render node links.
-  preg_match_all("/\[(.+?):(.*?)\]/s", $html, $matches);
+  preg_match_all("/\[(.+?):(.*?)\]/i", $html, $matches);
   foreach ($matches[1] as $k => $match) {
     $node = new Node($env, $match);
     if ($node->exists) {
