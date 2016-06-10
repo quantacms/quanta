@@ -54,7 +54,7 @@ var refreshButtons = function() {
         pageEdit('node_add');
     });
 
-    $('.register-link').attr('href', "javascript:register()");
+    $('.register-link').attr('onclick', "register()");
 
     $('.login-link').attr('onclick', "logIn()");
 

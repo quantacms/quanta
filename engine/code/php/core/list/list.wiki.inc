@@ -11,14 +11,6 @@ function wiki_LIST($attributes, $path, $string, $page) {
 /**
  * Detect content BLOG and eventually create HTML.
  */
-function wiki_BLOG($attributes, $value, $string, $page) {
-  $dirlist = new DirList($page->env, $value, 'blog', array('sortbytime' => 'desc') + $attributes);
-  return $dirlist->render();
-}
-
-/**
- * Detect content BLOG and eventually create HTML.
- */
 function wiki_FILETABLE($attributes, $value, $string, $page) {
   $filelist = new FileList($page->env, $value, 'file_table', $attributes);
   return $filelist->render();
