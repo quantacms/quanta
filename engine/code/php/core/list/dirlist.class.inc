@@ -12,12 +12,14 @@
  * render the files and folders contained into it.
  */
 class DirList extends ListObject {
+  protected $module_path = 'core/list';
   /**
    * Generate the html of the list.
    */
   public function theme() {
     // TODO change way to include tpl.
-    $tpl = file_get_contents('core/list/tpl/' . $this->getTheme() . '.tpl.php');
+
+    $tpl = file_get_contents($this->module_path . '/tpl/' . $this->getTheme() . '.tpl.php');
     $i = 0;
     $user_actions = array();
     $user_actions[] = '[[NODE:name]:Read all&rarr;]';
@@ -45,7 +47,7 @@ class DirList extends ListObject {
       $tpl_item = preg_replace("/\[COUNTER\]/is", $i, $tpl_item);
       $tpl_item = preg_replace("/\[NODE:name\]/is", $dir_url, $tpl_item);
       $tpl_item = preg_replace("/\[NODE:date\]/is", $node->getDateTime(), $tpl_item);
-      $tpl_item = preg_replace("/\[NODE:teaser\]/is", strip_tags(substr(preg_replace('/\[(.*)\]/', '', $node->getBody()), 0, 300)), $tpl_item);
+      $tpl_item = preg_replace("/\[NODE:teaser\]/is", strip_tags(preg_replace('/\[(.*)\]/', '', $node->getTeaser())), $tpl_item);
       $tpl_item = preg_replace("/\[IMG\:/is", '[IMG:/' . $dir_url . '/', $tpl_item);
       $this->tpl_items[] = '<li class="' . implode(' ', $classes) . '">' . $tpl_item . '</li>';
     }
