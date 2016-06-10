@@ -334,6 +334,10 @@ class Node extends DataContainer {
     $this->body = $body;
   }
 
+  public function getTeaser($maxlength = 300) {
+    return substr($this->getBody(), 0, $maxlength);
+  }
+
   public function getTitle() {
     return $this->title;
   }

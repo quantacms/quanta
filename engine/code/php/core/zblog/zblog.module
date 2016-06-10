@@ -1,0 +1,3 @@
+<?php
+require_once('blog.class.inc');
+require_once('blog.wiki.inc');
