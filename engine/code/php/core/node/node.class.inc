@@ -142,13 +142,12 @@ class Node extends DataContainer {
     // Load data from JSON file if possible.
     $this->loadJSON();
 
-    // if there is no json, load data from data.html
+    // if data.html is present load data from data.html
     // TODO: at some point loading data from data.html should be discontinued...
     if (is_file($this->path . '/data.html')) {
       $html_content = file_get_contents($this->path . '/data.html');
       $this->setBody(preg_replace('!<\s*(h1).*?>((.*?)</\1>)?!is', '', $html_content));
       $this->setContent($html_content);
-      // TODO: needed to remove the h1 from the body... to double check.
       $this->content_raw = $this->content;
       $this->setTitle(parsetag($this->content, 'h1'));
       $this->empty = FALSE;
