@@ -54,7 +54,6 @@ class Node extends DataContainer {
   public function loadJSON() {
     if (is_file($this->path . '/data.json')) {
       $this->json = (object) json_decode(file_get_contents($this->realpath . '/data.json'));
-      $this->setName($this->json->name);
       $this->setTeaser($this->json->teaser);
       $this->setAuthor($this->json->author);
       $this->setBody($this->json->body);
