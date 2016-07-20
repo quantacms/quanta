@@ -1,6 +1,2 @@
 <?php
 require_once('file.class.inc');
-require_once('file.hook.inc');
-require_once('file.wiki.inc');
-
-

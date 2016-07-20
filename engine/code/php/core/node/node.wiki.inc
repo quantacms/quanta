@@ -14,6 +14,16 @@ function wiki_NODE($tagname, $var, $string, $page) {
         $item = $node->getDate();
         break;
 
+      case NODE_ACTION_ADD:
+      case NODE_ACTION_EDIT:
+      case NODE_ACTION_DELETE:
+        $user = User::current($page->env);
+        $act = str_replace('node_', '', $var);
+        if ($user->checkAccess($node, $var)) {
+          $item = '<a class="' . $act . '-link" href="#">' . $act . '...</a>';
+        }
+        break;
+
       default:
         $item = '?';
         break;

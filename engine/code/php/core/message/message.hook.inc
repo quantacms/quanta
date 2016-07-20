@@ -24,3 +24,12 @@ function message_page_after_build($vars) {
 function message_page_complete($vars) {
   $vars['page']->html = str_replace('[MESSAGES]', Message::burnMessages(MESSAGE_TYPE_SCREEN), $vars['page']->html);
 }
+
+
+/**
+ * Implements hook_init().
+ * @param $vars
+ */
+function message_init($vars) {
+  $vars['env']->addInclude('engine/code/php/core/message/css/message.css');
+}

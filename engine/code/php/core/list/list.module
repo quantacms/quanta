@@ -2,4 +2,3 @@
 require_once('list.class.inc');
 require_once('dirlist.class.inc');
 require_once('filelist.class.inc');
-require_once('list.wiki.inc');

@@ -9,6 +9,13 @@
   <input type="text" name="edit-title"
          id="edit-title"
          value="[NODE:title]"/>
+
+  <div id="edit-teaser-wrapper">
+  <label for="edit-teaser">Teaser</label>
+  <textarea cols="2" name="edit-teaser"
+         id="edit-teaser">[NODE:teaser]</textarea>
+  </div>
+
   <label for="edit-content">Content</label>
   <div id="edit-content-wrapper" >
     <textarea class="ckeditor" id="content" name="edit-content">[NODE:body]</textarea>
@@ -27,6 +34,7 @@
            value="[NODE:time]"/>
   </div>
 </form>
+
 <script>
   CKEDITOR.replace('content', {
     shiftEnterMode : CKEDITOR.ENTER_DIV,

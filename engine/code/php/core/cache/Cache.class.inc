@@ -37,4 +37,12 @@ class Cache extends DataContainer {
     $cache[$type][$item] = $value;
     $env->setData('cached', $cache);
   }
+
+  public function loadJSON() {
+    // TODO: Implement loadJSON() method.
+  }
+
+  public function updateJSON($ignore = array()) {
+    // TODO: Implement updateJSON() method.
+  }
 }

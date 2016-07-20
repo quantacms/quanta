@@ -1,0 +1,219 @@
+.file-docx,
+.file-doc,
+.file-txt,
+.file-rtf,
+.file-odt {
+    background-image: url(/engine/img/icons/doc.png);
+}
+
+.file-pdf {
+    background-image: url(/engine/img/icons/pdf.png);
+}
+
+.file-xml {
+    background-image: url(/engine/img/icons/xml.png);
+}
+
+.file-gif,
+.file-jpg,
+.file-png,
+.file-bmp,
+.file-jpeg {
+    background-image: url(/engine/img/icons/img.png);
+}
+
+.file-mp3,
+.file-wav,
+.file-wma,
+.file-m4a {
+    background-image: url('/engine/img/icons/audio.png')
+}
+
+.file-zip,
+.file-tar,
+.file-gz,
+.file-7z,
+.file-rar {
+    background-image: url('/engine/img/icons/zip.png')
+}
+
+.file-mov,
+.file-mp4,
+.file-avi,
+.file-wmv {
+    background-image: url('/engine/img/icons/video.png')
+}
+
+.file-xls,
+.file-xlt {
+    background-image: url('/engine/img/icons/xls.png')
+}
+
+
+/*----------------------------
+    The file upload form
+-----------------------------*/
+
+.progressBar {
+    position: absolute;
+    left: -29px;
+    top :26px;
+    background: transparent;
+    border-width: 0;
+    text-align:center;
+    width: 30px;
+    font-size: 0.4em;}
+
+#upload{
+    width:100%;
+    position: relative;
+    display: block;
+}
+
+.delete-file {
+    color: red;
+    text-decoration: none;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+#drop {
+    display: block;
+    background-color: #2E3134;
+    padding: 10px;
+    margin-bottom: 30px;
+    border: 20px solid rgba(0, 0, 0, 0);
+    border-radius: 3px;
+    border-image: url('/engine/img/border-image.png') 25 repeat;
+    text-align: center;
+    text-transform: uppercase;
+    font-size:16px;
+    font-weight:bold;
+    color:#7f858a;
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    z-index: 500;
+}
+
+#drop a {
+    background-color:#007a96;
+    padding:12px 26px;
+    color:#fff;
+    font-size:14px;
+    border-radius:2px;
+    cursor:pointer;
+    display:inline-block;
+    margin-top:12px;
+    line-height:1;
+    display: block;
+}
+
+#drop a:hover{
+    background-color:#0986a3;
+}
+
+#drop input{
+    display:none;
+}
+
+#upload ul {
+    list-style: none;
+}
+
+li.list-item {
+    position: relative;
+    z-index: 10;
+    display: block;
+}
+
+
+#upload ul li p {
+    width: 144px;
+    white-space: nowrap;
+}
+
+#upload ul li i {
+    font-weight: normal;
+    font-style:normal;
+    color:#7f7f7f;
+    margin-left: 8px;
+}
+
+#upload ul li canvas {
+    position: absolute;
+    top: 4px;
+    left: -24px;
+}
+
+#upload ul li.worked canvas {
+    display: none;
+}
+#upload ul li span {
+    width: 15px;
+    height: 12px;
+    background: url('/engine/img/icons.png') no-repeat;
+    position: absolute;
+    cursor:pointer;
+    top: 7px;
+    left: -20px;
+}
+
+#upload ul li.working span{
+    height: 16px;
+    background-position: 0 -12px;
+}
+
+#upload ul li.error p{
+    color:red;
+}
+
+/* Files upload */
+#tzine-download{
+    opacity:0.9;
+    background-color:#257691;
+    font-size:11px;
+    text-align:center;
+    text-transform:uppercase;
+    width:150px;
+    height:28px;
+    line-height:28px;
+    text-decoration:none !important;
+
+    display: inline-block;
+    border-radius: 2px;
+    color: #fff !Important;
+    font-weight: bold;
+    box-shadow: 0 -1px 2px #1e5e74 inset;
+
+    border-top:1px solid #26849c;
+
+    text-shadow:1px 1px 1px #1e6176;
+    margin-top:6px;
+}
+
+#tzine-download:hover{
+    opacity:1;
+}
+
+#tzine-actions{
+    position:absolute;
+    top:0;
+    width:500px;
+    right:50%;
+    margin-right:-420px;
+    text-align:right;
+}
+
+#tzine-actions iframe{
+    display: inline-block;
+    height: 21px;
+    width: 95px;
+    position: relative;
+    float: left;
+    margin-top: 11px;
+}
+
+.file_admin {
+    font-size: 0.8em;
+}

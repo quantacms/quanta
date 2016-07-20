@@ -66,7 +66,6 @@ function node_init($vars) {
         $breadcrumb[$n->getName()] = $n->getTitle();
       }
 
-      $vars['env']->setData('node', $node);
       $vars['env']->setData('breadcrumb', $breadcrumb);
       $vars['env']->setData('content', $node->render());
       $vars['env']->setData('title', $node->getTitle());
@@ -77,6 +76,7 @@ function node_init($vars) {
       $vars['env']->setData('title', '403: Access Denied');
     }
   }
+  $vars['env']->setData('node', $node);
 
 }
 
@@ -143,6 +143,7 @@ function node_body_classes($vars) {
   if ($vars['page']->env->getData('node')) {
     $vars['page']->addBodyClass('body-' . $vars['page']->env->getData('node')
       ->getName());
+
     foreach ($vars['page']->env->getData('breadcrumb') as $path => $title) {
       $vars['page']->addBodyClass('section-' . $path);
     }

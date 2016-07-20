@@ -10,7 +10,7 @@ function wiki_IMG($attributes, $var, $string, $page) {
   return $image->render();
 }
 
-function wiki_THUMB($replace, $attributes, $var, $string, $page) {
+function wiki_THUMB($attributes, $var, $string, $page) {
   $attributes[] = 'class=thumb';
   return wiki_IMG($attributes, $var, $string, $page);
 }
