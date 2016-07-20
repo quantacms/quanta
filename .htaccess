@@ -4,9 +4,6 @@ DirectoryIndex engine/code/php/boot.php
 RewriteEngine on
 RewriteBase /
 
-RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
-RewriteRule ^(.*)$ http://%1/$1 [R=301,L]
-
 RewriteCond %{REQUEST_URI} (.*)data\.json$ [NC]
 RewriteRule ^(.*)$ '/403' [R=301,L]
 
