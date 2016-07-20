@@ -5,6 +5,7 @@
 */
 function wiki_LIST($attributes, $path, $string, $page) {
   $dirlist = new DirList($page->env, $path, 'dir', $attributes);
+
   return $dirlist->render();
 }
 

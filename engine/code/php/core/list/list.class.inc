@@ -72,6 +72,7 @@ abstract class ListObject {
    * Must be extended.
    */
   public function render() {
+
     $this->theme();
     $output = '<ul class="list ' . $this->getTheme() . ' list-' . $this->getTheme() . ' list-' . $this->node->getName() . '">' . implode('', $this->tpl_items) . '</ul>';
     return $output;

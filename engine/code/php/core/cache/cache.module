@@ -1,3 +1,2 @@
 <?php
   require_once('Cache.class.inc');
-  require_once('cache.hook.inc');

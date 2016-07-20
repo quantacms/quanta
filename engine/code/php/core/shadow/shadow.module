@@ -1,5 +1,2 @@
 <?php
 require_once('shadow.class.inc');
-require_once('shadow.hook.inc');
-require_once('shadow.wiki.inc');
-
