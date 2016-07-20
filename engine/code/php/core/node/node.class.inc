@@ -15,19 +15,16 @@ class Node extends DataContainer {
   public $title;
   public $author;
   public $body = NULL;
+  public $teaser = NULL;
   public $content = NULL;
   public $content_raw = NULL;
   private $context;
-  public $path;
-  public $fullpath;
-  public $realpath;
   public $exists;
   public $permissions;
   public $timestamp;
   public $empty;
   public $father = NULL;
   public $thumbnail = NULL;
-  private $json;
   private $lineage = array();
   public $tmp_files_dir = NULL;
 
@@ -45,11 +42,42 @@ class Node extends DataContainer {
     }
     $this->path = $this->env->dir['wiki'] . '/' . $this->getName();
     $this->exists = is_link($this->path);
-    // Todo: make even safer.
+    // TODO: make even safer.
     if ($this->exists || $father != NULL) {
       $this->load();
     }
+  }
 
+  /**
+   * Load the node from json.
+   */
+  public function loadJSON() {
+    if (is_file($this->path . '/data.json')) {
+      $this->json = (object) json_decode(file_get_contents($this->realpath . '/data.json'));
+      $this->setName($this->json->name);
+      $this->setTeaser($this->json->teaser);
+      $this->setAuthor($this->json->author);
+      $this->setBody($this->json->body);
+      $this->setTitle($this->json->title);
+      $this->empty = FALSE;
+    } else {
+      // TODO: error handler for no json value.
+    }
+  }
+
+  /**
+   * Update node's json values.
+   */
+  public function updateJSON($ignore = array()) {
+    if (isset($this->json)) {
+      $this->json->name = $this->getName();
+      $this->json->teaser = $this->getTeaser();
+      $this->json->author = $this->getAuthor();
+      $this->json->body = $this->getBody();
+      $this->json->title = $this->getTitle();
+    } else {
+      // TODO: error handler for no json value.
+    }
   }
 
   /**
@@ -111,7 +139,11 @@ class Node extends DataContainer {
    * Builds node content.
    */
   public function buildContent() {
-    // Create data.html if it doesn't exist.
+    // Load data from JSON file if possible.
+    $this->loadJSON();
+
+    // if there is no json, load data from data.html
+    // TODO: at some point loading data from data.html should be discontinued...
     if (is_file($this->path . '/data.html')) {
       $this->setContent(file_get_contents($this->path . '/data.html'));
       $this->setBody(preg_replace('!<\s*(h1).*?>((.*?)</\1>)?!is', '', $this->getContent()));
@@ -119,23 +151,26 @@ class Node extends DataContainer {
       $this->content_raw = $this->content;
       $this->setTitle(parsetag($this->content, 'h1'));
       $this->empty = FALSE;
-    } else {
+    }
+    else {
       $this->setTitle($this->name);
       $this->empty = TRUE;
     }
 
-    if (is_file($this->path . '/data.json')) {
-      $this->json = json_decode(file_get_contents($this->path . '/data.json'));
+    if (isset($this->json->timestamp)) {
       $this->setTimestamp($this->json->timestamp);
+    }
+    if (isset($this->json->author)) {
       $this->setAuthor($this->json->author);
-      if (isset($this->json->thumbnail)) {
-        $this->setThumbnail($this->json->thumbnail);
-      }
+    }
+    if (isset($this->json->thumbnail)) {
+      $this->setThumbnail($this->json->thumbnail);
     }
 
     $this->env->hook('node_build', array(
       'node' => &$this,
     ));
+
     Cache::set($this->env, 'node', $this->name, $this);
   }
 
@@ -221,6 +256,7 @@ class Node extends DataContainer {
         if ($has_access) {
           $node->setTitle($nodedata['edit-title']);
           $node->setBody($nodedata['edit-content']);
+          $node->setTeaser($nodedata['edit-teaser']);
           $node->setContent('<h1>' . $node->getTitle() . '</h1>' . $node->getBody());
           $node->setTimestamp($datetime > 0 ? $datetime : time());
           $node->tmp_files_dir = $nodedata['tmp_files_dir'];
@@ -259,7 +295,7 @@ class Node extends DataContainer {
   }
 
   /**
-   * Save this node on the file system.
+   * Validates this node before saving it.
    */
   public function validate() {
     $valid = FALSE;
@@ -278,11 +314,14 @@ class Node extends DataContainer {
    * Save this node on the file system.
    */
   public function save() {
+
     $this->env->hook('node_preinsert', array(
       'node' => &$this,
     ));
+
+    $this->updateJSON();
+    $this->saveJSON(array('content_raw', 'path', 'fullpath', 'exists', 'realpath', 'father', 'tmp_files_dir'));
     $this->saveHTML();
-    $this->saveJSON();
     $this->saveFiles();
     $this->env->hook('node_insert', array(
       'node' => &$this,
@@ -290,6 +329,9 @@ class Node extends DataContainer {
   }
 
 
+  /**
+   * Saves all files uploaded on the node.
+   */
   public function saveFiles() {
     // TODO: refactor.
     $tmp_dir = $this->env->dir['tmp_files'] . '/' . $this->tmp_files_dir;
@@ -335,7 +377,12 @@ class Node extends DataContainer {
   }
 
   public function getTeaser($maxlength = 300) {
-    return substr($this->getBody(), 0, $maxlength);
+    if (strlen(trim($this->teaser)) > 0) {
+      return $this->teaser;
+    }
+    else {
+      return substr($this->getBody(), 0, $maxlength);
+    }
   }
 
   public function getTitle() {
@@ -348,7 +395,7 @@ class Node extends DataContainer {
 
   public function getContent() {
     // TODO: < and > break in the body. Urgent fix to do.
-    return $this->content;
+    return '<h1>' . $this->getTitle() . '</h1>' . $this->getBody();
   }
 
   public function getRawContent() {
@@ -361,22 +408,6 @@ class Node extends DataContainer {
 
   public function getAuthor() {
     return ($this->author == NULL) ? USER_ANONYMOUS : $this->author;
-  }
-
-  /**
-   * Save the JSON dump of the node
-   */
-  public function saveJSON() {
-    $node = clone $this;
-    if (!is_dir($node->realpath)) {
-      mkdir($node->realpath) or die('cannot create dir: ' . $node->realpath);
-    }
-    unset($node->request_json);
-    unset($node->env);
-    $jsonpath = $node->realpath . '/data.json';
-    $fh = fopen($jsonpath, 'w+');
-    fwrite($fh, json_encode($node));
-    fclose($fh);
   }
 
   /**
@@ -401,10 +432,26 @@ class Node extends DataContainer {
     // TODO: maybe this function is too dangerous to really enable it.
   }
 
+  /**
+   * Set the node's HTML content.
+   * @param $content
+   */
   public function setContent($content) {
     $this->content = $content;
   }
 
+  /**
+   * Set the node's teaser.
+   * @param $teaser
+   */
+  public function setTeaser($teaser) {
+    $this->teaser = $teaser;
+  }
+
+  /**
+   * Builds a complete lineage of the node, from its root directory.
+   * Useful for breadcrumbs.
+   */
   public function buildLineage() {
     if ($this->isHome()) {
       return;
@@ -633,6 +680,10 @@ class Node extends DataContainer {
 
         case 'body':
           $part = unwikize($this->env, $this->getBody());
+          break;
+
+        case 'teaser':
+          $part = $this->getTeaser();
           break;
 
         case 'thumbnail':

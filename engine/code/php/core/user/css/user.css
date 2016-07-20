@@ -1,0 +1,10 @@
+.user-anonymous .logged-only,
+.user-anonymous .logout-link {
+    display: none !important;
+}
+
+.user-logged .anon-only,
+.user-logged .login-link,
+.user-logged .register-link {
+    display: none !important;
+}

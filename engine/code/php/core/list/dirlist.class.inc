@@ -23,6 +23,7 @@ class DirList extends ListObject {
     $i = 0;
     $user_actions = array();
     $user_actions[] = '[[NODE:name]:Read all&rarr;]';
+
     foreach ($this->dirs as $dir_url => $node) {
       $i++;
       $classes = array('dir-list-item', 'list-' . $this->getTheme() . '-item', 'list-item-' . $i);

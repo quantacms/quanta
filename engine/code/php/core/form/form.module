@@ -1,5 +1,3 @@
 <?php
-require_once('form.hook.inc');
-require_once('form.wiki.inc');
 
 

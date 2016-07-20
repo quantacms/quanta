@@ -1,4 +1,2 @@
 <?php
 require_once('page.class.inc');
-require_once('page.hook.inc');
-require_once('page.wiki.inc');

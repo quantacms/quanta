@@ -18,8 +18,6 @@ class User extends DataContainer {
   public $context;
   public $roles = array();
   public $exists;
-  private $json;
-  private $dir;
   public $password;
 
   // Construct the Node.
@@ -28,9 +26,10 @@ class User extends DataContainer {
     $this->name = $name;
     $this->roles = $roles;
     $this->dir = $this->env->dir['users'] . '/' . strtolower($this->name);
+    $this->realpath = $this->dir;
     $this->exists = is_dir($this->dir);
     if ($name != USER_ANONYMOUS && strlen($name) > 0 && $this->exists) {
-      $this->json = json_decode(file_get_contents($this->dir . '/userdata.json'));
+      $this->json = json_decode(file_get_contents($this->dir . '/data.json'));
       $this->roles = (array) $this->json->roles;
       if (isset($this->json->password)) {
         $this->password = $this->json->password;
@@ -68,6 +67,7 @@ class User extends DataContainer {
 
   public function load() {
     $this->env->hook('user_load', array('user' => $this));
+    $this->loadJSON();
   }
 
   /**
@@ -132,35 +132,16 @@ class User extends DataContainer {
     $curr_user = User::current($this->env);
     return ($curr_user->getName() == $this->getName());
   }
+
   public function save() {
     $this->env->hook('user_save', array('user' => $this));
+    $this->loadJSON();
     $this->saveJSON();
+
     if ($this->isCurrent()) {
       $this->rebuildSession();
     }
     return TRUE;
-  }
-
-  /**
-   * Save the JSON dump of the node
-   */
-  public function saveJSON() {
-
-    if (!is_dir($this->dir)) {
-      mkdir($this->dir) or die('cannot create dir: ' . $this->dir);
-    }
-    $user_json = clone $this;
-    $jsonpath = $user_json->dir . '/userdata.json';
-    unset($user_json->dir);
-    unset($user_json->context);
-    unset($user_json->env);
-    unset($user_json->json);
-    unset($user_json->exists);
-    $fh = fopen($jsonpath, 'w+');
-    fwrite($fh, json_encode($user_json));
-    fclose($fh);
-
-    unset($user_json);
   }
 
   /**
@@ -310,6 +291,7 @@ class User extends DataContainer {
       return TRUE;
     }
     $permissions = $node->getPermissions();
+
     $action = trim(strtolower($action));
     $permission = (string) strtolower(trim($permissions[$action]));
     $has_permissions = array();
@@ -412,5 +394,25 @@ class User extends DataContainer {
 
   private function rebuildSession() {
     $_SESSION['user'] = serialize($this);
+  }
+
+  public function loadJSON() {
+    $this->json = new stdClass();
+
+    if (is_file($this->path . '/data.json')) {
+      $this->json = (object) json_decode(file_get_contents($this->realpath . '/data.json'));
+    }
+
+    $this->json->email = $this->email;
+    $this->json->roles = $this->roles;
+    $this->json->password = $this->password;
+    if (!isset($this->json->data)) {
+      $this->json->data = array();
+    }
+    $this->json->data += $this->data;
+  }
+
+  public function updateJSON($ignore = array()) {
+    // TODO: Implement updateJSON() method.
   }
 }

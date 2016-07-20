@@ -2,9 +2,7 @@
 
 function user_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/user/js/user.js');
-}
-
-function user_node_load($vars) {
+  $vars['env']->addInclude('engine/code/php/core/user/css/user.css');
 
 }
 

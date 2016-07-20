@@ -68,7 +68,7 @@
     display: block;
 }
 
-#edit-title {
+#edit-title, #edit-teaser {
     text-align: left;
     font-size: 1.2em;
     width: 70%;

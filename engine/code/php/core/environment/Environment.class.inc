@@ -50,6 +50,10 @@ class Environment extends DataContainer {
     return $this->request_wiki;
   }
 
+  /**
+   * Load core modules.
+   * TODO: right now loaded in alphabetical order. This is not correct.
+   */
   private function loadCoreModules() {
     $core_modules = $this->scanDirectory('core', array('type' => DIR_MODULES));
     $this->setModules('core', $core_modules);
@@ -83,14 +87,24 @@ class Environment extends DataContainer {
   }
 
   public function runModules() {
+    $includes = array('api', 'hook', 'wiki');
+
     foreach ($this->modules as $mod_type => $modules) {
       foreach ($modules as $module) {
         $module_path = $mod_type . '/' . $module . '/' . $module . '.module';
         if (is_file($module_path)) {
           require_once($module_path);
-        } else {
-          die('Error: ' . $module_path . ' is not a file. Check includes!');
         }
+
+        foreach ($includes as $include_type) {
+          $include_path = $mod_type . '/' . $module . '/' . $module . '.' . $include_type . '.inc';
+          if (is_file($include_path)) {
+            require_once($include_path);
+          }
+        }
+
+
+
       }
     }
   }
@@ -250,6 +264,14 @@ class Environment extends DataContainer {
       mkdir($folder) or die("Error: can not create " . $folder . '. Check permission and path.');
     }
     return $folder;
+  }
+
+  public function loadJSON() {
+    // TODO: Implement loadJSON() method.
+  }
+
+  public function updateJSON($ignore = array()) {
+    // TODO: Implement loadJSON() method.
   }
 
 }

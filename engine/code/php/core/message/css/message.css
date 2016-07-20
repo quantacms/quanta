@@ -1,0 +1,16 @@
+.message {
+    border-bottom: 1px solid green;
+    padding: 4px;
+}
+
+.message-severity-generic {
+    background: #ddd;
+}
+
+.message-severity-warning {
+    background: #fc7;
+}
+
+.message-severity-confirm {
+    background: #afa;
+}

@@ -15,3 +15,7 @@ function file_shadow_node_edit($vars) {
   $vars['shadow']->addTab('manage files', $node->renderUploadForm($vars['shadow']->getContext()), 2);
 
 }
+
+function file_init($vars) {
+  $vars['env']->addInclude('engine/code/php/core/file/css/file.css');
+}

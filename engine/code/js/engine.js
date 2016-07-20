@@ -54,21 +54,6 @@ var refreshButtons = function() {
         pageEdit('node_add');
     });
 
-    $('.register-link').attr('onclick', "register()");
-
-    $('.login-link').attr('onclick', "logIn()");
-
-    $('.logout-link').unbind().bind('click', function() {
-        logOut();
-        return false;
-    });
-
-    $('.user-edit-link').unbind().bind('click', function () {
-        openShadow({ module: 'user', context: 'user_edit', type: 'tabs'});
-    });
-
-
-
     $( "input.hasDatepicker").each(function() {
         var default_date = ($(this).val());
         $(this).Zebra_DatePicker({
