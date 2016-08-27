@@ -42,3 +42,12 @@ function wiki_AUTHOR($tagname, $var, $string, $page) {
     return wiki_USER($tagname, $var, $string, $page, $author);
   }
 }
+
+function wiki_BLOCK($tagname, $var, $string, $page) {
+  $node = new Node($page->env, $var);
+  if ($node->exists) {
+    return $node->getBody();
+  } else {
+    new Message($page->env, 'Warning: ' . $var . 'is a non existing node', MESSAGE_WARNING);
+  }
+}

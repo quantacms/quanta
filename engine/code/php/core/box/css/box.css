@@ -1,0 +1,42 @@
+
+.box {
+    float: left;
+}
+
+.box.clear {
+    clear: left;
+}
+.w100 {
+    width: 100%;
+}
+.w50 {
+    width: 50%;
+}
+
+.w33 {
+    width: 33%;
+}
+
+.box .inner {
+    border-color: #aaa;
+    border-style: solid;
+    overflow-y: hidden;
+    background: #e8e8e2;
+}
+
+.box a {
+    text-decoration: none;
+}
+
+
+/* > 600px */
+@media all and (max-width:741px) {
+    .w33, .w50 {
+        width: 100%;
+    }
+}
+
+.box h2 {
+    padding: 0;
+    margin: 0;
+}
