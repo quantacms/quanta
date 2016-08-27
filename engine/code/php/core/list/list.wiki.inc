@@ -18,14 +18,6 @@ function wiki_FILETABLE($attributes, $value, $string, $page) {
 }
 
 /**
- * Detect content BLOG and eventually create HTML.
- */
-function wiki_SLIDER($attributes, $value, $string, $page) {
-  $dirlist = new DirList($page->env, $value, 'slider', array('sortbytime' => 'desc') + $attributes);
-  return $dirlist->render();
-}
-
-/**
  * Detect content FILES and eventually create HTML.
  */
 function wiki_FILES($attributes, $value, $string, $page) {
