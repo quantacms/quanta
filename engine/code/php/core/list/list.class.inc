@@ -24,6 +24,7 @@ abstract class ListObject {
   protected $dir;
   protected $type;
   protected $contents;
+  protected $limit;
   protected $dirs = array();
   protected $files = array();
   protected $tpl_items = array();
@@ -51,6 +52,8 @@ abstract class ListObject {
       $this->realpath = $this->node->realpath;
     }
 
+    $this->tag = 'li';
+
     foreach ($attr_arr as $attr_key => $attr_val) {
         $this->setAttribute($attr_key, $attr_val);
     }
@@ -74,7 +77,9 @@ abstract class ListObject {
   public function render() {
 
     $this->theme();
-    $output = '<ul class="list ' . $this->getTheme() . ' list-' . $this->getTheme() . ' list-' . $this->node->getName() . '">' . implode('', $this->tpl_items) . '</ul>';
+    $output = implode('', $this->tpl_items);
+
+    $output = '<ul class="list ' . $this->getTheme() . ' list-' . $this->getTheme() . ' list-' . $this->node->getName() . '">' . $output . '</ul>';
     return $output;
   }
 
@@ -118,8 +123,14 @@ abstract class ListObject {
         case 'sortbytime':
           uasort($this->dirs, 'ListObject::sortByTime');
         break;
+
+        case 'limit':
+          $this->limit = $attr;
+          break;
+
           default:
             // Unkown attribute for generic list - do nothing.
+            // @TODO: maybe add a message?
           break;
       }
     }

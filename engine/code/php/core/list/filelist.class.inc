@@ -21,7 +21,13 @@ class FileList extends ListObject {
     $user = User::current($this->env);
 
     $file_types = $this->getAttribute('file_types');
+    $i = 0;
     foreach ($this->files as $file) {
+      $i++;
+      // If there is a limit set, break when passing it.
+      if (!empty($this->limit) && $i > $this->limit) {
+        break;
+      }
       if ((($file_types == FALSE) || $file_types == $file->getType()) && $file->isPublic()) {
         $tpl = file_get_contents('core/list/tpl/' . $this->getTheme() . '.tpl.php');
         $tpl_item = $tpl;

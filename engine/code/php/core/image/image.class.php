@@ -16,7 +16,6 @@ class Image extends File {
   public function loadAttributes($attributes) {
     foreach($attributes as $attname => $attribute) {
       $attr = explode('=', $attribute);
-
       if (preg_match_all('/[0-9]x[0-9]/', $attname, $matches)) {
         $size = explode('x', $attname);
         $this->width = $size[0];
@@ -25,12 +24,12 @@ class Image extends File {
         $this->css[] = 'height:' . $this->height . ((strpos($this->height, '%') > 0) ? '' : 'px');
       }
 
-      else switch(strtolower($attr[0])) {
+      else switch(strtolower($attname)) {
         case 'class':
-          $this->class = explode(',', $attr[1]);
+          $this->class = explode(',', $attribute);
           break;
         case 'float':
-          $this->css[] = 'float:' . $attr[1];
+          $this->css[] = 'float:' . $attribute;
           break;
         default:
           break;

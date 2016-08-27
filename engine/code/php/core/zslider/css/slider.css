@@ -1,0 +1,93 @@
+.slider {
+    position: relative;
+}
+
+
+.slider-teaser {
+    position: absolute;
+    right: 10px;
+    bottom: 30px;
+    color: white;
+    z-index: 10;
+    display: none;
+    width: 100%;
+}
+
+.slider-date {
+    text-transform: uppercase;
+    color: #333;
+    font-size: 0.7em;
+
+}
+.slider-data {
+    background: white;
+    opacity:0.8;
+    z-index: 8;
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
+    width: 100%;
+}
+
+.slider-data-inner {
+    margin: 20px;
+    letter-spacing: 1px;
+}
+
+.slider-actions a, .blog-actions a {
+    background: orange;
+    color: white;
+    text-decoration: none;
+    text-transform: uppercase;
+    padding: 8px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 0.8em;
+}
+
+.slider-title {
+    color: white;
+    z-index: 10;
+    font-size: 2em;
+    margin-bottom: 18px;
+}
+
+.slider-title h3, .slider-title h3 a {
+    text-decoration: none;
+    font-size: 0.9em;
+    color: black;
+    line-height: 1.2em;
+    text-transform: uppercase;
+}
+
+.slider .list-slider-item.list-item-1 {
+    display: block;
+}
+
+ul.slider {
+    padding:0;
+    margin:0;
+}
+
+ul.slider li {
+    display: block;
+    list-style: none;
+}
+
+.slider .list-slider-item {
+    display: none;
+    background: #ddd;
+    overflow: hidden;
+}
+
+
+.slider.list-slider-item.list-item-active {
+    display: block;
+}
+
+ul.slider {
+    display:block;
+    max-width:100%;
+}

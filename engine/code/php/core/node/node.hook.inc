@@ -71,7 +71,6 @@ function node_init($vars) {
       $vars['env']->setData('title', $node->getTitle());
     }
     else {
-
       $vars['env']->setData('content', 'You don\'t have access to this page.');
       $vars['env']->setData('title', '403: Access Denied');
     }

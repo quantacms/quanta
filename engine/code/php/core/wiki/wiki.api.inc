@@ -31,14 +31,17 @@ function wikize($env, &$page, $html) {
     if ($tag_name == strtoupper($tag_name) && function_exists('wiki_' . $tag_name)) {
       $func = 'wiki_' . $tag_name;
       $tag_html = $func($attr_arr, isset($tag[1]) ? $tag[1] : NULL, $html, $page);
-      $wikitags[$tag_full] = $tag_html;
-      $env->hook('wikitag', array('page' => $page, 'wikitag' => array($tag_full => $tag_html)));
+      $wikitag = array($tag_full => $tag_html);
+      $env->hook('wikitag', array('attributes' => $attr_arr, 'page' => $page, 'wikitag' => &$wikitag));
+
+      $wikitags[$tag_full] = $wikitag[$tag_full];
     }
     $i++;
   }
 
   // Render node links.
   preg_match_all("/\[(.+?):(.*?)\]/i", $html, $matches);
+
   foreach ($matches[1] as $k => $match) {
     $node = new Node($env, $match);
     if ($node->exists) {

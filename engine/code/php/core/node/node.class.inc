@@ -58,6 +58,12 @@ class Node extends DataContainer {
       $this->setAuthor($this->json->author);
       $this->setBody($this->json->body);
       $this->setTitle($this->json->title);
+      if (isset($this->json->timestamp)) {
+        $this->setTimestamp($this->json->timestamp);
+      }
+      if (isset($this->json->thumbnail)) {
+        $this->setThumbnail($this->json->thumbnail);
+      }
       $this->empty = FALSE;
     } else {
       // TODO: error handler for no json value.
@@ -74,6 +80,8 @@ class Node extends DataContainer {
       $this->json->author = $this->getAuthor();
       $this->json->body = $this->getBody();
       $this->json->title = $this->getTitle();
+      $this->json->thumbnail = $this->getThumbnail();
+
     } else {
       // TODO: error handler for no json value.
     }
@@ -154,16 +162,6 @@ class Node extends DataContainer {
     else {
       $this->setTitle($this->name);
       $this->empty = TRUE;
-    }
-
-    if (isset($this->json->timestamp)) {
-      $this->setTimestamp($this->json->timestamp);
-    }
-    if (isset($this->json->author)) {
-      $this->setAuthor($this->json->author);
-    }
-    if (isset($this->json->thumbnail)) {
-      $this->setThumbnail($this->json->thumbnail);
     }
 
     $this->env->hook('node_build', array(
