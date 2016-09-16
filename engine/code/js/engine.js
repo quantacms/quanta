@@ -2,15 +2,37 @@
 $('document').ready(function() {
     pageRefresh();
     refreshButtons();
-
 });
 
 String.prototype.bookify = function() {
     return this.replace('---', '<div style="page-break-after: always;">&nbsp;</div>')
 }
 
+var openAjax = function(name, destination, afterExec) {
+    $('#' + destination).load(name + '/?ajax', function() {
+        var fn = window[afterExec];
+        if (typeof fn === "function") fn.apply(null);
+        // TODO: should not be here! We need a JS hooking system.
+        resizeBoxes();
+        refreshButtons();
+        $('html, body').animate({
+            scrollTop: $("#" + destination).offset().top
+        }, 1000);
+
+    });
+}
+
 var refreshButtons = function() {
-    $('.delete-file').unbind().on('click', function() {
+
+    $('ul[rel]').each(function() {
+       var rel = $(this).attr('rel');
+       $(this).find('a').on('click', function() {
+           openAjax($(this).attr('href'), rel);
+           return false;
+       });
+    });
+
+    $('.delete-file').on('click', function() {
         var file_to_delete = $(this).parent().find('.file-link').attr('href');
         var parent = $(this).closest('li');
         if (confirm('Are you sure you want to delete this file? \n' + file_to_delete)) {
@@ -28,7 +50,7 @@ var refreshButtons = function() {
         return false;
     });
 
-    $('.set-thumbnail').bind('click', function() {
+    $('.set-thumbnail').on('click', function() {
         $('#edit-thumbnail').attr('value', $(this).attr('rel'));
         $('.selected-thumbnail').removeClass('selected-thumbnail');
         $(this).addClass('selected-thumbnail');
@@ -37,12 +59,12 @@ var refreshButtons = function() {
     })
 
     // Open page when clicking abstract
-    $('.abstract').bind('click', function() {
+    $('.abstract').on('click', function() {
         var a = $(this).parent().find('a');
         window.location.href = '/' + a.attr('href');
     });
 
-    $('.delete-link').bind('click', function() {
+    $('.delete-link').on('click', function() {
         pageDelete();
     });
 

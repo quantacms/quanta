@@ -10,7 +10,12 @@
  * Wiki Hook for PAGE.
  */
 function wiki_PAGE($attributes, $var, $string, $page) {
-  return $page->vars[$var];
+  if (isset($page->vars[$var])) {
+    return $page->vars[$var];
+  }
+  else {
+    return '?';
+  }
 }
 
 

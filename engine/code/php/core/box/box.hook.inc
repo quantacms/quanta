@@ -40,18 +40,23 @@ function box_wikitag($vars) {
       // TODO: wrong box size.
     }
 
-    $name = $vars['attributes']['name'];
+    $name = isset($vars['attributes']['name']) ? $vars['attributes']['name'] : 'no-name';
     $clear = !empty($vars['attributes']['clear']) ? 'clear' : '';
 
     foreach ($vars['wikitag'] as $tag => $content) {
-      // TODO: move in tpl file.
 
+      // Don't create a box for empty content.
+      if (empty($content)) {
+        continue;
+      }
+
+      // TODO: move in tpl file.
       if (!empty($vars['attributes']['title'])) {
         $content = '<h2 class="box-title">' . $vars['attributes']['title'] . '</h2>' . $content;
       }
       $content = '<div class="inner">' . $content . '</div>';
 
-      $vars['wikitag'][$tag] = '<div class="box ' . $w . ' ' . $h . ' ' . $name .' ' . $clear . '">' . $content . '</div>';
+      $vars['wikitag'][$tag] = '<div class="box ' . $w . ' ' . $h . ' box-' . $name . ' ' . $clear . '">' . $content . '</div>';
     }
   }
 }

@@ -24,11 +24,9 @@ class Page extends DataContainer {
     $this->vars['title'] = $title;
     $this->env->hook('body_classes', array("page" => &$this));
     $this->vars['body-classes'] = implode(' ', $this->body_classes);
-    $this->loadIncludes();
-    $this->buildContent();
   }
 
-  private function loadIncludes() {
+  public function loadIncludes() {
     // Include JS / CSS files.
     foreach ($this->env->getIncludes() as $file) {
       if ($file['type'] == 'css') {
@@ -44,7 +42,7 @@ class Page extends DataContainer {
     $this->body_classes[] = strtolower(trim($class));
   }
 
-  private function buildContent() {
+  public function buildContent() {
     // TODO: check access.
     $html = new DOMDocument();
     $this->vars['content'] = '<div id="data" class="data-' . $this->env->getRequestedPath() . '">' . $this->content . '</div>';
@@ -65,8 +63,12 @@ class Page extends DataContainer {
    * TODO: needs serious refactoring.
    */
   public function buildHTML() {
+
+    if (isset($_REQUEST['ajax'])) {
+      $this->html = $this->vars['content'];
+    }
     // This is an actual HTML page request. Commonly index.html.
-    if ($this->file != NULL) {
+    elseif ($this->file != NULL) {
       $this->html = file_get_contents($this->env->dir['docroot'] . '/' . $this->file);
       $this->html = str_replace('[PAGE:content]', $this->vars['content'], $this->html);
     }
@@ -85,8 +87,12 @@ class Page extends DataContainer {
 
   }
 
-  private function setTitle($title) {
+  public function setTitle($title) {
     $this->vars['title'] = $title;
+  }
+
+  public function setContent($content) {
+    $this->vars['content'] = $content;
   }
 
   /**
@@ -103,7 +109,6 @@ class Page extends DataContainer {
    */
   public function render() {
     return $this->html;
-
   }
 
   public function loadJSON() {
