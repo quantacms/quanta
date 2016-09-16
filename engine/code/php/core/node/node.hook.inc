@@ -36,6 +36,7 @@ function node_action_node_delete($vars) {
  * @param $vars
  */
 function node_init($vars) {
+
   $user = User::current($vars['env']);
   $node = new Node($vars['env'], $vars['env']->getRequestedPath());
   if (isset($_FILES['upl']) && ($user->checkAccess($node, NODE_ACTION_EDIT))) {
@@ -53,22 +54,29 @@ function node_init($vars) {
   if ($node->isEmpty()) {
     $vars['env']->setData('content', 'This is an empty page, here is nothing to show.');
     $vars['env']->setData('title', '404 - Empty page.');
-
   }
   elseif ($node->exists) {
 
     if ($user->checkAccess($node, NODE_ACTION_VIEW)) {
       new Message($vars['env'], 'user is viewing this page: ' . $node->name . '.', MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
+
+      // BUILD Breadcrumb - lineage.
       // TODO: right place to build bc?
       $breadcrumb = array();
       $node->buildLineage();
       foreach ($node->getLineage() as $n) {
         $breadcrumb[$n->getName()] = $n->getTitle();
       }
-
       $vars['env']->setData('breadcrumb', $breadcrumb);
-      $vars['env']->setData('content', $node->render());
+
       $vars['env']->setData('title', $node->getTitle());
+      $vars['page']->setTitle($node->getTitle());
+
+      // BUILD Template and content.
+      $node->buildTemplate();
+      $vars['env']->setData('content', $node->render());
+      $vars['page']->setContent($node->render());
+
     }
     else {
       $vars['env']->setData('content', 'You don\'t have access to this page.');

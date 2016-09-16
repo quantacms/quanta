@@ -1,9 +1,11 @@
 <?php
 /**
  * @return mixed
+ * TODO: usage of var like this is all wrong.
  */
 function wiki_NODE($tagname, $var, $string, $page) {
   $node = $page->env->getData('node');
+  $item = '';
   if (is_object($node)) {
     switch ($var) {
       case 'content':
@@ -14,6 +16,9 @@ function wiki_NODE($tagname, $var, $string, $page) {
         $item = $node->getDate();
         break;
 
+      case 'thumbnail':
+        $item = $node->getThumbnail();
+        break;
       case NODE_ACTION_ADD:
       case NODE_ACTION_EDIT:
       case NODE_ACTION_DELETE:
@@ -50,4 +55,15 @@ function wiki_BLOCK($tagname, $var, $string, $page) {
   } else {
     new Message($page->env, 'Warning: ' . $var . 'is a non existing node', MESSAGE_WARNING);
   }
+}
+
+// TODO: maybe to put somewhere else. In a tag module?
+function wiki_CATEGORIES($tagname, $var, $string, $page) {
+  $node = $page->env->getData('node');
+  $html = '';
+  $cats = $node->getCategories($var);
+  foreach ($cats as $cat) {
+    $html .= '<div>[' . $cat->name . ':' . $cat->title . ']</div>';
+  }
+  return $html;
 }

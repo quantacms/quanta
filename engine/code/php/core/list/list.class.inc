@@ -75,11 +75,14 @@ abstract class ListObject {
    * Must be extended.
    */
   public function render() {
-
     $this->theme();
-    $output = implode('', $this->tpl_items);
 
-    $output = '<ul class="list ' . $this->getTheme() . ' list-' . $this->getTheme() . ' list-' . $this->node->getName() . '">' . $output . '</ul>';
+    if (count($this->tpl_items) == 0) {
+      return;
+    }
+    $output = implode('', $this->tpl_items);
+    $ajax = (!empty($this->getAttribute('ajax'))) ? ' rel= ' .$this->getAttribute('ajax') : '';
+    $output = '<ul ' . $ajax . ' class="list ' . $this->getTheme() . ' list-' . $this->getTheme() . ' list-' . $this->node->getName() . '">' . $output . '</ul>';
     return $output;
   }
 
@@ -90,12 +93,15 @@ abstract class ListObject {
       return FALSE;
     }
 
+    $symlinks = $this->getAttribute('symlinks');
+
     if ($this->getAttribute('level') == 'leaf' || $this->getAttribute('level') == 'tree') {
       $list_pages = $this->env->scanDirectoryDeep($this->realpath, '', array(), array('exclude_dirs' => DIR_INACTIVE, 'type' => DIR_ALL, 'level' => $this->getAttribute('level')));
     } else {
-      $list_pages = $this->env->scanDirectory($this->realpath, array('exclude_dirs' => DIR_INACTIVE));
+      $list_pages = $this->env->scanDirectory($this->realpath, array('exclude_dirs' => DIR_INACTIVE, 'symlinks' => $symlinks));
     }
     foreach ($list_pages as $data_url) {
+
       $node = new Node($this->env, $data_url);
       if ($node->exists) {
         $this->dirs[$data_url] = $node;
@@ -124,6 +130,11 @@ abstract class ListObject {
           uasort($this->dirs, 'ListObject::sortByTime');
         break;
 
+        case 'sortby':
+          if ($attr == 'name') {
+            ksort($this->dirs);
+          }
+          break;
         case 'limit':
           $this->limit = $attr;
           break;
