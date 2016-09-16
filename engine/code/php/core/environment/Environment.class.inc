@@ -129,6 +129,15 @@ class Environment extends DataContainer {
       if (substr($dir, 0, 1) == $attributes['exclude_dirs']) {
         unset ($dirs[$k]);
       }
+
+      if ($attributes['symlinks'] == 'no' && is_link($base_dir . '/' . $dir)) {
+        unset ($dirs[$k]);
+      }
+      elseif ($attributes['symlinks'] == 'only' && !is_link($base_dir . '/' . $dir)) {
+        unset ($dirs[$k]);
+      }
+
+
       if ($attributes['type'] == DIR_DIRS && !is_dir($base_dir . '/' . $dir)) {
         unset ($dirs[$k]);
       }

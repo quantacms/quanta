@@ -27,6 +27,7 @@ class Node extends DataContainer {
   public $thumbnail = NULL;
   private $lineage = array();
   public $tmp_files_dir = NULL;
+  public $tpl = NULL;
 
   /**
    * Constructs a node object.
@@ -134,7 +135,8 @@ class Node extends DataContainer {
       $this->buildContent();
     }
     if ($this->exists) {
-      $this->setTimestamp(filemtime($this->realpath));
+      // TODO: Sometimes filemtime returns error.
+      @$this->setTimestamp(filemtime($this->realpath));
     }
     else {
       $this->setTimestamp(time());
@@ -466,6 +468,38 @@ class Node extends DataContainer {
     }
   }
 
+  public function buildTemplate() {
+    $this->tpl = '<h1>' . $this->env->getData('title') . '</h1>[CONTENT]';
+    $tpl = array();
+    $tpl_level = 0;
+
+    foreach ($this->lineage as $lineage) {
+      $tpl_level++;
+
+      // check if there is a sub-level template.
+      if (isset($tpl[$tpl_level])) {
+        $this->tpl = file_get_contents($tpl[$tpl_level]);
+      }
+
+      // a template in the same directory has always priority.
+      if (is_file($lineage->path . '/tpl.html')) {
+        $this->tpl = file_get_contents($lineage->path . '/tpl.html');
+      }
+
+      $min = '';
+
+      // We support 5 levels of sub-level templates for now.
+      for ($i = 1; $i <= 6; $i++) {
+
+        $min .= '-';
+        $file = $lineage->path . '/tpl' . $min . '.html';
+        if (file_exists($file)) {
+          $tpl[$tpl_level + $i] = $file;
+        }
+      }
+    }
+  }
+
   public function isHome() {
     return $this->name == 'home';
   }
@@ -521,8 +555,8 @@ class Node extends DataContainer {
    * Temporary.
    */
   public function render() {
-    $content = $this->getContent();
-    return str_replace(chr(13), '', $content);
+    $content = str_replace(chr(13), '', $this->getBody());
+    return str_replace('[CONTENT]', $content, $this->tpl);
   }
 
   /**
@@ -763,4 +797,27 @@ class Node extends DataContainer {
     $up_form = $this->wikize(file_get_contents('core/node/tpl/upload_form.inc'));
     return $up_form;
   }
+
+
+  /**
+   * EXPERIMENTAL: find all categories for the node,
+   * aka all nodes where it has been included as a symlink (tagged).
+   */
+  public function getCategories($cat = NULL) {
+    $categories = array();
+    if ($cat != NULL) {
+      $catnode = new Node($this->env, $cat);
+      $root = $catnode->realpath;
+    }
+    else {
+      $root = $this->env->dir['docroot'];
+    }
+    exec('find -L ' . $root . ' -samefile ' . $this->realpath, $categories_url);
+    foreach($categories_url as $cat_url) {
+      $exp = explode('/', $cat_url);
+      $categories[] = new Node($this->env, $exp[count($exp) - 2]);
+    }
+  return $categories;
+  }
+
 }
