@@ -6,28 +6,6 @@
 .box.clear {
     clear: left;
 }
-.w100 {
-    width: 100%;
-}
-
-.w75 {
-    width: 75%;
-}
-
-.w67 {
-    width: 66%;
-}
-.w50 {
-    width: 50%;
-}
-
-.w33 {
-    width: 33%;
-}
-
-.w25 {
-    width: 25%;
-}
 
 .box .inner {
     border-color: #aaa;
@@ -43,8 +21,8 @@
 
 /* > 600px */
 @media all and (max-width:861px) {
-    .w33, .w50 {
-        width: 100%;
+    .w-25-50, .w-50-75, .w-75-100 {
+        width: 100% !important;
     }
 
     .w25 {
@@ -60,12 +38,8 @@
 
 /* > 600px */
 @media all and (max-width:541px) {
-    .w33, .w50 {
-        width: 100%;
-    }
-
-    .w25 {
-        width: 100%;
+    .w-0-25 {
+        width: 100% !important;
     }
 
     .box .inner {
