@@ -11,7 +11,7 @@ var resizeBoxes = function() {
 
 		borderTopWidth = parseInt(inner.css('border-top-width').replace("px", ""));
 		borderBottomWidth = parseInt(inner.css('border-bottom-width').replace("px", ""));
-       
+
 		var w = $(this).innerWidth();
 
         // used for mobile rendering.
