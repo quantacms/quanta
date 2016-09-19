@@ -96,7 +96,7 @@ abstract class ListObject {
     $symlinks = $this->getAttribute('symlinks');
 
     if ($this->getAttribute('level') == 'leaf' || $this->getAttribute('level') == 'tree') {
-      $list_pages = $this->env->scanDirectoryDeep($this->realpath, '', array(), array('exclude_dirs' => DIR_INACTIVE, 'type' => DIR_ALL, 'level' => $this->getAttribute('level')));
+      $list_pages = $this->env->scanDirectoryDeep($this->realpath, '', array(), array('exclude_dirs' => DIR_INACTIVE, 'symlinks' => $symlinks, 'type' => DIR_ALL, 'level' => $this->getAttribute('level')));
     } else {
       $list_pages = $this->env->scanDirectory($this->realpath, array('exclude_dirs' => DIR_INACTIVE, 'symlinks' => $symlinks));
     }

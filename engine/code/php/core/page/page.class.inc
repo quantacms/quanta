@@ -22,8 +22,6 @@ class Page extends DataContainer {
     $this->title = $title;
     $this->content = $content;
     $this->vars['title'] = $title;
-    $this->env->hook('body_classes', array("page" => &$this));
-    $this->vars['body-classes'] = implode(' ', $this->body_classes);
   }
 
   public function loadIncludes() {

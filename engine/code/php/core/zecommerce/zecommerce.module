@@ -1,4 +1,5 @@
 <?php
 require_once('product.class.inc');
+require_once('productlist.class.inc');
 
 

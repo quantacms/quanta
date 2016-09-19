@@ -84,6 +84,8 @@ function node_init($vars) {
     }
   }
   $vars['env']->setData('node', $node);
+  $vars['env']->hook('body_classes', array("page" => &$vars['page']));
+  $vars['page']->vars['body-classes'] = implode(' ', $vars['page']->body_classes);
 
 }
 

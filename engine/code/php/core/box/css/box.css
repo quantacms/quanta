@@ -42,7 +42,7 @@
 
 
 /* > 600px */
-@media all and (max-width:741px) {
+@media all and (max-width:861px) {
     .w33, .w50 {
         width: 100%;
     }
@@ -52,8 +52,25 @@
     }
 
     .box, .box .inner {
+        min-height: 0 !important;
         height: auto !important;
         overflow-y: visible;
+    }
+}
+
+/* > 600px */
+@media all and (max-width:541px) {
+    .w33, .w50 {
+        width: 100%;
+    }
+
+    .w25 {
+        width: 100%;
+    }
+
+    .box .inner {
+        height: auto !important;
+        min-height: 0 !important;
     }
 }
 

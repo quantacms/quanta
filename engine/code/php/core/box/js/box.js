@@ -1,8 +1,13 @@
 var resizeBoxes = function() {
-    var margin = 20;
-    var padding = 10;
-    var borderWidth = 3;
+    var margin;
+    var padding;
+    var borderWidth;
     $('.box').each(function() {
+        var inner = $(this).find('.inner');
+        margin = parseInt(inner.css('margin').replace("px", ""));
+        padding = parseInt(inner.css('padding').replace("px", ""));
+        borderWidth = parseInt(inner.css('border-top').replace("px", ""));
+
         var w = $(this).innerWidth();
 
         // TODO: unpredictable, but we need to start with a 66% width

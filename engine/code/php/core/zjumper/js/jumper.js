@@ -5,7 +5,8 @@ var refreshJumpers = function() {
 
             if (rel == '_self') {
                 top.location.href = '/' + $(this).val();
-            } else {
+            }
+            else if ($(this).val() != '_empty') {
                 openAjax('/' + $(this).val(), rel, 'refreshJumpers');
             }
         });
