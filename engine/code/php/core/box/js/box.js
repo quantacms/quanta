@@ -1,15 +1,30 @@
 var resizeBoxes = function() {
-    var margin;
+		var margin;
     var padding;
     var borderWidth;
     $('.box').each(function() {
         var inner = $(this).find('.inner');
-        margin = parseInt(inner.css('margin').replace("px", ""));
-        padding = parseInt(inner.css('padding').replace("px", ""));
-        borderWidth = parseInt(inner.css('border-top').replace("px", ""));
+        
+				// marginLeft = parseInt(inner.css('margin-left').replace("px", ""));
+        // marginRight = parseInt(inner.css('margin-right').replace("px", ""));
+				// paddingLeft = parseInt(inner.css('padding-left').replace("px", ""));
+        // paddingRight = parseInt(inner.css('padding-right').replace("px", ""));
+       
+				paddingTop = parseInt(inner.css('padding-top').replace("px", ""));
+        paddingBottom = parseInt(inner.css('padding-bottom').replace("px", ""));
+				
+				marginTop = parseInt(inner.css('margin-top').replace("px", ""));
+        marginBottom = parseInt(inner.css('margin-bottom').replace("px", ""));
 
-        var w = $(this).innerWidth();
+				var parentWidth = $(this).parent().innerWidth();
 
+				borderTopWidth = parseInt(inner.css('border-top-width').replace("px", ""));
+				borderBottomWidth = parseInt(inner.css('border-bottom-width').replace("px", ""));
+       
+				var w = $(this).innerWidth();
+        var wratio;
+				var hratio;
+        var blockwidth;
         // TODO: unpredictable, but we need to start with a 66% width
         // to calculate a height in line with the 33%.
 
@@ -17,38 +32,41 @@ var resizeBoxes = function() {
             $(this).css('width', '67%');
         }
 
-            if ($(this).hasClass('h100')) {
+				if ($(this).hasClass('w100')) {	wratio = 100;	}
+        else if ($(this).hasClass('w75')) { wratio = 75; }
+				else if ($(this).hasClass('w50')) { wratio = 50; }
+				else if ($(this).hasClass('w33')) { wratio = 33; }
+				else if ($(this).hasClass('w25')) { wratio = 25; }
+			
+				if ($(this).hasClass('h100')) {
             ratio = 1;
-            h = w / ratio;
+            h = parentWidth / ratio;
         }
 
         else if ($(this).hasClass('h50')) {
             ratio = 2;
-            h = w / ratio;
+            h = parentWidth / ratio;
         }
 
         else if ($(this).hasClass('h33')) {
             ratio = 3;
-            h = w / ratio;
+            h = parentWidth / ratio;
         }
 
         else if ($(this).hasClass('h25')) {
             ratio = 4;
-            h = w / ratio;
+            h = parentWidth / ratio;
         }
 
         else {
-            $(this).children('.inner').css('margin', margin).css('padding', padding).css('border-width', borderWidth);
             return;
         }
-
-        $(this).css('min-height', h) + margin;
-        $(this).children('.inner').css('min-height', h - (margin * 2) - (padding * 2) - (borderWidth * 2));
-        $(this).children('.inner').css('margin', margin).css('padding', padding).css('border-width', borderWidth);
+        
+				$(this).css('min-height', h) + margin;
+        $(this).children('.inner').css('min-height', h - marginTop - marginBottom - paddingTop - paddingBottom  - borderTopWidth - borderBottomWidth);
 
     });
 
-    $('#home-slider').css('max-height', window.innerHeight + 'px').css('margin-bottom', margin);
 }
 
 $(window).on('resize', function() {
