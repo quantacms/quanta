@@ -42,6 +42,17 @@ function box_wikitag($vars) {
 
     $name = isset($vars['attributes']['name']) ? $vars['attributes']['name'] : 'no-name';
     $clear = !empty($vars['attributes']['clear']) ? 'clear' : '';
+    $styles = array();
+
+    if (isset($vars['attributes']['margin'])) {
+      $styles[] = 'margin:' . $vars['attributes']['margin'] . 'px';
+    }
+    if (isset($vars['attributes']['padding'])) {
+      $styles[] = 'padding:' . $vars['attributes']['padding'] . 'px';
+    }
+    if (isset($vars['attributes']['border'])) {
+      $styles[] = 'border:' . $vars['attributes']['border'] . 'px solid';
+    }
 
     foreach ($vars['wikitag'] as $tag => $content) {
 
@@ -54,7 +65,7 @@ function box_wikitag($vars) {
       if (!empty($vars['attributes']['title'])) {
         $content = '<h2 class="box-title">' . $vars['attributes']['title'] . '</h2>' . $content;
       }
-      $content = '<div class="inner">' . $content . '</div>';
+      $content = '<div class="inner" style="' . implode(';', $styles) . '" >' . $content . '</div>';
 
       $vars['wikitag'][$tag] = '<div class="box ' . $w . ' ' . $h . ' box-' . $name . ' ' . $clear . '">' . $content . '</div>';
     }
