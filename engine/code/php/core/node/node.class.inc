@@ -812,7 +812,8 @@ class Node extends DataContainer {
     else {
       $root = $this->env->dir['docroot'];
     }
-    exec('find -L ' . $root . ' -samefile ' . $this->realpath, $categories_url);
+    $cmd = 'find -L ' . $root . ' -samefile ' . $this->realpath;
+    exec($cmd, $categories_url);
     foreach($categories_url as $cat_url) {
       $exp = explode('/', $cat_url);
       $categories[] = new Node($this->env, $exp[count($exp) - 2]);

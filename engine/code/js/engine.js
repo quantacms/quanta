@@ -15,8 +15,9 @@ var openAjax = function(name, destination, afterExec) {
         // TODO: should not be here! We need a JS hooking system.
         resizeBoxes();
         refreshButtons();
+        $('#' + destination).parents('.box').show();
         $('html, body').animate({
-            scrollTop: $("#" + destination).offset().top
+            scrollTop: ($("#" + destination).offset().top - 30)
         }, 1000);
 
     });
