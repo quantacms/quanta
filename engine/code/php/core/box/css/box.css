@@ -10,7 +10,7 @@
 .box .inner {
     border-color: #aaa;
     border-style: solid;
-    overflow-y: hidden;
+    overflow: hidden;
     background: #e8e8e2;
 }
 
