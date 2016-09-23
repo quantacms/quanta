@@ -87,24 +87,29 @@ class Environment extends DataContainer {
   }
 
   public function runModules() {
-    $includes = array('api', 'hook', 'wiki');
-
     foreach ($this->modules as $mod_type => $modules) {
       foreach ($modules as $module) {
-        $module_path = $mod_type . '/' . $module . '/' . $module . '.module';
-        if (is_file($module_path)) {
-          require_once($module_path);
-        }
+        $this->runModule($mod_type, $module);
+      }
+    }
+  }
 
-        foreach ($includes as $include_type) {
-          $include_path = $mod_type . '/' . $module . '/' . $module . '.' . $include_type . '.inc';
-          if (is_file($include_path)) {
-            require_once($include_path);
-          }
-        }
+  public function dependsFrom($mod_type, $module) {
+    $this->runModule($mod_type, $module);
+  }
 
+  public function runModule($mod_type, $module) {
+    $includes = array('api', 'hook', 'wiki');
 
+    $module_path = $mod_type . '/' . $module . '/' . $module . '.module';
+    if (is_file($module_path)) {
+      require_once($module_path);
+    }
 
+    foreach ($includes as $include_type) {
+      $include_path = $mod_type . '/' . $module . '/' . $module . '.' . $include_type . '.inc';
+      if (is_file($include_path)) {
+        require_once($include_path);
       }
     }
   }

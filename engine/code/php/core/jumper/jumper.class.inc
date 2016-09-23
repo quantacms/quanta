@@ -1,4 +1,6 @@
 <?php
+$this->dependsFrom('core', 'list');
+
 define("JUMPER_EMPTY", "_empty");
 /**
  * Class Slider
@@ -6,5 +8,5 @@ define("JUMPER_EMPTY", "_empty");
  * nodes "sliding" with a timeout.
  */
 class Jumper extends DirList {
-  protected $module_path = 'core/zjumper';
+  protected $module_path = 'core/jumper';
 }

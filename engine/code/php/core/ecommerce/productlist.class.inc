@@ -7,6 +7,6 @@
  */
 
 class ProductList extends DirList {
-  protected $module_path = 'core/zecommerce';
+  protected $module_path = 'core/ecommerce';
 
 }
