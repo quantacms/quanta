@@ -1,4 +1,6 @@
 <?php
+$this->dependsFrom('core', 'node');
+
 require_once('list.class.inc');
 require_once('dirlist.class.inc');
 require_once('filelist.class.inc');
