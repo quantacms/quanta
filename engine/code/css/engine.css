@@ -276,35 +276,6 @@ h1 {
     text-align: center;
 }
 
-#header {
-    width: 100%;
-    display: block;
-    background: black;
-    padding-top: 30px;
-    padding-bottom: 30px;
-    color: white;
-}
-
-#header a {
-    color: white;
-    text-decoration: none;
-}
-
-#header h2 {
-    font-size: 140%;
-    margin: 8px;
-    padding: 0;
-}
-
-#header h3 {
-    margin: 8px;
-    padding: 0;
-    font-size: 80%;
-}
-.body-home .actions {
-    display: none;
-}
-
 .actions {
     display: block;
     clear: both;

@@ -21,6 +21,7 @@ var resizeBoxes = function() {
 
         var w = $(this).innerWidth();
 
+
         // used for mobile rendering.
         var wclass;
 
@@ -30,14 +31,18 @@ var resizeBoxes = function() {
         else if (w >= parentWidth / 100 * 25) {wclass = 'w-25-50'; }
         else {wclass = 'w-0-25'; }
 
-        var hclass = $(this).attr("class").match(/h[0-9]*\b/);
-        if (hclass!= null && hclass[0]) {
-            ratio = parseInt(100 / hclass[0].replace('h', ''));
-            h = parseInt(parentWidth / ratio);
+        if ($(this).hasClass('h-full')) {
+            h = window.innerHeight;
+        } else {
+            var hclass = $(this).attr("class").match(/h[0-9]*\b/);
+            if (hclass!= null && hclass[0]) {
+                ratio = parseInt(100 / hclass[0].replace('h', ''));
+                h = parseInt(parentWidth / ratio);
 
-        }
-        else {
-            return;
+            }
+            else {
+                return;
+            }
         }
 
         $(this).addClass(wclass);

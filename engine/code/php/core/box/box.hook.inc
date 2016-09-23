@@ -23,9 +23,15 @@ function box_wikitag($vars) {
 
     if ($boxsize[0] == 'auto') {
       $w = 'auto';
+      $class = 'w-auto';
+    }
+    elseif ($boxsize[0] == 'full') {
+      $w = 'auto';
+      $class = 'w-full';
     }
     elseif ($boxsize[0] > 0) {
       $w = $boxsize[0] . '%';
+      $class = 'w-' . $boxsize[0];
     }
     else {
       // TODO: wrong box size.
@@ -33,6 +39,9 @@ function box_wikitag($vars) {
 
     if ($boxsize[1] == 'auto') {
       $h = '';
+    }
+    elseif ($boxsize[1] == 'full') {
+      $h = 'h-full';
     }
     elseif ($boxsize[1] > 0) {
       $h = 'h' . $boxsize[1];
@@ -67,7 +76,7 @@ function box_wikitag($vars) {
       }
       $content = '<div class="inner" style="' . implode(';', $styles) . '" >' . $content . '</div>';
 
-      $vars['wikitag'][$tag] = '<div class="box ' . $w . ' ' . $h . ' box-' . $name . ' ' . $clear . '" style="width:' . $w . '">' . $content . '</div>';
+      $vars['wikitag'][$tag] = '<div id="' . $name . '" class="box ' . $class . ' ' . $h . ' box-' . $name . ' ' . $clear . '" style="width:' . $w . '">' . $content . '</div>';
     }
   }
 }
