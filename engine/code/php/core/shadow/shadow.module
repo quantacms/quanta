@@ -1,2 +1,5 @@
 <?php
+$this->dependsFrom('core', 'page');
+$this->dependsFrom('core', 'node');
+$this->dependsFrom('core', 'form');
 require_once('shadow.class.inc');

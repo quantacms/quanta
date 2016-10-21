@@ -11,12 +11,6 @@ function manager_init($vars) {
   }
 }
 
-function manager_shadow_manager($vars) {
-  $user = User::current($vars['env']);
-  $vars['shadow']->addTab('Insert your data', 'Manager', 1);
-  $vars['shadow']->addButton('edit-save', 'Manager stuff');
-}
-
 function manager_shadow_node_add($vars) {
   manager_shadow_node_edit($vars);
 }
@@ -33,7 +27,8 @@ function manager_shadow_node_edit($vars) {
 
 
 function manager_action_node_add($vars) {
-//manager_action_node_edit($vars);
+  // TODO: bugged on node add because we do not know the name of the node!
+  // manager_action_node_edit($vars);
 }
 
 function manager_node_save($vars) {
@@ -41,11 +36,15 @@ function manager_node_save($vars) {
     if (substr($label, 0, 8) == 'add-leaf') {
       $leaf = substr($label, 9);
       $leafnode = new Node($vars['env'], $leaf);
-      symlink($vars['node']->realpath, $leafnode->realpath . '/' . $vars['node']->name);
+      if (!is_link($leafnode->realpath . '/' . $vars['node']->name)) {
+        symlink($vars['node']->realpath, $leafnode->realpath . '/' . $vars['node']->name);
+      }
     } elseif (substr($label, 0, 8) == 'rem-leaf') {
       $leaf = substr($label, 9);
       $leafnode = new Node($vars['env'], $leaf);
-      unlink($leafnode->realpath . '/' . $vars['node']->name);
+      if (is_link($leafnode->realpath . '/' . $vars['node']->name)) {
+        unlink($leafnode->realpath . '/' . $vars['node']->name);
+      }
     }
   }
 }

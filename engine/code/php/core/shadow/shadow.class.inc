@@ -3,6 +3,7 @@ class Shadow extends Page {
   private $tabs = array();
   private $context;
   private $type;
+  private $widget;
   private $buttons = array();
   /**
    * @var Node $node.
@@ -17,6 +18,8 @@ class Shadow extends Page {
     $this->env = $env;
     $this->context = $data->context;
     $this->type = $data->type;
+    $this->widget = $data->widget;
+
     if (isset($data->data)) {
       foreach ($data->data as $key => $value) {
         $this->setData($key, $value);
@@ -24,7 +27,7 @@ class Shadow extends Page {
     }
     $this->node = new Node($env, $env->getRequestedPath());
 
-    $this->env->hook('shadow_' . $this->context, array('shadow' => &$this));
+    $this->env->hook('shadow_' . $this->context, array('shadow' => &$this, 'type' => $this->type));
     if ($this->getTabs() == NULL) {
       new Message($this->env, 'There is no hook_shadow_' . $this->context . ' defined', MESSAGE_ERROR);
     }
@@ -37,10 +40,9 @@ class Shadow extends Page {
     $tabs = $this->getTabs();
     $tab_titles = '';
     $tab_contents = '';
-    // TODO: SUPER @URGENT URGENT refactor this crap.
-    $shadow_page = new Page($this->env, NULL, 'Shadow', file_get_contents('core/shadow/tpl/' . $this->getType() . '.inc'));
-    $shadow_page->setData('node', $this->node);
+
     $i = 0;
+
     ksort($tabs);
 
     foreach ($tabs as $wtabs) {
@@ -53,12 +55,15 @@ class Shadow extends Page {
         $tab_contents .= '<div class="shadow-content shadow-content-' . $this->getContext() . ' ' . $tab['classes'] . ' ' . (($i == 1) ? 'enabled' : '') . '" id="shadow-content-' . $i . '">' . $tab['content'] . '</div>';
       }
     }
-    $shadow_page->setData('tab_titles', $tab_titles);
-    $shadow_page->setData('tab_contents', $tab_contents);
-    $shadow_page->setData('buttons', $this->buttons);
-    $shadow_page->buildHTML();
+    $this->setData('tab_titles', $tab_titles);
+    $this->setData('tab_contents', $tab_contents);
+    $this->setData('buttons', $this->buttons);
+    $this->setData('node', $this->node);
+    $this->setData('content', file_get_contents('core/shadow/tpl/' . $this->getWidget() . '.inc'));
 
-    return $shadow_page->render();
+    $this->buildHTML();
+
+    return $this->html;
   }
 
   /**
@@ -102,9 +107,11 @@ class Shadow extends Page {
   public function getContext() {
     return $this->context;
   }
-
   public function getType() {
     return $this->type;
+  }
+  public function getWidget() {
+    return $this->widget;
   }
 
   public function setContext($context) {

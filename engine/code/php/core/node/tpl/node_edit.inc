@@ -1,58 +1,10 @@
-<form id="shadow-form" method="POST" action="/[NODE:name]">
-  <div id="show-thumbnail">[NODE:thumbnail-img]</div>
-  <input type="hidden" name="edit-thumbnail" value="[NODE:thumbnail]"/>
-  <input
-    type="hidden" id="action" name="action" value="[NODE:action]">
-  <input
-    type="hidden" name="edit-father" value="[NODE:father]">
-  <label for="edit-title">Title</label>
-  <input type="text" name="edit-title"
-         id="edit-title"
-         value="[NODE:title]"/>
-
-  <div id="edit-teaser-wrapper">
-  <label for="edit-teaser">Teaser</label>
-  <textarea cols="2" name="edit-teaser"
-         id="edit-teaser">[NODE:teaser]</textarea>
-  </div>
-
-  <label for="edit-content">Content</label>
-  <div id="edit-content-wrapper" >
-    <textarea class="ckeditor" id="content" name="edit-content">[NODE:body]</textarea>
-  </div>
-  <input type="hidden" id="edit-action" name="edit-action" value="[NODE:action]"/>
-  <label for="edit-path">Path</label><input type="text" name="edit-path"
-                                            id="edit-path" value="[NODE:name]"/>
-
-  <div class="edit-date-wrapper">
-    <label for="edit-date">Date</label>
-    <input
-      size="10" type="text" name="edit-date" id="edit-date"
-      class="hasDatepicker" value="[NODE:date]"/>
-    <input size="5"
-           name="edit-time"
-           value="[NODE:time]"/>
-  </div>
-</form>
-
-<script>
-  CKEDITOR.replace('content', {
-    shiftEnterMode : CKEDITOR.ENTER_DIV,
-    fillEmptyBlocks : false,
-    fullPage : false,
-    enterMode : CKEDITOR.ENTER_BR,
-    lineBreakChars: '',
-    autoParagraph: false,
-    toolbar: [
-      {name: 'source', items: ['Source']},
-      { name: 'styles', items: [ 'Styles', 'Format', 'FontSize' ] },
-      { name: 'paragraph', items: [ 'List', 'Indent', 'Align'] },
-
-      [ 'Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo' ],			// Defines toolbar group without name.
-      { name: 'basicstyles', items: [ 'Bold', 'Italic'] },
-      { name: 'links', items: [ 'Link', 'Unlink', 'Anchor' , '-','Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak'] }
-
-    ]
-  });
-
-</script>
+[INPUT|id=edit_title|required|name=edit-title|value={ATTRIBUTE|name=title|nowiki}:shadow-form]
+[INPUT|id=edit_action|type=hidden|required|name=action|value={SHADOW:context}|nowiki:shadow-form]
+[INPUT|id=edit_teaser|name=edit-teaser|type=text|value={ATTRIBUTE|name=teaser|nowiki}|nowiki:shadow-form]
+[INPUT|id=edit_content|required|name=edit-content|type=text|value={ATTRIBUTE|name=body|nowiki}|nowiki:shadow-form]
+[INPUT|id=edit_path|required|name=edit-path|value={ATTRIBUTE|name=name|nowiki}|nowiki:shadow-form]
+[INPUT|id=edit_thumbnail|type=hidden|name=edit-thumbnail|value={ATTRIBUTE|name=thumbnail|nowiki}|nowiki:shadow-form]
+[INPUT|id=edit_father|required|name=edit-father|value={ATTRIBUTE|name=father}|nowiki:shadow-form]
+[INPUT|id=edit_time|required|name=edit-time|value={ATTRIBUTE|name=time|nowiki}|type=time|nowiki:shadow-form]
+[INPUT|id=edit_date|required|name=edit-date|value={ATTRIBUTE|name=date|nowiki}|type=date|nowiki:shadow-form]
+[FORM:shadow-form]

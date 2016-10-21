@@ -6,14 +6,14 @@
  * Time: 12:50
  */
 
-function wiki_POINTS($attributes, $usr, $string, $page) {
+function wiki_POINTS($attributes, $usr, $string, $env) {
   if ($usr == NULL) {
-    $user = User::current($page->env, TRUE);
+    $user = User::current($env, TRUE);
   } else {
-    $user = new User($page->env, $usr);
+    $user = new User($env, $usr);
   }
 
     $show = isset($attributes['show']) ? $attributes['show'] : 'current';
-    return Points::get($page->env, $user, $attributes['type'], $show);
+    return Points::get($env, $user, $attributes['type'], $show);
 
  }

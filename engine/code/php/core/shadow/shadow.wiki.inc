@@ -7,18 +7,23 @@
  * @param $page Page
  * @return mixed
  */
-function wiki_SHADOW($tagname, $attribute, $string, $page) {
+function wiki_SHADOW($tagname, $attribute, $string, $env) {
+  $shadow = $env->getData('shadow');
   switch ($attribute) {
     case 'tab-titles':
-      return $page->getData('tab_titles');
+      return $shadow->getData('tab_titles');
     break;
     case 'tab-contents':
-      return $page->getData('tab_contents');
+      return $shadow->getData('tab_contents');
     break;
+    case 'context':
+      return $shadow->getContext();
+      break;
+
     case 'buttons':
       $buttons = '<div id="shadow-buttons">';
-      foreach ($page->getData('buttons') as $action => $button) {
-        $buttons .= '<a onClick="shadowSubmit()" id="' . $action . '">' . $button . '</a>';
+      foreach ($shadow->getData('buttons') as $action => $button) {
+        $buttons .= '<a onClick="submitShadow()" id="' . $action . '">' . $button . '</a>';
       }
       $buttons .= '</div>';
       return $buttons;

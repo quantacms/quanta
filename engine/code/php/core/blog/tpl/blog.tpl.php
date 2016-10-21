@@ -1,2 +1,10 @@
-<div class="blog-date">[NODE:date]</div><div class="blog-title"><h3>[[NODE:name]:[NODE:title]]</h3></div><div class="blog-preview"><div class="blog-thumb">[[NODE:name]:[NODE:thumbnail]]</div>[NODE:teaser]</div>
-<div class="blog-actions">[NODE:user_actions]</div>
+<div class="blog-date">[ATTRIBUTE|name=date:[LISTITEM]]</div>
+<div class="blog-title">
+  <h3>[LINK:[LISTITEM]]</h3>
+</div>
+<div class="blog-preview">
+  <div class="blog-thumb"><div class="thumb">[THUMBNAIL:[LISTITEM]]</div></div>
+  [ATTRIBUTE|name=teaser:[LISTITEM]]
+</div>
+<div class="blog-actions">[LINK|title=Read All:[LISTITEM]]
+</div>

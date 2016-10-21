@@ -51,7 +51,7 @@ class Manager {
     } else {
       $txt = '<input value="' . $leaf->name . '" type="checkbox" ' . ($selected ? 'checked' : '') . ' name="leaf-' . $leaf->name . '" id="leaf-' . $leaf->name . '" />';
     }
-    return '<li><a href="#" rel="leaf-' . $leaf->name. '" class="' . implode(' ', $classes) . ' ' . ($selected ? 'selected' : '') . '">' . $leaf->title . '</a> ' . $txt .'</li>';
+    return '<li><a href="#" rel="leaf-' . $leaf->name. '" class="' . implode(' ', $classes) . ' ' . ($selected ? 'selected' : '') . '">' . ($leaf->title == '' ? $leaf->name : $leaf->title) . '</a> ' . $txt .'</li>';
   }
 
 }

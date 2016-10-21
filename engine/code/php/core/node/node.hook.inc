@@ -36,9 +36,9 @@ function node_action_node_delete($vars) {
  * @param $vars
  */
 function node_init($vars) {
-
+  $vars['env']->addInclude('engine/code/php/core/node/js/node.js');
   $user = User::current($vars['env']);
-  $node = new Node($vars['env'], $vars['env']->getRequestedPath());
+  $node = Node::current($vars['env']);
   if (isset($_FILES['upl']) && ($user->checkAccess($node, NODE_ACTION_EDIT))) {
     $node->checkUploads();
     exit();
@@ -58,11 +58,13 @@ function node_init($vars) {
   elseif ($node->exists) {
 
     if ($user->checkAccess($node, NODE_ACTION_VIEW)) {
+
       new Message($vars['env'], 'user is viewing this page: ' . $node->name . '.', MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
 
       // BUILD Breadcrumb - lineage.
       // TODO: right place to build bc?
       $breadcrumb = array();
+
       $node->buildLineage();
       foreach ($node->getLineage() as $n) {
         $breadcrumb[$n->getName()] = $n->getTitle();
@@ -74,19 +76,16 @@ function node_init($vars) {
 
       // BUILD Template and content.
       $node->buildTemplate();
-      $vars['env']->setData('content', $node->render());
       $vars['page']->setContent($node->render());
-
     }
     else {
-      $vars['env']->setData('content', 'You don\'t have access to this page.');
-      $vars['env']->setData('title', '403: Access Denied');
+      $vars['page']->setTitle('Access denied');
+      $vars['page']->setContent('You don\'t have access to this page.');
     }
   }
   $vars['env']->setData('node', $node);
   $vars['env']->hook('body_classes', array("page" => &$vars['page']));
   $vars['page']->vars['body-classes'] = implode(' ', $vars['page']->body_classes);
-
 }
 
 /**
@@ -123,6 +122,7 @@ function node_shadow_node_edit($vars) {
   }
   else {
     $vars['shadow']->addTab($action_name, $node->renderEditForm($vars['shadow']->getContext()), 1);
+    $vars['shadow']->addTab('manage files', $node->renderUploadForm($vars['shadow']->getContext()), 2);
   }
   $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Save');
 
@@ -148,12 +148,17 @@ function node_shadow_node_delete($vars) {
 
 }
 
+/**
+ * Implements hook_body_classes.
+ * @param $vars
+ */
 function node_body_classes($vars) {
   if ($vars['page']->env->getData('node')) {
     $vars['page']->addBodyClass('body-' . $vars['page']->env->getData('node')
       ->getName());
 
-    foreach ($vars['page']->env->getData('breadcrumb') as $path => $title) {
+    $breadcrumb = $vars['env']->getData('breadcrumb');
+    foreach ($breadcrumb as $path => $title) {
       $vars['page']->addBodyClass('section-' . $path);
     }
   }

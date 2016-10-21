@@ -8,7 +8,6 @@ class Page extends DataContainer {
   public $includes;
   public $body_classes = array();
   public $file;
-  public $vars = array('head' => '', 'content' => '');
 
   /**
    * @param $env Environment
@@ -21,10 +20,11 @@ class Page extends DataContainer {
     $this->file = $file;
     $this->title = $title;
     $this->content = $content;
-    $this->vars['title'] = $title;
+    $this->setData('title', $title);
   }
 
   public function loadIncludes() {
+
     // Include JS / CSS files.
     foreach ($this->env->getIncludes() as $file) {
       if ($file['type'] == 'css') {
@@ -43,18 +43,16 @@ class Page extends DataContainer {
   public function buildContent() {
     // TODO: check access.
     $html = new DOMDocument();
-    $this->vars['content'] = '<div id="data" class="data-' . $this->env->getRequestedPath() . '">' . $this->content . '</div>';
-      @$html->loadHTML('<meta http-equiv="content-type" content="text/html; charset=utf-8">' . $this->vars['content']);
-      $this->vars['content'] = $html->saveXML($html->getElementsByTagName('div')->item(0));
+      @$html->loadHTML('<meta http-equiv="content-type" content="text/html; charset=utf-8">' . $this->getData('content'));
+      $this->setData('content', $html->saveXML($html->getElementsByTagName('div')->item(0)));
 
       // TODO: better way to use tags.
       // this exmaple is for not applying nl2br on certain nodes.
-      if (!(strpos($this->vars['content'], '@nobr') > 0)) {
-        $this->vars['content'] = nl2br($this->vars['content']);
+      if (!(strpos($this->getData('content'), '@nobr') > 0)) {
+        $this->setData('content', nl2br($this->getData('content')));
       }
 
-      $this->setTitle(parsetag($this->vars['content'], 'h1'));
-
+      $this->setTitle(parsetag($this->getData('content'), 'h1'));
   }
   /**
    * Build the HTML of the page.
@@ -63,34 +61,30 @@ class Page extends DataContainer {
   public function buildHTML() {
 
     if (isset($_REQUEST['ajax'])) {
-      $this->html = $this->vars['content'];
+      $this->html = $this->getData('content');
     }
     // This is an actual HTML page request. Commonly index.html.
     elseif ($this->file != NULL) {
       $this->html = file_get_contents($this->env->dir['docroot'] . '/' . $this->file);
-      $this->html = str_replace('[PAGE:content]', $this->vars['content'], $this->html);
+      $this->html = str_replace('[PAGE:content]', $this->getData('content'), $this->html);
     }
     // This is a special request, i.e. Shadow node edit.
     else {
-      $this->html = $this->content;
+      $this->html = $this->getData('content');
     }
 
-
     $this->env->hook('page_init', array("page" => &$this));
-    wikize($this->env, $this, $this->html);
     $this->env->hook('page_after_build', array("page" => &$this));
     $this->env->hook('page_complete', array("page" => &$this));
-
-    //TODO log_action($page, '!username is viewing this page: ' . $page['name'] . '.');
 
   }
 
   public function setTitle($title) {
-    $this->vars['title'] = $title;
+    $this->setData('title', $title);
   }
 
   public function setContent($content) {
-    $this->vars['content'] = $content;
+    $this->setData('content', $content);
   }
 
   /**
@@ -98,7 +92,7 @@ class Page extends DataContainer {
    * @return $string
    */
   public function getTitle() {
-    return $this->vars['title'];
+    return $this->getData('title');
   }
 
   /**

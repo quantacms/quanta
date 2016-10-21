@@ -5,5 +5,5 @@
  * nodes "sliding" with a timeout.
  */
 class Slider extends DirList {
-  protected $module_path = 'core/zslider';
+  protected $module_path = 'core/slider';
 }

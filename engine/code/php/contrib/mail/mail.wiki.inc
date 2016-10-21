@@ -4,7 +4,7 @@
  * Implements hook_cron().
  * @param $vars
  */
-function wiki_MAILFORM($attributes, $form_id, $string, $page) {
+function wiki_MAILFORM($attributes, $form_id, $string, $env) {
   $form_id = 'mailform';
   $inputs = array_flip(array('to', 'from', 'from_name', 'to_name'));
 
@@ -15,11 +15,11 @@ function wiki_MAILFORM($attributes, $form_id, $string, $page) {
         'type' => 'hidden',
         'name' => $k,
         'value' => $attributes[$k]
-      ), $form_id, $string, $page);
+      ), $form_id, $string, $env);
     }
   }
 
   $attributes['ok_message'] = 'Your mail has been sent. Thanks!';
-  $form = wiki_FORM($attributes, $form_id, $string, $page);
+  $form = wiki_FORM($attributes, $form_id, $string, $env);
   return $form;
 }

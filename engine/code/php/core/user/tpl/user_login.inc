@@ -1,11 +1,5 @@
-<form id="shadow-login" method="POST">
-  <div>Please insert your personal data to enter the system.</div>
-  <div><label for="username">Username</label>
-    <input type="text" id="username" name="username" />
-  </div>
-  <div>
-    <label for="password">Password</label>
-    <input type="password" id="password" name="password" />
-  </div>
-  <input type="hidden" id="login-action" name="action" value="login" />
-</form>
+Please insert your personal data to enter the system.
+[INPUT|type=string|required|name=username|id=username:shadow-login]
+[INPUT|type=password|required|name=password|id=password:shadow-login]
+[INPUT|type=hidden|required|name=action|value=login:shadow-login]
+[FORM:shadow-login]

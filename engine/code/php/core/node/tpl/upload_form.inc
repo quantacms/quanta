@@ -1,11 +1,10 @@
 <div class="shadow-hint">Hint: after uploading files, use the FILES tag to include this list of files in content.</div>
 <div id="edit-files">
-  <form id="upload" method="POST" enctype="multipart/form-data">
-  <input type="hidden" name="tmp_files_dir" value="[NODE:tmp_files_dir]" />
-  <input type="hidden" id="edit-thumbnail" name="edit-thumbnail" value="[NODE:thumbnail]"/>
-  <input type="hidden" name="thumbnail" value="" />
-  <div id="drop">Drop here files<a>or press here</a><input type="file" name="upl" id="file-upload" multiple /></div>
-    [NODE:filelist]</form>
-  </div>
+  [INPUT|id=tmp_files_dir|type=hidden|required|name=tmp_files_dir|value={ATTRIBUTE|name=tmp_files_dir|nowiki}|nowiki:upload]
+  [INPUT|type=file|plugin=drop|nowiki|title=Manage here all your uploaded files:upload]
+  [FORM|name=upload:upload]
+</div>
+<ul id="filelist">[FILES]</ul>
+
 <script src="/engine/code/php/core/file/js/jquery.fileupload.js"></script>
 <script src="/engine/code/php/core/file/js/file-upload.js"></script>

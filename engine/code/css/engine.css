@@ -411,21 +411,6 @@ a.gallery-thumb .thumb-container {
     border-top: 1px solid black;
 }
 
-.list-item-file-admin {
-    border-bottom: 1px dotted #ddd;
-    padding: 4px;
-    padding-left: 24px;
-    width: 60%;
-}
-
-.list-item-file-admin:hover {
-    background-color: #f2d2b0;
-}
-
-.list-item-file-admin .imgcode {
-    float: right;
-}
-
 .innerimg {
     max-width: 100%;
     height: auto;

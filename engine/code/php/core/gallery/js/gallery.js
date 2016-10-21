@@ -1,6 +1,5 @@
 // Inizializza.
 $('document').ready(function() {
-    pageRefresh();
     // TODO: refresh thumbs only if gallery available.
     thumbsRefresh();
 });

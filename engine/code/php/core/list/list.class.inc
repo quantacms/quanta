@@ -100,20 +100,25 @@ abstract class ListObject {
     } else {
       $list_pages = $this->env->scanDirectory($this->realpath, array('exclude_dirs' => DIR_INACTIVE, 'symlinks' => $symlinks));
     }
-    foreach ($list_pages as $data_url) {
 
-      $node = new Node($this->env, $data_url);
-      if ($node->exists) {
-        $this->dirs[$data_url] = $node;
-      } elseif ($this->node != NULL) {
+    foreach ($list_pages as $data_url) {
+      if (is_dir($this->realpath . '/' . $data_url) || is_link($this->realpath . '/' . $data_url)) {
+        $node = new Node($this->env, $data_url);
+        if ($node->exists) {
+          $this->dirs[$data_url] = $node;
+        }
+      }
+      elseif ($this->node != NULL) {
         $file = new File($this->env, $data_url, $this->node);
         if ($file->isPublic()) {
           $this->files[] = $file;
         }
       }
     }
+
     $this->loadAttributes();
     return TRUE;
+
   }
 
   /**
