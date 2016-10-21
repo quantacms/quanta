@@ -24,6 +24,7 @@
     $env->hook('action_' . $env->request_json->action, array('data' => (array) $env->request_json));
   }
   $page = new Page($env, 'index.html');
+  $env->setData('page', $page);
 
   $env->hook('init', array('page' => &$page));
   if ($env->getData('content') == NULL) {
@@ -33,10 +34,7 @@
 
   $page->loadIncludes();
   $page->buildHTML();
-
   print $page->render();
-
   $env->hook('complete');
-
   exit();
 ?>

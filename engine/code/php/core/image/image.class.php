@@ -15,7 +15,8 @@ class Image extends File {
 
   public function loadAttributes($attributes) {
     foreach($attributes as $attname => $attribute) {
-      $attr = explode('=', $attribute);
+
+      // Check forced size.
       if (preg_match_all('/[0-9]x[0-9]/', $attname, $matches)) {
         $size = explode('x', $attname);
         $this->width = $size[0];

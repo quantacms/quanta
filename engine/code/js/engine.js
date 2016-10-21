@@ -1,8 +1,12 @@
 // Inizializza.
-$('document').ready(function() {
-    pageRefresh();
+$(document).ready(function() {
+    $(document).trigger('refresh');
+});
+
+$(document).bind('refresh', function(ev) {
     refreshButtons();
 });
+
 
 String.prototype.bookify = function() {
     return this.replace('---', '<div style="page-break-after: always;">&nbsp;</div>')
@@ -19,7 +23,6 @@ var openAjax = function(name, destination, afterExec) {
         $('html, body').animate({
             scrollTop: ($("#" + destination).offset().top - 30)
         }, 1000);
-
     });
 }
 
@@ -33,48 +36,10 @@ var refreshButtons = function() {
        });
     });
 
-    $('.delete-file').on('click', function() {
-        var file_to_delete = $(this).parent().find('.file-link').attr('href');
-        var parent = $(this).closest('li');
-        if (confirm('Are you sure you want to delete this file? \n' + file_to_delete)) {
-            $.ajax({
-                url: "?file_delete=" + file_to_delete,
-                success: function() {
-                    parent.fadeOut('slow');
-
-                },
-                error: function() {
-                    alert("ERROR");
-                }
-                });
-        }
-        return false;
-    });
-
-    $('.set-thumbnail').on('click', function() {
-        $('#edit-thumbnail').attr('value', $(this).attr('rel'));
-        $('.selected-thumbnail').removeClass('selected-thumbnail');
-        $(this).addClass('selected-thumbnail');
-        $('.show-thumbnail').html('<img src="' + $(this).attr('rel') + '" />');
-        return false;
-    })
-
     // Open page when clicking abstract
     $('.abstract').on('click', function() {
         var a = $(this).parent().find('a');
         window.location.href = '/' + a.attr('href');
-    });
-
-    $('.delete-link').on('click', function() {
-        pageDelete();
-    });
-
-    $('.edit-link').bind('click', function() {
-        pageEdit('node_edit');
-    });
-
-    $('.add-link').bind('click', function() {
-        pageEdit('node_add');
     });
 
     $( "input.hasDatepicker").each(function() {
@@ -85,13 +50,7 @@ var refreshButtons = function() {
     });
 }
 
-// Refresh the page after AJAX loading.
-var pageRefresh = function() {
-    $('.comment-mail-link').attr('href', $('.comment-mail-link').attr('href') + '?subject=[' + $('title').text() + '] Comment on: ' + $('h1').text() + '&body===========%0D%0DWrite your comment here. It will be moderated and published%0D%0D==========');
-}
-
 var action = function(dataJson) {
-
     $.ajax({
         type: "POST",
         dataType: 'json',

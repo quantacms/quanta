@@ -39,3 +39,16 @@ function valid_url($string) {
   return (!filter_var($string, FILTER_VALIDATE_URL) === FALSE);
 
   }
+
+function string_normalize($string) {
+  $string = str_replace('[', '&lbrack;', $string);
+  $string = str_replace(']', '&rbrack;', $string);
+  $string = str_replace('{', '&lbrace;', $string);
+  $string = str_replace('}', '&rbrace;', $string);
+  $string = str_replace(':', '&colon;', $string);
+  $string = str_replace('|', '&verbar;', $string);
+  $string = str_replace('=', '&equals;', $string);
+  // Remove tabs and newlines.
+  // TODO: was necessary as it broke INPUT tags by weirdly printing the value...
+  return preg_replace('~[\r\n\t]+~', '', $string);
+}

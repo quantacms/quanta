@@ -3,24 +3,32 @@
 /**
 * Detect content LIST and eventually create HTML.
 */
-function wiki_LIST($attributes, $path, $string, $page) {
-  $dirlist = new DirList($page->env, $path, 'dir', $attributes);
+function wiki_LIST($attributes, $path, $string, $env) {
+  $dirlist = new DirList($env, $path, 'dir', $attributes);
+  $render = $dirlist->render();
+  return $render;
 
-  return $dirlist->render();
 }
 
 /**
- * Detect content BLOG and eventually create HTML.
+ * Detect content FILETABLE and eventually create HTML.
  */
-function wiki_FILETABLE($attributes, $value, $string, $page) {
-  $filelist = new FileList($page->env, $value, 'file_table', $attributes);
+function wiki_FILETABLE($attributes, $value, $string, $env) {
+  $filelist = new FileList($env, $value, 'file_table', $attributes);
   return $filelist->render();
 }
 
 /**
  * Detect content FILES and eventually create HTML.
  */
-function wiki_FILES($attributes, $value, $string, $page) {
-  $filelist = new FileList($page->env, $value, 'file', $attributes);
+function wiki_FILES($attributes, $value, $string, $env) {
+  $filelist = new FileList($env, $value, 'file', $attributes);
   return $filelist->render();
+}
+
+/**
+ * Detect content FILES and eventually create HTML.
+ */
+function wiki_FILEATTRIBUTE($attributes, $file, $string, $env) {
+
 }

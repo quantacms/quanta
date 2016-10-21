@@ -7,11 +7,10 @@
  * @param $page Page
  * @return mixed
  */
-function wiki_INPUT($attributes, $form_id, $string, $page) {
-  $form = $page->getData('form_' . $form_id, array());
+function wiki_INPUT($attributes, $form_id, $string, $env) {
+  $form = $env->getData('form_' . $form_id, array());
   $form[] = $attributes;
-  $page->setData('form_' . $form_id, $form);
-  return '';
+  $env->setData('form_' . $form_id, $form);
 }
 
 /**
@@ -19,24 +18,26 @@ function wiki_INPUT($attributes, $form_id, $string, $page) {
  * @param $tagname string
  * @param $attributes string
  * @param $string string
- * @param $page Page
  * @return mixed
  */
-function wiki_FORM($attributes, $form_id, $string, $page) {
+function wiki_FORM($attributes, $form_id, $string, $env) {
+
+  // FORM submission handler.
   if (isset($_REQUEST['form_submit'])) {
-    $validate_ok = form_form_load($page, $_REQUEST['form']);
+    $validate_ok = form_form_load($env, $_REQUEST['form']);
     if ($validate_ok) {
       return (isset($attributes['ok_message']) ? $attributes['ok_message'] : 'Your form has been submitted.');
     }
   }
-  $form = $page->getData('form_' . $form_id);
+
+  $form = $env->getData('form_' . $form_id);
   $form[] = array(
     'name' => 'form',
     'value' => $form_id,
     'type' => 'hidden',
     );
-  foreach ($form as $k => $attributes) {
 
+  foreach ($form as $k => $attributes) {
     $defaults = array(
       'length' => 30,
       'cols' => 100,
@@ -67,6 +68,11 @@ function wiki_FORM($attributes, $form_id, $string, $page) {
     $classes_item_str = implode(' ', $classes_item);
     $default = (isset($_REQUEST[$attributes['name']])) ? $_REQUEST[$attributes['name']] : NULL;
 
+    if (isset($attributes['value'])) {
+      $default = $attributes['value'];
+    }
+
+    $id = isset($attributes['id']) ? $attributes['id'] : 'input-' . $attributes['name'];
     switch ($attributes['type']) {
       case 'select':
         $input = explode(',', $attributes['values']);
@@ -79,31 +85,46 @@ function wiki_FORM($attributes, $form_id, $string, $page) {
         break;
 
       case 'hidden':
-        $obj = '<input type="hidden" name="' . $attributes['name'] . '" length="' . $attributes['length'] . '" value="' . $attributes['value'] . '"  class="' . $classes_element_str . '"/>';
+        $obj = '<input id="' . $id . '" type="hidden" name="' . $attributes['name'] . '" length="' . $attributes['length'] . '" value="' . $attributes['value'] . '"  class="' . $classes_element_str . '"/>';
         break;
       case 'string':
-        $obj = '<input value="' . $default . '" type="text" name="' . $attributes['name'] . '" length="' . $attributes['length'] . '"  class="' . $classes_element_str . '"/>';
+        $obj = '<input id="' . $id . '" value="' . $default . '" type="text" name="' . $attributes['name'] . '" length="' . $attributes['length'] . '"  class="' . $classes_element_str . '"/>';
+        break;
+      case 'password':
+        $obj = '<input id="' . $id . '" value="' . $default . '" type="password" name="' . $attributes['name'] . '" length="' . $attributes['length'] . '"  class="' . $classes_element_str . '"/>';
         break;
       case 'checkbox':
-        $obj = '<input value="' . $default . '" type="checkbox" name="' . $attributes['name'] . '" class="' . $classes_element_str . '"/>' . $attributes['label'];
+        $obj = '<input id="' . $id . '"  value="' . $default . '" type="checkbox" name="' . $attributes['name'] . '" class="' . $classes_element_str . '"/>' . $attributes['label'];
         break;
+      case 'date':
+        $obj = '<input id="' . $id . '"  value="' . $default . '" type="text" name="' . $attributes['name'] . '" class="hasDatepicker ' . $classes_element_str . '"/>';
+        break;
+      case 'time':
+        $obj = '<input id="' . $id . '"  value="' . $default . '" type="text" name="' . $attributes['name'] . '" class="' . $classes_element_str . '"/>';
+        break;
+
       case 'submit':
-        $obj = '<input type="submit" name="' . $attributes['submit'] . '" value="' . $attributes['title'] . '"  class="' . $classes_element_str . '"/>';
+        $obj = '<input id="' . $id . '"  type="submit" name="' . $attributes['submit'] . '" value="' . $attributes['title'] . '"  class="' . $classes_element_str . '"/>';
         break;
 
       case 'text':
-        $obj = '<textarea name="' . $attributes['name'] . '" cols="' . $attributes['cols'] . '"  rows="' . $attributes['rows'] . '"  class="' . $classes_element_str . '">' . $default . '</textarea>';
+        $obj = '<textarea id="' . $id . '"  name="' . $attributes['name'] . '" cols="' . $attributes['cols'] . '"  rows="' . $attributes['rows'] . '"  class="' . $classes_element_str . '">' . $default . '</textarea>';
         break;
 
+      case 'file':
+        if ($attributes['plugin'] == 'drop') {
+          $obj = '<div id="drop">Drop here files<a>or press here</a><input type="file" name="upl" id="' . $id. '" multiple /></div>';
+        }
+        break;
       default:
         print "Unknown type:" . $attributes['type'];
         break;
     }
 
-    $label = ($attributes['type'] != 'hidden') ? ('<div class="form-item-label"><label>' . $attributes['label'] . '</label></div>') : '';
+    $label = ((trim($attributes['label']) != '') && ($attributes['type'] != 'hidden')) ? ('<div class="form-item-label"><label>' . $attributes['label'] . '</label></div>') : '';
     $form_items[] = '<div class="' . $classes_item_str . '">' . $label . $obj . '</div>';
   }
 
-  $html = '<form method="post"><input type="hidden" name="form_submit"/> ' . implode('', $form_items) . '</form>';
+  $html = '<form method="post" id="' . $form_id . '"><input type="hidden" name="form_submit"/> ' . implode('', $form_items) . '</form>';
   return $html;
 }

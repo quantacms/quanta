@@ -271,6 +271,7 @@
 
         _onProgress: function (e, data) {
             if (e.lengthComputable) {
+
                 var now = +(new Date()),
                     loaded;
                 if (data._time && data.progressInterval &&

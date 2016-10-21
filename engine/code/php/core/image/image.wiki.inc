@@ -2,9 +2,9 @@
 /**
  * Wiki Hook for IMG.
  */
-function wiki_IMG($attributes, $var, $string, $page) {
-  $node = ($page->env->getData('node'));
-  $image = new Image($page->env, $var, $node);
+function wiki_IMG($attributes, $var, $string, $env) {
+  $node = ($env->getData('node'));
+  $image = new Image($env, $var, $node);
   $image->loadAttributes($attributes);
   return $image->render();
 }
@@ -14,10 +14,9 @@ function wiki_THUMB($attributes, $var, $string, $page) {
   return wiki_IMG($attributes, $var, $string, $page);
 }
 
-function wiki_THUMBNAIL($attributes, $name, $string, $page) {
-  $node = empty($name) ? $page->env->getData('node') : new Node($page->env, $name);
-
-  $image = new Image($page->env, $node->getThumbnail(), $node);
-
-  return $image->render();
+function wiki_THUMBNAIL($attributes, $name, $string, $env) {
+  $node = empty($name) ? $env->getData('node') : new Node($env, $name);
+  $image = new Image($env, $node->getThumbnail(), $node);
+  $image->loadAttributes($attributes);
+  return '<a href="/' . $name. '">' . $image->render() . '</a>';
 }

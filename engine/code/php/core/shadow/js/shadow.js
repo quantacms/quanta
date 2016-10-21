@@ -1,76 +1,58 @@
+var shadow;
 // Add/Edit page form.
-// TODO: this has all to be refactored.
-
-/**
- * Page edit action. TODO: move in page module.
- */
-function pageEdit(action) {
-
-    openShadow({ module : 'node', context: action, type: 'tabs'});
-
-}
 
 function closeShadow() {
-        $('#shadow-outside, .shadow-element').hide();
-}
-/**
- * Page delete action. TODO: move in page module.
- */
-function pageDelete() {
-    openShadow({ module : 'node', context: 'node_delete', type: 'single'});
+    $('#shadow-outside, .shadow-element').hide();
 }
 
 /**
  * Open a shadow (lightbox) with the specified parameters.
  * @param shadow
  */
-function openShadow(shadow) {
-    if (shadow.type == undefined) {
-        shadow.type = 'tabs';
+function openShadow(shadowData) {
+    shadow = shadowData;
+    if (shadow.widget == undefined) {
+        shadow.widget = 'tabs';
     }
     $('#shadow-item').html('').attr('rel', shadow.context).load(
-        '?shadow=' + JSON.stringify(shadow), function() {
-
+        '?shadow=' + JSON.stringify(shadow), function () {
             if (shadow.callback != undefined) {
                 shadow.callback();
             }
 
-            $('#shadow-inside, #shadow-image').bind('click', function() {
+            $('#shadow-inside, #shadow-image').bind('click', function () {
                 closeShadow();
             });
 
-        pageRefresh();
-        refreshButtons();
+            $(document).trigger('refresh');
+
             // Include attached scripts if present.
             if (shadow.attach != undefined) {
                 for (i = 0; i < shadow.attach.length; i++) {
                     $.getScript(shadow.attach[i]);
                 }
             }
-        $('.shadow-title').find('a').on('click', function () {
-            if (!($(this).parent().hasClass('enabled'))) {
-                $('.enabled').removeClass('enabled');
-                $(this).parent().addClass('enabled');
-                $('#shadow-content-' + $(this).attr('rel')).addClass('enabled');
-            }
-            return false;
+
+            $('.shadow-title').find('a').on('click', function () {
+                if (!($(this).parent().hasClass('enabled'))) {
+                    $('.enabled').removeClass('enabled');
+                    $(this).parent().addClass('enabled');
+                    $('#shadow-content-' + $(this).attr('rel')).addClass('enabled');
+                }
+                return false;
+            });
+            $(document).trigger('shadow_' + shadow.context);
         });
-    });
     $('#shadow-outside').fadeIn('slow');
 }
 
 /**
  * Submit a shadow form.
  */
-function shadowSubmit() {
-    // TODO: this goes into ckeditor.
-    if ($('textarea#content').length) {
-    var editor = CKEDITOR.instances.content;
-    var edata = editor.getData();
-    $('#content').html('<!--@nobr-->' + edata.replace('<!--@nobr-->', ''));
-    }
+function submitShadow() {
+    $(document).trigger('shadow_' + shadow.context + '_submit');
     var form_items = {};
-    $('#shadow-outside').find('input, textarea, select').each(function() {
+    $('#shadow-outside').find('input, textarea, select').each(function () {
         form_items[$(this).attr('name')] = $(this).val();
     });
     var formData = JSON.stringify(form_items);

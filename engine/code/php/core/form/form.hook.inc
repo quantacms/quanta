@@ -12,9 +12,9 @@ function form_init($vars) {
  * Implements hook_after_build().
  * @param mixed $vars
  */
-function form_form_load($page, $form_name) {
-    $form = array('form' => $page->getData('form_' . $form_name, NULL));
-    $page->env->hook('form_validate', $form);
+function form_form_load($env, $form_name) {
+    $form = array('form' => $env->getData('form_' . $form_name, NULL));
+    $env->hook('form_validate', $form);
   return !isset($_SESSION['validation_errors'][$form_name]);
 }
 
