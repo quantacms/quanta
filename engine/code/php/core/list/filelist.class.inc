@@ -22,6 +22,7 @@ class FileList extends ListObject {
 
     $file_types = $this->getAttribute('file_types');
     $i = 0;
+
     foreach ($this->files as $file) {
       $i++;
       // If there is a limit set, break when passing it.

@@ -18,14 +18,14 @@ class Node extends DataContainer {
   public $teaser = NULL;
   public $content = NULL;
   public $content_raw = NULL;
-  private $context;
+  protected $context;
   public $exists;
   public $permissions;
   public $timestamp;
   public $empty;
   public $father = NULL;
   public $thumbnail = NULL;
-  private $lineage = array();
+  protected $lineage = array();
   public $tmp_files_dir = NULL;
   public $tpl = NULL;
 
@@ -261,6 +261,11 @@ class Node extends DataContainer {
           $node->tmp_files_dir = $nodedata['tmp_files_dir'];
           $node->setAuthor($user->getName());
 
+          $env->hook('node_presave', array(
+            'node' => &$node,
+            'data' => $nodedata
+          ));
+
           if ($node->validate()) {
             $node->save();
             $env->hook('node_save', array(
@@ -334,6 +339,7 @@ class Node extends DataContainer {
   public function saveFiles() {
     // TODO: refactor.
     $tmp_dir = $this->env->dir['tmp_files'] . '/' . $this->tmp_files_dir;
+
     if (is_dir($tmp_dir)) {
       $tmp_files = $this->env->scanDirectory($tmp_dir);
       foreach ($tmp_files as $file) {
@@ -444,7 +450,7 @@ class Node extends DataContainer {
    * @param $teaser
    */
   public function setTeaser($teaser) {
-    $this->teaser = $teaser;
+    $this->teaser = strip_tags($teaser);
   }
 
   /**
@@ -452,6 +458,8 @@ class Node extends DataContainer {
    * Useful for breadcrumbs.
    */
   public function buildLineage() {
+    // no need to do this twice...
+
     if ($this->isHome()) {
       return;
     }
@@ -469,7 +477,7 @@ class Node extends DataContainer {
   }
 
   public function buildTemplate() {
-    $this->tpl = '<h1>' . $this->env->getData('title') . '</h1>[CONTENT]';
+    $this->tpl = $this->getContent();
     $tpl = array();
     $tpl_level = 0;
 
@@ -569,27 +577,34 @@ class Node extends DataContainer {
   }
 
   /**
+   * Get all the permissions for this node.
+   * @return mixed
+   */
+  public function getPermission($perm) {
+    $permissions = $this->getPermissions();
+    if (!empty($permissions[$perm])) {
+      return $permissions[$perm];
+    }
+    else {
+      return NULL;
+    }
+  }
+
+
+  /**
    * Load and construct permissions for this node.
    */
   private function loadPermissions() {
     $grants = array();
-    // Load global permissions.
-    $check = array_reverse(explode('/', $this->realpath));
-    // Load specific permissions.
-    foreach ($check as $path) {
-      $n = new Node($this->env, $path);
-      $access_path = ($n->exists ? $n->realpath : $this->env->dir['docroot']);
-      if (is_file($access_path . '/.access')) {
-        $access = file($access_path . '/.access');
-        foreach ($access as $grant_item) {
-          $grants_item = explode(':', $grant_item);
-          if (!isset($grants[$grants_item[0]])) {
-            $grants[$grants_item[0]] = $grants_item[1];
-          }
+    $this->buildLineage();
+    // Navigate the whole tree gathering real permissions on the node.
+    $lineage = $this->getLineage();
+    foreach ($lineage as $lineage_node) {
+      $lineage_node_perm = (array) $lineage_node->json->permissions;
+      foreach ($lineage_node_perm as $perm_name => $perm) {
+        if (!empty($perm)) {
+          $grants[$perm_name] = $perm;
         }
-      }
-      if (!($n->exists)) {
-        break;
       }
     }
     $this->permissions = $grants;
@@ -621,6 +636,7 @@ class Node extends DataContainer {
     );
 
     $upload_dir = ($this->env->dir['tmp_files'] . '/' . $_REQUEST['tmp_files_dir']);
+
     if (!is_dir($upload_dir)) {
       mkdir($upload_dir);
     }
@@ -672,7 +688,13 @@ class Node extends DataContainer {
    */
   public function renderEditForm($context) {
     $this->context = $context;
-    $edit_node = $this->wikize(file_get_contents('core/node/tpl/node_edit.inc'));
+    $edit_node = file_get_contents('core/node/tpl/node_edit.inc');
+    if ($context == 'node_add') {
+
+      // TODO: this stuff sucks. But how to not reduntantly clone node_edit tpl?
+      $edit_node = str_replace('{ATTRIBUTE|name=father}', $this->father->name, $edit_node);
+      $edit_node = preg_replace('/\{ATTRIBUTE(.*)\}/i', '', $edit_node);
+    }
     return $edit_node;
   }
 
@@ -684,27 +706,31 @@ class Node extends DataContainer {
    */
   public function renderDeleteForm($context) {
     $this->context = $context;
-    $edit_node = $this->wikize(file_get_contents('core/node/tpl/node_delete.inc'));
+    $edit_node = file_get_contents('core/node/tpl/node_delete.inc');
     return $edit_node;
   }
 
   /**
+   * TODO: ELIMINARE LA FUNZIONE.
    * Substitute node tokens in a template.
    *
    * @param $edit_node
    * @return mixed
    */
-  private function wikize($edit_node) {
+  protected function wikize($edit_node) {
     preg_match_all('/\[NODE\:(.*)\]/', $edit_node, $m);
+    if (FALSE)
     foreach ($m[1] as $k => $nodepart) {
       switch ($nodepart) {
 
         case 'action':
           $part = $this->context;
           break;
+
         case 'father':
           $part = $this->getFather()->getName();
           break;
+
         case 'title':
           $part = $this->getTitle();
           break;
@@ -750,12 +776,13 @@ class Node extends DataContainer {
 
         default:
           // The item in [NODE:item] is unknown.
-          $part = 'undefined:' . $nodepart;
+          $part = 'undefined';
           break;
       }
 
       $edit_node = str_replace($m[0][$k], $part, $edit_node);
     }
+
     return $edit_node;
   }
 
@@ -794,10 +821,21 @@ class Node extends DataContainer {
   public function renderUploadForm($context) {
     $this->context = $context;
     $this->tmp_files_dir = $this->getName() . '-' . time() . '-' . rand(0, 1000);
-    $up_form = $this->wikize(file_get_contents('core/node/tpl/upload_form.inc'));
+    $up_form = file_get_contents('core/node/tpl/upload_form.inc');
     return $up_form;
   }
 
+  /**
+   * Renders a file upload form for a node.
+   * @param $context
+   * @return mixed
+   */
+  public function renderPermissionsForm($context) {
+    $this->context = $context;
+    $this->tmp_files_dir = $this->getName() . '-' . time() . '-' . rand(0, 1000);
+    $up_form = file_get_contents('core/node/tpl/permissions_form.inc');
+    return $up_form;
+  }
 
   /**
    * EXPERIMENTAL: find all categories for the node,

@@ -1,5 +1,5 @@
 function logIn() {
-    openShadow({ module : 'user', context: 'user_login', type: 'single'});
+    openShadow({ module : 'user', context: 'user_login', widget: 'single'});
 }
 
 function logOut() {
@@ -7,7 +7,7 @@ function logOut() {
 }
 
 function register() {
-    openShadow({ module : 'user', context: 'user_register', type: 'single'});
+    openShadow({ module : 'user', context: 'user_register', widget: 'single'});
 }
 
 $(document).ready(function() {
@@ -21,6 +21,6 @@ $(document).ready(function() {
         logOut();
     });
     $('.user-edit-link').click(function () {
-        openShadow({ module: 'user', context: 'user_edit', type: 'tabs'});
+        openShadow({ module: 'user', context: 'user_edit', widget: 'tabs'});
     });
 });

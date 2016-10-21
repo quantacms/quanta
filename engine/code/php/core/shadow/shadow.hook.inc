@@ -6,12 +6,15 @@
 function shadow_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/shadow/js/shadow.js');
   $vars['env']->addInclude('engine/code/php/core/shadow/css/shadow.css');
+
   if (isset($_REQUEST['shadow'])) {
     $shadow_json = json_decode($_REQUEST['shadow']);
     $shadow = new Shadow($vars['env'], $shadow_json);
+    $vars['env']->setData('shadow', $shadow);
     print $shadow->render();
     exit();
   }
+
 }
 
 /**

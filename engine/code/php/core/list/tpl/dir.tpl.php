@@ -1,1 +1,1 @@
-[[NODE:name]:[NODE:title]]
+[LINK:[LISTITEM]]

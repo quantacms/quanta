@@ -285,15 +285,15 @@ class User extends DataContainer {
    * @return User
    */
   public function checkAccess($node = NULL, $action = NULL) {
-    // TODO: bad way to check non-node specific permissions.
-    // TODO: URGENT URGENT: security.
-    if ($node == NULL) {
-      return TRUE;
-    }
     $permissions = $node->getPermissions();
-
     $action = trim(strtolower($action));
     $permission = (string) strtolower(trim($permissions[$action]));
+
+    // Strange case in which no permission is set. TODO maybe not right.
+    if (!isset($permissions[$action])) {
+      return TRUE;
+    }
+
     $has_permissions = array();
     if (isset($action) && isset($permissions[$action]) && $permission == 'anonymous') {
       return TRUE;

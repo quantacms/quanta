@@ -51,20 +51,25 @@
 
 
 /*----------------------------
-    The file upload form
+    The file edit-files form
 -----------------------------*/
 
-.progressBar {
+#filelist .progress-wrapper {
     position: absolute;
-    left: -29px;
-    top :26px;
-    background: transparent;
-    border-width: 0;
-    text-align:center;
-    width: 30px;
-    font-size: 0.4em;}
+    right: -60px;
+}
 
-#upload{
+#filelist .progressBar {
+    border: 0;
+    display: block;
+    width: 35px;
+    text-align: center;
+    margin-left: 15px;
+    margin-top: -20px;
+
+}
+
+#edit-files{
     width:100%;
     position: relative;
     display: block;
@@ -117,7 +122,7 @@
     display:none;
 }
 
-#upload ul {
+#edit-files ul {
     list-style: none;
 }
 
@@ -128,28 +133,28 @@ li.list-item {
 }
 
 
-#upload ul li p {
+#edit-files ul li p {
     width: 144px;
     white-space: nowrap;
 }
 
-#upload ul li i {
+#edit-files ul li i {
     font-weight: normal;
     font-style:normal;
     color:#7f7f7f;
     margin-left: 8px;
 }
 
-#upload ul li canvas {
+#edit-files ul li canvas {
     position: absolute;
     top: 4px;
     left: -24px;
 }
 
-#upload ul li.worked canvas {
+#edit-files ul li.worked canvas {
     display: none;
 }
-#upload ul li span {
+#edit-files ul li span {
     width: 15px;
     height: 12px;
     background: url('/engine/img/icons.png') no-repeat;
@@ -159,16 +164,16 @@ li.list-item {
     left: -20px;
 }
 
-#upload ul li.working span{
+#edit-files ul li.working span{
     height: 16px;
     background-position: 0 -12px;
 }
 
-#upload ul li.error p{
+#edit-files ul li.error p{
     color:red;
 }
 
-/* Files upload */
+/* Files edit-files */
 #tzine-download{
     opacity:0.9;
     background-color:#257691;
@@ -216,4 +221,22 @@ li.list-item {
 
 .file_admin {
     font-size: 0.8em;
+}
+.list-item-file-admin {
+    border-bottom: 1px dotted #ddd;
+    padding: 10px;
+    padding-left: 24px;
+    width: 60%;
+}
+
+.list-item-file-admin:hover {
+    background-color: #ddd;
+}
+
+.list-item-file-admin .imgcode {
+    float: right;
+}
+
+.list-item-file-admin a {
+    text-decoration: none;
 }

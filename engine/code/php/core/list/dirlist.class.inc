@@ -26,7 +26,9 @@ class DirList extends ListObject {
         $classes[] = 'list-selected';
       }
 
-      if (Node::current($this->env)->getFather()->name == $node->name) {
+      $node_father = Node::current($this->env)->getFather();
+
+      if ($node_father->exists && ($node_father->name == $node->name)) {
         $classes[] = 'list-selected-father';
       }
 
@@ -35,6 +37,8 @@ class DirList extends ListObject {
       $thumbclass = ($thumbfile->exists) ? 'thumb-img' : 'thumb-void';
       // TODO change way to include tpl.
       $tpl = file_get_contents($this->module_path . '/tpl/' . $this->getTheme() . '.tpl.php');
+      $tpl = transformCodeTags($this->env, preg_replace("/\[LISTITEM\]/is", string_normalize($dir_url), $tpl));
+
       // TODO: node tokens should not be rendered in the list module?!
       $tpl = preg_replace("/\[NODE:user_actions\]/is", implode('', $user_actions), $tpl);
       $tpl = preg_replace("/\[NODE:title\]/is", $node->getTitle(), $tpl);
@@ -44,6 +48,7 @@ class DirList extends ListObject {
       $tpl = preg_replace("/\[NODE:date\]/is", $node->getDateTime(), $tpl);
       $tpl = preg_replace("/\[NODE:teaser\]/is", strip_tags(preg_replace('/\[(.*)\]/', '', $node->getTeaser())), $tpl);
       $tpl = preg_replace("/\[IMG\:/is", '[IMG:/' . $dir_url . '/', $tpl);
+
       $tpl = '<li class="' . implode(' ', $classes) . '">' . $tpl . '</li>';
 
       $this->tpl_items[] = $tpl;
