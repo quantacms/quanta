@@ -29,6 +29,7 @@ abstract class ListObject {
   protected $files = array();
   protected $tpl_items = array();
   private $attributes = array();
+  protected $scantype = DIR_ALL;
 
   // Construct the List.
 
@@ -96,19 +97,20 @@ abstract class ListObject {
     $symlinks = $this->getAttribute('symlinks');
 
     if ($this->getAttribute('level') == 'leaf' || $this->getAttribute('level') == 'tree') {
-      $list_pages = $this->env->scanDirectoryDeep($this->realpath, '', array(), array('exclude_dirs' => DIR_INACTIVE, 'symlinks' => $symlinks, 'type' => DIR_ALL, 'level' => $this->getAttribute('level')));
-    } else {
-      $list_pages = $this->env->scanDirectory($this->realpath, array('exclude_dirs' => DIR_INACTIVE, 'symlinks' => $symlinks));
+			$list_pages = $this->env->scanDirectoryDeep($this->realpath, '', array(), array('exclude_dirs' => DIR_INACTIVE, 'symlinks' => $symlinks, $this->scantype, 'level' => $this->getAttribute('level')));
+		} else {
+      $list_pages = $this->env->scanDirectory($this->realpath, array('exclude_dirs' => DIR_INACTIVE, 'type' => $this->scantype, 'symlinks' => $symlinks));
     }
 
     foreach ($list_pages as $data_url) {
-      if (is_dir($this->realpath . '/' . $data_url) || is_link($this->realpath . '/' . $data_url)) {
+
+      if (($this->scantype == DIR_DIRS) && is_link($this->env->dir['wiki'] . '/' . $data_url)) {
         $node = new Node($this->env, $data_url);
         if ($node->exists) {
           $this->dirs[$data_url] = $node;
         }
       }
-      elseif ($this->node != NULL) {
+      elseif (($this->scantype == DIR_FILES) && $this->node != NULL) {
         $file = new File($this->env, $data_url, $this->node);
         if ($file->isPublic()) {
           $this->files[] = $file;

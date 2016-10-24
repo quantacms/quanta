@@ -9,7 +9,7 @@
  */
 class FileList extends ListObject {
   private $allowed_types;
-
+  protected $scantype = DIR_FILES;
   /**
    * Construct a FileList object.
    *
