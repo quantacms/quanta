@@ -7,7 +7,9 @@
  */
 class DirList extends ListObject {
   protected $module_path = 'core/list';
-  /**
+  protected $scantype = DIR_DIRS;
+
+	/**
    * Generate the html of the list.
    */
   public function theme() {
@@ -16,7 +18,7 @@ class DirList extends ListObject {
     $user_actions[] = '[[NODE:name]:Read all&rarr;]';
 
     foreach ($this->dirs as $dir_url => $node) {
-      $i++;
+			$i++;
       // If there is a limit set, break when passing it.
       if (!empty($this->limit) && $i > $this->limit) {
         break;
