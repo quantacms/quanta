@@ -40,7 +40,7 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
       break;
 
     case 'content':
-      $string = $node->getContent();
+      $string = $node->render();
       break;
 
     case 'body':

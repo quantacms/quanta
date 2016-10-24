@@ -459,7 +459,7 @@ class Node extends DataContainer {
    */
   public function buildLineage() {
     // no need to do this twice...
-
+    $this->lineage = array();
     if ($this->isHome()) {
       return;
     }
@@ -483,12 +483,6 @@ class Node extends DataContainer {
 
     foreach ($this->lineage as $lineage) {
       $tpl_level++;
-
-      // check if there is a sub-level template.
-      if (isset($tpl[$tpl_level])) {
-        $this->tpl = file_get_contents($tpl[$tpl_level]);
-      }
-
       // a template in the same directory has always priority.
       if (is_file($lineage->path . '/tpl.html')) {
         $this->tpl = file_get_contents($lineage->path . '/tpl.html');
@@ -498,7 +492,6 @@ class Node extends DataContainer {
 
       // We support 5 levels of sub-level templates for now.
       for ($i = 1; $i <= 6; $i++) {
-
         $min .= '-';
         $file = $lineage->path . '/tpl' . $min . '.html';
         if (file_exists($file)) {
@@ -506,7 +499,13 @@ class Node extends DataContainer {
         }
       }
     }
-  }
+    
+		// check if there is a sub-level template.
+    if (isset($tpl[$tpl_level])) {
+			$this->tpl = file_get_contents($tpl[$tpl_level]);
+    }
+  
+	}
 
   public function isHome() {
     return $this->name == 'home';
