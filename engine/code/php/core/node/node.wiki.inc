@@ -21,7 +21,8 @@ function wiki_BLOCK($attributes, $var, $string, $env) {
 
 function wiki_LINK($attributes, $node, $string, $env) {
   $node = new Node($env, $node);
-  $link = '<a href="/' . string_normalize($node->name) . '">' . string_normalize((isset($attributes['title']) ? $attributes['title'] : $node->title)) .'</a>';
+	$normalized = string_normalize($node->name);
+  $link = '<a class="link link-' . $normalized . '" href="/' . $normalized . '">' . string_normalize((isset($attributes['title']) ? $attributes['title'] : $node->title)) .'</a>';
   return $link;
 
 }
@@ -76,16 +77,37 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
 }
 
 function wiki_ADD($attributes, $father, $string, $env) {
-
   $father = empty($father) ? $env->getData('node') : new Node($env, $father);
   $type = isset($attributes['type']) ? $attributes['type'] : 'node';
   $widget = isset($attributes['widget']) ? $attributes['widget'] : 'tabs';
-  $label = isset($attributes['label']) ? $attributes['label'] : 'POST';
-
+  $label = isset($attributes['label']) ? $attributes['label'] : 'add';
   return '<a href="#" data-type="' . $type . '" data-widget = "' . $widget . '" class="add-link" rel="' . $father->name . '">' . $label . '</a>';
-
-
 }
+
+function wiki_EDIT($attributes, $node, $string, $env) {
+  $node = empty($node) ? $env->getData('node') : new Node($env, $node);
+  $type = isset($attributes['type']) ? $attributes['type'] : 'node';
+  $widget = isset($attributes['widget']) ? $attributes['widget'] : 'tabs';
+  $label = isset($attributes['label']) ? $attributes['label'] : 'edit';
+  return '<a href="#" data-type="' . $type . '" data-widget = "' . $widget . '" class="edit-link" rel="' . $node->name . '">' . $label . '</a>';
+}
+
+function wiki_DELETE($attributes, $node, $string, $env) {
+  $node = empty($node) ? $env->getData('node') : new Node($env, $node);
+  $type = isset($attributes['type']) ? $attributes['type'] : 'node';
+  $widget = isset($attributes['widget']) ? $attributes['widget'] : 'tabs';
+  $label = isset($attributes['label']) ? $attributes['label'] : 'delete';
+  return '<a href="#" data-type="' . $type . '" data-widget = "' . $widget . '" class="delete-link" rel="' . $node->name . '">' . $label . '</a>';
+}
+
+function wiki_OPERATIONS($attributes, $node, $string, $env) {
+  $operations = '';
+	$operations .= wiki_ADD($attributes, $node, $string, $env);
+	$operations .= wiki_EDIT($attributes, $node, $string, $env);
+	$operations .= wiki_DELETE($attributes, $node, $string, $env);
+  return $operations;
+}
+
 
 function wiki_CATEGORIES($tagname, $var, $string, $env) {
   $node = $env->getData('node');
