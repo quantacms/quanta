@@ -27,3 +27,14 @@
 
     return $item;
   }
+
+
+  function wiki_LOGIN($user, $var, $string, $page, $uname = NULL) {
+		$user = User::current($page->env);
+		return $user->exists ? '<a href="#" class="logout-link">Logout</a>' : '<a href="#" class="login-link">Login</a>';
+	}
+
+  function wiki_REGISTER($user, $var, $string, $page, $uname = NULL) {
+		$user = User::current($page->env);
+		return $user->exists ? '' : '<a href="#" class="register-link">Sign up</a>';
+	}
