@@ -1,1 +1,0 @@
-[NODE:name]:[NODE:title]

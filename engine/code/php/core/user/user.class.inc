@@ -315,67 +315,17 @@ class User extends DataContainer {
   // TODO: refactor.
   public function renderEditForm($context) {
     $this->context = $context;
-    $user_edit_form = $this->wikize(file_get_contents('core/user/tpl/' . $context . '.inc'));
+    $user_edit_form = file_get_contents('core/user/tpl/' . $context . '.inc');
     return $user_edit_form;
   }
 
   // TODO: refactor.
   public function renderLoginForm() {
-    $login_form = $this->wikize(file_get_contents('core/user/tpl/user_login.inc'));
+    $login_form = file_get_contents('core/user/tpl/user_login.inc');
     return $login_form;
   }
 
-  private function wikize($edit_user) {
-    preg_match_all('/\[USER\:(.*)\]/', $edit_user, $m);
-
-    foreach ($m[1] as $k => $userpart) {
-      switch ($userpart) {
-        case 'action':
-          $part = $this->context;
-          break;
-        case 'password':
-          break;
-        case 'email':
-          $part = $this->email;
-          break;
-        case 'avatar':
-          $part = $this->getAvatar();
-          break;
-
-        case 'avatar-img':
-          $thumb = new Image($this->env, $this->getAvatar(), $this);
-          if ($thumb->exists) {
-            $part = $thumb->render();
-          }
-          else {
-            $part = 'No avatar uploaded';
-          }
-          break;
-
-        case 'time':
-          $part = $this->getTime();
-          break;
-
-        case 'date':
-          $part = $this->getDate();
-          break;
-
-        case 'name':
-          $part = $this->getName();
-          break;
-
-        default:
-          $part = ($this->getData($userpart) ? $this->getData($userpart) : '');
-          // The item in [NODE:item] is unknown.
-          break;
-      }
-
-      $edit_user = str_replace($m[0][$k], $part, $edit_user);
-    }
-    return $edit_user;
-  }
-
-  // TODO
+    // TODO
   public function renderUploadAvatarForm($context) {
 
   }

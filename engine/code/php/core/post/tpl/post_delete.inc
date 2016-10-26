@@ -1,6 +1,5 @@
-<form id="shadow-form" method="POST" action="/[NODE:name]">
 You are about to delete this post:<br/><br/>
-        <b>[NODE:title]</b>
-        <input type="hidden" id="action" name="action" value="node_delete" />
-        <input type="hidden" name="edit-path" id="edit-path" value="[NODE:name]"/>
-      </form>
+<b>[ATTRIBUTE|name=title]</b>
+[INPUT|required|name=edit-path|value={ATTRIBUTE|name=name|nowiki}:shadow-form]
+[INPUT|required|name=action|value={SHADOW:context}|nowiki:shadow-form]
+[FORM:shadow-form]
