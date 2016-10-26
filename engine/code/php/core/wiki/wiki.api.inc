@@ -1,15 +1,5 @@
 <?php
 
-// TODO: temporary function for handling tags into the backend.
-function unwikize($env, $html) {
-  preg_match_all("/\[(.*?)]/", $html, $matches);
-  foreach ($matches[1] as $tag_value) {
-    $tag_full = '[' . $tag_value . ']';
-    $html = str_replace($tag_full, '{{{' . $tag_value . '}}}', $html);
-  }
-  return $html;
-}
-
 /**
  * Transform wiki tags in html.
  * Will look for all wiki_TAG functions, in all modules, and apply them to the code

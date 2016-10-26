@@ -10,6 +10,7 @@ class File {
   public $extension;
   public $type;
   public $exists;
+  public $size;
   /**
    * @var Node
    */
@@ -21,8 +22,8 @@ class File {
     $file_path = $fpath_full[count($fpath_full) - 1];
     $this->path = '/' . $node->getName() . '/' . $file_path;
     $exp = explode('.', $file_path);
-    $this->name = $exp[0];
     $this->extension = strtolower($exp[count($exp) - 1]);
+    $this->name = $exp[0];
     $this->type = File::getFileType($this->extension);
     $this->node = $node;
     $this->exists = is_file($this->node->realpath . '/' . $file_path);
@@ -44,8 +45,20 @@ class File {
     return $is_public;
   }
 
+
+  public function getFileSize() {
+    return $this->size;
+  }
+
   public function getType() {
     return $this->type;
+  }
+
+  public function getPath() {
+    return $this->path;
+  }
+  public function getExtension() {
+    return $this->extension;
   }
 
   /**
@@ -89,6 +102,7 @@ class File {
       case 'odt':
       case 'docx':
       case 'txt':
+      case 'rtf':
         $type = 'document';
         break;
 
@@ -121,7 +135,12 @@ class File {
     return $type;
   }
 
-  function render() {
+  public function render() {
     return $this->path;
   }
+
+  public function getName() {
+    return $this->name;
+  }
+
 }

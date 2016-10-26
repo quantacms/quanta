@@ -1,2 +1,4 @@
 <?php
+$this->dependsFrom('core', 'file');
+
 require_once('image.class.php');
