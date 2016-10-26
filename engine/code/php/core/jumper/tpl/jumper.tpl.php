@@ -1,1 +1,1 @@
-<option value="[NODE:name]">[NODE:title]</option>
+<option value="[ATTRIBUTE|name=name:[LISTITEM]]">[ATTRIBUTE|name=title:[LISTITEM]]</option>

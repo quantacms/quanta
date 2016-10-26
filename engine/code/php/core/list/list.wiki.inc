@@ -25,10 +25,3 @@ function wiki_FILES($attributes, $value, $string, $env) {
   $filelist = new FileList($env, $value, 'file', $attributes);
   return $filelist->render();
 }
-
-/**
- * Detect content FILES and eventually create HTML.
- */
-function wiki_FILEATTRIBUTE($attributes, $file, $string, $env) {
-
-}

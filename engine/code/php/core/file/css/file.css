@@ -1,8 +1,4 @@
-.file-docx,
-.file-doc,
-.file-txt,
-.file-rtf,
-.file-odt {
+.file-document {
     background-image: url(/engine/img/icons/doc.png);
 }
 
@@ -14,38 +10,23 @@
     background-image: url(/engine/img/icons/xml.png);
 }
 
-.file-gif,
-.file-jpg,
-.file-png,
-.file-bmp,
-.file-jpeg {
+.file-image {
     background-image: url(/engine/img/icons/img.png);
 }
 
-.file-mp3,
-.file-wav,
-.file-wma,
-.file-m4a {
+.file-audio {
     background-image: url('/engine/img/icons/audio.png')
 }
 
-.file-zip,
-.file-tar,
-.file-gz,
-.file-7z,
-.file-rar {
+.file-archive {
     background-image: url('/engine/img/icons/zip.png')
 }
 
-.file-mov,
-.file-mp4,
-.file-avi,
-.file-wmv {
+.file-video {
     background-image: url('/engine/img/icons/video.png')
 }
 
-.file-xls,
-.file-xlt {
+.file-sheet {
     background-image: url('/engine/img/icons/xls.png')
 }
 
