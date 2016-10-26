@@ -78,9 +78,6 @@ abstract class ListObject {
   public function render() {
     $this->theme();
 
-    if (count($this->tpl_items) == 0) {
-      return;
-    }
     $output = implode('', $this->tpl_items);
     $ajax = (!empty($this->getAttribute('ajax'))) ? ' rel= ' .$this->getAttribute('ajax') : '';
     $output = '<ul ' . $ajax . ' class="list ' . $this->getTheme() . ' list-' . $this->getTheme() . ' list-' . $this->node->getName() . '">' . $output . '</ul>';
