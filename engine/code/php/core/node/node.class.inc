@@ -782,4 +782,8 @@ class Node extends DataContainer {
   return $categories;
   }
 
+  public static function wrap($nodename, $html) {
+    return '<div class="node-item" rel="' . $nodename . '"><div class="node-item-actions">[EDIT:' . $nodename . '][DELETE:' . $nodename . ']</div>' . $html . '</div>';
+  }
+
 }
