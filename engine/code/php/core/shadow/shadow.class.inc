@@ -25,7 +25,8 @@ class Shadow extends Page {
         $this->setData($key, $value);
       }
     }
-    $this->node = new Node($env, $env->getRequestedPath());
+
+    $this->node = (isset($data->node)) ? new Node($env, $data->node) : new Node($env, $env->getRequestedPath());
 
     $this->env->hook('shadow_' . $this->context, array('shadow' => &$this, 'type' => $this->type));
     if ($this->getTabs() == NULL) {
@@ -118,4 +119,7 @@ class Shadow extends Page {
     $this->context = $context;
   }
 
+  public function getNode() {
+    return $this->node;
+  }
 }

@@ -30,7 +30,8 @@ class DirList extends ListObject {
       }
       $tpl = file_get_contents($this->module_path . '/tpl/' . $this->getTheme() . '.tpl.php');
       $tpl = transformCodeTags($this->env, preg_replace("/\[LISTITEM\]/is", string_normalize($dir_url), $tpl));
-      $tpl = '<li class="' . implode(' ', $classes) . '">' . $tpl . '</li>';
+      $tpl = Node::wrap($node->getName(), $tpl);
+        $tpl = '<li class="' . implode(' ', $classes) . '">' . $tpl . '</li>';
       $this->tpl_items[] = $tpl;
     }
   }

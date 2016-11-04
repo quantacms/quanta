@@ -14,8 +14,9 @@ function openShadow(shadowData) {
     if (shadow.widget == undefined) {
         shadow.widget = 'tabs';
     }
+    var node = (shadow.node.length > 0) ? shadow.node : '';
     $('#shadow-item').html('').attr('rel', shadow.context).load(
-        '?shadow=' + JSON.stringify(shadow), function () {
+        '/' + node + '/?shadow=' + JSON.stringify(shadow), function () {
             if (shadow.callback != undefined) {
                 shadow.callback();
             }

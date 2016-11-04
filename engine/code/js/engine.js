@@ -68,6 +68,8 @@ var actionSuccess = function(data) {
             $('.messages').fadeOut('slow');
         }, 6000);
 
+    } else if (data.refresh != undefined) {
+      alert('ajax refresh go!!!');
     }
     else if (data.redirect == undefined) {
         console.log(data);

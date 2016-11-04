@@ -10,13 +10,9 @@ function wiki_AUTHOR($attributes, $var, $string, $env) {
   }
 }
 
-function wiki_BLOCK($attributes, $var, $string, $env) {
-  $node = new Node($env, $var);
-  if ($node->exists) {
-    return $node->getBody();
-  } else {
-    new Message($env, 'Warning: ' . $var . 'is a non existing node', MESSAGE_WARNING);
-  }
+function wiki_BLOCK($attributes, $node, $string, $env) {
+  $attributes['name'] = 'content';
+  return Node::wrap($node, wiki_ATTRIBUTE($attributes, $node, $string, $env));
 }
 
 function wiki_LINK($attributes, $node, $string, $env) {
@@ -41,6 +37,8 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
       break;
 
     case 'content':
+      // TODO: why sometimes template it's not built yet?
+      $node->buildTemplate();
       $string = $node->render();
       break;
 
@@ -73,7 +71,7 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
       break;
   }
 
-  return $string;
+  return '<span class="node-item-attribute" type="' . $attributes['name'] . '" rel="' . $node->getName() . '">' . $string . '</span>';
 }
 
 function wiki_ADD($attributes, $father, $string, $env) {

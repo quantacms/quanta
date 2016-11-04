@@ -37,8 +37,12 @@ function node_action_node_delete($vars) {
  */
 function node_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/node/js/node.js');
+  $vars['env']->addInclude('engine/code/php/core/node/css/node.css');
+
   $user = User::current($vars['env']);
   $node = Node::current($vars['env']);
+
+  // TODO: should go in file module?
   if (isset($_FILES['upl']) && ($user->checkAccess($node, NODE_ACTION_EDIT))) {
     $node->checkUploads();
     exit();
@@ -104,15 +108,16 @@ function node_shadow_node_add($vars) {
 function node_shadow_node_edit($vars) {
 
   $user = User::current($vars['env']);
+
   // ADD a node.
   if ($vars['shadow']->getContext() == NODE_ACTION_ADD) {
-    $father = new Node($vars['env'], $vars['env']->getRequestedPath());
+    $father = $vars['shadow']->getNode();
     $node = new Node($vars['env'], NULL, $father);
     $has_access = $user->checkAccess($father, $vars['shadow']->getContext());
   }
   // EDIT a node.
   else {
-    $node = new Node($vars['env'], $vars['env']->getRequestedPath());
+    $node = $vars['shadow']->getNode();
     $has_access = $user->checkAccess($node, $vars['shadow']->getContext());
   }
   $action_name = ($vars['shadow']->getContext() == NODE_ACTION_ADD ? 'create' : 'edit') . ' content';
