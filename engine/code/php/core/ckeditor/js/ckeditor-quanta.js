@@ -1,5 +1,15 @@
+// TODO: refactor redundancy for add / edit events.
+
 $(document).bind('shadow_node_add',function(ev) { ckeditor(); });
 $(document).bind('shadow_node_edit',function(ev) { ckeditor(); });
+$(document).bind('shadow_node_edit_submit', function(ev) { ckeditor_submit(); });
+$(document).bind('shadow_node_add_submit', function(ev) { ckeditor_submit(); });
+
+function ckeditor_submit() {
+    var editor = CKEDITOR.instances.edit_content;
+    var edata = editor.getData();
+    $('#edit_content').html(edata);
+}
 
 function ckeditor(ev) {
     CKEDITOR.replace('edit_content', {
@@ -23,3 +33,5 @@ function ckeditor(ev) {
         ]
     });
 }
+
+

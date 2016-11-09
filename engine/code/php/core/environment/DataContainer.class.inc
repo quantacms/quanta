@@ -33,6 +33,7 @@ abstract class DataContainer {
    * Save the JSON dump of the data container.
    */
   protected function saveJSON($ignore = array()) {
+
     if (!is_dir($this->realpath)) {
       mkdir($this->realpath) or die('cannot create dir: ' . $this->realpath);
     }

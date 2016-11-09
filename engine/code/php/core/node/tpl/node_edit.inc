@@ -2,7 +2,7 @@
 [INPUT|id=edit_action|type=hidden|required|name=action|value={SHADOW:context}|nowiki:shadow-form]
 [INPUT|id=edit_teaser|name=edit-teaser|type=text|value={ATTRIBUTE|name=teaser|nowiki}|nowiki:shadow-form]
 [INPUT|id=edit_content|required|name=edit-content|type=text|value={ATTRIBUTE|name=body|nowiki}|nowiki:shadow-form]
-[INPUT|id=edit_path|required|name=edit-path|value={ATTRIBUTE|name=name|nowiki}|nowiki:shadow-form]
+[INPUT|id=edit_path|required|name=edit-path|value={ATTRIBUTE|name=realname|nowiki}|nowiki:shadow-form]
 [INPUT|id=edit_thumbnail|type=hidden|name=edit-thumbnail|value={ATTRIBUTE|name=thumbnail|nowiki}|nowiki:shadow-form]
 [INPUT|id=edit_father|required|name=edit-father|value={ATTRIBUTE|name=father}|nowiki:shadow-form]
 [INPUT|id=edit_time|required|name=edit-time|value={ATTRIBUTE|name=time|nowiki}|type=time|nowiki:shadow-form]
