@@ -411,14 +411,6 @@ a.gallery-thumb .thumb-container {
     border-top: 1px solid black;
 }
 
-.innerimg {
-    max-width: 100%;
-    height: auto;
-    margin-right: 10px;
-    margin-bottom: 10px;
-    display: inline-block;
-}
-
 .page-break {
     page-break-after: always;
     height: 0;
@@ -429,6 +421,7 @@ a.gallery-thumb .thumb-container {
 .breadcrumb-block {
     text-align: left;
 }
+
 .breadcrumb-block ul, .breadcrumb-block ul li {
     display: inline-block;
     padding: 0;

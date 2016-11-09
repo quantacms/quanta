@@ -289,9 +289,10 @@ class User extends DataContainer {
     $action = trim(strtolower($action));
     $permission = (string) strtolower(trim($permissions[$action]));
 
-    // Strange case in which no permission is set. TODO maybe not right.
+    // Strange case in which no permission is set.
     if (!isset($permissions[$action])) {
-      return TRUE;
+      new Message($this->env, 'Error: the permission ' . $action . ' does not exist for the node ' . $node->getName() . '.', MESSAGE_ERROR);
+      return FALSE;
     }
 
     $has_permissions = array();
