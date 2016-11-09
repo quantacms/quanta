@@ -113,6 +113,7 @@ function node_shadow_node_edit($vars) {
   if ($vars['shadow']->getContext() == NODE_ACTION_ADD) {
     $father = $vars['shadow']->getNode();
     $node = new Node($vars['env'], NULL, $father);
+    $node->setName(NODE_NEW);
     $has_access = $user->checkAccess($father, $vars['shadow']->getContext());
   }
   // EDIT a node.
@@ -120,6 +121,9 @@ function node_shadow_node_edit($vars) {
     $node = $vars['shadow']->getNode();
     $has_access = $user->checkAccess($node, $vars['shadow']->getContext());
   }
+
+  $vars['env']->setData('node', $node);
+
   $action_name = ($vars['shadow']->getContext() == NODE_ACTION_ADD ? 'create' : 'edit') . ' content';
 
   if (!$has_access) {
@@ -163,8 +167,11 @@ function node_body_classes($vars) {
       ->getName());
 
     $breadcrumb = $vars['env']->getData('breadcrumb');
-    foreach ($breadcrumb as $path => $title) {
+
+    /*
+     * foreach ($breadcrumb as $path => $title) {
       $vars['page']->addBodyClass('section-' . $path);
     }
+    */
   }
 }

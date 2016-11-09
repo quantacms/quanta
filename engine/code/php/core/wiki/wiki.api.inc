@@ -70,11 +70,14 @@ function transformCodeTags(&$env, $html) {
 // After rendering all tags in a page, the result could be containing other tags.
   // For this reason, keep looping until all tags are rendered.
   while (TRUE) {
+
     $replaces = (checkCodeTags($env, $html));
+
     if (empty($replaces)) {
       break;
     }
     foreach($replaces as $k => $replace) {
+
       $html = str_replace($k, $replace, $html);
     }
   }

@@ -4,7 +4,7 @@
   [INPUT|type=file|plugin=drop|nowiki|title=Manage here all your uploaded files:upload]
   [FORM|name=upload:upload]
 </div>
-<div id="filelist">[FILES]</div>
+<div id="filelist">[FILES:{ATTRIBUTE|name=name}]</div>
 
 <script src="/engine/code/php/core/file/js/jquery.fileupload.js"></script>
 <script src="/engine/code/php/core/file/js/file-upload.js"></script>

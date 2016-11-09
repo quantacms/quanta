@@ -140,8 +140,9 @@ $(document).bind('refresh', function() {
        $(this).find('.file-actions').remove();
         var href = $(this).find('.file-link').attr('href');
         var selectedThumbnail = (href == thumb_href) ? 'selected-thumbnail' : '';
+        var tagType = $(this).hasClass('file-image') ? 'IMG' : 'FILE';
 
-       $(this).append('<span class="file-actions"><input type="text" value="[IMG:' + href + ']" /><a class="delete-file" href="#">x</a><a class="set-thumbnail ' + selectedThumbnail + '" href="#">&#9786;</a></span>');
+       $(this).append('<span class="file-actions"><input type="text" value="[' + tagType + ':' + href + ']" /><a class="delete-file" href="#">x</a><a class="set-thumbnail ' + selectedThumbnail + '" href="#">&#9786;</a></span>');
 
        refreshFileActions();
     }).on('mouseleave', function() {

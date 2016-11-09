@@ -19,7 +19,9 @@ function wiki_SHADOW($tagname, $attribute, $string, $env) {
     case 'context':
       return $shadow->getContext();
       break;
-
+    case 'node':
+      return $shadow->getNode()->getName();
+    break;
     case 'buttons':
       $buttons = '<div id="shadow-buttons">';
       foreach ($shadow->getData('buttons') as $action => $button) {

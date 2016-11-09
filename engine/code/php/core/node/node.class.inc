@@ -4,6 +4,7 @@ define('NODE_ACTION_ADD', 'node_add');
 define('NODE_ACTION_EDIT', 'node_edit');
 define('NODE_ACTION_DELETE', 'node_delete');
 define('NODE_ACTION_DELETE_FILE', 'file_delete');
+define('NODE_NEW', '__NEW__');
 date_default_timezone_set('UTC');
 /**
  * Class Node
@@ -606,6 +607,21 @@ class Node extends DataContainer {
         }
       }
     }
+
+    // TODO: default permissions when nothing is set?
+    if (!isset($grants[NODE_ACTION_ADD])) {
+      $grants[NODE_ACTION_ADD] = 'admin';
+    }
+    if (!isset($grants[NODE_ACTION_EDIT])) {
+      $grants[NODE_ACTION_EDIT] = 'admin';
+    }
+    if (!isset($grants[NODE_ACTION_DELETE])) {
+      $grants[NODE_ACTION_DELETE] = 'admin';
+    }
+    if (!isset($grants[NODE_ACTION_VIEW])) {
+      $grants[NODE_ACTION_VIEW] = 'guest';
+    }
+
     $this->permissions = $grants;
   }
 
@@ -688,12 +704,6 @@ class Node extends DataContainer {
   public function renderEditForm($context) {
     $this->context = $context;
     $edit_node = file_get_contents('core/node/tpl/node_edit.inc');
-    if ($context == 'node_add') {
-
-      // TODO: this stuff sucks. But how to not reduntantly clone node_edit tpl?
-      $edit_node = str_replace('{ATTRIBUTE|name=father}', $this->father->name, $edit_node);
-      $edit_node = preg_replace('/\{ATTRIBUTE(.*)\}/i', '', $edit_node);
-    }
     return $edit_node;
   }
 
@@ -782,8 +792,26 @@ class Node extends DataContainer {
   return $categories;
   }
 
-  public static function wrap($nodename, $html) {
-    return '<div class="node-item" rel="' . $nodename . '"><div class="node-item-actions">[EDIT:' . $nodename . '][DELETE:' . $nodename . ']</div>' . $html . '</div>';
+  public function wrap($html) {
+
+    $user = User::current($env);
+    $actions = array();
+
+    if ($user->checkAccess($this, NODE_ACTION_EDIT)) {
+      $actions[] = '[EDIT:' . $this->getName() . ']';
+    }
+
+    if ($user->checkAccess($this, NODE_ACTION_DELETE)) {
+      $actions[] = '[DELETE:' . $this->getName() . ']';
+    }
+
+    $wrap = '<div class="node-item rel="' . $this->getName() . '">';
+    if (!empty($actions)) {
+      $wrap .= '<div class="node-item-actions">' . implode($actions) . '</div>';
+    }
+    $wrap .= $html;
+    $wrap .= '</div>';
+    return $wrap;
   }
 
 }

@@ -12,7 +12,9 @@ function wiki_AUTHOR($attributes, $var, $string, $env) {
 
 function wiki_BLOCK($attributes, $node, $string, $env) {
   $attributes['name'] = 'content';
-  return Node::wrap($node, wiki_ATTRIBUTE($attributes, $node, $string, $env));
+  $node = new Node($env, $node);
+
+ return $node->wrap($node->getBody());
 }
 
 function wiki_LINK($attributes, $node, $string, $env) {
@@ -30,7 +32,16 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
   switch($attributes['name']) {
     case 'name':
       $string = $node->name;
-    break;
+      break;
+
+    // TODO: still looking for a better solution for new nodes.
+    case 'realname':
+      $string = $node->name == NODE_NEW ? '' : $node->name;
+      break;
+
+    case 'path':
+      $string = $node->path;
+     break;
 
     case 'title':
       $string = $node->title;
@@ -71,7 +82,7 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
       break;
   }
 
-  return '<span class="node-item-attribute" type="' . $attributes['name'] . '" rel="' . $node->getName() . '">' . $string . '</span>';
+  return $string;
 }
 
 function wiki_ADD($attributes, $father, $string, $env) {
