@@ -2,6 +2,10 @@
     position: relative;
 }
 
+.slider-thumb .innerimg {
+    min-height: 100%;
+    min-width: 100%;
+}
 
 .slider-teaser {
     position: absolute;
