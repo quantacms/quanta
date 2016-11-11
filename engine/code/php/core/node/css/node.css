@@ -24,3 +24,10 @@
     background: #ddd;
 
 }
+
+.shadow-content-node_edit .form-item-edit-path,
+.shadow-content-node_edit .form-item-edit-time,
+.shadow-content-node_edit .form-item-edit-date {
+    display: inline-block;
+    margin-right: 30px;
+}

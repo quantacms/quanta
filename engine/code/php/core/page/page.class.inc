@@ -27,10 +27,13 @@ class Page extends DataContainer {
 
     // Include JS / CSS files.
     foreach ($this->env->getIncludes() as $file) {
+      if (substr($file['path'], 0, 4) != 'http' && substr($file['path'], 0, 1) != '.') {
+        $file['path'] = '/' . $file['path'];
+      }
       if ($file['type'] == 'css') {
-        $this->vars['head'] .= '<link rel="stylesheet" type="text/css" href="/' . $file['path'] . '" />';
+        $this->vars['head'] .= '<link rel="stylesheet" type="text/css" href="' . $file['path'] . '" />';
       } elseif ($file['type'] == 'js') {
-        $this->vars['head'] .= '<script type="text/javascript" src="/' . $file['path']. '"></script>
+        $this->vars['head'] .= '<script type="text/javascript" src="' . $file['path']. '"></script>
       ';
       }
     }
