@@ -19,8 +19,9 @@ class File {
   // Construct the Node.
   public function __construct(&$env, $file_path, $node = NULL) {
     $fpath_full = explode('/', $file_path);
-    $file_path = $fpath_full[count($fpath_full) - 1];
-    $this->path = '/' . $node->getName() . '/' . $file_path;
+    //$file_path = $fpath_full[count($fpath_full) - 1];
+
+    $this->path = $file_path;
     $exp = explode('.', $file_path);
     $this->extension = strtolower($exp[count($exp) - 1]);
     $this->name = $exp[0];
