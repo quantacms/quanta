@@ -4,7 +4,7 @@
 </div>
 <div class="blog-preview">
   <div class="blog-thumb"><div class="thumb">[THUMBNAIL:[LISTITEM]]</div></div>
-  [ATTRIBUTE|name=teaser:[LISTITEM]]
+  <div class="blog-teaser">[ATTRIBUTE|name=teaser:[LISTITEM]]</div>
 </div>
 <div class="blog-actions">[LINK|title=Read All:[LISTITEM]]
 </div>

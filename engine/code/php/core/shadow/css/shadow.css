@@ -57,8 +57,9 @@
 
 .shadow-content {
     padding: 20px;
+    padding-top: 0;
     text-align: left;
-    font-family: Arial;
+    font-family: "Droid Sans", "Roboto", "Arial";
     width: auto;
 }
 
@@ -78,7 +79,6 @@
 #shadow-single {
     position: relative;
     background: white;
-    border-radius: 30px;
     padding: 20px;
     margin: auto;
     display: inline-block;
@@ -105,41 +105,38 @@
 
 #shadow-titles {
     position: absolute;
-    left: 4%;
+    left: 5%;
     width: 18%;
-    top: 12%;
+    top: 8%;
     z-index: 700;
     text-align: center;
     overflow: hidden;
-    padding: 1px;
-
+    height: 84%;
+    background: #dadada;
+    text-transform: uppercase;
+    font-size: 12px;
 }
 
 #shadow-titles ul li.shadow-title {
-    border: 1px solid #bbb;
     border-right: none;
     display: block;
     text-align: center;
-    background: white;
     color: black;
-    border-top-left-radius: 10px;
-    border-bottom-left-radius: 10px;
-    opacity: 0.8;
-    background: #fafafa;
-    margin-bottom: 10px;
 }
 
 #shadow-titles ul li.shadow-title.enabled {
     opacity: 1;
     background: white;
 }
+#shadow-titles ul li:hover {
+    background: #f3f3f3;
+}
 
 #shadow-titles ul li a {
     display: block;
     padding: 10px;
     line-height: 24px;
-    text-decoration: none;
-    font-family: Arial;
+    text-decoration: none !important;
     font-weight: bold;
     color: #777;
     font-size: 0.9em;
@@ -154,13 +151,13 @@
     position: absolute;
     top:8%;
     z-index: 999;
-    left:22%;
-    width: 70%;
-    border-radius: 30px;
+    left:23%;
+    width: 72%;
     min-height: 300px;
-
-
+    height: 84%;
+    overflow-y: auto;
 }
+
 .shadow-content {
     display: none;
 }
@@ -174,13 +171,18 @@
     display: block;
     margin-top: 10px;
     margin-bottom: 15px;
+    font-size: 12px;
 }
 
-#shadow-form label {
+.shadow-contents {
+    color: black;
+}
+
+.shadow-contents label {
     display: inline-block;
     margin: 0;
     margin-bottom: 2px;
-    margin-top: 15px;
+    margin-top: 20px;
     font-weight: bold;
     padding-right: 8px;
     border: none;
@@ -258,10 +260,12 @@
 }
 
 #shadow-buttons {
-    position: relative;
+    position: absolute;
     z-index: 1999;
     display: inline-block;
-    margin: 20px;
+    bottom: 0;
+    right: 0px;
+
 }
 
 #shadow-buttons a {
@@ -283,4 +287,13 @@
 #shadow-buttons a:hover {
     opacity: 0.7;
     background: #fafafa;
+}
+
+.shadow-content h2 {
+    color: black;
+    margin: 0;
+    margin-top: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    border-bottom: 2px dotted #ccc;
 }

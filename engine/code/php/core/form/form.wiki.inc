@@ -37,11 +37,11 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
     'type' => 'hidden',
     );
 
+
   foreach ($form as $k => $attributes) {
+    $tag_attributes_arr = array();
+
     $defaults = array(
-      'length' => 30,
-      'cols' => 100,
-      'rows' => 10,
       'type' => isset($attributes['values']) ? 'select' : 'string',
       'title' => str_replace('-', ' ', $attributes['name']) . ':',
     );
@@ -52,10 +52,16 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
       }
     }
 
+    if ($attributes['type'] == 'date' || $attributes['type'] == 'time' || $attributes['type'] == 'string') {
+      $tag_attributes_arr[] = 'type="text"';
+    }
+
+    $tag_attributes_arr[] = 'title="' . $attributes['title'] . '"';
     $classes_item = array('form-item', 'form-item-' . $attributes['name'], 'form-type-' . $attributes['type']);
     $classes_element = array('form-element');
 
     $attributes['label'] = ($attributes['type'] != 'submit') ? $attributes['title'] : '';
+
     if (!empty($attributes['required'])) {
       $classes_element[] = 'required';
       $classes_item[] = 'required';
@@ -64,19 +70,41 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
     if (isset($_SESSION['validation_errors'][$_REQUEST['form']][$attributes['name']])) {
       $classes_item[] = 'validation-error';
     }
-    $classes_element_str = implode(' ', $classes_element);
-    $classes_item_str = implode(' ', $classes_item);
+
     $default = (isset($_REQUEST[$attributes['name']])) ? $_REQUEST[$attributes['name']] : NULL;
 
     if (isset($attributes['value'])) {
       $default = $attributes['value'];
+      $tag_attributes_arr[] = 'value="' . $attributes['value'] . '"';
     }
 
+    $tag_attributes_arr[] = 'name="' . $attributes['name'] . '"';
+
     $id = isset($attributes['id']) ? $attributes['id'] : 'input-' . $attributes['name'];
+    $tag_attributes_arr[] = 'id="' . $id . '"';
+
+    if (isset($attributes['disabled'])) {
+      $tag_attributes_arr[] = 'disabled';
+      $classes_element[] = 'form-item-disabled';
+    }
+    if (isset($attributes['cols'])) {
+      $tag_attributes_arr[] = 'cols="' . $attributes['cols'] . '"';
+    }
+    if (isset($attributes['rows'])) {
+      $tag_attributes_arr[] = 'rows="' . $attributes['rows'] . '"';
+    }
+
+    $classes_element_str = implode(' ', $classes_element);
+    $classes_item_str = implode(' ', $classes_item);
+    $tag_attributes_arr[] = 'class="' . $classes_element_str . '"';
+
+
+    $tag_attributes = implode(' ', $tag_attributes_arr);
+
     switch ($attributes['type']) {
       case 'select':
         $input = explode(',', $attributes['values']);
-        $obj = '<select name="' . $attributes['name'] . '" class="' . $classes_element_str . '">';
+        $obj = '<select ' . $tag_attributes . '>';
         foreach ($input as $v) {
           $v = trim($v);
           $obj .= '<option value="' . $v . '" ' . (($v == $default) ? 'selected' : '') . '>' . trim($v) . '</option>';
@@ -85,30 +113,26 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
         break;
 
       case 'hidden':
-        $obj = '<input id="' . $id . '" type="hidden" name="' . $attributes['name'] . '" length="' . $attributes['length'] . '" value="' . $attributes['value'] . '"  class="' . $classes_element_str . '"/>';
-        break;
       case 'string':
-        $obj = '<input id="' . $id . '" value="' . $default . '" type="text" name="' . $attributes['name'] . '" length="' . $attributes['length'] . '"  class="' . $classes_element_str . '"/>';
-        break;
       case 'password':
-        $obj = '<input id="' . $id . '" value="' . $default . '" type="password" name="' . $attributes['name'] . '" length="' . $attributes['length'] . '"  class="' . $classes_element_str . '"/>';
+      case 'submit':
+        $obj = '<input type = "' . $attributes['type'] . '" ' . $tag_attributes . '/>';
         break;
+
       case 'checkbox':
         $obj = '<input id="' . $id . '"  value="' . $default . '" type="checkbox" name="' . $attributes['name'] . '" class="' . $classes_element_str . '"/>' . $attributes['label'];
         break;
+
       case 'date':
-        $obj = '<input id="' . $id . '"  value="' . $default . '" type="text" name="' . $attributes['name'] . '" class="hasDatepicker ' . $classes_element_str . '"/>';
+        $obj = '<input class="hasDatepicker ' . $tag_attributes . '"/>';
         break;
+
       case 'time':
         $obj = '<input id="' . $id . '"  value="' . $default . '" type="text" name="' . $attributes['name'] . '" class="' . $classes_element_str . '"/>';
         break;
 
-      case 'submit':
-        $obj = '<input id="' . $id . '"  type="submit" name="' . $attributes['submit'] . '" value="' . $attributes['title'] . '"  class="' . $classes_element_str . '"/>';
-        break;
-
       case 'text':
-        $obj = '<textarea id="' . $id . '"  name="' . $attributes['name'] . '" cols="' . $attributes['cols'] . '"  rows="' . $attributes['rows'] . '"  class="' . $classes_element_str . '">' . $default . '</textarea>';
+        $obj = '<textarea ' . $tag_attributes . 'cols="' . $attributes['cols'] . '"  rows="' . $attributes['rows'] . '"  class="' . $classes_element_str . '">' . $default . '</textarea>';
         break;
 
       case 'file':
@@ -116,6 +140,7 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
           $obj = '<div id="drop">Drop here files<a>or press here</a><input type="file" name="upl" id="' . $id. '" multiple /></div>';
         }
         break;
+
       default:
         print "Unknown type:" . $attributes['type'];
         break;

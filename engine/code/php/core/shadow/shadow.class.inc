@@ -5,6 +5,7 @@ class Shadow extends Page {
   private $type;
   private $widget;
   private $buttons = array();
+  private $access = TRUE;
   /**
    * @var Node $node.
    */
@@ -28,10 +29,16 @@ class Shadow extends Page {
 
     $this->node = (isset($data->node)) ? new Node($env, $data->node) : new Node($env, 'home');
 
-    $this->env->hook('shadow_' . $this->context, array('shadow' => &$this, 'type' => $this->type));
-    if ($this->getTabs() == NULL) {
-      new Message($this->env, 'There is no hook_shadow_' . $this->context . ' defined', MESSAGE_ERROR);
+    $this->env->hook('shadow_' . $this->context . '_access', array('shadow' => &$this, 'type' => $this->type));
+
+    if ($this->access) {
+      $this->env->hook('shadow_' . $this->context, array('shadow' => &$this, 'type' => $this->type));
+      if ($this->getTabs() == NULL) {
+        new Message($this->env, 'There is no hook_shadow_' . $this->context . ' defined', MESSAGE_ERROR);
+      }
     }
+
+
   }
 
   /**
@@ -121,5 +128,13 @@ class Shadow extends Page {
 
   public function getNode() {
     return $this->node;
+  }
+
+  public function setAccess($access) {
+    $this->access = $access;
+  }
+
+  public function getAccess() {
+    return $this->access;
   }
 }

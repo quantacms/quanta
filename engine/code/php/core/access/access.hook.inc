@@ -6,7 +6,7 @@
 function access_shadow_node_edit($vars) {
   $father = new Node($vars['env'], $vars['env']->getRequestedPath());
   $node = new Node($vars['env'], NULL, $father);
-  $vars['shadow']->addTab('manage permissions', $node->renderPermissionsForm($vars['shadow']->getContext()), 4);
+  $vars['shadow']->addTab('manage permissions', $node->renderPermissionsForm($vars['shadow']->getContext()), 5);
 
 }
 

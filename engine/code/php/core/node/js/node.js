@@ -22,7 +22,6 @@ $(document).bind('refresh', function() {
 
     $('.node-item-actions').parent()
         // TO BE COMPLETED
-        /*
         .on('mouseenter', function() {
             $(this).parent().css('opacity', '0.8');
             $(this).children('.node-item-actions').show();
@@ -31,5 +30,5 @@ $(document).bind('refresh', function() {
             $(this).parent().css('opacity', '1');
             $(this).children('.node-item-actions').hide();
         });
-        */
+
 });
