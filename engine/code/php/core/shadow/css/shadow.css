@@ -53,7 +53,7 @@
     height: 100%;
     top: 0;
     left: 0;
-    font-family: "Droid Sans", "Roboto", "Arial";
+    font-family: "Droid Sans", "Roboto", "Arial" !important;
 }
 
 .shadow-content {
