@@ -9,7 +9,9 @@ function wiki_STATS($userfull, $var, $string, $env) {
   $stats[] = 'Node built from cache: ' . $env->getData(STATS_NODE_LOADED_CACHE);
   $ttime = $env->getData(STATS_PAGE_COMPLETE_TIME) - $env->getData(STATS_PAGE_BOOT_TIME);
   $stats[] = 'Total time: ' . $ttime . 'ms';
-  $stats[] = 'Node build time: ' .  doubleval($ttime / $env->getData(STATS_NODE_BUILT)) . 'ms';
+  if ($env->getData(STATS_NODE_BUILT) > 0) {
+    $stats[] = 'Node build time: ' .  doubleval($ttime / $env->getData(STATS_NODE_BUILT)) . 'ms';
+  }
   $stats[] = 'Node list: ' .  implode(' ', $env->getData(STATS_NODE_LIST));
   $stats[] = 'Loaded tags (only first level - to fix): ' .  $env->getData(STATS_WIKITAG_LOADED);
 

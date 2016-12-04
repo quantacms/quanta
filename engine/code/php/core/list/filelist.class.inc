@@ -10,6 +10,8 @@
 class FileList extends ListObject {
   // TODO: implement.
   private $allowed_types;
+  protected $module_path = 'core/list';
+
   protected $scantype = DIR_FILES;
   /**
    * Construct a FileList object.
@@ -31,7 +33,7 @@ class FileList extends ListObject {
         break;
       }
       if ((($file_types == FALSE) || $file_types == $file->getType()) && $file->isPublic()) {
-        $tpl = file_get_contents('core/list/tpl/' . $this->getTheme() . '.tpl.php');
+        $tpl = file_get_contents($this->module_path . '/tpl/' . $this->getTheme() . '.tpl.php');
         $tpl = transformCodeTags($this->env, preg_replace("/\{LISTITEM\}/is", string_normalize($file->getPath()), $tpl));
         $tpl = transformCodeTags($this->env, preg_replace("/\{LISTNODE\}/is", string_normalize($this->dir), $tpl));
         $tpl_item = $tpl;

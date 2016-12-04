@@ -4,3 +4,7 @@
 {
     border: 1px solid red !important;
 }
+
+.form-item-disabled {
+    color: #bbb;
+}

@@ -12,22 +12,34 @@
     height: 25px;
     font-family: Arial;
     text-transform: uppercase;
+
 }
 
 .node-item .node-item-actions a {
     font-family: Arial;
-    font-size: 12px;
+    font-size: 12px !important;
     display: inline-block;
     margin-left: 8px;
-    color: #333;
+    color: #333 !important;
     text-decoration: none;
     background: #ddd;
 
+
 }
 
-.shadow-content-node_edit .form-item-edit-path,
-.shadow-content-node_edit .form-item-edit-time,
-.shadow-content-node_edit .form-item-edit-date {
-    display: inline-block;
-    margin-right: 30px;
+#edit_title {
+    width: 100%;
+}
+
+#shadow-buttons {
+    float: left;
+    clear: left;
+}
+
+.fr-box.fr-basic .fr-element {
+    height: 250px;
+}
+
+#edit_teaser {
+    width: 100%;
 }

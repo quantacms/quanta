@@ -707,6 +707,16 @@ class Node extends DataContainer {
     return $edit_node;
   }
 
+  /**
+   * Renders a node edit form.
+   * @param $context
+   * @return mixed
+   */
+  public function renderMetadataForm($context) {
+    $this->context = $context;
+    $metadata_form = file_get_contents('core/node/tpl/metadata_form.inc');
+    return $metadata_form;
+  }
 
   /**
    * Renders a node delete form.
