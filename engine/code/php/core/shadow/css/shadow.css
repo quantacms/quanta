@@ -53,6 +53,7 @@
     height: 100%;
     top: 0;
     left: 0;
+    font-family: "Droid Sans", "Roboto", "Arial";
 }
 
 .shadow-content {
@@ -155,7 +156,6 @@
     min-height: 300px;
     height: 84%;
     overflow-y: auto;
-    font-family: "Droid Sans", "Roboto", "Arial";
 }
 
 .shadow-content {
