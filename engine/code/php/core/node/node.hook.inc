@@ -1,4 +1,30 @@
 <?php
+
+/**
+ * Implementation of hook_shadow_node_delete_access.
+ * Check if user can edit the node before showing the shadow.
+ * TODO: sharing the edit function.
+ * @param $vars
+ */
+function node_shadow_node_add_access($vars) {
+  return node_shadow_node_edit_access($vars);
+}
+
+/**
+ * Implementation of hook_shadow_node_delete_access.
+ * Check if user can delete the node before showing the shadow.
+ * @param $vars
+ */
+function node_shadow_node_delete_access($vars) {
+  return node_shadow_node_edit_access($vars);
+}
+
+function node_shadow_node_edit_access($vars) {
+  $user = User::current($vars['env']);
+  $has_access = $user->checkAccess($vars['shadow']->getNode(), $vars['shadow']->getContext());
+  $vars['shadow']->setAccess($has_access);
+}
+
 /**
  * Implementation of hook_action_node_add.
  * There is a node add request.
@@ -114,6 +140,7 @@ function node_shadow_node_edit($vars) {
     $father = $vars['shadow']->getNode();
     $node = new Node($vars['env'], NULL, $father);
     $node->setName(NODE_NEW);
+    print $node->getFather()->name;
     $has_access = $user->checkAccess($father, $vars['shadow']->getContext());
   }
   // EDIT a node.
@@ -131,7 +158,9 @@ function node_shadow_node_edit($vars) {
   }
   else {
     $vars['shadow']->addTab($action_name, $node->renderEditForm($vars['shadow']->getContext()), 1);
-    $vars['shadow']->addTab('manage files', $node->renderUploadForm($vars['shadow']->getContext()), 2);
+    $vars['shadow']->addTab('manage metadata', $node->renderMetadataForm($vars['shadow']->getContext()), 2);
+    $vars['shadow']->addTab('manage files', $node->renderUploadForm($vars['shadow']->getContext()), 3);
+
   }
   $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Save');
 

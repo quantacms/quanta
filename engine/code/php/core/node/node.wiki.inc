@@ -20,7 +20,13 @@ function wiki_BLOCK($attributes, $node, $string, $env) {
 function wiki_LINK($attributes, $node, $string, $env) {
   $node = new Node($env, $node);
 	$normalized = string_normalize($node->name);
-  $link = '<a class="link link-' . $normalized . '" href="/' . $normalized . '">' . string_normalize((isset($attributes['title']) ? $attributes['title'] : $node->title)) .'</a>';
+  $current = Node::current($env);
+  $classes = array('link', 'link-' . $normalized);
+
+  if ($current->name == $node->name) {
+    $classes[] = 'link-active';
+  }
+  $link = '<a class="' . implode(' ', $classes). '" href="/' . $normalized . '">' . string_normalize((isset($attributes['title']) ? $attributes['title'] : $node->title)) .'</a>';
   return $link;
 
 }
