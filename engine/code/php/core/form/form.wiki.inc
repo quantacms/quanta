@@ -75,7 +75,6 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
 
     if (isset($attributes['value'])) {
       $default = $attributes['value'];
-      $tag_attributes_arr[] = 'value="' . $attributes['value'] . '"';
     }
 
     $tag_attributes_arr[] = 'name="' . $attributes['name'] . '"';
@@ -117,7 +116,8 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
       case 'password':
       case 'submit':
         $obj = '<input type = "' . $attributes['type'] . '" ' . $tag_attributes . '/>';
-        break;
+        $tag_attributes_arr[] = 'value="' . $attributes['value'] . '"';
+      break;
 
       case 'checkbox':
         $obj = '<input id="' . $id . '"  value="' . $default . '" type="checkbox" name="' . $attributes['name'] . '" class="' . $classes_element_str . '"/>' . $attributes['label'];
