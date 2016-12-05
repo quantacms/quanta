@@ -119,13 +119,9 @@ class Node extends DataContainer {
       ));
     }
 
-      // Create symlink - wiki redirect.
-    if ($this->father != NULL) {
-      $this->realpath = $this->father->realpath . '/' . $this->getName();
-    }
-    else {
-      $this->realpath = readlink($this->path);
-    }
+
+    $this->realpath = readlink($this->path);
+
     $this->fullpath = str_replace($this->env->dir['docroot'], '', $this->realpath);
 
     $this->env->hook('node_load', array(
