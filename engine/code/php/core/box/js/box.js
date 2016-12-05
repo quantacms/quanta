@@ -46,12 +46,12 @@ var resizeBoxes = function() {
         }
 
         $(this).addClass(wclass);
-		$(this).css('min-height', h);
+		$(this).css('height', h);
 
         var innerh = parseInt(h - marginTop - marginBottom - paddingTop - paddingBottom  - borderTopWidth - borderBottomWidth);
         var innerw = parseInt(w - marginLeft - marginRight - paddingLeft - paddingRight - borderLeftWidth - borderRightWidth);
-        $(this).children('.inner').css('min-height', innerh + 'px');
-        $(this).children('.inner').css('min-width', innerw + 'px');
+        $(this).children('.inner').css('height', innerh + 'px');
+        $(this).children('.inner').css('width', innerw + 'px');
 
 
     });
