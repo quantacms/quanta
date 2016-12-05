@@ -53,6 +53,7 @@ abstract class ListObject {
       $this->realpath = $this->node->realpath;
     }
 
+
     $this->tag = 'li';
 
     foreach ($attr_arr as $attr_key => $attr_val) {
@@ -84,6 +85,10 @@ abstract class ListObject {
     return $output;
   }
 
+  /**
+   * Load the list and all the files and directories.
+   * @return bool
+   */
   public function load() {
     if (!is_dir($this->realpath)) {
       $this->loaded = TRUE;
