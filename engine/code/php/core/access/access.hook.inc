@@ -1,12 +1,13 @@
 <?php
+
 /**
  * Implements hook_shadow_node_edit.
  * @param $vars
  */
-function access_shadow_node_edit($vars) {
+function access_shadow_access_form($vars) {
   $father = new Node($vars['env'], $vars['env']->getRequestedPath());
   $node = new Node($vars['env'], NULL, $father);
-  $vars['shadow']->addTab('manage permissions', $node->renderPermissionsForm($vars['shadow']->getContext()), 5);
+  $vars['shadow']->addTab('manage permissions', file_get_contents('core/access/tpl/permissions_form.inc'), 5);
 
 }
 

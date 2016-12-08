@@ -6,6 +6,7 @@ class Shadow extends Page {
   private $widget;
   private $buttons = array();
   private $access = TRUE;
+  private $components = array();
   /**
    * @var Node $node.
    */
@@ -20,7 +21,9 @@ class Shadow extends Page {
     $this->context = $data->context;
     $this->type = $data->type;
     $this->widget = $data->widget;
-
+    if (isset($data->components)) {
+      $this->components = $data->components;
+    }
     if (isset($data->data)) {
       foreach ($data->data as $key => $value) {
         $this->setData($key, $value);
@@ -29,6 +32,12 @@ class Shadow extends Page {
 
     $this->node = (isset($data->node)) ? new Node($env, $data->node) : new Node($env, 'home');
 
+    foreach ($this->components as $component) {
+      $this->env->hook('shadow_' . $component, array('shadow' => &$this, 'type' => $this->type));
+    }
+
+    /*
+    // TODO: not needed anymore?
     $this->env->hook('shadow_' . $this->context . '_access', array('shadow' => &$this, 'type' => $this->type));
 
     if ($this->access) {
@@ -37,7 +46,7 @@ class Shadow extends Page {
         new Message($this->env, 'There is no hook_shadow_' . $this->context . ' defined', MESSAGE_ERROR);
       }
     }
-
+    */
 
   }
 
@@ -90,6 +99,9 @@ class Shadow extends Page {
    * @param int $weight
    */
   public function addTab($title, $content, $weight = 1, $classes = NULL) {
+    while (isset($this->tabs[$weight])) {
+      $weight += 0.1;
+    }
     $this->tabs[$weight][$this->getContext()] = array('title' => $title, 'content' => $content, 'classes' => $classes);
   }
 

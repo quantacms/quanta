@@ -68,18 +68,6 @@ function node_init($vars) {
   $user = User::current($vars['env']);
   $node = Node::current($vars['env']);
 
-  // TODO: should go in file module?
-  if (isset($_FILES['upl']) && ($user->checkAccess($node, NODE_ACTION_EDIT))) {
-    $node->checkUploads();
-    exit();
-  }
-
-  if (isset($_REQUEST[NODE_ACTION_DELETE_FILE]) && ($user->checkAccess($node, NODE_ACTION_EDIT))) {
-    $split_file_to_delete = explode('/', $_REQUEST[NODE_ACTION_DELETE_FILE]);
-    $node->deleteFile($split_file_to_delete[count($split_file_to_delete) - 1]);
-    exit();
-  }
-
   // Print the parsed HTML.
   if ($node->isEmpty()) {
     $vars['env']->setData('content', 'This is an empty page, here is nothing to show.');
@@ -119,51 +107,24 @@ function node_init($vars) {
 }
 
 /**
- * Implements hook_shadow_node_add.
- * Should alias to edit.
- * @param $vars
- */
-function node_shadow_node_add($vars) {
-  node_shadow_node_edit($vars);
-}
-
-/**
  * Implements hook_shadow_node_edit.
  * @param $vars
  */
-function node_shadow_node_edit($vars) {
-
+function node_shadow_node_form($vars) {
   $user = User::current($vars['env']);
 
-  // ADD a node.
+  // TODO: use a node factory;
   if ($vars['shadow']->getContext() == NODE_ACTION_ADD) {
     $father = $vars['shadow']->getNode();
     $node = new Node($vars['env'], NULL, $father);
-    $node->setName(NODE_NEW);
-    print $node->getFather()->name;
-    $has_access = $user->checkAccess($father, $vars['shadow']->getContext());
-  }
-  // EDIT a node.
-  else {
+  } else {
     $node = $vars['shadow']->getNode();
-    $has_access = $user->checkAccess($node, $vars['shadow']->getContext());
   }
-
   $vars['env']->setData('node', $node);
-
   $action_name = ($vars['shadow']->getContext() == NODE_ACTION_ADD ? 'create' : 'edit') . ' content';
-
-  if (!$has_access) {
-    new Message($vars['env'], 'User ' . $user->name . ' attempted to ' . $action_name . ' a node without access', MESSAGE_WARNING, MESSAGE_TYPE_LOG, 'node');
-  }
-  else {
-    $vars['shadow']->addTab($action_name, $node->renderEditForm($vars['shadow']->getContext()), 1);
-    $vars['shadow']->addTab('manage metadata', $node->renderMetadataForm($vars['shadow']->getContext()), 2);
-    $vars['shadow']->addTab('manage files', $node->renderUploadForm($vars['shadow']->getContext()), 3);
-
-  }
+  $vars['shadow']->addTab($action_name, $node->renderEditForm($vars['shadow']->getContext()), 1);
+  $vars['shadow']->addTab('manage metadata', $node->renderMetadataForm($vars['shadow']->getContext()), 2);
   $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Save');
-
 }
 
 
@@ -171,7 +132,7 @@ function node_shadow_node_edit($vars) {
  * Implements hook_shadow_node_edit.
  * @param $vars
  */
-function node_shadow_node_delete($vars) {
+function node_shadow_node_delete_form($vars) {
   $node = new Node($vars['env'], $vars['env']->getRequestedPath());
   $user = User::current($vars['env']);
   $has_access = $user->checkAccess($node, $vars['shadow']->getContext());

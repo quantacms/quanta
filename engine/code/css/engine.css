@@ -70,14 +70,6 @@ menu {
      }
 }
 
-h2 {
-  font-size: 150%;
-  display: block;
-  padding: 8px;
-  margin: 0;
-  margin-top: 30px;
-  padding: 0;
-}
 
 .fluids {
     display: block;
@@ -269,11 +261,6 @@ h3.title {
 
 a.wiki {
     text-decoration: underline;
-}
-
-h1 {
-    font-size: 1.4em;
-    text-align: center;
 }
 
 .actions {

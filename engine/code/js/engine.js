@@ -1,16 +1,4 @@
-// Inizializza.
-$(document).ready(function() {
-    $(document).trigger('refresh');
-});
 
-$(document).bind('refresh', function(ev) {
-    refreshButtons();
-});
-
-
-String.prototype.bookify = function() {
-    return this.replace('---', '<div style="page-break-after: always;">&nbsp;</div>')
-}
 
 var openAjax = function(name, destination, afterExec) {
     $('#' + destination).load(name + '/?ajax', function() {
@@ -61,6 +49,10 @@ var action = function(dataJson) {
     });
 }
 
+/**
+ * Successful action handler.
+ * @param data
+ */
 var actionSuccess = function(data) {
     if (data.errors) {
         $('.messages').html(data.errors).fadeIn('slow');
@@ -79,7 +71,21 @@ var actionSuccess = function(data) {
     }
 }
 
+/**
+ * Wrong action handler.
+ * @param err
+ * @param exception
+ */
 var actionError = function(err, exception) {
     console.log(err.responseText);
     alert(exception);
 }
+
+// Inizializza.
+$(document).ready(function() {
+    $(document).trigger('refresh');
+});
+
+$(document).bind('refresh', function(ev) {
+    refreshButtons();
+});

@@ -26,7 +26,7 @@ function user_action_login($vars) {
   exit($tmp_user->logIn($vars['data']['password']));
 }
 
-function user_shadow_user_register($vars) {
+function user_shadow_user_register_form($vars) {
   $user = User::current($vars['env']);
   $tab = $user->renderEditForm($vars['shadow']->getContext());
   $vars['shadow']->addTab('Insert your data', $tab, 1);
@@ -34,7 +34,7 @@ function user_shadow_user_register($vars) {
 }
 
 
-function user_shadow_user_edit($vars) {
+function user_shadow_user_edit_form($vars) {
   $curr_user = User::current($vars['env']);
   $user = new User($vars['env'], $curr_user->name);
 
@@ -44,7 +44,7 @@ function user_shadow_user_edit($vars) {
 
 }
 
-function user_shadow_user_login($vars) {
+function user_shadow_user_login_form($vars) {
   $user = User::current($vars['env']);
   $tab = $user->renderLoginForm();
   $vars['shadow']->addTab('Your Login Data', $tab, 1);
