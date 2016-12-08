@@ -1,7 +1,5 @@
-.node-item {
-  position: relative;
-    border-type: dashed;
-    border-color: green;
+.box .inner {
+    position: relative;
 }
 
 .node-item .node-item-actions {

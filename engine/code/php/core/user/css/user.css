@@ -8,3 +8,10 @@
 .user-logged .register-link {
     display: none !important;
 }
+
+#shadow-login label {
+    margin-top: 25px;
+    margin-bottom: 5px;
+    display: block;
+    text-transform: uppercase;
+}

@@ -27,7 +27,6 @@ class Node extends DataContainer {
   public $father = NULL;
   public $thumbnail = NULL;
   protected $lineage = array();
-  public $tmp_files_dir = NULL;
   public $tpl = NULL;
 
   /**
@@ -44,6 +43,7 @@ class Node extends DataContainer {
     }
     $this->path = $this->env->dir['wiki'] . '/' . $this->getName();
     $this->exists = is_link($this->path);
+
     // TODO: make even safer.
     if ($this->exists || $father != NULL) {
       $this->load();
@@ -118,11 +118,10 @@ class Node extends DataContainer {
         'node' => &$this,
       ));
     }
-
-
-    $this->realpath = readlink($this->path);
-
-    $this->fullpath = str_replace($this->env->dir['docroot'], '', $this->realpath);
+    if (is_link($this->path)) {
+      $this->realpath = readlink($this->path);
+      $this->fullpath = str_replace($this->env->dir['docroot'], '', $this->realpath);
+    }
 
     $this->env->hook('node_load', array(
       'node' => &$this,
@@ -138,7 +137,6 @@ class Node extends DataContainer {
     else {
       $this->setTimestamp(time());
     }
-
   }
 
   /**
@@ -240,9 +238,13 @@ class Node extends DataContainer {
 
     $node = new Node($env, $path, ($action == NODE_ACTION_ADD) ? new Node($env, $nodedata['edit-father']) : NULL);
     $node->context = $action;
+
     switch ($action) {
       case NODE_ACTION_ADD:
       case NODE_ACTION_EDIT:
+        if ($action == NODE_ACTION_ADD) {
+          $node->realpath = $node->father->realpath . '/' . $path;
+        }
         // TODO complete validation code.
         if (isset($nodedata['edit-thumbnail'])) {
           $node->setThumbnail($nodedata['edit-thumbnail']);
@@ -260,7 +262,8 @@ class Node extends DataContainer {
 
           $env->hook('node_presave', array(
             'node' => &$node,
-            'data' => $nodedata
+            'data' => $nodedata,
+            'action' => $action,
           ));
 
           if ($node->validate()) {
@@ -323,35 +326,10 @@ class Node extends DataContainer {
     $this->updateJSON();
     $this->saveJSON(array('content_raw', 'path', 'fullpath', 'exists', 'realpath', 'father', 'tmp_files_dir'));
     $this->saveHTML();
-    $this->saveFiles();
+
     $this->env->hook('node_insert', array(
       'node' => &$this,
     ));
-  }
-
-
-  /**
-   * Saves all files uploaded on the node.
-   */
-  public function saveFiles() {
-    // TODO: refactor.
-    $tmp_dir = $this->env->dir['tmp_files'] . '/' . $this->tmp_files_dir;
-
-    if (is_dir($tmp_dir)) {
-      $tmp_files = $this->env->scanDirectory($tmp_dir);
-      foreach ($tmp_files as $file) {
-        $fpath = $tmp_dir . '/' . $file;
-        $fileobj = new File($this->env, $fpath, $this);
-        if (!$fileobj->isPublic()) {
-          new Message($this->env, 'The file <b>' . $file . '</b> has an invalid name. Please use a different name.', MESSAGE_WARNING);
-        }
-        elseif (is_file($fpath)) {
-          copy($fpath, $this->realpath . '/' . $file);
-          unlink($fpath);
-        }
-      }
-      rmdir($tmp_dir);
-    }
   }
 
   /**
@@ -622,60 +600,6 @@ class Node extends DataContainer {
   }
 
   /**
-   * Check the uploads being made to a node.
-   */
-  public function checkUploads() {
-    $allowed = array(
-      'png',
-      'jpg',
-      'jpeg',
-      'gif',
-      'zip',
-      'pdf',
-      'mov',
-      'rtf',
-      'doc',
-      'docx',
-      'gz',
-      'mp3',
-      'mp4',
-      'mov',
-      'm4a',
-      'txt',
-      'xls',
-      'xlsx'
-    );
-
-    $upload_dir = ($this->env->dir['tmp_files'] . '/' . $_REQUEST['tmp_files_dir']);
-
-    if (!is_dir($upload_dir)) {
-      mkdir($upload_dir);
-    }
-
-    if (isset($_FILES['upl']) && $_FILES['upl']['error'] == 0) {
-      $extension = pathinfo($_FILES['upl']['name'], PATHINFO_EXTENSION);
-      if (!in_array(strtolower($extension), $allowed)) {
-        echo '{"status":"error"}';
-        exit;
-      }
-      if (move_uploaded_file($_FILES['upl']['tmp_name'], $upload_dir . '/' . strip_tags($_FILES['upl']['name']))) {
-        echo '{"status":"success"}';
-        exit;
-      }
-    }
-    echo '{"status":"error"}';
-    exit;
-  }
-
-  /**
-   * Request the deletion of a file.
-   * @param $file File
-   */
-  public function deleteFile($file) {
-    unlink($this->realpath . '/' . $file);
-  }
-
-  /**
    * Set the thumbnail of a node.
    * TODO: maybe not needed, and use setData() is better.
    * @param $thumbnail
@@ -750,30 +674,6 @@ class Node extends DataContainer {
       $fatherpath = ($rpath_arr[count($rpath_arr) - 2]);
       $this->father = ($fatherpath == $this->env->host) ? new Node($this->env, 'home') : new Node($this->env, $fatherpath);
     }
-  }
-
-  /**
-   * Renders a file upload form for a node.
-   * @param $context
-   * @return mixed
-   */
-  public function renderUploadForm($context) {
-    $this->context = $context;
-    $this->tmp_files_dir = $this->getName() . '-' . time() . '-' . rand(0, 1000);
-    $up_form = file_get_contents('core/node/tpl/upload_form.inc');
-    return $up_form;
-  }
-
-  /**
-   * Renders a file upload form for a node.
-   * @param $context
-   * @return mixed
-   */
-  public function renderPermissionsForm($context) {
-    $this->context = $context;
-    $this->tmp_files_dir = $this->getName() . '-' . time() . '-' . rand(0, 1000);
-    $up_form = file_get_contents('core/node/tpl/permissions_form.inc');
-    return $up_form;
   }
 
   /**

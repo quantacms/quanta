@@ -1,11 +1,25 @@
 $(document).bind('refresh', function() {
 
     $('.delete-link').on('click', function() {
-        openShadow({ module : 'node', context: 'node_delete', widget: 'single', node: $(this).attr('rel')});
+        openShadow({
+            module: 'node',
+            context: 'node_delete',
+            widget: 'single',
+            components: ['node_delete_form'],
+            node: $(this).attr('rel')
+        });
     });
 
+    // TODO: redundant links.
+    // TODO: add 'access_form'.
     $('.edit-link').on('click', function() {
-        openShadow({ module : 'node', context: 'node_edit', widget: 'tabs', node: $(this).attr('rel')});
+        openShadow({
+            module : 'node',
+            context: 'node_edit',
+            widget: 'tabs',
+            components: ['node_form', 'file_form', 'manager_form'],
+            node: $(this).attr('rel')
+        });
     });
 
     $('.add-link').each(function() {
@@ -13,9 +27,9 @@ $(document).bind('refresh', function() {
             openShadow({
                 module: 'node',
                 context: 'node_add',
-                type: $(this).attr('data-type'),
-                node: $(this).attr('rel'),
-                widget: $(this).attr('data-widget')
+                widget: $(this).attr('data-widget'),
+                components: ['node_form', 'file_form'],
+                node: $(this).attr('rel')
             });
         });
     });

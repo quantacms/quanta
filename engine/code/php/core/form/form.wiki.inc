@@ -52,7 +52,7 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
       }
     }
 
-    if ($attributes['type'] == 'date' || $attributes['type'] == 'time' || $attributes['type'] == 'string') {
+    if ($attributes['type'] == 'date' || $attributes['type'] == 'time' || $attributes['type'] == 'string' || $attributes['type'] == 'number') {
       $type = 'text';
       $tag_attributes_arr[] = 'type="text"';
     } else {
@@ -105,9 +105,18 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
 
     switch ($attributes['type']) {
       case 'select':
-        $input = explode(',', $attributes['values']);
+        $values = array();
+        if (isset($attributes['range'])) {
+          $split = explode('-', $attributes['range']);
+          for ($i = $split[0]; $i < $split[1]; $i++) {
+            $values[$i] = $i;
+          }
+        }
+        elseif (isset($attributes['values'])) {
+          $values = explode(',', $attributes['values']);
+        }
         $obj = '<select ' . $tag_attributes . '>';
-        foreach ($input as $v) {
+        foreach ($values as $v) {
           $v = trim($v);
           $obj .= '<option value="' . $v . '" ' . (($v == $default) ? 'selected' : '') . '>' . trim($v) . '</option>';
         }
@@ -116,6 +125,7 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
 
       case 'hidden':
       case 'string':
+      case 'number':
       case 'password':
       case 'submit':
         $obj = '<input value = "' . $default . '" type = "' . $type . '" ' . $tag_attributes . '/>';

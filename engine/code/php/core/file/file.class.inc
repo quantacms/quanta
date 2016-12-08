@@ -144,4 +144,66 @@ class File {
     return $this->name;
   }
 
+  /**
+   * Check the uploads being made to a node.
+   */
+  public static function checkUploads($node) {
+    $user = User::current($node->env);
+    if (!$user->checkAccess($node, NODE_ACTION_EDIT)) {
+      new Message($node->env, 'Error: you have no permissions to upload files in this node', MESSAGE_ERROR);
+    }
+    $allowed = array(
+      'png',
+      'jpg',
+      'jpeg',
+      'gif',
+      'zip',
+      'pdf',
+      'mov',
+      'rtf',
+      'doc',
+      'docx',
+      'gz',
+      'mp3',
+      'mp4',
+      'mov',
+      'm4a',
+      'txt',
+      'xls',
+      'xlsx'
+    );
+
+    $upload_dir = ($node->env->dir['tmp_files'] . '/' . $_REQUEST['tmp_files_dir']);
+
+    if (!is_dir($upload_dir)) {
+      mkdir($upload_dir);
+    }
+
+    if (isset($_FILES['upl']) && $_FILES['upl']['error'] == 0) {
+      $extension = pathinfo($_FILES['upl']['name'], PATHINFO_EXTENSION);
+      if (!in_array(strtolower($extension), $allowed)) {
+        echo '{"status":"error"}';
+        exit;
+      }
+      if (move_uploaded_file($_FILES['upl']['tmp_name'], $upload_dir . '/' . strip_tags($_FILES['upl']['name']))) {
+        echo '{"status":"success"}';
+        exit;
+      }
+    }
+    echo '{"status":"error"}';
+    exit;
+  }
+
+  /**
+   * Request the deletion of a file.
+   * @param $file File
+   */
+  public static function deleteFile($node, $file) {
+    $user = User::current($node->env);
+    if (!$user->checkAccess($node, NODE_ACTION_EDIT)) {
+      new Message($node->env, 'Error: you have no permissions to upload files in this node', MESSAGE_ERROR);
+    }
+    unlink($node->realpath . '/' . $file);
+  }
+
 }

@@ -16,19 +16,11 @@ function manager_init($vars) {
 }
 
 /**
- * Implements hook_shadow_node_add().
- * @param $vars
- */
-function manager_shadow_node_add($vars) {
-  manager_shadow_node_edit($vars);
-}
-
-/**
  * Implement hook_shadow_node_edit().
  * @param $vars
  * @return bool
  */
-function manager_shadow_node_edit($vars) {
+function manager_shadow_manager_form($vars) {
   $user = User::current($vars['env']);
   $node = $vars['env']->getData('node');
   if (!$user->checkAccess($node, $vars['shadow']->getContext())) {
