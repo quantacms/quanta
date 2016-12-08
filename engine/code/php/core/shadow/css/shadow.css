@@ -55,6 +55,7 @@ left: 0;
     top: 0;
     left: 0;
     font-family: "Droid Sans", "Roboto", "Arial" !important;
+    text-align: center;
 }
 
 .shadow-content {
@@ -86,14 +87,6 @@ left: 0;
     margin-top: 80px;
     z-index: 200;
     width: auto;
-}
-
-#shadow-login div {
-    margin-bottom: 20px;
-}
-
-#shadow-login label {
-    margin-right: 20px;
 }
 
 #shadow-inner {
@@ -298,3 +291,4 @@ left: 0;
     margin-bottom: 10px;
     border-bottom: 2px dotted #ccc;
 }
+

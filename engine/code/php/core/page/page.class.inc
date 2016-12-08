@@ -24,19 +24,57 @@ class Page extends DataContainer {
   }
 
   public function loadIncludes() {
+  // TODO: HYPER URGENT! Favicon request running the full stack!
+
+    if ($_SERVER['REQUEST_URI'] == '/favicon.ico') die();
+
+    //TODO: enforcing aggregation now.
+    $css = array();
+    $js = array();
 
     // Include JS / CSS files.
     foreach ($this->env->getIncludes() as $file) {
-      if (substr($file['path'], 0, 4) != 'http' && substr($file['path'], 0, 1) != '.') {
-        $file['path'] = '/' . $file['path'];
+
+      if (substr($file['path'], 0, 6) == 'engine') {
+        $file['path'] = $_SERVER['DOCUMENT_ROOT'] .'/' . $file['path'];
       }
+      elseif (substr($file['path'], 0, 4) != 'http' && substr($file['path'], 0, 1) != '.') {
+        $file['path'] = '/' . $file['path'];
+        if ($file['type'] == 'css') {
+          $this->vars['head'] .= '<link rel="stylesheet" type="text/css" href="' . $file['path'] . '" />';
+        } elseif ($file['type'] == 'js') {
+          $this->vars['head'] .= '<script type="text/javascript" src="' . $file['path'] . '"></script>';
+        }
+        continue;
+      }
+
+
       if ($file['type'] == 'css') {
-        $this->vars['head'] .= '<link rel="stylesheet" type="text/css" href="' . $file['path'] . '" />';
+        $css[] = file_get_contents($file['path']);
+
       } elseif ($file['type'] == 'js') {
-        $this->vars['head'] .= '<script type="text/javascript" src="' . $file['path']. '"></script>
-      ';
+        $js[] = file_get_contents($file['path']);
       }
     }
+
+    $temp_aggregate_path = md5(time() + rand(1,10000000));
+
+    $temp_css_path = $this->env->dir['tmp_files'] . '/' . $temp_aggregate_path . '.css';
+    $temp_js_path = $this->env->dir['tmp_files'] . '/' . $temp_aggregate_path . '.js';
+
+    $fop = fopen($temp_css_path, 'w+');
+    fwrite($fop, implode('
+    ', $css));
+    fclose($fop);
+
+    $fop = fopen($temp_js_path, 'w+');
+    fwrite($fop, implode('
+    ', $js));
+    fclose($fop);
+
+    $this->vars['head'] .= '<link rel="stylesheet" type="text/css" href="/css/?D=' . $temp_aggregate_path . '" />';
+    $this->vars['head'] .= '<script type="text/javascript" src="/js/?D=' . $temp_aggregate_path . '"></script>';
+
   }
 
   public function addBodyClass($class) {

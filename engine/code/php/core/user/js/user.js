@@ -1,5 +1,10 @@
 function logIn() {
-    openShadow({ module : 'user', context: 'user_login', widget: 'single'});
+    openShadow({
+        module : 'user',
+        context: 'user_login',
+        widget: 'single',
+        components: ['user_login_form']
+    });
 }
 
 function logOut() {

@@ -232,6 +232,11 @@ class Environment extends DataContainer {
     $this->includes[] = array('path' => $include, 'type' => $type);
   }
 
+  public function checkActions() {
+    if (isset($this->request_json->action)) {
+      $this->hook('action_' . $this->request_json->action, array('data' => (array) $this->request_json));
+    }
+  }
   /**
    * Adds an item to the environment. An item can be everything
    * (messages, nodes, ...)

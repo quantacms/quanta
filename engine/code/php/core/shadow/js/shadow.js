@@ -42,6 +42,8 @@ function openShadow(shadowData) {
                 }
                 return false;
             });
+            $(document).trigger('shadow_open');
+
             $(document).trigger('shadow_' + shadow.context);
         });
     $('#shadow-outside').fadeIn('slow');
