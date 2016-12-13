@@ -1,3 +1,7 @@
+$(document).ready(function() {
+  $('body').append('<div id="tooltip"></div>');				
+});
+
 $(document).bind('refresh', function() {
     $('[tooltip]').on('mouseover', function(e) {
 
