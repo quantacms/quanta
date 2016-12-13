@@ -1,6 +1,7 @@
 <?php
-define("USER_ANONYMOUS", "anonymous");
+define("USER_ANONYMOUS", "Guest");
 define("ROLE_ANONYMOUS", "anonymous");
+define("ROLE_ADMIN", "admin");
 define("ROLE_LOGGED", "logged");
 define("USER_PASSWORD_MIN_LENGTH", 8);
 define("USER_ACTION_EDIT", "user_edit");
@@ -285,7 +286,14 @@ class User extends DataContainer {
    * @return User
    */
   public function checkAccess($node = NULL, $action = NULL) {
+
+    // If node doesn't exist, allow no permission to it.
+    if (!$node->exists) {
+      return FALSE;
+    }
+
     $permissions = $node->getPermissions();
+
     $action = trim(strtolower($action));
     $permission = (string) strtolower(trim($permissions[$action]));
 
@@ -296,7 +304,7 @@ class User extends DataContainer {
     }
 
     $has_permissions = array();
-    if (isset($action) && isset($permissions[$action]) && $permission == 'anonymous') {
+    if (isset($action) && isset($permissions[$action]) && $permission == ROLE_ANONYMOUS) {
       return TRUE;
     }
     foreach ($permissions as $perm_name => $perm_role) {

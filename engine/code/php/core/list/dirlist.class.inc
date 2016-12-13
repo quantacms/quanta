@@ -28,6 +28,8 @@ class DirList extends ListObject {
       if ($node_father->exists && ($node_father->name == $node->name)) {
         $classes[] = 'list-selected-father';
       }
+
+
       $tpl = file_get_contents($this->module_path . '/tpl/' . $this->getTheme() . '.tpl.php');
       $tpl = transformCodeTags($this->env, preg_replace("/\[LISTITEM\]/is", string_normalize($dir_url), $tpl));
       $tpl = $node->wrap($tpl);

@@ -1,35 +1,35 @@
 
 
-var openAjax = function(name, destination, afterExec) {
-    $('#' + destination).load(name + '/?ajax', function() {
-        var fn = window[afterExec];
-        if (typeof fn === "function") fn.apply(null);
-        // TODO: should not be here! We need a JS hooking system.
-        resizeBoxes();
-        refreshButtons();
-        $('#' + destination).parents('.box').show();
-        $('html, body').animate({
-            scrollTop: ($("#" + destination).offset().top - 30)
-        }, 1000);
+var openAjax = function(name, destination, afterExec, tpl) {
+
+    var dest = ($('#' + destination + ' .inner').length) ? $('#' + destination + ' .inner') : $('#' + destination);
+
+
+    $.ajax({
+        type: "GET",
+        url: name,
+        dataType: "html",
+        data: 'ajax=1' + ((tpl != undefined) ? ('&tpl=' + tpl) : ''),
+        success: function(data) {
+            var fn = window[afterExec];
+            if (typeof fn === "function") fn.apply(null);
+            $('#' + destination).parents('.box').show();
+            $('#' + destination).show();
+
+            dest.html(data);
+
+            $(document).trigger('refresh');
+            $('html, body').animate({
+                scrollTop: ($("#" + destination).offset().top - 30)
+            }, 1000);
+        }
     });
+
+
+
 }
 
 var refreshButtons = function() {
-
-    $('ul[rel]').each(function() {
-       var rel = $(this).attr('rel');
-       $(this).find('a').on('click', function() {
-           openAjax($(this).attr('href'), rel);
-           return false;
-       });
-    });
-
-    // Open page when clicking abstract
-    $('.abstract').on('click', function() {
-        var a = $(this).parent().find('a');
-        window.location.href = '/' + a.attr('href');
-    });
-
     $( "input.hasDatepicker").each(function() {
         var default_date = ($(this).val());
         $(this).Zebra_DatePicker({
@@ -60,8 +60,6 @@ var actionSuccess = function(data) {
             $('.messages').fadeOut('slow');
         }, 6000);
 
-    } else if (data.refresh != undefined) {
-      alert('ajax refresh go!!!');
     }
     else if (data.redirect == undefined) {
         console.log(data);
@@ -89,3 +87,4 @@ $(document).ready(function() {
 $(document).bind('refresh', function(ev) {
     refreshButtons();
 });
+

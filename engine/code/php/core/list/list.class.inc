@@ -81,7 +81,9 @@ abstract class ListObject {
 
     $output = implode('', $this->tpl_items);
     $ajax = (!empty($this->getAttribute('ajax'))) ? ' rel= ' .$this->getAttribute('ajax') : '';
-    $output = '<ul ' . $ajax . ' class="list ' . $this->getTheme() . ' list-' . $this->getTheme() . ' list-' . $this->node->getName() . '">' . $output . '</ul>';
+    $tpl = (!empty($this->getAttribute('tpl'))) ? ' tpl= ' .$this->getAttribute('tpl') : '';
+
+    $output = '<ul ' . $ajax . $tpl . ' class="list ' . $this->getTheme() . ' list-' . $this->getTheme() . ' list-' . $this->node->getName() . '">' . $output . '</ul>';
     return $output;
   }
 

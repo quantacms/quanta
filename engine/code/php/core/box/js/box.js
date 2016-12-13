@@ -63,5 +63,13 @@ $(window).on('resize', function() {
 });
 
 $(document).ready(function() {
+});
+
+
+$(document).bind('refresh', function() {
     resizeBoxes();
+    $('.close-button').off('click').on('click', function(ev) {
+        $(this).closest('.box').hide();
+        ev.preventDefault();
+    });
 });
