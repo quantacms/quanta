@@ -74,11 +74,8 @@ function node_init($vars) {
     $vars['env']->setData('title', '404 - Empty page.');
   }
   elseif ($node->exists) {
-
     if ($user->checkAccess($node, NODE_ACTION_VIEW)) {
-
       new Message($vars['env'], 'user is viewing this page: ' . $node->name . '.', MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
-
       // BUILD Breadcrumb - lineage.
       // TODO: right place to build bc?
       $breadcrumb = array();
@@ -122,8 +119,8 @@ function node_shadow_node_form($vars) {
   }
   $vars['env']->setData('node', $node);
   $action_name = ($vars['shadow']->getContext() == NODE_ACTION_ADD ? 'create' : 'edit') . ' content';
-  $vars['shadow']->addTab($action_name, $node->renderEditForm($vars['shadow']->getContext()), 1);
-  $vars['shadow']->addTab('manage metadata', $node->renderMetadataForm($vars['shadow']->getContext()), 2);
+  $vars['shadow']->addTab($action_name, file_get_contents('core/node/tpl/node_edit.inc'), 1);
+  $vars['shadow']->addTab('manage metadata', file_get_contents('core/node/tpl/metadata_form.inc'), 2);
   $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Save');
 }
 
@@ -133,8 +130,8 @@ function node_shadow_node_form($vars) {
  * @param $vars
  */
 function node_shadow_node_delete_form($vars) {
-  $node = new Node($vars['env'], $vars['env']->getRequestedPath());
   $user = User::current($vars['env']);
+  $node = $vars['shadow']->getNode();
   $has_access = $user->checkAccess($node, $vars['shadow']->getContext());
 
   if (!$has_access) {
@@ -158,10 +155,9 @@ function node_body_classes($vars) {
 
     $breadcrumb = $vars['env']->getData('breadcrumb');
 
-    /*
-     * foreach ($breadcrumb as $path => $title) {
+    foreach ($breadcrumb as $path => $title) {
       $vars['page']->addBodyClass('section-' . $path);
     }
-    */
+
   }
 }
