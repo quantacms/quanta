@@ -12,8 +12,8 @@
 function wiki_AUTHOR($attributes, $var, $string, $env) {
   $node = $env->getData('node');
   if (is_object($node)) {
-    $author = $env->getData('node')->getAuthor();
-    return wiki_USER($attributes, $var, $string, $env, $author);
+    $author = $node->getAuthor();
+    return wiki_USER($attributes, $author, $string, $env);
   }
 }
 
@@ -53,6 +53,9 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
       $string = $node->name;
       break;
 
+    case 'author':
+      $string = $node->getAuthor();
+      break;
     // TODO: still looking for a better solution for new nodes.
     case 'realname':
       $string = $node->name == NODE_NEW ? '' : $node->name;
