@@ -1,4 +1,5 @@
 <?php
+// TODO: redo the crap!
   /**
    * Wiki Hook for USER.
    */
