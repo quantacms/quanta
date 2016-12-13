@@ -7,7 +7,6 @@ function wiki_LIST($attributes, $path, $string, $env) {
   $dirlist = new DirList($env, $path, 'dir', $attributes);
   $render = $dirlist->render();
   return $render;
-
 }
 
 /**

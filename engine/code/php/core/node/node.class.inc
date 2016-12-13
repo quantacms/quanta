@@ -27,6 +27,7 @@ class Node extends DataContainer {
   public $father = NULL;
   public $thumbnail = NULL;
   protected $lineage = array();
+  public $tpl_node = NULL;
   public $tpl = NULL;
 
   /**
@@ -35,7 +36,7 @@ class Node extends DataContainer {
    * @param $name
    * @param null $father
    */
-  public function __construct(&$env, $name, $father = NULL) {
+  public function __construct(&$env, $name, $father = NULL, $tpl_node = NULL) {
     $this->env = $env;
     $this->setName(strtolower($name));
     if ($father != NULL) {
@@ -44,6 +45,10 @@ class Node extends DataContainer {
     $this->path = $this->env->dir['wiki'] . '/' . $this->getName();
     $this->exists = is_link($this->path);
 
+    // Use another node for rendering.
+    if ($tpl_node != NULL) {
+      $this->tpl_node = $tpl_node;
+    }
     // TODO: make even safer.
     if ($this->exists || $father != NULL) {
       $this->load();
@@ -212,7 +217,8 @@ class Node extends DataContainer {
    * @return bool
    */
   public static function current($env) {
-    return new Node($env, $env->getRequestedPath());
+    $tpl = isset($_REQUEST['tpl']) ? $_REQUEST['tpl'] : NULL;
+    return new Node($env, $env->getRequestedPath(), NULL, $tpl);
   }
 
   /**
@@ -452,34 +458,51 @@ class Node extends DataContainer {
   }
 
   public function buildTemplate() {
-    $this->tpl = $this->getContent();
-    $tpl = array();
-    $tpl_level = 0;
+    $user = User::current($env);
 
-    foreach ($this->lineage as $lineage) {
-      $tpl_level++;
-      // a template in the same directory has always priority.
-      if (is_file($lineage->path . '/tpl.html')) {
-        $this->tpl = file_get_contents($lineage->path . '/tpl.html');
+    // Use another node as a template.
+    if (isset($this->tpl_node)) {
+      $tpl_node = new Node($this->env, $this->tpl_node);
+      if ($user->checkAccess($tpl_node, NODE_ACTION_VIEW)) {
+        $this->tpl = $tpl_node->getBody();
+      } else {
+        print "Error loading template: access denied";
+        die();
       }
 
-      $min = '';
+    }
 
-      // We support 5 levels of sub-level templates for now.
-      for ($i = 1; $i <= 6; $i++) {
-        $min .= '-';
-        $file = $lineage->path . '/tpl' . $min . '.html';
-        if (file_exists($file)) {
-          $tpl[$tpl_level + $i] = $file;
+    else {
+
+      $this->tpl = $this->getContent();
+      $tpl = array();
+      $tpl_level = 0;
+
+      foreach ($this->lineage as $lineage) {
+        $tpl_level++;
+        // a template in the same directory has always priority.
+        if (is_file($lineage->path . '/tpl.html')) {
+          $this->tpl = file_get_contents($lineage->path . '/tpl.html');
+        }
+
+        $min = '';
+
+        // We support 5 levels of sub-level templates for now.
+        for ($i = 1; $i <= 6; $i++) {
+          $min .= '-';
+          $file = $lineage->path . '/tpl' . $min . '.html';
+          if (file_exists($file)) {
+            $tpl[$tpl_level + $i] = $file;
+          }
         }
       }
+
+      // check if there is a sub-level template.
+      if (isset($tpl[$tpl_level])) {
+        $this->tpl = file_get_contents($tpl[$tpl_level]);
+      }
+
     }
-    
-		// check if there is a sub-level template.
-    if (isset($tpl[$tpl_level])) {
-			$this->tpl = file_get_contents($tpl[$tpl_level]);
-    }
-  
 	}
 
   public function isHome() {
@@ -566,6 +589,7 @@ class Node extends DataContainer {
 
 
   /**
+   * TODO: move in access module.
    * Load and construct permissions for this node.
    */
   private function loadPermissions() {
@@ -584,16 +608,16 @@ class Node extends DataContainer {
 
     // TODO: default permissions when nothing is set?
     if (!isset($grants[NODE_ACTION_ADD])) {
-      $grants[NODE_ACTION_ADD] = 'admin';
+      $grants[NODE_ACTION_ADD] = ROLE_ADMIN;
     }
     if (!isset($grants[NODE_ACTION_EDIT])) {
-      $grants[NODE_ACTION_EDIT] = 'admin';
+      $grants[NODE_ACTION_EDIT] = ROLE_ADMIN;
     }
     if (!isset($grants[NODE_ACTION_DELETE])) {
-      $grants[NODE_ACTION_DELETE] = 'admin';
+      $grants[NODE_ACTION_DELETE] = ROLE_ADMIN;
     }
     if (!isset($grants[NODE_ACTION_VIEW])) {
-      $grants[NODE_ACTION_VIEW] = 'guest';
+      $grants[NODE_ACTION_VIEW] = ROLE_ANONYMOUS;
     }
 
     $this->permissions = $grants;
@@ -614,17 +638,6 @@ class Node extends DataContainer {
    */
   public function getThumbnail() {
     return $this->thumbnail;
-  }
-
-  /**
-   * Renders a node edit form.
-   * @param $context
-   * @return mixed
-   */
-  public function renderEditForm($context) {
-    $this->context = $context;
-    $edit_node = file_get_contents('core/node/tpl/node_edit.inc');
-    return $edit_node;
   }
 
   /**
@@ -711,6 +724,7 @@ class Node extends DataContainer {
       $actions[] = '[DELETE:' . $this->getName() . ']';
     }
 
+    // TODO: it produces a space before the name. Why?
     $wrap = '<div class="node-item rel="' . $this->getName() . '">';
     if (!empty($actions)) {
       $wrap .= '<div class="node-item-actions">' . implode($actions) . '</div>';

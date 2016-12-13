@@ -27,5 +27,6 @@ function ecommerce_node_presave($vars) {
   if (isset($vars['data']['price'])) {
     $vars['node']->json->price = $vars['data']['price'];
     $vars['node']->json->availability = $vars['data']['availability'];
+    $vars['node']->json->stock = $vars['data']['stock'];
   }
 }

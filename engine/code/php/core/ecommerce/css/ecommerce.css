@@ -1,0 +1,15 @@
+.product-available {
+    background-color: #00aa00;
+}
+
+.product-unavailable {
+    background-color: #aa0000;
+}
+
+.product-preorder {
+    background-color: #da7400;
+}
+
+.product-availability {
+    color: white;
+}

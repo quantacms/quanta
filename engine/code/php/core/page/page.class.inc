@@ -28,6 +28,7 @@ class Page extends DataContainer {
 
     if ($_SERVER['REQUEST_URI'] == '/favicon.ico') die();
 
+    if (isset($_REQUEST['ajax'])) { return; }
     //TODO: enforcing aggregation now.
     $css = array();
     $js = array();
