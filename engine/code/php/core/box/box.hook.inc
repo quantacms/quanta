@@ -18,7 +18,7 @@ function box_wikitag($vars) {
 // TODO: move all this logic in a Box class.
   if (!empty($vars['attributes']['box'])) {
     $styles = array();
-
+    $classes = array();
     $boxsize = explode('x', $vars['attributes']['box']);
 
     if ($boxsize[0] == 'auto') {
@@ -37,6 +37,8 @@ function box_wikitag($vars) {
       // TODO: wrong box size.
     }
 
+    $classes[] = $class;
+
     if ($boxsize[1] == 'auto') {
       $h = '';
     }
@@ -50,8 +52,14 @@ function box_wikitag($vars) {
       // TODO: wrong box size.
     }
 
-    $name = isset($vars['attributes']['name']) ? $vars['attributes']['name'] : 'no-name';
-    $clear = !empty($vars['attributes']['clear']) ? 'clear' : '';
+    $name = isset($vars['attributes']['name']) ? $vars['attributes']['name'] : 'box-noname-' . rand(10000000, 99999999);
+
+    $id = isset($vars['attributes']['id']) ? $vars['attributes']['id'] : $name;
+    if (isset($vars['attributes']['class'])) {
+      $classes[] = $vars['attributes']['class'];
+    }
+    $classes[] = (!empty($vars['attributes']['clear']) ? 'clear' : '');
+    $classes[] = 'box-' . $name;
 
     if (isset($vars['attributes']['margin'])) {
       $styles[] = 'margin:' . $vars['attributes']['margin'] . 'px';
@@ -76,7 +84,7 @@ function box_wikitag($vars) {
       }
       $content = '<div class="inner" style="' . implode(';', $styles) . '" >' . $content . '</div>';
 
-      $vars['wikitag'][$tag] = '<div id="' . $name . '" class="box ' . $class . ' ' . $h . ' box-' . $name . ' ' . $clear . '" style="width:' . $w . '">' . $content . '</div>';
+      $vars['wikitag'][$tag] = '<div id="' . $id . '" class="box ' . implode(' ', $classes) . '" style="width:' . $w . '">' . $content . '</div>';
     }
   }
 }

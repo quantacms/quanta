@@ -12,37 +12,20 @@ function wiki_PRODUCTS($attributes, $value, $string, $env) {
 /**
  * Detect content JUMPER and eventually create HTML.
  */
-function wiki_PRODUCTATTRIBUTE($attributes, $value, $string, $env) {
-  $node = empty($node) ? $env->getData('node') : new Node($env, $node);
+function wiki_PRODUCTSLIST($attributes, $value, $string, $env) {
 
-  switch($attributes['name']) {
-
-    case 'price':
-        return $node->json->price;
-      break;
-
-    case 'availability':
-      return $node->json->availability;
-      break;
-
-    default:
-      return '';
-      break;
-  }
+  $dirlist = new ProductList($env, $value, 'products_list', array('sortbytime' => 'asc') + $attributes);
+  return $dirlist->render();
 }
 
-function wiki_PRODUCTADD($attributes, $father, $string, $env) {
-  $father = empty($father) ? $env->getData('node') : new Node($env, $father);
-  $type = isset($attributes['type']) ? $attributes['type'] : 'node';
-  $widget = isset($attributes['widget']) ? $attributes['widget'] : 'tabs';
-  $label = isset($attributes['label']) ? $attributes['label'] : 'add';
-  return '<a href="#" data-type="' . $type . '" data-widget = "' . $widget . '" class="product-add-link" rel="' . $father->name . '">' . $label . '</a>';
+function wiki_PRODUCTADD($attributes, $node, $string, $env) {
+  $attributes['class'] = 'product-add-link';
+  $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Add product...';
+  return wiki_ADD($attributes, $node, $string, $env);
 }
 
 function wiki_PRODUCTEDIT($attributes, $node, $string, $env) {
-  $node = empty($node) ? $env->getData('node') : new Node($env, $node);
-  $type = isset($attributes['type']) ? $attributes['type'] : 'node';
-  $widget = isset($attributes['widget']) ? $attributes['widget'] : 'tabs';
-  $label = isset($attributes['label']) ? $attributes['label'] : 'edit';
-  return '<a href="#" data-type="' . $type . '" data-widget = "' . $widget . '" class="product-edit-link" rel="' . $node->name . '">' . $label . '</a>';
+  $attributes['class'] = 'product-edit-link';
+  $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Edit product...';
+  return wiki_EDIT($attributes, $node, $string, $env);
 }

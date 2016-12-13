@@ -24,12 +24,20 @@ function wiki_PAGE($attributes, $var, $string, $env) {
 }
 
 /**
- * Wiki Hook for ACTION.
+ * Wiki Hook for CONTEXT.
  */
 function wiki_CONTEXT($attributes, $var, $string, $env) {
   return $_REQUEST['context'];
 }
 
+
+/**
+ * Render an empty content (useful as ajax container).
+ * Wiki Hook for EMPTY.
+ */
+function wiki_EMPTY($attributes, $var, $string, $env) {
+  return '&nbsp;';
+}
 
 /**
  * Wiki Hook for BREADCRUMB.
@@ -54,4 +62,12 @@ function wiki_BREADCRUMB($attributes, $var, $string, $env) {
   }
 
   return $themed_bc;
+}
+
+/**
+ * Wiki Hook for EMAIL.
+ */
+function wiki_EMAIL($attributes, $var, $string, $env) {
+  return '<a href="mailto:' . $var. '">' . $var . '</a>';
+
 }
