@@ -1,5 +1,5 @@
 // Inizializza.
-$('document').ready(function() {
+$(document).bind('refresh', function() {
     // TODO: refresh thumbs only if gallery available.
     thumbsRefresh();
 });
@@ -9,7 +9,7 @@ $('document').ready(function() {
  */
 // Gallery functions.
 function thumbsRefresh() {
-    $('a.gallery-thumb').bind('click', function() {
+    $('a.gallery-thumb').off('click').on('click', function() {
         top.location.href='#';
         galleryOpen($(this));
         return false;
@@ -17,11 +17,19 @@ function thumbsRefresh() {
 
     $(document).keydown(function(e) {
         if (!($('#shadow-image').length)) {return;}
+        var selection = $('.gallery-thumb-selected');
+        var gallery = selection.parents('ul');
+        var index = parseInt(selection.parents('li').attr('index'));
+        var total = gallery.find('li').length;
+
+        var nextItem = [];
+        nextItem[37] = (index == 1) ? total : (index - 1);
+        nextItem[39] = (index == total) ? 1 : (index + 1);
+
         switch (e.which) {
             case 37: // left
-                galleryOpen($('.gallery-thumb-selected').prev('.gallery-thumb').prev('.gallery-thumb'));
             case 39: // right
-                galleryOpen($('.gallery-thumb-selected').next('.gallery-thumb'));
+                galleryOpen(gallery.find('.list-item-' + nextItem[e.which]).find('.gallery-thumb'));
                 break;
         }
     });
@@ -30,14 +38,10 @@ function thumbsRefresh() {
 function galleryOpen(thumb) {
     $('.gallery-thumb-selected').removeClass('gallery-thumb-selected');
     $(thumb).addClass('gallery-thumb-selected');
-    $('#shadow-form').hide();
     $('#shadow-outside').show();
     var pt = $(thumb).attr('href').split('/');
     var fn = pt[pt.length-1].split('.');
     $('#shadow-item').html('<div id="shadow-image"><img src="' + thumb.attr('href') + '" /></div><div id="shadow-text">' + fn[0] + '</div>');
-    $('#shadow-inside').click(function() {
-       $('#shadow-outside').hide();
-    });
-    return false;
 
+    return false;
 }
