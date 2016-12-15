@@ -1,5 +1,11 @@
 var shadow;
-// Add/Edit page form.
+
+$(document).bind('refresh', function() {
+    $('#shadow-inside, #shadow-image').off('click').on('click', function () {
+        closeShadow();
+    });
+
+});
 
 function closeShadow() {
     $('#shadow-outside, .shadow-element').hide();
@@ -21,9 +27,6 @@ function openShadow(shadowData) {
                 shadow.callback();
             }
 
-            $('#shadow-inside, #shadow-image').bind('click', function () {
-                closeShadow();
-            });
 
             $(document).trigger('refresh');
 
