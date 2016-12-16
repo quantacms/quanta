@@ -1,10 +1,11 @@
-// Inizializza.
+// Inizialize galleries.
 $(document).bind('refresh', function() {
     // TODO: refresh thumbs only if gallery available.
     thumbsRefresh();
 });
 
 /**
+ * Add handlers to Gallery thumbnails for opening in overlay.
  * Created by aldotripiciano on 11/05/15.
  */
 // Gallery functions.
@@ -35,6 +36,14 @@ function thumbsRefresh() {
     });
 }
 
+/**
+ * Open a gallery thumbnail into the shadow.
+ *
+ * TODO: not a proper way to user shadow overlay!
+ *
+ * @param thumb
+ * @returns {boolean}
+ */
 function galleryOpen(thumb) {
     $('.gallery-thumb-selected').removeClass('gallery-thumb-selected');
     $(thumb).addClass('gallery-thumb-selected');
@@ -42,6 +51,5 @@ function galleryOpen(thumb) {
     var pt = $(thumb).attr('href').split('/');
     var fn = pt[pt.length-1].split('.');
     $('#shadow-item').html('<div id="shadow-image"><img src="' + thumb.attr('href') + '" /></div><div id="shadow-text">' + fn[0] + '</div>');
-
     return false;
 }
