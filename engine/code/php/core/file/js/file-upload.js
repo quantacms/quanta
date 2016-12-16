@@ -137,7 +137,8 @@ $(document).bind('refresh', function() {
 
     $('#filelist .list-item-file').on('mouseenter', function() {
        $(this).find('.file-actions').remove();
-        var href = $(this).find('.file-link').attr('href');
+        // TODO: how to create a full path?
+        var href = ($(this).find('.file-link').attr('href'));
         var selectedThumbnail = (href == thumb_href) ? 'selected-thumbnail' : '';
         var tagType = $(this).hasClass('file-image') ? 'IMG' : 'FILE';
 
