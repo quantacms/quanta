@@ -59,6 +59,8 @@ function box_wikitag($vars) {
       $classes[] = $vars['attributes']['class'];
     }
     $classes[] = (!empty($vars['attributes']['clear']) ? 'clear' : '');
+    $classes[] = (!empty($vars['attributes']['centered']) ? 'centered' : '');
+
     $classes[] = 'box-' . $name;
 
     if (isset($vars['attributes']['margin'])) {
