@@ -478,7 +478,11 @@ class Node extends DataContainer {
       $tpl = array();
       $tpl_level = 0;
 
+      if (is_file($this->path . '/tpl.html')) {
+        $this->tpl = file_get_contents($this->path . '/tpl.html');
+      }
       foreach ($this->lineage as $lineage) {
+
         $tpl_level++;
         // a template in the same directory has always priority.
         if (is_file($lineage->path . '/tpl.html')) {
@@ -494,6 +498,7 @@ class Node extends DataContainer {
           if (file_exists($file)) {
             $tpl[$tpl_level + $i] = $file;
           }
+
         }
       }
 

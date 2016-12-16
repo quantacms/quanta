@@ -36,7 +36,8 @@ function wiki_CONTEXT($attributes, $var, $string, $env) {
  * Wiki Hook for EMPTY.
  */
 function wiki_EMPTY($attributes, $var, $string, $env) {
-  return '&nbsp;';
+  $text = isset($attributes['text']) ? $attributes['text'] : '&nbsp;';
+  return $text;
 }
 
 /**

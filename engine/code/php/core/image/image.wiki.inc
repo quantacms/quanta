@@ -18,7 +18,7 @@ function wiki_THUMB($attributes, $var, $string, $page) {
 // TODO: deprecate
 function wiki_THUMBNAIL($attributes, $name, $string, $env) {
   $node = empty($name) ? $env->getData('node') : new Node($env, $name);
-  $image = new Image($env, $node->getThumbnail(), $node);
+  $image = new Image($env, $node->getName() . '/' . $node->getThumbnail(), $node);
   $image->loadAttributes($attributes);
   return '<a href="/' . $name. '">' . $image->render() . '</a>';
 }

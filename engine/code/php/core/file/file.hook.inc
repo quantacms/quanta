@@ -8,7 +8,6 @@
 function file_shadow_file_form($vars) {
   $user = User::current($vars['env']);
   $node = $vars['shadow']->getNode();
-  print "CHECKING FOR NODE " . $node->name . " PERMISSION: " . $vars['shadow']->getContext();
   if (!$user->checkAccess($node, $vars['shadow']->getContext())) {
     return FALSE;
   }
