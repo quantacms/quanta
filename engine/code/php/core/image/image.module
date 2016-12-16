@@ -8,7 +8,7 @@ require_once('image.class.php');
 function generateThumbnail($env, $file, $thumbfile, $maxw, $maxh) {
   // Get the File path for the image
   $thumbRoot = $env->dir['tmp'] . '/thumbs';
-  $sImagePath = $env->dir['docroot'] . '/' . $file;
+  $sImagePath = $file;
   $thumbImagePath =  $thumbRoot . '/' . $thumbfile;
 
   if (is_file($thumbImagePath)) {

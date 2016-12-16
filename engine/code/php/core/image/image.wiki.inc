@@ -10,12 +10,6 @@ function wiki_IMG($attributes, $var, $string, $env) {
 }
 
 // TODO: deprecate
-function wiki_THUMB($attributes, $var, $string, $page) {
-  $attributes[] = 'class=thumb';
-  return wiki_IMG($attributes, $var, $string, $page);
-}
-
-// TODO: deprecate
 function wiki_THUMBNAIL($attributes, $name, $string, $env) {
   $node = empty($name) ? $env->getData('node') : new Node($env, $name);
   $image = new Image($env, $node->getName() . '/' . $node->getThumbnail(), $node);
@@ -24,10 +18,10 @@ function wiki_THUMBNAIL($attributes, $name, $string, $env) {
 }
 
 function wiki_IMGTHUMB($attributes, $file, $string, $env) {
-  $attributes[] = 'class=thumb';
-  $thumbfile = 'thumb-' . str_replace('/', '-', $file);
 
-  generateThumbnail($env, $file, $thumbfile, 600, 250);
-
-  return '<img src="http://mixbag/engine/tmp/mixbag/thumbs/' . $thumbfile . '" />';
+  $node = new Node($env, $attributes['node']);
+  $thumbfile = 'thumb-' . str_replace('/', '-', $node->getName() . '-' . $file);
+  generateThumbnail($env, $node->path . '/' . $file, $thumbfile, 600, 250);
+  // TODO: stupid way to get to the tmp folder...
+  return '<img src="' . '/engine/tmp/' . $env->host . '/thumbs/' . $thumbfile . '" />';
 }
