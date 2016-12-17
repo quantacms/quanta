@@ -1,6 +1,6 @@
 #tooltip {
     display: none;
-    position: fixed;
+    position: absolute;
     background: #ffdda2;
     color: black;
     border-radius: 6px;

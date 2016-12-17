@@ -12,7 +12,12 @@ function logOut() {
 }
 
 function register() {
-    openShadow({ module : 'user', context: 'user_register', widget: 'single'});
+    openShadow({ 
+						module : 'user',
+						context: 'user_register',
+						widget: 'single',
+						components: ['user_register_form']
+						});
 }
 
 $(document).ready(function() {
