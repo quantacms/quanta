@@ -20,10 +20,10 @@
     $env->setData('title', '404 - Page not found');
     $env->setData('content', '404 - Page not found. This page doesn\'t exist or has been removed!');
   }
-
+  
   $page->loadIncludes();
   $page->buildHTML();
   print $page->render();
-  $env->hook('complete');
-  exit();
+	$env->hook('complete');
+	exit();
 ?>

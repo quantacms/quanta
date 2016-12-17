@@ -4,6 +4,10 @@ function user_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/user/js/user.js');
   $vars['env']->addInclude('engine/code/php/core/user/css/user.css');
 
+	// TODO: temporary for generating passwords.
+	if (isset($_GET['pass123'])) {
+	print pwd($_GET['pass123']);
+	}
 }
 
 /**
