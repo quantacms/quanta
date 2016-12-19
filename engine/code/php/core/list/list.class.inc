@@ -135,18 +135,22 @@ abstract class ListObject {
 			switch ($attr_name) {
         case 'reverse': {
           $this->dirs = array_reverse($this->dirs);
+          $this->files = array_reverse($this->dirs);
           break;
         }
-        case 'sortbytime':
-          uasort($this->dirs, 'ListObject::sortByTime');
-        break;
+        // TODO: deprecate.
+				case 'sortbytime':
+          $this->sort = 'time';
+				  uasort($this->dirs, array($this, 'sortBy'));
+				break;
 
-        case 'sortby':
-          if ($attr == 'name') {
-            ksort($this->dirs);
-          }
-          break;
-        case 'limit':
+        case 'sort':
+          $this->sort = $attr;
+				  uasort($this->dirs, array($this, 'sortBy'));
+
+				  break;
+        
+				case 'limit':
           $this->limit = $attr;
           break;
 
@@ -193,7 +197,27 @@ abstract class ListObject {
     return $this->type;
   }
 
-  static function sortByTime($x, $y) {
-		return ($x->getTimestamp() < $y->getTimestamp()) ? 1 : -1;
-  }
+  private function sortBy($x, $y) {
+		switch ($this->sort) {
+		  
+			case 'name':
+			  $check = strcasecmp($x->getName(), $y->getName()) > 0;
+      break;
+
+			case 'title':
+			  $check = strcasecmp($x->getTitle(), $y->getTitle()) > 0;
+      break;
+			
+			case 'time':
+			  $check = ($x->getTimestamp() < $y->getTimestamp());
+      break;
+      
+			default: 
+			  $check = TRUE;
+			break;
+
+		}
+
+		return ($check) ? 1 : -1;
+	}
 }
