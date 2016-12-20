@@ -8,7 +8,7 @@ function search($env) {
   // Command with find: find "/Applications/MAMP/htdocs/websmenu"  -iname "*.html" -exec grep -r -i -o -m100  '.\{0,140\}mente.\{0,140\}' {} \;
 
   exec($search_cmd, $results_arr);
-  $output .= '<h1>Search results</h1><div>You are searching for: <b>' . $_REQUEST['search'] . ' </div>
+  $output .= '<div>You are searching for: <b>' . $_REQUEST['search'] . ' </div>
     <div id="data" class="search-results">';
   if (count($results_arr) == 0) {
     $output .= '<div class="search-no-results">No results found</div>';
@@ -37,7 +37,7 @@ function search($env) {
     if (is_dir($env->dir['wiki'] . '/' . $pname)) {
       $result_file = str_replace('/', '&nbsp;&bull;&nbsp;', substr(str_replace($env->dir['docroot'], '', readlink($env->dir['wiki'] . '/' . $pname)), 1));
     }
-    $output .= '<div class="search-result">' . $results[$pname][0] . '<div class="search-result-file"><b>' . $result_count. '</b> <span translate="yes">results found in:</span> [' . $pname . ':' . $result_file . ']</div></div>';
+    $output .= '<div class="search-result">' . $results[$pname][0] . '<div class="search-result-file"><b>' . $result_count. '</b> <span translate="yes">results found in:</span> [LINK:' . $pname . ']</div></div>';
   }
 
   $output .= '<div class="search-results-total">Total: <b>' . $total_matches . '</b> matches found in <b>' . $total_files . '</b> files.</div>';

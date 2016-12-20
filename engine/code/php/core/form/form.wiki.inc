@@ -1,5 +1,7 @@
 <?php
 /**
+ * Renders a form input.
+ *
  * @param $replace string
  * @param $tagname string
  * @param $attributes string
@@ -14,6 +16,8 @@ function wiki_INPUT($attributes, $form_id, $string, $env) {
 }
 
 /**
+ * Renders a form.
+ *
  * @param $replace string
  * @param $tagname string
  * @param $attributes string
@@ -21,6 +25,10 @@ function wiki_INPUT($attributes, $form_id, $string, $env) {
  * @return mixed
  */
 function wiki_FORM($attributes, $form_id, $string, $env) {
+
+	// Determine in which page the form loads.
+	$action = (isset($attributes['action'])) ? $attributes['action'] : '';
+	$method = (isset($attributes['method'])) ? $attributes['method'] : 'post';
 
   // FORM submission handler.
   if (isset($_REQUEST['form_submit'])) {
@@ -36,7 +44,6 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
     'value' => $form_id,
     'type' => 'hidden',
     );
-
 
   foreach ($form as $k => $attributes) {
     $tag_attributes_arr = array();
@@ -162,6 +169,6 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
     $form_items[] = '<div class="' . $classes_item_str . '">' . $label . $obj . '</div>';
   }
 
-  $html = '<form method="post" id="' . $form_id . '"><input type="hidden" name="form_submit"/> ' . implode('', $form_items) . '</form>';
+  $html = '<form action="/' . $action . '" method="' . $method . '" id="' . $form_id . '"><input type="hidden" name="form_submit"/> ' . implode('', $form_items) . '</form>';
   return $html;
 }
