@@ -2,7 +2,18 @@
 /**
  * Wiki Hook for SEARCH.
  */
-function wiki_SEARCH($searchfull, $var, $string, $env) {
-  $string = '<form action="/search" method="GET" id="search-form"><input type="text" id="search" name="search"/><input type="submit" value="search" onClick="if ($(\'#search\').val().length < 1) {alert(\'Please enter at least TWO characters to search!\'); return false;}"/></form>';
-  return $string;
+function wiki_SEARCH($attributes, $var, $string, $env) {
+  $search_form = '
+		[INPUT|name=search|title=|type=string:search-form]
+		[INPUT|name=submit|type=submit|value=Search!:search-form]
+		[FORM|method=get|action=' . $var . ':search-form]';
+  return $search_form;
 }
+
+/**
+ * Wiki Hook for SEARCH.
+ */
+function wiki_SEARCHRESULTS($attributes, $var, $string, $env) {
+  return search($env);
+}
+
