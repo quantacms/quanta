@@ -1,10 +1,14 @@
-
-
+/**
+ * Open a node in AJAX inside another box.
+ * @param name
+ * @param destination
+ * @param afterExec
+ *   optional:
+ * @param tpl
+ *   optional: use another template to use to load the node.
+ */
 var openAjax = function(name, destination, afterExec, tpl) {
-
     var dest = ($('#' + destination + ' .inner').length) ? $('#' + destination + ' .inner') : $('#' + destination);
-
-
     $.ajax({
         type: "GET",
         url: name,

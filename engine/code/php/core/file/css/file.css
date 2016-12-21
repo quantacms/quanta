@@ -1,33 +1,33 @@
 .file-document {
-    background-image: url(/engine/img/icons/doc.png);
+    background-image: url(/engine/code/php/core/file/img/icons/doc.png);
 }
 
 .file-pdf {
-    background-image: url(/engine/img/icons/pdf.png);
+    background-image: url(/engine/code/php/core/file/img/icons/pdf.png);
 }
 
 .file-xml {
-    background-image: url(/engine/img/icons/xml.png);
+    background-image: url(/engine/code/php/core/file/img/icons/xml.png);
 }
 
 .file-image {
-    background-image: url(/engine/img/icons/img.png);
+    background-image: url(/engine/code/php/core/file/img/icons/img.png);
 }
 
 .file-audio {
-    background-image: url('/engine/img/icons/audio.png')
+    background-image: url('../img/icons/audio.png')
 }
 
 .file-archive {
-    background-image: url('/engine/img/icons/zip.png')
+    background-image: url('../img/icons/zip.png')
 }
 
 .file-video {
-    background-image: url('/engine/img/icons/video.png')
+    background-image: url('../img/icons/video.png')
 }
 
 .file-sheet {
-    background-image: url('/engine/img/icons/xls.png')
+    background-image: url('../img/icons/xls.png')
 }
 
 
@@ -70,7 +70,7 @@
     margin-bottom: 30px;
     border: 20px solid rgba(0, 0, 0, 0);
     border-radius: 3px;
-    border-image: url('/engine/img/border-image.png') 25 repeat;
+    border-image: url('../img/border-image.png') 25 repeat;
     text-align: center;
     text-transform: uppercase;
     font-size:16px;
@@ -138,7 +138,7 @@ li.list-item {
 #edit-files ul li span {
     width: 15px;
     height: 12px;
-    background: url('/engine/img/icons.png') no-repeat;
+    background: url('../img/icons.png') no-repeat;
     position: absolute;
     cursor:pointer;
     top: 7px;

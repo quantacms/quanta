@@ -8,14 +8,15 @@
 .node-item .node-item-actions {
     display: none;
     position: absolute;
-    top: 0;
-    right: 0;
+    top: -30px;
+    right: -30px;
+
     text-align: right;
     background: #ffffff !important;
     border-radius: 5px;
     padding: 5px !important;
 		margin: 0 !important;
-    z-index: 100;
+    z-index: 1000 !important;
     height: 20px !important;
 		line-height: 20px;
     vertical-align: middle;

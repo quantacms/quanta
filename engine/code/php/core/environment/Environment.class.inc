@@ -188,6 +188,7 @@ class Environment extends DataContainer {
     return $dirs;
   }
 
+  // Load all system directories. Create those that are not created yet.
   private function load() {
     foreach ($this->dir as $folder) {
       $this->sysdir($folder);
@@ -196,6 +197,7 @@ class Environment extends DataContainer {
     $this->loadContribModules();
   }
 
+  // Return a system directory.
   public function dir($variable) {
     return $this->dir[$variable];
   }
@@ -279,7 +281,7 @@ class Environment extends DataContainer {
   }
 
   public function sysdir($folder) {
-    if (!is_dir($folder)) {
+    if (!is_dir($folder) && !is_link($folder)) {
       mkdir($folder) or die("Error: can not create " . $folder . '. Check permission and path.');
     }
     return $folder;
