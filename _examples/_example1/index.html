@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--
+index.html
+This file (index.html) serves as a main skeleton for all the site's pages.
+Its structure is not pre-defined or bound to any special rule.
+-->
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="EN" dir="ltr">
+    <!-- Headers -->
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <!-- Import CSS, JS files from the platform and its modules. -->
+        [PAGE:head]
+        <link rel="stylesheet" type="text/css" href="files/css/style.css"/>
+        <script type="text/javascript" src="files/js/mixbag.js"></script>
+        <title>QuantaCMS example - [ATTRIBUTE|name=title]</title>
+    </head>
+
+    <!-- Body -->
+    <body class="[PAGE:body-classes]">
+       <div id="page">
+            [BLOCK|padding=10|box=100xauto|name=fix-header:header]
+            <!-- Display messages (if any) -->
+            [MESSAGES]
+            <!-- Currently viewed node's content -->
+            [ATTRIBUTE|box=80xauto|centered|padding=10|name=content]
+            <!-- Footer node's content -->
+            [BLOCK|padding=10|box=100xauto:footer]
+        </div>
+    </body>
+</html>
