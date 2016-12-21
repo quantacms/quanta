@@ -52,6 +52,7 @@ function box_wikitag($vars) {
       // TODO: wrong box size.
     }
 
+    $classes[] = $h;
     $name = isset($vars['attributes']['name']) ? $vars['attributes']['name'] : 'box-noname-' . rand(10000000, 99999999);
 
     $id = isset($vars['attributes']['id']) ? $vars['attributes']['id'] : $name;

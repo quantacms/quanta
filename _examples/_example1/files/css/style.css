@@ -1,0 +1,49 @@
+body {
+    font-size: 18px;
+    line-height: 26px;
+}
+
+/* Main content */
+#content .inner {
+    background: #ffffff;
+    border-width: 0;
+}
+
+/* H1 headers */
+h1 {
+    padding-top: 16px;
+    padding-bottom: 16px;
+}
+
+h2 {
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+#home-block-bottom-left .inner {
+    margin: 10px;
+    paddding: 10px;
+    background: #dddddd;
+}
+
+#home-block-bottom-right .inner {
+    margin: 10px;
+    paddding: 10px;
+    background: #dddddd;
+}
+
+#sub-a .inner {
+    background: #fafafa;
+}
+
+#sub-b .inner {
+    background: #fafafa;
+}
+
+#sub-c .inner {
+    background: #fafafa;
+}
+
+#info-log-as-admin .inner {
+    text-align: left;
+    background: #f6a828;
+}

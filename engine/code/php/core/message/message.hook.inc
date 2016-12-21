@@ -18,15 +18,6 @@ function message_page_after_build($vars) {
 }
 
 /**
- * Implements hook_page_complete().
- * @param $vars
- */
-function message_page_complete($vars) {
-  $vars['page']->html = str_replace('[MESSAGES]', Message::burnMessages(MESSAGE_TYPE_SCREEN), $vars['page']->html);
-}
-
-
-/**
  * Implements hook_init().
  * @param $vars
  */
