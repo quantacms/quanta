@@ -47,3 +47,21 @@ h2 {
     text-align: left;
     background: #f6a828;
 }
+
+#jumper-examples {
+    margin-bottom: 20px;
+}
+
+a {
+    color: #3a6aff;
+    text-decoration: underline;
+}
+
+.section-all_examples #content {
+    text-align: left;
+}
+
+ul.list-tree li {
+    margin-left: 15px;
+    display: list-item;
+}

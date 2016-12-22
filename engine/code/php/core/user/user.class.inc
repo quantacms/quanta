@@ -1,5 +1,5 @@
 <?php
-define("USER_ANONYMOUS", "Guest");
+define("USER_ANONYMOUS", "guest");
 define("ROLE_ANONYMOUS", "anonymous");
 define("ROLE_ADMIN", "admin");
 define("ROLE_LOGGED", "logged");

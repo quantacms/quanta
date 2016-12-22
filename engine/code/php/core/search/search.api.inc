@@ -3,6 +3,7 @@ function search($env) {
   $output = '';
   $results_arr = array();
   $results = array();
+  // TODO: VERY insecure!
   $search_cmd = "grep -r -i -o -P -m100  --include \*.html  '.{0,140}" . $_REQUEST['search'] . ".{0,140}' " . $env->dir['docroot'];
   // $search_cmd = "find " . $page['dir']['docroot'] . " -iname=\"*.html\" -exec grep -r -i -o -m100 -P  '.{0,140}" . $_REQUEST['search'] . ".{0,140}' {} \; ";
   // Command with find: find "/Applications/MAMP/htdocs/websmenu"  -iname "*.html" -exec grep -r -i -o -m100  '.\{0,140\}mente.\{0,140\}' {} \;

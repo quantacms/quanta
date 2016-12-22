@@ -14,13 +14,6 @@
   $page = new Page($env, 'index.html');
   $env->setData('page', $page);
   $env->hook('init', array('page' => &$page));
-
-  // TODO: doesn't work.
-  if ($env->getData('content') == NULL) {
-    $env->setData('title', '404 - Page not found');
-    $env->setData('content', '404 - Page not found. This page doesn\'t exist or has been removed!');
-  }
-  
   $page->loadIncludes();
   $page->buildHTML();
   print $page->render();
