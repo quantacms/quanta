@@ -20,11 +20,6 @@
     background: #e8e8e2;
 }
 
-.box a {
-    text-decoration: none;
-}
-
-
 /* > 600px */
 @media all and (max-width:861px) {
     .w-25-50, .w-50-75, .w-75-100 {

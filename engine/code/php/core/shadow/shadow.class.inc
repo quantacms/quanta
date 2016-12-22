@@ -13,6 +13,8 @@ class Shadow extends Page {
   private $node;
 
   /**
+   * Construct the Shadow.
+   *
    * @param $context String
    * @param null $id
    */
@@ -30,24 +32,12 @@ class Shadow extends Page {
       }
     }
 
+    // TODO: default to home is not making sense.
     $this->node = (isset($data->node)) ? new Node($env, $data->node) : new Node($env, 'home');
 
     foreach ($this->components as $component) {
       $this->env->hook('shadow_' . $component, array('shadow' => &$this, 'type' => $this->type));
     }
-
-    /*
-    // TODO: not needed anymore?
-    $this->env->hook('shadow_' . $this->context . '_access', array('shadow' => &$this, 'type' => $this->type));
-
-    if ($this->access) {
-      $this->env->hook('shadow_' . $this->context, array('shadow' => &$this, 'type' => $this->type));
-      if ($this->getTabs() == NULL) {
-        new Message($this->env, 'There is no hook_shadow_' . $this->context . ' defined', MESSAGE_ERROR);
-      }
-    }
-    */
-
   }
 
   /**
@@ -57,9 +47,7 @@ class Shadow extends Page {
     $tabs = $this->getTabs();
     $tab_titles = '';
     $tab_contents = '';
-
     $i = 0;
-
     ksort($tabs);
 
     foreach ($tabs as $wtabs) {
@@ -77,22 +65,25 @@ class Shadow extends Page {
     $this->setData('buttons', $this->buttons);
     $this->setData('node', $this->node);
     $this->setData('content', file_get_contents('core/shadow/tpl/' . $this->getWidget() . '.inc'));
-
     $this->buildHTML();
-
     return $this->html;
   }
 
   /**
-   * Add a submit button to the shadow
+   * Add a submit button to the shadow.
    */
   public function addButton($action, $button) {
     $this->buttons[$action] = $button;
   }
 
+  /**
+   * Get the buttons.
+   * @return array
+   */
   public function getButtons() {
     return $this->buttons;
   }
+
   /**
    * @param string $title
    * @param string $content
@@ -105,15 +96,19 @@ class Shadow extends Page {
     $this->tabs[$weight][$this->getContext()] = array('title' => $title, 'content' => $content, 'classes' => $classes);
   }
 
+  /**
+   * Get the tabs of the shadow.
+   * @return array
+   */
   public function getTabs() {
     return $this->tabs;
   }
 
-  public function prependToTab($context, $text) {
-    $tab = $this->getTab($context);
-    $this->tabs[1]['user_register']['content'] = $this->tabs[1]['user_register']['content'] . $text;
-  }
-
+  /**
+   * Get a tab of the shadow.
+   * @param $context
+   * @return bool
+   */
   public function getTab($context) {
     foreach ($this->tabs as $weight => $tab) {
       foreach ($tab as $tab_context => $content) {
@@ -124,28 +119,61 @@ class Shadow extends Page {
     }
     return FALSE;
   }
+
+  /**
+   * Get the context of the shadow.
+   * @return mixed
+   */
   public function getContext() {
     return $this->context;
   }
+
+  /**
+   * Get the type of the shadow.
+   * @return mixed
+   */
   public function getType() {
     return $this->type;
   }
+
+  /**
+   * Get the widget used for the shadow.
+   * @return mixed
+   */
   public function getWidget() {
     return $this->widget;
   }
 
+  /**
+   * Set the content for the shadow.
+   * @param $context
+   */
   public function setContext($context) {
     $this->context = $context;
   }
 
+  /**
+   * Get the node related to the shadow.
+   * @return \Node
+   */
   public function getNode() {
     return $this->node;
   }
 
+  /**
+   * Set the access of the shadow?
+   * TODO: what is this?
+   * @param $access
+   */
   public function setAccess($access) {
     $this->access = $access;
   }
 
+  /**
+   * Get the access of the shadow?
+   * TODO: what is this?
+   * @return bool
+   */
   public function getAccess() {
     return $this->access;
   }
