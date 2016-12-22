@@ -47,7 +47,8 @@ abstract class ListObject {
       $this->path = $env->dir['docroot'];
       $this->realpath = $env->dir['docroot'];
       $this->node = NULL;
-    } else {
+    }
+    else {
       $this->path = ($this->env->dir('wiki') . '/' . $path);
       $this->node = new Node($this->env, $path);
       $this->realpath = $this->node->realpath;
@@ -57,7 +58,7 @@ abstract class ListObject {
     $this->tag = 'li';
 
     foreach ($attr_arr as $attr_key => $attr_val) {
-        $this->setAttribute($attr_key, $attr_val);
+      $this->setAttribute($attr_key, $attr_val);
     }
     $this->load();
   }
@@ -80,10 +81,15 @@ abstract class ListObject {
     $this->theme();
 
     $output = implode('', $this->tpl_items);
-    $ajax = (!empty($this->getAttribute('ajax'))) ? ' rel= ' .$this->getAttribute('ajax') : '';
-    $tpl = (!empty($this->getAttribute('tpl'))) ? ' tpl= ' .$this->getAttribute('tpl') : '';
+    $ajax = (!empty($this->getAttribute('ajax'))) ? ' rel= ' . $this->getAttribute('ajax') : '';
+    $tpl = (!empty($this->getAttribute('tpl'))) ? ' tpl= ' . $this->getAttribute('tpl') : '';
 
     $output = '<ul ' . $ajax . $tpl . ' class="list ' . $this->getTheme() . ' list-' . $this->getTheme() . ' list-' . $this->node->getName() . '">' . $output . '</ul>';
+
+    if ($this->getAttribute('nolinks')) {
+      $output = preg_replace('/<a[^>]+\>/i', "", $output);
+    }
+
     return $output;
   }
 
@@ -101,9 +107,19 @@ abstract class ListObject {
     $symlinks = $this->getAttribute('symlinks');
 
     if ($this->getAttribute('level') == 'leaf' || $this->getAttribute('level') == 'tree') {
-			$list_pages = $this->env->scanDirectoryDeep($this->realpath, '', array(), array('exclude_dirs' => DIR_INACTIVE, 'symlinks' => $symlinks, $this->scantype, 'level' => $this->getAttribute('level')));
-		} else {
-      $list_pages = $this->env->scanDirectory($this->realpath, array('exclude_dirs' => DIR_INACTIVE, 'type' => $this->scantype, 'symlinks' => $symlinks));
+      $list_pages = $this->env->scanDirectoryDeep($this->realpath, '', array(), array(
+        'exclude_dirs' => DIR_INACTIVE,
+        'symlinks' => $symlinks,
+        $this->scantype,
+        'level' => $this->getAttribute('level')
+      ));
+    }
+    else {
+      $list_pages = $this->env->scanDirectory($this->realpath, array(
+        'exclude_dirs' => DIR_INACTIVE,
+        'type' => $this->scantype,
+        'symlinks' => $symlinks
+      ));
     }
 
     foreach ($list_pages as $data_url) {
@@ -132,31 +148,31 @@ abstract class ListObject {
    */
   private function loadAttributes() {
     foreach ($this->getAttributes() as $attr_name => $attr) {
-			switch ($attr_name) {
+      switch ($attr_name) {
         case 'reverse': {
           $this->dirs = array_reverse($this->dirs);
           $this->files = array_reverse($this->dirs);
           break;
         }
         // TODO: deprecate.
-				case 'sortbytime':
+        case 'sortbytime':
           $this->sort = 'time';
-				  uasort($this->dirs, array($this, 'sortBy'));
-				break;
+          uasort($this->dirs, array($this, 'sortBy'));
+          break;
 
         case 'sort':
           $this->sort = $attr;
-				  uasort($this->dirs, array($this, 'sortBy'));
+          uasort($this->dirs, array($this, 'sortBy'));
+          break;
 
-				  break;
-        
-				case 'limit':
+        case 'limit':
           $this->limit = $attr;
           break;
 
-          default:
-            // Unkown attribute for generic list - do nothing.
-            // @TODO: maybe add a message?
+
+        default:
+          // Unkown attribute for generic list - do nothing.
+          // @TODO: maybe add a message?
           break;
       }
     }
@@ -165,6 +181,7 @@ abstract class ListObject {
   public function getAttributes() {
     return $this->attributes;
   }
+
   public function getAttribute($attr_name) {
     if (isset($this->attributes[$attr_name])) {
       return $this->attributes[$attr_name];
@@ -198,26 +215,26 @@ abstract class ListObject {
   }
 
   private function sortBy($x, $y) {
-		switch ($this->sort) {
-		  
-			case 'name':
-			  $check = strcasecmp($x->getName(), $y->getName()) > 0;
-      break;
+    switch ($this->sort) {
 
-			case 'title':
-			  $check = strcasecmp($x->getTitle(), $y->getTitle()) > 0;
-      break;
-			
-			case 'time':
-			  $check = ($x->getTimestamp() < $y->getTimestamp());
-      break;
-      
-			default: 
-			  $check = TRUE;
-			break;
+      case 'name':
+        $check = strcasecmp($x->getName(), $y->getName()) > 0;
+        break;
 
-		}
+      case 'title':
+        $check = strcasecmp($x->getTitle(), $y->getTitle()) > 0;
+        break;
 
-		return ($check) ? 1 : -1;
-	}
+      case 'time':
+        $check = ($x->getTimestamp() < $y->getTimestamp());
+        break;
+
+      default:
+        $check = TRUE;
+        break;
+
+    }
+
+    return ($check) ? 1 : -1;
+  }
 }

@@ -55,6 +55,10 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
 
     case 'author':
       $string = $node->getAuthor();
+      // In case node has no author, return NULL string.
+      if ($string == USER_ANONYMOUS) {
+        $string = '';
+      }
       break;
     // TODO: still looking for a better solution for new nodes.
     case 'realname':
@@ -242,8 +246,8 @@ function wiki_OPERATIONS($attributes, $node, $string, $env) {
  * @param $env
  * @return string
  */
-function wiki_CATEGORIES($tagname, $var, $string, $env) {
-  $node = $env->getData('node');
+function wiki_CATEGORIES($attributes, $var, $string, $env) {
+  $node = Node::current($env);
   $html = '';
   $cats = $node->getCategories($var);
   foreach ($cats as $cat) {
@@ -252,3 +256,30 @@ function wiki_CATEGORIES($tagname, $var, $string, $env) {
   return $html;
 }
 
+
+/**
+ * TODO: not good. It does not filter per access...
+ * @param $attributes
+ * @param $var
+ * @param $string
+ * @param $env
+ * @return string
+ */
+function wiki_COUNT($attributes, $node, $string, $env) {
+  $nodeobj = empty($node) ? $env->getData('node') : new Node($env, $node);
+
+  $depth = '';
+  if (isset($attributes['maxdepth'])) {
+    $depth .= ' -maxdepth ' . $attributes['maxdepth'];
+  }
+  if (isset($attributes['mindepth'])) {
+    $depth .= ' -mindepth ' . $attributes['mindepth'];
+  } else {
+    $depth .= ' -mindepth 1';
+  }
+
+  $count_cmd = 'find ' . $nodeobj->realpath . ' ' . $depth . ' -type d | wc -l';
+  exec($count_cmd, $results_arr);
+  return array_pop($results_arr);
+
+}
