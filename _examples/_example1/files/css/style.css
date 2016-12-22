@@ -31,16 +31,12 @@ h2 {
     background: #dddddd;
 }
 
-#sub-a .inner {
+#sub-a .inner, #sub-b .inner, #sub-c .inner {
     background: #fafafa;
 }
 
-#sub-b .inner {
-    background: #fafafa;
-}
-
-#sub-c .inner {
-    background: #fafafa;
+#sub-d .inner {
+    background: #aaaafa;
 }
 
 #info-log-as-admin .inner {
