@@ -31,7 +31,10 @@ class Environment extends DataContainer {
     $this->request = explode('/', $this->request_uri);
     $this->request_wiki = $this->request[count($this->request) - 2];
     $this->dir['docroot'] = $_SERVER['DOCUMENT_ROOT'] . '/sites/' . $this->host;
-    $this->dir['tmp'] = $_SERVER['DOCUMENT_ROOT'] . '/engine/tmp/' . $this->host;
+    $this->dir['tmp'] = $_SERVER['DOCUMENT_ROOT'] . '/engine/tmp';
+    $this->dir['modules_core'] = $_SERVER['DOCUMENT_ROOT'] . '/engine/code/php/core';
+    $this->dir['modules_custom'] = $this->dir['docroot'] . '/_modules';
+
     $this->dir['tmp_files'] = $this->dir['tmp'] . '/files';
     $this->dir['wiki'] = $_SERVER['DOCUMENT_ROOT'] . '/engine/tmp/' . $this->host . '/wiki';
     $this->dir['log'] = $_SERVER['DOCUMENT_ROOT'] . '/engine/tmp/' . $this->host . '/log';
@@ -100,14 +103,16 @@ class Environment extends DataContainer {
 
   public function runModule($mod_type, $module) {
     $includes = array('api', 'hook', 'wiki');
+    $basedir = $mod_type == 'core' ? $this->dir('modules_core') : $this->dir('modules_custom');
 
-    $module_path = $mod_type . '/' . $module . '/' . $module . '.module';
+    $module_path = $basedir . '/' . $module . '/' . $module . '.module';
+
     if (is_file($module_path)) {
       require_once($module_path);
     }
 
     foreach ($includes as $include_type) {
-      $include_path = $mod_type . '/' . $module . '/' . $module . '.' . $include_type . '.inc';
+      $include_path = $basedir . '/' . $module . '/' . $module . '.' . $include_type . '.inc';
       if (is_file($include_path)) {
         require_once($include_path);
       }
