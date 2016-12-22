@@ -20,13 +20,12 @@ function openShadow(shadowData) {
     if (shadow.widget == undefined) {
         shadow.widget = 'tabs';
     }
-    var shadowPath = (shadow.node != undefined) ? (shadow.node + '/') : '';
-    $('#shadow-item').html('').attr('rel', shadow.context).load(
-        '/' + shadowPath + '?shadow=' + JSON.stringify(shadow), function () {
+
+    var shadowPath = '/' + ((shadow.node != undefined) ? (shadow.node + '/') : '') + '?shadow=' + JSON.stringify(shadow);
+    $('#shadow-item').html('').attr('rel', shadow.context).load(shadowPath, function () {
             if (shadow.callback != undefined) {
                 shadow.callback();
             }
-
 
             $(document).trigger('refresh');
 
