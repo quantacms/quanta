@@ -30,14 +30,16 @@ abstract class ListObject {
   protected $tpl_items = array();
   private $attributes = array();
   protected $scantype = DIR_ALL;
+  protected $module;
 
   // Construct the List.
 
-  public function __construct(&$env, $path, $type, $attr_arr = array()) {
+  public function __construct(&$env, $path, $type, $attr_arr = array(), $module = 'list') {
     if ($path == NULL) {
       $path = $env->getRequestedPath();
     }
 
+    $this->module = $module;
     $this->env = $env;
     // TODO: no need to rebuild node when it's current page.
     $this->dir = $path;
@@ -61,6 +63,11 @@ abstract class ListObject {
       $this->setAttribute($attr_key, $attr_val);
     }
     $this->load();
+  }
+
+  public function getModulePath() {
+    $module = $this->env->getModule($this->module);
+    return $module['path'];
   }
 
   /**

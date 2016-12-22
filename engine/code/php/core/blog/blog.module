@@ -1,3 +1,2 @@
 <?php
 $this->dependsFrom('core', 'list');
-require_once('Blog.class.inc');
