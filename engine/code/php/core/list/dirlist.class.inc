@@ -6,7 +6,6 @@
  * render the files and folders contained into it.
  */
 class DirList extends ListObject {
-  protected $module_path = 'core/list';
   protected $scantype = DIR_DIRS;
 
 	/**
@@ -30,7 +29,8 @@ class DirList extends ListObject {
       }
 
 
-      $tpl = file_get_contents($this->module_path . '/tpl/' . $this->getTheme() . '.tpl.php');
+      $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTheme() . '.tpl.php');
+
       $tpl = transformCodeTags($this->env, preg_replace("/\[LISTITEM\]/is", string_normalize($dir_url), $tpl));
       $tpl = $node->wrap($tpl);
         $tpl = '<li class="' . implode(' ', $classes) . '">' . $tpl . '</li>';

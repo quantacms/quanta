@@ -35,7 +35,6 @@ class Page extends DataContainer {
 
     // Include JS / CSS files.
     foreach ($this->env->getIncludes() as $file) {
-
       if (substr($file['path'], 0, 6) == 'engine') {
         $file['path'] = $_SERVER['DOCUMENT_ROOT'] .'/' . $file['path'];
       }
@@ -48,7 +47,6 @@ class Page extends DataContainer {
         }
         continue;
       }
-
 
       if ($file['type'] == 'css') {
         $css[] = file_get_contents($file['path']);
@@ -121,10 +119,19 @@ class Page extends DataContainer {
 
   }
 
+  /**
+   * Sets the page title.
+   * @param $title
+   */
   public function setTitle($title) {
     $this->setData('title', $title);
   }
 
+  /**
+   * Sets the page content
+   * TODO: deprecate?
+   * @param $content
+   */
   public function setContent($content) {
     $this->setData('content', $content);
   }
