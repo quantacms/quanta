@@ -23,7 +23,6 @@ class Node extends DataContainer {
   public $exists;
   public $permissions;
   public $timestamp;
-  public $empty;
   public $father = NULL;
   public $thumbnail = NULL;
   protected $lineage = array();
@@ -71,7 +70,6 @@ class Node extends DataContainer {
       if (isset($this->json->thumbnail)) {
         $this->setThumbnail($this->json->thumbnail);
       }
-      $this->empty = FALSE;
     } else {
       // TODO: error handler for no json value.
     }
@@ -159,11 +157,9 @@ class Node extends DataContainer {
       $this->setContent($html_content);
       $this->content_raw = $this->content;
       $this->setTitle(parsetag($this->content, 'h1'));
-      $this->empty = FALSE;
     }
     else {
       $this->setTitle($this->name);
-      $this->empty = TRUE;
     }
 
     $this->env->hook('node_build', array(
@@ -171,14 +167,6 @@ class Node extends DataContainer {
     ));
 
     Cache::set($this->env, 'node', $this->name, $this);
-  }
-
-  /**
-   * Check if the node is empty.
-   * @return mixed
-   */
-  public function isEmpty() {
-    return $this->empty;
   }
 
   /**
@@ -250,6 +238,7 @@ class Node extends DataContainer {
       case NODE_ACTION_EDIT:
         if ($action == NODE_ACTION_ADD) {
           $node->realpath = $node->father->realpath . '/' . $path;
+          $node->setAuthor($user->getName());
         }
         // TODO complete validation code.
         if (isset($nodedata['edit-thumbnail'])) {
@@ -264,7 +253,6 @@ class Node extends DataContainer {
           $node->setContent('<h1>' . $node->getTitle() . '</h1>' . $node->getBody());
           $node->setTimestamp($datetime > 0 ? $datetime : time());
           $node->tmp_files_dir = $nodedata['tmp_files_dir'];
-          $node->setAuthor($user->getName());
 
           $env->hook('node_presave', array(
             'node' => &$node,
@@ -401,7 +389,7 @@ class Node extends DataContainer {
    */
   public function delete() {
     $np = explode('/', $this->realpath);
-    $rmname = '__' . $np[count($np) - 1];
+    $rmname = '__' . $np[count($np) - 1] . '_' . time();
     $np[count($np) - 1] = $rmname;
     // Delete file is indeed not an immediate deletion: it adds __ to folder name.
     // This is useful in order to recover a node that was accidentally deleted.
@@ -439,8 +427,10 @@ class Node extends DataContainer {
    * Useful for breadcrumbs.
    */
   public function buildLineage() {
-    // no need to do this twice...
-    $this->lineage = array();
+    if (!empty($this->lineage)) {
+      return;
+    }
+
     if ($this->isHome()) {
       return;
     }

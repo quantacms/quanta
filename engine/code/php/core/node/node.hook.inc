@@ -68,37 +68,27 @@ function node_init($vars) {
   $user = User::current($vars['env']);
   $node = Node::current($vars['env']);
 
-  // Print the parsed HTML.
-  if ($node->isEmpty()) {
-    $vars['env']->setData('content', 'This is an empty page, here is nothing to show.');
-    $vars['env']->setData('title', '404 - Empty page.');
+  // If the node does not exist, redirect to 404.
+  if (!$node->exists && $node->name != '404') {
+    print "REDIRECT" . $node->name;
+    redirect('/404');
   }
-  elseif ($node->exists) {
-    if ($user->checkAccess($node, NODE_ACTION_VIEW)) {
-      new Message($vars['env'], 'user is viewing this page: ' . $node->name . '.', MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
-      // BUILD Breadcrumb - lineage.
-      // TODO: right place to build bc?
-      $breadcrumb = array();
+  elseif ($user->checkAccess($node, NODE_ACTION_VIEW)) {
+    new Message($vars['env'], 'user is viewing this page: ' . $node->name . '.', MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
 
-      $node->buildLineage();
-      foreach ($node->getLineage() as $n) {
-        $breadcrumb[$n->getName()] = $n->getTitle();
-      }
-      $vars['env']->setData('breadcrumb', $breadcrumb);
+    $vars['env']->setData('title', $node->getTitle());
 
-      $vars['env']->setData('title', $node->getTitle());
-      $vars['page']->setTitle($node->getTitle());
-
-      // BUILD Template and content.
-      $node->buildTemplate();
-      $vars['page']->setContent($node->render());
-    }
-    else {
-      $vars['page']->setTitle('Access denied');
-      $vars['page']->setContent('You don\'t have access to this page.');
-    }
+    $vars['page']->setTitle($node->getTitle());
+    // BUILD Template and content.
+    $node->buildTemplate();
+    $vars['page']->setContent($node->render());
   }
+  elseif ($node->name != '403') {
+    redirect('/403');
+  }
+
   $vars['env']->setData('node', $node);
+  // TODO: move elsewhere.
   $vars['env']->hook('body_classes', array("page" => &$vars['page']));
   $vars['page']->vars['body-classes'] = implode(' ', $vars['page']->body_classes);
 }
@@ -114,7 +104,8 @@ function node_shadow_node_form($vars) {
   if ($vars['shadow']->getContext() == NODE_ACTION_ADD) {
     $father = $vars['shadow']->getNode();
     $node = new Node($vars['env'], NULL, $father);
-  } else {
+  }
+  else {
     $node = $vars['shadow']->getNode();
   }
   $vars['env']->setData('node', $node);
@@ -133,7 +124,6 @@ function node_shadow_node_delete_form($vars) {
   $user = User::current($vars['env']);
   $node = $vars['shadow']->getNode();
   $has_access = $user->checkAccess($node, $vars['shadow']->getContext());
-
   if (!$has_access) {
     new Message($vars['env'], 'User ' . $user->name . ' attempted to delete a node without access', MESSAGE_WARNING, MESSAGE_TYPE_LOG, 'node');
   }
@@ -149,15 +139,12 @@ function node_shadow_node_delete_form($vars) {
  * @param $vars
  */
 function node_body_classes($vars) {
-  if ($vars['page']->env->getData('node')) {
-    $vars['page']->addBodyClass('body-' . $vars['page']->env->getData('node')
-      ->getName());
-
-    $breadcrumb = $vars['env']->getData('breadcrumb');
-
-    foreach ($breadcrumb as $path => $title) {
-      $vars['page']->addBodyClass('section-' . $path);
-    }
-
+  // Setup body classes per each item in the current node lineage.
+  // TODO: show
+  $node = Node::current($vars['page']->env);
+  $node->buildLineage();
+  $lineage = $node->getLineage();
+  foreach ($lineage as $lineage_node) {
+    $vars['page']->addBodyClass('section-' . $lineage_node->name);
   }
 }

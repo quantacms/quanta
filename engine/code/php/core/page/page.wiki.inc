@@ -44,10 +44,15 @@ function wiki_EMPTY($attributes, $var, $string, $env) {
  * Wiki Hook for BREADCRUMB.
  */
 function wiki_BREADCRUMB($attributes, $var, $string, $env) {
+  $node = Node::current($env);
+  $breadcrumb = array();
+  $node->buildLineage();
+  foreach ($node->getLineage() as $n) {
+    $breadcrumb[$n->getName()] = $n->getTitle();
+  }
 
+  $env->setData('breadcrumb', $breadcrumb);
   $themed_bc = '';
-  $breadcrumb = $env->getData('breadcrumb');
-
   if (count($breadcrumb) > 0 && $breadcrumb != '') {
     $themed_bc = '<ul class="breadcrumb">';
     $themed_bc .= '<li>[LINK|title=Home:home]</li>';
@@ -61,7 +66,6 @@ function wiki_BREADCRUMB($attributes, $var, $string, $env) {
       }
     $themed_bc .= '</ul>';
   }
-
   return $themed_bc;
 }
 

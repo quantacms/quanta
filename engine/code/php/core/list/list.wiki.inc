@@ -24,3 +24,12 @@ function wiki_FILES($attributes, $value, $string, $env) {
   $filelist = new FileList($env, $value, 'file', $attributes);
   return $filelist->render();
 }
+
+/**
+ * Detect content LIST and eventually create HTML.
+ */
+function wiki_TREE($attributes, $path, $string, $env) {
+  $dirlist = new DirList($env, $path, 'tree', $attributes);
+  $render = $dirlist->render();
+  return $render;
+}
