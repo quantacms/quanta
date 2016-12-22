@@ -4,6 +4,6 @@
  * Detect content BLOG and eventually create HTML.
  */
 function wiki_BLOG($attributes, $value, $string, $env) {
-  $dirlist = new Blog($env, $value, 'blog', array('sortbytime' => 'desc') + $attributes);
+  $dirlist = new DirList($env, $value, 'blog', array('sortbytime' => 'desc') + $attributes, 'blog');
   return $dirlist->render();
 }
