@@ -72,47 +72,44 @@ class Environment extends DataContainer {
    * @param $modules
    */
   public function setModules($mod_type, $modules) {
-    $this->modules[$mod_type] = $modules;
+    $module_path = $mod_type == 'core' ? $this->dir('modules_core') : $this->dir('modules_custom');
+
+    foreach ($modules as $k => $module) {
+      $this->modules[$module] = array(
+        'name' => $module,
+        'path' => $module_path . '/' . $module,
+      );
+    }
   }
 
-  public function getModules($mod_type = NULL) {
-    $modules = array();
-    if ($mod_type == NULL) {
-      foreach($this->modules as $modules_dir) {
-        foreach ($modules_dir as $module) {
-          $modules[] = $module;
-        }
-      }
-    } else {
-      $modules = $this->modules[$mod_type];
-    }
-    return $modules;
+  public function getModule($module) {
+    return $this->modules[$module];
+  }
+
+  public function getModules() {
+    return $this->modules;
   }
 
   public function runModules() {
-    foreach ($this->modules as $mod_type => $modules) {
-      foreach ($modules as $module) {
-        $this->runModule($mod_type, $module);
-      }
+    foreach ($this->modules as $module) {
+        $this->runModule($module);
     }
   }
 
   public function dependsFrom($mod_type, $module) {
-    $this->runModule($mod_type, $module);
+    $this->runModule($this->getModule($module));
   }
 
-  public function runModule($mod_type, $module) {
+  public function runModule($module) {
     $includes = array('api', 'hook', 'wiki');
-    $basedir = $mod_type == 'core' ? $this->dir('modules_core') : $this->dir('modules_custom');
-
-    $module_path = $basedir . '/' . $module . '/' . $module . '.module';
+    $module_path = $module['path'] . '/' . $module['name'] . '.module';
 
     if (is_file($module_path)) {
       require_once($module_path);
     }
 
     foreach ($includes as $include_type) {
-      $include_path = $basedir . '/' . $module . '/' . $module . '.' . $include_type . '.inc';
+      $include_path = $module['path'] . '/' . $module['name'] . '.' . $include_type . '.inc';
       if (is_file($include_path)) {
         require_once($include_path);
       }
@@ -214,7 +211,7 @@ class Environment extends DataContainer {
   public function hook($function, $vars = array()) {
     $vars['env'] = &$this;
     foreach ($this->getModules() as $module) {
-      $hook = $module . '_' . $function;
+      $hook = $module['name'] . '_' . $function;
       if (function_exists($hook)) {
         $hook($vars);
       }
