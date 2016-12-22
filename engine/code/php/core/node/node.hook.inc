@@ -69,7 +69,7 @@ function node_init($vars) {
   $node = Node::current($vars['env']);
 
   // If the node does not exist, redirect to 404.
-  if (!$node->exists && $node->name != '404') {
+  if (!$node->exists && !isset($_REQUEST['shadow']) && $node->name != '404') {
     print "REDIRECT" . $node->name;
     redirect('/404');
   }
@@ -83,7 +83,7 @@ function node_init($vars) {
     $node->buildTemplate();
     $vars['page']->setContent($node->render());
   }
-  elseif ($node->name != '403') {
+  elseif ($node->name != '403' && !isset($_REQUEST['shadow'])) {
     redirect('/403');
   }
 
