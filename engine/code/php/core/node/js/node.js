@@ -18,7 +18,7 @@ $(document).bind('refresh', function() {
             module : 'node',
             context: 'node_edit',
             widget: 'tabs',
-            components: ['node_form', 'file_form', 'manager_form'],
+            components: ['node_form', 'file_form', 'manager_form', 'access_form'],
             node: $(this).attr('rel')
         });
         e.preventDefault();

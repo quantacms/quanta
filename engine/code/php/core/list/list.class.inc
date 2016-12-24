@@ -138,7 +138,7 @@ abstract class ListObject {
         }
       }
       elseif (($this->scantype == DIR_FILES) && $this->node != NULL) {
-        $file = new File($this->env, $data_url, $this->node);
+				$file = new File($this->env, $data_url, $this->node);
         if ($file->isPublic()) {
           $this->files[] = $file;
         }
@@ -146,7 +146,8 @@ abstract class ListObject {
     }
 
     $this->loadAttributes();
-    return TRUE;
+    
+		return TRUE;
 
   }
 
@@ -154,11 +155,11 @@ abstract class ListObject {
    * Load all attributes invoked on the list.
    */
   private function loadAttributes() {
-    foreach ($this->getAttributes() as $attr_name => $attr) {
+		foreach ($this->getAttributes() as $attr_name => $attr) {
       switch ($attr_name) {
         case 'reverse': {
           $this->dirs = array_reverse($this->dirs);
-          $this->files = array_reverse($this->dirs);
+          $this->files = array_reverse($this->files);
           break;
         }
         // TODO: deprecate.
@@ -183,7 +184,7 @@ abstract class ListObject {
           break;
       }
     }
-  }
+	}
 
   public function getAttributes() {
     return $this->attributes;
