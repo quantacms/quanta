@@ -22,7 +22,6 @@ class FileList extends ListObject {
    */
   public function theme() {
     $user = User::current($this->env);
-
     $file_types = $this->getAttribute('file_types');
     $i = 0;
 

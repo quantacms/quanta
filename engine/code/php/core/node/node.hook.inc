@@ -70,7 +70,6 @@ function node_init($vars) {
 
   // If the node does not exist, redirect to 404.
   if (!$node->exists && !isset($_REQUEST['shadow']) && $node->name != '404') {
-    print "REDIRECT" . $node->name;
     redirect('/404');
   }
   elseif ($user->checkAccess($node, NODE_ACTION_VIEW)) {
