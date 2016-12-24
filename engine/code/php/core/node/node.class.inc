@@ -249,6 +249,7 @@ class Node extends DataContainer {
         if ($has_access) {
           $node->setTitle($nodedata['edit-title']);
           $node->setBody($nodedata['edit-content']);
+          $node->setAuthor($nodedata['edit-author']);
           $node->setTeaser($nodedata['edit-teaser']);
           $node->setContent('<h1>' . $node->getTitle() . '</h1>' . $node->getBody());
           $node->setTimestamp($datetime > 0 ? $datetime : time());
@@ -294,14 +295,19 @@ class Node extends DataContainer {
 
   /**
    * Validates this node before saving it.
+   * TODO: put into a hook!
    */
   public function validate() {
-    $valid = FALSE;
+    $valid = TRUE;
+    $author = new User($this->env, $this->getAuthor());
+
     if ($this->getTitle() == '') {
       new Message($this->env, 'Node title can not be empty.', MESSAGE_WARNING);
+      $valid = FALSE;
     }
-    else {
-      $valid = TRUE;
+    if (!$author->exists) {
+      new Message($this->env, 'User ' . $this->getAuthor() . ' is not a valid user!', MESSAGE_WARNING);
+      $valid = FALSE;
     }
 
     return $valid;
