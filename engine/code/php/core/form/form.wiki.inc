@@ -59,6 +59,7 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
       }
     }
 
+
     if ($attributes['type'] == 'date' || $attributes['type'] == 'time' || $attributes['type'] == 'string' || $attributes['type'] == 'number') {
       $type = 'text';
       $tag_attributes_arr[] = 'type="text"';
@@ -76,6 +77,11 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
       $classes_element[] = 'required';
       $classes_item[] = 'required';
     }
+		
+		// Check if we need to add a wysiwyg.
+    if ($attributes['wysiwyg']) {
+		  $classes_element[] = 'wysiwyg';
+		}
 
     if (isset($_SESSION['validation_errors'][$_REQUEST['form']][$attributes['name']])) {
       $classes_item[] = 'validation-error';
