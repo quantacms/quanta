@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * Implements hook_init.
+ */
 function user_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/user/js/user.js');
   $vars['env']->addInclude('engine/code/php/core/user/css/user.css');
@@ -26,10 +28,16 @@ function user_body_classes($vars) {
  * @param $vars
  */
 function user_action_login($vars) {
+
   $tmp_user = new User($vars['env'], $vars['data']['username']);
-  exit($tmp_user->logIn($vars['data']['password']));
+  $login = $tmp_user->logIn($vars['data']['password']);
+  exit($login);
 }
 
+/**
+ * Implements hook_shadow_user_register_form.
+ * @param $vars
+ */
 function user_shadow_user_register_form($vars) {
   $user = User::current($vars['env']);
   $tab = $user->renderEditForm($vars['shadow']->getContext());
@@ -37,17 +45,22 @@ function user_shadow_user_register_form($vars) {
   $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Sign Up!');
 }
 
-
+/**
+ * Implements hook_shadow_user_edit_form.
+ * @param $vars
+ */
 function user_shadow_user_edit_form($vars) {
   $curr_user = User::current($vars['env']);
   $user = new User($vars['env'], $curr_user->name);
-
   $tab = $user->renderEditForm($vars['shadow']->getContext());
   $vars['shadow']->addTab('Your Profile', $tab, 1);
   $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Update');
-
 }
 
+/**
+ * Implements hook_shadow_user_login_form.
+ * @param $vars
+ */
 function user_shadow_user_login_form($vars) {
   $user = User::current($vars['env']);
   $tab = $user->renderLoginForm();
@@ -57,7 +70,7 @@ function user_shadow_user_login_form($vars) {
 }
 
 /**
- * Implementation of hook_action_user_edit.
+ * Implements hook_action_user_edit.
  * There is an user edit request.
  * @param $vars
  */
@@ -67,7 +80,7 @@ function user_action_user_edit($vars) {
 }
 
 /**
- * Implementation of hook_action_user_register.
+ * Implements hook_action_user_register.
  * There is an user registration request.
  * @param $vars
  */
@@ -77,7 +90,7 @@ function user_action_user_register($vars) {
 }
 
 /**
- * Implementation of hook_action_logout.
+ * Implements hook_action_logout.
  * There is a node delete request.
  * @param $vars
  */

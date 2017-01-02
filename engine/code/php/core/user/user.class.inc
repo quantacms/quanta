@@ -12,7 +12,7 @@ define("USER_MIN_NAME_LENGTH", 4);
 /**
  * This class represents an user in the system.
  */
-class User extends DataContainer {
+class User extends Node {
   public $name;
   public $email;
   // Action being performed on the user
@@ -20,30 +20,6 @@ class User extends DataContainer {
   public $roles = array();
   public $exists;
   public $password;
-
-  // Construct the Node.
-  public function __construct(&$env, $name = USER_ANONYMOUS, $roles = array(ROLE_ANONYMOUS => ROLE_ANONYMOUS)) {
-    $this->env = $env;
-    $this->name = $name;
-    $this->roles = $roles;
-    $this->dir = $this->env->dir['users'] . '/' . strtolower($this->name);
-    $this->realpath = $this->dir;
-    $this->exists = is_dir($this->dir);
-    if ($name != USER_ANONYMOUS && strlen($name) > 0 && $this->exists) {
-      $this->json = json_decode(file_get_contents($this->dir . '/data.json'));
-      $this->roles = (array) $this->json->roles;
-      if (isset($this->json->password)) {
-        $this->password = $this->json->password;
-      }
-      if (isset($this->json->email)) {
-        $this->email = $this->json->email;
-      }
-      if (isset($this->json->data)) {
-        $this->data = (array) $this->json->data;
-      }
-      $this->load();
-    }
-  }
 
   /**
    * Get the current navigating user.
@@ -63,12 +39,25 @@ class User extends DataContainer {
   }
 
   private function checkPassword($password) {
-    return ($this->password == pwd($password));
+    return ($this->json->password == pwd($password));
   }
 
   public function load() {
+    if ($this->name != USER_ANONYMOUS && strlen($this->name) > 0 && $this->exists) {
+      $this->loadJSON();
+      $this->roles = (array) $this->json->roles;
+      if (isset($this->json->password)) {
+        $this->password = $this->json->password;
+      }
+      if (isset($this->json->email)) {
+        $this->email = $this->json->email;
+      }
+      if (isset($this->json->data)) {
+        $this->data = (array) $this->json->data;
+      }
+    }
+
     $this->env->hook('user_load', array('user' => $this));
-    $this->loadJSON();
   }
 
   /**
@@ -107,7 +96,7 @@ class User extends DataContainer {
   public function logIn($password) {
     // If user dir doesn't exist.
     if (!($this->exists)) {
-      new Message($this->env, 'This is not a valid username. Please <a class="login-link" href="#">try again</a>', MESSAGE_WARNING, MESSAGE_TYPE_SCREEN);
+      new Message($this->env, 'This is not a valid username. Please try to [LOGIN] again', MESSAGE_WARNING, MESSAGE_TYPE_SCREEN);
       new Message($this->env, 'Someone tried to login with wrong username: ' . $this->name, MESSAGE_WARNING, MESSAGE_TYPE_LOG);
     }
     else {
@@ -235,7 +224,7 @@ class User extends DataContainer {
     return $response_json;
   }
 
-  public function validate($form_data) {
+  public function validate($form_data = array()) {
     $valid = FALSE;
     if ($this->exists) {
       $existing_user = new User($this->env, $this->name);
@@ -353,22 +342,6 @@ class User extends DataContainer {
 
   private function rebuildSession() {
     $_SESSION['user'] = serialize($this);
-  }
-
-  public function loadJSON() {
-    $this->json = new stdClass();
-
-    if (is_file($this->path . '/data.json')) {
-      $this->json = (object) json_decode(file_get_contents($this->realpath . '/data.json'));
-    }
-
-    $this->json->email = $this->email;
-    $this->json->roles = $this->roles;
-    $this->json->password = $this->password;
-    if (!isset($this->json->data)) {
-      $this->json->data = array();
-    }
-    $this->json->data += $this->data;
   }
 
   public function updateJSON($ignore = array()) {
