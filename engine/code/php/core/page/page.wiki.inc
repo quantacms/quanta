@@ -24,6 +24,15 @@ function wiki_PAGE($attributes, $var, $string, $env) {
 }
 
 /**
+ * Wiki Hook for URL.
+ */
+function wiki_URL($attributes, $var, $string, $env) {
+	return $_SERVER['HTTP_HOST'] . '/' . $_SERVER['REQUEST_URI'];
+
+}
+
+
+/**
  * Wiki Hook for CONTEXT.
  */
 function wiki_CONTEXT($attributes, $var, $string, $env) {
