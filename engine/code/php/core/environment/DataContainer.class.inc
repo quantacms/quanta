@@ -10,6 +10,7 @@ abstract class DataContainer {
   public $fullpath;
   public $realpath;
   public $json;
+  public $dir;
 
   public function setData($key, $value) {
     $this->data[$key] = $value;

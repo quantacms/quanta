@@ -41,8 +41,20 @@ class Node extends DataContainer {
     if ($father != NULL) {
       $this->father = $father;
     }
-    $this->path = $this->env->dir['wiki'] . '/' . $this->getName();
-    $this->exists = is_link($this->path);
+
+    print "NODE: " . $this->getName();
+    die();
+    // $this->path = $this->env->dir['wiki'] . '/' . $this->getName();
+    // Use find to locate the node's directory in the file system.
+    // TODO: run a sanity check that there is only one folder or throw error instead?
+    $findcmd = 'find ' . $this->env->dir['docroot'] . '/ -type d -name "' . $this->getName() . '"';
+    exec($findcmd, $results);
+
+    $result = array_pop($results);
+    $this->path = $result;
+    $this->realpath = $result;
+
+    $this->exists = $result != NULL;
 
     // Use another node for rendering.
     if ($tpl_node != NULL) {
@@ -60,6 +72,8 @@ class Node extends DataContainer {
   public function loadJSON() {
     if (is_file($this->path . '/data.json')) {
       $this->json = (object) json_decode(file_get_contents($this->realpath . '/data.json'));
+    }
+      /*
       $this->setTeaser($this->json->teaser);
       $this->setAuthor($this->json->author);
       $this->setBody($this->json->body);
@@ -72,7 +86,7 @@ class Node extends DataContainer {
       }
     } else {
       // TODO: error handler for no json value.
-    }
+    } */
   }
 
   /**
@@ -121,8 +135,7 @@ class Node extends DataContainer {
         'node' => &$this,
       ));
     }
-    if (is_link($this->path)) {
-      $this->realpath = readlink($this->path);
+    if ($this->exists) {
       $this->fullpath = str_replace($this->env->dir['docroot'], '', $this->realpath);
     }
 
@@ -297,7 +310,7 @@ class Node extends DataContainer {
    * Validates this node before saving it.
    * TODO: put into a hook!
    */
-  public function validate() {
+  public function validate($form_data = array()) {
     $valid = TRUE;
     $author = new User($this->env, $this->getAuthor());
 
@@ -474,8 +487,8 @@ class Node extends DataContainer {
       $tpl = array();
       $tpl_level = 0;
 
-      if (is_file($this->path . '/tpl.html')) {
-        $this->tpl = file_get_contents($this->path . '/tpl.html');
+      if (is_file($this->realpath . '/tpl.html')) {
+        $this->tpl = file_get_contents($this->realpath . '/tpl.html');
       }
       foreach ($this->lineage as $lineage) {
 
