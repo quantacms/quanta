@@ -60,7 +60,9 @@ function submitShadow() {
     $('#shadow-outside').find('input, textarea, select').each(function () {
         form_items[$(this).attr('name')] = $(this).val();
     });
+    alert('got...');
     var formData = JSON.stringify(form_items);
+
     action(formData);
 }
 

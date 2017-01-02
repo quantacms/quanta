@@ -204,10 +204,13 @@ class Environment extends DataContainer {
     return $this->dir[$variable];
   }
 
-  public function get($variable) {
-    return $this->{$variable};
-  }
-
+  /**
+   * Hook function - will look for all modulename_function in all active modules.
+   *
+   * @param $function
+   * @param array $vars
+   * @return bool
+   */
   public function hook($function, $vars = array()) {
     $vars['env'] = &$this;
     foreach ($this->getModules() as $module) {
@@ -220,14 +223,26 @@ class Environment extends DataContainer {
   }
 
 
+  /**
+   * Start the PHP session with the client.
+   */
   public function startSession() {
     session_start();
   }
 
+  /**
+   * Get all included CSS / JS files.
+   * @return array
+   */
   public function getIncludes() {
     return $this->includes;
   }
 
+  /**
+   * Add a CSS / JS file to include.
+   * @param $include
+   * @param null $type
+   */
   public function addInclude($include, $type = NULL) {
     if ($type == NULL) {
       $ext = explode('.', $include);
@@ -236,6 +251,9 @@ class Environment extends DataContainer {
     $this->includes[] = array('path' => $include, 'type' => $type);
   }
 
+  /**
+   * Check if there are any queued actions in the requeqst.
+   */
   public function checkActions() {
     if (isset($this->request_json->action)) {
       $this->hook('action_' . $this->request_json->action, array('data' => (array) $this->request_json));
