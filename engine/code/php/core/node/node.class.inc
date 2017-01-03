@@ -90,17 +90,12 @@ class Node extends DataContainer {
    * Update node's json values.
    */
   public function updateJSON($ignore = array()) {
-    if (isset($this->json)) {
-      $this->json->name = $this->getName();
-      $this->json->teaser = $this->getTeaser();
-      $this->json->author = $this->getAuthor();
-      $this->json->body = $this->getBody();
-      $this->json->title = $this->getTitle();
-      $this->json->thumbnail = $this->getThumbnail();
-
-    } else {
-      // TODO: error handler for no json value.
-    }
+    $this->json->name = $this->getName();
+    $this->json->teaser = $this->getTeaser();
+    $this->json->author = $this->getAuthor();
+    $this->json->body = $this->getBody();
+    $this->json->title = $this->getTitle();
+    $this->json->thumbnail = $this->getThumbnail();
   }
 
   /**
