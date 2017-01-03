@@ -1,3 +1,15 @@
+/* LISTS */
+.list br {
+	display: none;
+}
+
+.list-item-file {
+	padding-left: 22px;
+	background-repeat: no-repeat;
+	background-position: left center;
+	background-image: url(/engine/img/icons/blank.png);
+}
+
 li.dir-list-item {
 				display: block;
 }

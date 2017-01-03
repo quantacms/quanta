@@ -42,18 +42,10 @@ class Node extends DataContainer {
       $this->father = $father;
     }
 
-    print "NODE: " . $this->getName();
-    die();
-    // $this->path = $this->env->dir['wiki'] . '/' . $this->getName();
-    // Use find to locate the node's directory in the file system.
-    // TODO: run a sanity check that there is only one folder or throw error instead?
-    $findcmd = 'find ' . $this->env->dir['docroot'] . '/ -type d -name "' . $this->getName() . '"';
-    exec($findcmd, $results);
-
-    $result = array_pop($results);
+    $result = $this->env->nodePath($this->getName());
+    // TODO: unify path and realpath.
     $this->path = $result;
     $this->realpath = $result;
-
     $this->exists = $result != NULL;
 
     // Use another node for rendering.
@@ -73,7 +65,7 @@ class Node extends DataContainer {
     if (is_file($this->path . '/data.json')) {
       $this->json = (object) json_decode(file_get_contents($this->realpath . '/data.json'));
     }
-      /*
+
       $this->setTeaser($this->json->teaser);
       $this->setAuthor($this->json->author);
       $this->setBody($this->json->body);
@@ -84,9 +76,14 @@ class Node extends DataContainer {
       if (isset($this->json->thumbnail)) {
         $this->setThumbnail($this->json->thumbnail);
       }
-    } else {
-      // TODO: error handler for no json value.
-    } */
+
+  }
+
+  /**
+   * Unpublished nodes' folders will always start with _.
+   */
+  public function isPublished() {
+    return (substr($this->name, 0, 1) != '_');
   }
 
   /**
@@ -232,9 +229,10 @@ class Node extends DataContainer {
   public static function requestAction($env, $action, $nodedata) {
     $response = new StdClass();
 
+    // TODO: circular dependency to user.
     $user = User::current($env);
-    // TODO: refactor this stuff.
 
+    // TODO: refactor this stuff.
     // When user didn't enter a path...
     if (trim($nodedata['edit-path']) == '') {
       $path = $env->getCandidatePath($nodedata['edit-title']);
@@ -331,15 +329,12 @@ class Node extends DataContainer {
    * Save this node on the file system.
    */
   public function save() {
-
     $this->env->hook('node_preinsert', array(
       'node' => &$this,
     ));
-
     $this->updateJSON();
     $this->saveJSON(array('content_raw', 'path', 'fullpath', 'exists', 'realpath', 'father', 'tmp_files_dir'));
     $this->saveHTML();
-
     $this->env->hook('node_insert', array(
       'node' => &$this,
     ));
@@ -466,9 +461,12 @@ class Node extends DataContainer {
     }
   }
 
+  /**
+   * Generate the template for displaying the node.
+   * Eventually use tpl.html files (with dashed depth).
+   */
   public function buildTemplate() {
     $user = User::current($env);
-
     // Use another node as a template.
     if (isset($this->tpl_node)) {
       $tpl_node = new Node($this->env, $this->tpl_node);
@@ -478,11 +476,9 @@ class Node extends DataContainer {
         print "Error loading template: access denied";
         die();
       }
-
     }
 
     else {
-
       $this->tpl = $this->getContent();
       $tpl = array();
       $tpl_level = 0;
@@ -501,6 +497,11 @@ class Node extends DataContainer {
         $min = '';
 
         // We support 5 levels of sub-level templates for now.
+        // level 0 = tpl.html
+        // level 1 = tpl-.html
+        // level 2 = tpl--.html
+        // etc...
+
         for ($i = 1; $i <= 6; $i++) {
           $min .= '-';
           $file = $lineage->path . '/tpl' . $min . '.html';
@@ -600,7 +601,6 @@ class Node extends DataContainer {
       return NULL;
     }
   }
-
 
   /**
    * TODO: move in access module.

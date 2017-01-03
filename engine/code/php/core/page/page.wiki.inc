@@ -57,7 +57,7 @@ function wiki_BREADCRUMB($attributes, $var, $string, $env) {
   $breadcrumb = array();
   $node->buildLineage();
   foreach ($node->getLineage() as $n) {
-    $breadcrumb[$n->getName()] = $n->getTitle();
+    $breadcrumb[$n->getName()] = $n;
   }
 
   $env->setData('breadcrumb', $breadcrumb);
@@ -65,11 +65,8 @@ function wiki_BREADCRUMB($attributes, $var, $string, $env) {
   if (count($breadcrumb) > 0 && $breadcrumb != '') {
     $themed_bc = '<ul class="breadcrumb">';
     $themed_bc .= '<li>[LINK|title=Home:home]</li>';
-      foreach ($breadcrumb as $path => $title) {
-        if ($path == '_users') {
-        $themed_bc .= '<li>Users</li>';
-        }
-        else {
+      foreach ($breadcrumb as $path => $node) {
+        if ($node->isPublished()) {
           $themed_bc .= '<li>[LINK:'. $path . ']</li>';
         }
       }
