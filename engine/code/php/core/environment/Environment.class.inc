@@ -34,9 +34,7 @@ class Environment extends DataContainer {
     $this->dir['tmp'] = $_SERVER['DOCUMENT_ROOT'] . '/engine/tmp';
     $this->dir['modules_core'] = $_SERVER['DOCUMENT_ROOT'] . '/engine/code/php/core';
     $this->dir['modules_custom'] = $this->dir['docroot'] . '/_modules';
-
     $this->dir['tmp_files'] = $this->dir['tmp'] . '/files';
-    $this->dir['wiki'] = $_SERVER['DOCUMENT_ROOT'] . '/engine/tmp/' . $this->host . '/wiki';
     $this->dir['log'] = $_SERVER['DOCUMENT_ROOT'] . '/engine/tmp/' . $this->host . '/log';
     $this->dir['users'] = $this->dir['docroot'] . '/_users';
     if (isset($_REQUEST['json'])) {
@@ -285,21 +283,32 @@ class Environment extends DataContainer {
     return $items;
   }
 
-
+  /**
+   * Verifies the path and / or creates a candidate path.
+   * @param $title
+   * @return string
+   */
   public function getCandidatePath($title) {
     $candidate_path = strtolower(str_replace('_', '-', preg_replace('/[\s\W]+/', '', str_replace(' ', '_', trim($title)))));
-    if (!file_exists($this->dir['wiki'] . '/' . $candidate_path)) {
-      $path = $candidate_path;
-    } else {
-      $i = 1;
-      while (file_exists($this->dir['wiki'] . '/' . $candidate_path . '-' . $i)) {
+    $i = 0;
+    while (TRUE) {
+      $node = new Node($this, $candidate_path);
+      if (!$node->exists) {
+        $path = $candidate_path;
+        break;
+      } else {
         $i++;
+        $candidate_path = $candidate_path . '-' . $i;
       }
-      $path = $candidate_path . '-' . $i;
     }
     return $path;
   }
 
+  /**
+   * Creates a system directory (if it doesn't exist yet).
+   * @param $folder
+   * @return mixed
+   */
   public function sysdir($folder) {
     if (!is_dir($folder) && !is_link($folder)) {
       mkdir($folder) or die("Error: can not create " . $folder . '. Check permission and path.');
@@ -315,4 +324,18 @@ class Environment extends DataContainer {
     // TODO: Implement loadJSON() method.
   }
 
+  public function nodePath($folder) {
+
+    // Use find to locate the node's directory in the file system.
+    // TODO: run a sanity check that there is only one folder or throw error instead?
+    $findcmd = 'find ' . $this->dir['docroot'] . '/ -type d -name "' . $folder . '"';
+    exec($findcmd, $results);
+
+    if (count($results) > 1) {
+      new Message($this, 'Warning: there is more than one folder named ' . $folder . ': <br/>' . var_export($results, 1) . '<br>Check integrity!');
+    }
+
+    $result = array_pop($results);
+    return $result;
+  }
 }

@@ -35,9 +35,6 @@ function search($env) {
   }
   arsort($counter);
   foreach ($counter as $pname => $result_count) {
-    if (is_dir($env->dir['wiki'] . '/' . $pname)) {
-      $result_file = str_replace('/', '&nbsp;&bull;&nbsp;', substr(str_replace($env->dir['docroot'], '', readlink($env->dir['wiki'] . '/' . $pname)), 1));
-    }
     $output .= '<div class="search-result">' . $results[$pname][0] . '<div class="search-result-file"><b>' . $result_count. '</b> <span translate="yes">results found in:</span> [LINK:' . $pname . ']</div></div>';
   }
 

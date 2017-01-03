@@ -5,10 +5,6 @@
   $env->runModules();
   $env->hook('boot');
 
-  // TODO: determine when to run cron.
-  if (isset($_GET['cron'])) {
-    $env->hook('cron');
-  }
   $env->checkActions();
 
   $page = new Page($env, 'index.html');
