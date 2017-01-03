@@ -11,14 +11,6 @@ html, body {
   height: 100%;
 }
 
-body, #shadow-page-edit {
-    background: white;
-    text-align: center;
-    font-family: "Special Elite", "sans serif";
-    overflow: auto;
-    font-size: 1em;
-}
-
 a {
     color: black;
     text-decoration: none;
@@ -277,52 +269,12 @@ a.wiki {
     display: block;
 }
 
-.actions a {
-    padding: 12px;
-}
-#data img {
-    max-width: 100%;
-}
-
 ul.gallery.list li {
     display: inline-block;
 }
-ul.list li {
-    display: block;
-}
+
 ul.gallery.list {
     width: 100%;
-}
-
-a.gallery-thumb {
-    display: inline-block;
-    font-size: 80%;
-    line-height: 140%;
-    margin: 16px;
-    border: 1px solid #777;
-    padding: 8px;
-    padding-top: 14px;
-    vertical-align: bottom;
-    width: 150px;
-    text-align: center;
-}
-
-a.gallery-thumb img {
-    margin-top: 0px;
-    min-width: 100%;
-    min-height: 100%;
-}
-
-a.gallery-thumb .thumb-container {
-    width: 140px;
-    height: 140px;
-    overflow: hidden;
-    vertical-align: top;
-    margin: auto;
-    margin-bottom: 12px;
-    position: relative;
-    display: block;
-    text-align: center;
 }
 
 .site-mail-link {
@@ -342,60 +294,8 @@ a.gallery-thumb .thumb-container {
     }
 }
 
-.address {
-    font-style: italic;
-    font-size: 90%;
-    color: #555;
-    padding: 6px;
-    line-height: 140%;
-    display: block;
-}
-
-.address img {
-    float: left;
-    margin-right: 20px;
-    margin-bottom: 20px;
-}
 .internal {
     text-decoration: underline;
-}
-
-/* LISTS */
-.list br {
-    display: none;
-}
-
-.list-item-file {
-    padding-left: 22px;
-    background-repeat: no-repeat;
-    background-position: left center;
-    background-image: url(/engine/img/icons/blank.png);
-}
-
-.search-result {
-    margin-top: 20px;
-    border-top: 1px dashed #bbb;
-    padding: 15px;
-    margin: 0;
-}
-
-.search-results {
-    text-align: left;
-}
-.search-result-match {
-    color: green;
-    font-weight: bold;
-    background: #ffa;
-}
-
-.search-result-file {
-    color: #888;
-}
-
-
-.search-results-total {
-    padding-top: 10px;
-    border-top: 1px solid black;
 }
 
 .page-break {
@@ -405,15 +305,17 @@ a.gallery-thumb .thumb-container {
 }
 
 
-.breadcrumb-block {
+ul.breadcrumb {
     text-align: left;
 }
 
-.breadcrumb-block ul, .breadcrumb-block ul li {
+ul.breadcrumb li {
     display: inline-block;
     padding: 0;
     margin: 0;
     margin-left: 4px;
+    border-right: 1px solid #aaa;
+    padding-right: 4px;
 }
 
 .description {

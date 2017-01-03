@@ -12,7 +12,6 @@ Its structure is not pre-defined or bound to any special rule.
         <!-- Import CSS, JS files from the platform and its modules. -->
         [PAGE:head]
         <link rel="stylesheet" type="text/css" href="files/css/style.css" />
-        <script type="text/javascript" src="files/js/mixbag.js"></script>
         <title>QuantaCMS example - [ATTRIBUTE|name=title]</title>
     </head>
 
@@ -22,6 +21,8 @@ Its structure is not pre-defined or bound to any special rule.
             [BLOCK|padding=10|box=100xauto|name=fix-header:header]
             <!-- Display messages (if any) -->
             [MESSAGES]
+            <!-- Display a breadcrumb of currently viewed node -->
+            [BREADCRUMB]
             <!-- Currently viewed node's content -->
             [ATTRIBUTE|box=80xauto|centered|padding=10|name=content]
             <!-- Jumper to see example pages -->
@@ -29,5 +30,7 @@ Its structure is not pre-defined or bound to any special rule.
             <!-- Footer node's content -->
             [BLOCK|padding=10|box=100xauto:footer]
         </div>
+       <!-- General page load info and statistics -->
+       [STATS]
     </body>
 </html>

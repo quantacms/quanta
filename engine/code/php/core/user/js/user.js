@@ -21,16 +21,20 @@ function register() {
 }
 
 $(document).ready(function() {
-    $('.register-link').click(function () {
+    $('.register-link').click(function (e) {
         register();
+        e.defaultPrevented();
     });
-    $('.login-link').click(function () {
+    $('.login-link').click(function (e) {
         logIn();
+        e.defaultPrevented();
     });
-    $('.logout-link').click(function() {
+    $('.logout-link').click(function(e) {
         logOut();
+        e.defaultPrevented();
     });
-    $('.user-edit-link').click(function () {
+    $('.user-edit-link').click(function (e) {
         openShadow({ module: 'user', context: 'user_edit', widget: 'tabs'});
+        e.defaultPrevented();
     });
 });

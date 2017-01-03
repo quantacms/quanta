@@ -19,7 +19,6 @@ class Page extends DataContainer {
     $this->env = $env;
     $this->file = $file;
     $this->title = $title;
-    $this->content = $content;
     $this->setData('title', $title);
   }
 
@@ -99,14 +98,12 @@ class Page extends DataContainer {
    * TODO: needs serious refactoring.
    */
   public function buildHTML() {
-
     if (isset($_REQUEST['ajax'])) {
       $this->html = $this->getData('content');
     }
     // This is an actual HTML page request. Commonly index.html.
     elseif ($this->file != NULL) {
       $this->html = file_get_contents($this->env->dir['docroot'] . '/' . $this->file);
-      $this->html = str_replace('[PAGE:content]', $this->getData('content'), $this->html);
     }
     // This is a special request, i.e. Shadow node edit.
     else {
