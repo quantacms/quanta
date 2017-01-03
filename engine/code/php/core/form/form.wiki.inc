@@ -89,8 +89,10 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
 
     $default = (isset($_REQUEST[$attributes['name']])) ? $_REQUEST[$attributes['name']] : NULL;
 
-    if (isset($attributes['value'])) {
+    if (isset($attributes['value']) && !empty($attributes['value'])) {
       $default = $attributes['value'];
+    } elseif (isset($attributes['default'])) {
+      $default = $attributes['default'];
     }
 
     $tag_attributes_arr[] = 'name="' . $attributes['name'] . '"';

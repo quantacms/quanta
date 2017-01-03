@@ -1,4 +1,4 @@
-  <?php
+<?php
 
 /**
  * Detect content PLAYLIST and eventually create HTML.

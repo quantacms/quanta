@@ -26,7 +26,7 @@ class User extends Node {
    */
   static function current($env, $reload = FALSE) {
     if (!isset($_SESSION['user'])) {
-      $_SESSION['user'] = serialize(new User($env));
+      $_SESSION['user'] = serialize(new User($env, USER_ANONYMOUS));
     }
     $user = unserialize($_SESSION['user']);
 
@@ -231,7 +231,7 @@ class User extends Node {
     }
     $check_password = !$this->exists || strlen($form_data['edit-password']) > 0;
 
-    exec('grep -r -i -o --include \*.json "\"email\"\:\"' . $form_data['edit-email'] . '\"" ' . $this->env->dir['docroot'] . '/_users', $mail_exists);
+    exec('grep -r -i -o --include \*.json "\"email\"\:\"' . $form_data['edit-email'] . '\"" ' . $this->env->dir['users'], $mail_exists);
 
     // TODO: check also special characters.
     if (strlen($this->name) < USER_MIN_NAME_LENGTH) {

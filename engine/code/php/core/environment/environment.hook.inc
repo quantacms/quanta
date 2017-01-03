@@ -14,4 +14,9 @@ function environment_boot($vars) {
   $vars['env']->addInclude('engine/code/js/lib/jquery.iframe-transport.js');
   $vars['env']->addInclude('engine/code/js/lib/zebra.js');
   $vars['env']->addInclude('engine/code/css/zebra.css');
+
+  // TODO: determine when to run cron.
+  if (isset($_GET['cron'])) {
+    $vars['env']->hook('cron');
+  }
 }

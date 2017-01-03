@@ -51,7 +51,7 @@ abstract class ListObject {
       $this->node = NULL;
     }
     else {
-      $this->path = ($this->env->dir('wiki') . '/' . $path);
+      $this->path = $this->env->nodePath($path);
       $this->node = new Node($this->env, $path);
       $this->realpath = $this->node->realpath;
     }
@@ -131,7 +131,7 @@ abstract class ListObject {
 
     foreach ($list_pages as $data_url) {
 
-      if (($this->scantype == DIR_DIRS) && is_link($this->env->dir['wiki'] . '/' . $data_url)) {
+      if ($this->scantype == DIR_DIRS) {
         $node = new Node($this->env, $data_url);
         if ($node->exists) {
           $this->dirs[$data_url] = $node;
