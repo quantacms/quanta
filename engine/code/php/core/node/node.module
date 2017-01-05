@@ -1,2 +1,3 @@
 <?php
-require_once('node.class.inc');
+require_once('Node.class.inc');
+require_once('NodeFactory.class.inc');

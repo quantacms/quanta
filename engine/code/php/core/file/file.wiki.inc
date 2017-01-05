@@ -1,7 +1,7 @@
 <?php
 function wiki_FILEATTRIBUTE($attributes, $file, $string, $env) {
 
-  $node = ($env->getData('node'));
+  $node = NodeFactory::current($env);
   $file = new File($env, $file, $node);
 
 

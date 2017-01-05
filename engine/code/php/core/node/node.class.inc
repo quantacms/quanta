@@ -28,6 +28,7 @@ class Node extends DataContainer {
   protected $lineage = array();
   public $tpl_node = NULL;
   public $tpl = NULL;
+  public $forbidden = FALSE;
 
   /**
    * Constructs a node object.
@@ -52,7 +53,10 @@ class Node extends DataContainer {
     if ($tpl_node != NULL) {
       $this->tpl_node = $tpl_node;
     }
-    // TODO: make even safer.
+
+    // $user = User::current($env);
+    // $has_access = ($user->checkAccess($this, NODE_ACTION_VIEW));
+
     if ($this->exists || $father != NULL) {
       $this->load();
     }
@@ -206,100 +210,6 @@ class Node extends DataContainer {
   }
 
   /**
-   * Gets the current viewed node.
-   * @return bool
-   */
-  public static function current($env) {
-    $tpl = isset($_REQUEST['tpl']) ? $_REQUEST['tpl'] : NULL;
-    return new Node($env, $env->getRequestedPath(), NULL, $tpl);
-  }
-
-  /**
-   * Request to perform an action on the node. Check permissions and
-   * execute the action accordingly.
-   * @param $env Environment
-   * @param $action string
-   * @return string
-   */
-  public static function requestAction($env, $action, $nodedata) {
-    $response = new StdClass();
-
-    // TODO: circular dependency to user.
-    $user = User::current($env);
-
-    // TODO: refactor this stuff.
-    // When user didn't enter a path...
-    if (trim($nodedata['edit-path']) == '') {
-      $path = $env->getCandidatePath($nodedata['edit-title']);
-    }
-    else {
-      $path = $nodedata['edit-path'];
-    }
-
-    $node = new Node($env, $path, ($action == NODE_ACTION_ADD) ? new Node($env, $nodedata['edit-father']) : NULL);
-    $node->context = $action;
-
-    switch ($action) {
-      case NODE_ACTION_ADD:
-      case NODE_ACTION_EDIT:
-        if ($action == NODE_ACTION_ADD) {
-          $node->realpath = $node->father->realpath . '/' . $path;
-          $node->setAuthor($user->getName());
-        }
-        // TODO complete validation code.
-        if (isset($nodedata['edit-thumbnail'])) {
-          $node->setThumbnail($nodedata['edit-thumbnail']);
-        }
-        $datetime = strtotime($nodedata['edit-date'] . ' ' . $nodedata['edit-time']);
-        $has_access = ($user->checkAccess(($action == NODE_ACTION_ADD) ? $node->father : $node, $action));
-        if ($has_access) {
-          $node->setTitle($nodedata['edit-title']);
-          $node->setBody($nodedata['edit-content']);
-          $node->setAuthor($nodedata['edit-author']);
-          $node->setTeaser($nodedata['edit-teaser']);
-          $node->setContent('<h1>' . $node->getTitle() . '</h1>' . $node->getBody());
-          $node->setTimestamp($datetime > 0 ? $datetime : time());
-          $node->tmp_files_dir = $nodedata['tmp_files_dir'];
-
-          $env->hook('node_presave', array(
-            'node' => &$node,
-            'data' => $nodedata,
-            'action' => $action,
-          ));
-
-          if ($node->validate()) {
-            $node->save();
-            $env->hook('node_save', array(
-              'node' => &$node,
-              'data' => $nodedata
-            ));
-            $response->redirect = '/' . $node->getName() . '/';
-          }
-          else {
-            // TODO: make this good.
-            $response->errors = Message::burnMessages();
-          }
-        }
-        else {
-          $response->redirect = '/403';
-        }
-        break;
-
-      case NODE_ACTION_DELETE:
-        $has_access = ($user->checkAccess($node, NODE_ACTION_DELETE));
-        if ($has_access) {
-          $node->delete();
-          new Message($node->env, $node->getName() . ' was deleted correctly');
-          $response->redirect = '/' . $node->getFather()->getName() . '/';
-        }
-        break;
-    }
-    $response_json = json_encode($response);
-
-    return $response_json;
-  }
-
-  /**
    * Validates this node before saving it.
    * TODO: put into a hook!
    */
@@ -421,6 +331,21 @@ class Node extends DataContainer {
    */
   public function setContent($content) {
     $this->content = $content;
+  }
+
+  /**
+   * Set the node's context.
+   * @param $context
+   */
+  public function setContext($context) {
+    $this->context = $context;
+  }
+
+  /**
+   * Get the node's context.
+   */
+  public function getContext() {
+    return $this->context;
   }
 
   /**
@@ -720,6 +645,11 @@ class Node extends DataContainer {
   return $categories;
   }
 
+  /**
+   * "wrap" node item in html tags allowing inline editing, deleting etc.
+   * @param $html
+   * @return string
+   */
   public function wrap($html) {
 
     $user = User::current($env);
@@ -741,6 +671,14 @@ class Node extends DataContainer {
     $wrap .= $html;
     $wrap .= '</div>';
     return $wrap;
+  }
+
+  /**
+   * Check if the node is forbidden (aka access denied).
+   * @return bool
+   */
+  public function isForbidden() {
+    return $this->forbidden;
   }
 
 }

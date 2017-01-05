@@ -4,7 +4,7 @@ body {
 }
 
 /* Main content */
-#content .inner {
+#content > .inner {
     background: #ffffff;
     border-width: 0;
 }
@@ -60,4 +60,13 @@ a {
 ul.list-tree li {
     margin-left: 15px;
     display: list-item;
+}
+
+.testing-box .inner {
+    border: 1px solid black;
+    padding: 20px;
+    background: #ddd !important;
+    margin: 20px;
+    font-family: "Courier", "Courier New";
+    font-size: 14px;
 }

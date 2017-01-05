@@ -14,7 +14,11 @@ class DirList extends ListObject {
   public function theme() {
     $i = 0;
     foreach ($this->dirs as $dir_url => $node) {
-			$i++;
+      // If user can't access a node, completely exclude it from the list.
+      if ($node->isForbidden()) {
+        continue;
+      }
+      $i++;
       // If there is a limit set, break when passing it.
       if (!empty($this->limit) && $i > $this->limit) {
         break;
@@ -23,7 +27,7 @@ class DirList extends ListObject {
       if ($node->isCurrent()) {
         $classes[] = 'list-selected';
       }
-      $node_father = Node::current($this->env)->getFather();
+      $node_father = NodeFactory::current($this->env)->getFather();
       if ($node_father->exists && ($node_father->name == $node->name)) {
         $classes[] = 'list-selected-father';
       }

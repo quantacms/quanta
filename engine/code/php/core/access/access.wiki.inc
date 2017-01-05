@@ -3,7 +3,7 @@
  * @return mixed
  */
 function wiki_PERMISSION($attributes, $var, $string, $env) {
-  $node = empty($name) ? $env->getData('node') : new Node($env, $name);
+  $node = empty($name) ? NodeFactory::current($env) : NodeFactory::load($env, $name);
   $permission = $attributes['name'];
   return $node->getPermission($permission);
 }
@@ -12,7 +12,7 @@ function wiki_PERMISSION($attributes, $var, $string, $env) {
  * @return mixed
  */
 function wiki_JSONPERMISSION($attributes, $var, $string, $env) {
-  $node = empty($name) ? $env->getData('node') : new Node($env, $name);
+  $node = empty($name) ? NodeFactory::current($env) : NodeFactory::load($env, $name);
   $permission = $attributes['name'];
   return $node->getPermission($permission);
 }
