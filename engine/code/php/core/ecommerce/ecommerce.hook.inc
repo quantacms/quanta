@@ -7,7 +7,7 @@
  */
 function ecommerce_shadow_product_form($vars) {
   $user = User::current($vars['env']);
-  $node = $vars['env']->getData('node');
+  $node = NodeFactory::current($env);
   if (!$user->checkAccess($node, NODE_ACTION_EDIT)) {
     return FALSE;
   }

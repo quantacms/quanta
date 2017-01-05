@@ -31,7 +31,7 @@ function node_shadow_node_edit_access($vars) {
  * @param $vars
  */
 function node_action_node_add($vars) {
-  $response_json = Node::requestAction($vars['env'], $vars['data']['action'], $vars['data']);
+  $response_json = NodeFactory::requestAction($vars['env'], $vars['data']['action'], $vars['data']);
   exit($response_json);
 }
 
@@ -41,7 +41,7 @@ function node_action_node_add($vars) {
  * @param $vars
  */
 function node_action_node_edit($vars) {
-  $response_json = Node::requestAction($vars['env'], $vars['data']['action'], $vars['data']);
+  $response_json = NodeFactory::requestAction($vars['env'], $vars['data']['action'], $vars['data']);
   exit($response_json);
 }
 
@@ -52,7 +52,7 @@ function node_action_node_edit($vars) {
  * @param $vars
  */
 function node_action_node_delete($vars) {
-  $response_json = Node::requestAction($vars['env'], $vars['data']['action'], $vars['data']);
+  $response_json = NodeFactory::requestAction($vars['env'], $vars['data']['action'], $vars['data']);
   exit($response_json);
 }
 
@@ -65,28 +65,23 @@ function node_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/node/js/node.js');
   $vars['env']->addInclude('engine/code/php/core/node/css/node.css');
 
-  $user = User::current($vars['env']);
-  $node = Node::current($vars['env']);
+  $node = NodeFactory::current($vars['env']);
 
-  // If the node does not exist, redirect to 404.
-  if (!$node->exists && !isset($_REQUEST['shadow']) && $node->name != '404') {
-    redirect('/404');
-  }
-  elseif ($user->checkAccess($node, NODE_ACTION_VIEW)) {
-    new Message($vars['env'], 'user is viewing this page: ' . $node->name . '.', MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
-
-    $vars['env']->setData('title', $node->getTitle());
-
-    $vars['page']->setTitle($node->getTitle());
-    // BUILD Template and content.
-    $node->buildTemplate();
-    $vars['page']->setContent($node->render());
-  }
-  elseif ($node->name != '403' && !isset($_REQUEST['shadow'])) {
+  // If user can't access the node, redirect to 403.
+  if ($node->isForbidden() && !isset($_REQUEST['shadow']) ) {
     redirect('/403');
   }
+  // If the node does not exist, redirect to 404.
+  elseif (!$node->exists && !isset($_REQUEST['shadow']) && $node->name != '404') {
+    die($node->name . ' NON ESISTE');
+    redirect('/404');
+  }
+  else {
+    new Message($vars['env'], 'user is viewing this page: ' . $node->name . '.', MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
+    // BUILD Template and content.
+    $node->buildTemplate();
+  }
 
-  $vars['env']->setData('node', $node);
   // TODO: move elsewhere.
   $vars['env']->hook('body_classes', array("page" => &$vars['page']));
   $vars['page']->vars['body-classes'] = implode(' ', $vars['page']->body_classes);
@@ -97,23 +92,11 @@ function node_init($vars) {
  * @param $vars
  */
 function node_shadow_node_form($vars) {
-  $user = User::current($vars['env']);
-
-  // TODO: use a node factory;
-  if ($vars['shadow']->getContext() == NODE_ACTION_ADD) {
-    $father = $vars['shadow']->getNode();
-    $node = new Node($vars['env'], NULL, $father);
-  }
-  else {
-    $node = $vars['shadow']->getNode();
-  }
-  $vars['env']->setData('node', $node);
   $action_name = ($vars['shadow']->getContext() == NODE_ACTION_ADD ? 'create' : 'edit') . ' content';
   $vars['shadow']->addTab($action_name, file_get_contents('core/node/tpl/node_edit.inc'), 1);
   $vars['shadow']->addTab('manage metadata', file_get_contents('core/node/tpl/metadata_form.inc'), 2);
   $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Save');
 }
-
 
 /**
  * Implements hook_shadow_node_edit.
@@ -140,7 +123,7 @@ function node_shadow_node_delete_form($vars) {
 function node_body_classes($vars) {
   // Setup body classes per each item in the current node lineage.
   // TODO: show
-  $node = Node::current($vars['page']->env);
+  $node = NodeFactory::current($vars['page']->env);
   $node->buildLineage();
   $lineage = $node->getLineage();
   foreach ($lineage as $lineage_node) {

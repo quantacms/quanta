@@ -7,7 +7,7 @@ function manager_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/manager/js/manager.js');
   $vars['env']->addInclude('engine/code/php/core/manager/css/manager.css');
   if ($vars['env']->getRequestedPath() == 'expand') {
-    $node = new Node($vars['env'], $_GET['node']);
+    $node = NodeFactory::load($vars['env'], $_GET['node']);
     $manager = new Manager($vars['env'], $node);
     print $manager->renderTree($_GET['path']);
 
@@ -47,13 +47,13 @@ function manager_node_save($vars) {
   foreach($vars['data'] as $label => $val) {
     if (substr($label, 0, 8) == 'add-leaf') {
       $leaf = substr($label, 9);
-      $leafnode = new Node($vars['env'], $leaf);
+      $leafnode = NodeFactory::load($vars['env'], $leaf);
       if (!is_link($leafnode->realpath . '/' . $vars['node']->name)) {
         symlink($vars['node']->realpath, $leafnode->realpath . '/' . $vars['node']->name);
       }
     } elseif (substr($label, 0, 8) == 'rem-leaf') {
       $leaf = substr($label, 9);
-      $leafnode = new Node($vars['env'], $leaf);
+      $leafnode = NodeFactory::load($vars['env'], $leaf);
       if (is_link($leafnode->realpath . '/' . $vars['node']->name)) {
         unlink($leafnode->realpath . '/' . $vars['node']->name);
       }

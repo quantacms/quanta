@@ -10,11 +10,9 @@
  * @return string
  */
 function wiki_AUTHOR($attributes, $var, $string, $env) {
-  $node = $env->getData('node');
-  if (is_object($node)) {
-    $author = $node->getAuthor();
-    return wiki_USER($attributes, $author, $string, $env);
-  }
+  $node = NodeFactory::current($env);
+  $author = $node->getAuthor();
+  return wiki_USER($attributes, $author, $string, $env);
 }
 
 /**
@@ -28,10 +26,9 @@ function wiki_AUTHOR($attributes, $var, $string, $env) {
  * @return string
  */
 function wiki_BLOCK($attributes, $node, $string, $env) {
-  $attributes['name'] = 'content';
-  $node = new Node($env, $node);
+  $node = NodeFactory::load($env, $node);
 
- return $node->wrap($node->getBody());
+  return $node->isForbidden() ? '' : $node->wrap($node->getBody());
 }
 
 /**
@@ -46,7 +43,7 @@ function wiki_BLOCK($attributes, $node, $string, $env) {
  */
 function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
 
-  $node = empty($node) ? $env->getData('node') : new Node($env, $node);
+  $node = empty($node) ?  NodeFactory::current($env) : NodeFactory::load($env, $node);
 
   switch($attributes['name']) {
     case 'name':
@@ -124,9 +121,10 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
 
 
 function wiki_LINK($attributes, $node, $string, $env) {
-  $node = empty($node) ? $env->getData('node') : new Node($env, $node);
+  $node = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
+
   $normalized = string_normalize($node->getName());
-  $current = Node::current($env);
+  $current = NodeFactory::current($env);
   $classes = array('link', 'link-' . $normalized);
   if (isset($attributes['class'])) {
     $classes[] = $attributes['class'];
@@ -157,7 +155,7 @@ function wiki_LINK($attributes, $node, $string, $env) {
  * @return string|void
  */
 function wiki_ADD($attributes, $node, $string, $env) {
-  $nodeobj = empty($node) ? $env->getData('node') : new Node($env, $node);
+  $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
 
   $user = User::current($env);
   if (!$user->checkAccess($nodeobj, NODE_ACTION_ADD)) {
@@ -182,7 +180,7 @@ function wiki_ADD($attributes, $node, $string, $env) {
  * @return string|void
  */
 function wiki_EDIT($attributes, $node, $string, $env) {
-  $nodeobj = empty($node) ? $env->getData('node') : new Node($env, $node);
+  $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
 
   $user = User::current($env);
   if (!$user->checkAccess($nodeobj, NODE_ACTION_EDIT)) {
@@ -206,7 +204,7 @@ function wiki_EDIT($attributes, $node, $string, $env) {
  * @return string|void
  */
 function wiki_DELETE($attributes, $node, $string, $env) {
-  $nodeobj = empty($node) ? $env->getData('node') : new Node($env, $node);
+  $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
 
   $user = User::current($env);
   if (!$user->checkAccess($nodeobj, NODE_ACTION_DELETE)) {
@@ -247,7 +245,7 @@ function wiki_OPERATIONS($attributes, $node, $string, $env) {
  * @return string
  */
 function wiki_CATEGORIES($attributes, $var, $string, $env) {
-  $node = Node::current($env);
+  $node = NodeFactory::current($env);
   $html = '';
   $cats = $node->getCategories($var);
   foreach ($cats as $cat) {
@@ -266,7 +264,7 @@ function wiki_CATEGORIES($attributes, $var, $string, $env) {
  * @return string
  */
 function wiki_COUNT($attributes, $node, $string, $env) {
-  $nodeobj = empty($node) ? $env->getData('node') : new Node($env, $node);
+  $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
 
   $depth = '';
   if (isset($attributes['maxdepth'])) {

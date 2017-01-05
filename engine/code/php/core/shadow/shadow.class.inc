@@ -33,7 +33,7 @@ class Shadow extends Page {
     }
 
     // TODO: default to home is not making sense.
-    $this->node = (isset($data->node)) ? new Node($env, $data->node) : new Node($env, 'home');
+    $this->node = (isset($data->node)) ? NodeFactory::load($env, $data->node) : new Node($env, NULL);
 
     foreach ($this->components as $component) {
       $this->env->hook('shadow_' . $component, array('shadow' => &$this, 'type' => $this->type));
@@ -63,7 +63,6 @@ class Shadow extends Page {
     $this->setData('tab_titles', $tab_titles);
     $this->setData('tab_contents', $tab_contents);
     $this->setData('buttons', $this->buttons);
-    $this->setData('node', $this->node);
     $this->setData('content', file_get_contents('core/shadow/tpl/' . $this->getWidget() . '.inc'));
     $this->buildHTML();
     return $this->html;

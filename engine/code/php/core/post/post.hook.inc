@@ -10,7 +10,7 @@ function post_shadow_post_add($vars) {
     $user = User::current($vars['env']);
     // ADD a post.
     if ($vars['shadow']->getContext() == NODE_ACTION_ADD) {
-      $father = new Node($vars['env'], $vars['env']->getRequestedPath());
+      $father = NodeFactory::current($env);
       $node = new Node($vars['env'], NULL, $father);
       $has_access = $user->checkAccess($father, $vars['shadow']->getContext());
     }

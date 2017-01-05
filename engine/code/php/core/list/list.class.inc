@@ -52,7 +52,7 @@ abstract class ListObject {
     }
     else {
       $this->path = $this->env->nodePath($path);
-      $this->node = new Node($this->env, $path);
+      $this->node = NodeFactory::load($this->env, $path);
       $this->realpath = $this->node->realpath;
     }
 
@@ -132,7 +132,7 @@ abstract class ListObject {
     foreach ($list_pages as $data_url) {
 
       if ($this->scantype == DIR_DIRS) {
-        $node = new Node($this->env, $data_url);
+        $node = NodeFactory::load($this->env, $data_url);
         if ($node->exists) {
           $this->dirs[$data_url] = $node;
         }
