@@ -159,7 +159,10 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
         break;
 
       case 'text':
-        $obj = '<textarea ' . $tag_attributes . 'cols="' . $attributes['cols'] . '"  rows="' . $attributes['rows'] . '"  class="' . $classes_element_str . '">' . $default . '</textarea>';
+        $cols = isset($attributes['cols']) ? $attributes['cols'] : 20;
+        $rows = isset($attributes['rows']) ? $attributes['rows'] : 5;
+
+        $obj = '<textarea ' . $tag_attributes . 'cols="' . $cols . '"  rows="' . $rows . '"  class="' . $classes_element_str . '">' . $default . '</textarea>';
         break;
 
       case 'file':

@@ -84,7 +84,7 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
       break;
 
     case 'father':
-      $string = $node->getFather();
+      $string = $node->getFather()->getName();
       break;
 
     case 'time':
