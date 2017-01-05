@@ -1,5 +1,5 @@
 <?php
-  include_once('core/environment/environment.module');
+	include_once('core/environment/environment.module');
   $env = new Environment(NULL);
   $env->startSession();
   $env->runModules();
