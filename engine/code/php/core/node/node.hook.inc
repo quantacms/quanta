@@ -69,7 +69,7 @@ function node_init($vars) {
 
   // If user can't access the node, redirect to 403.
   if ($node->isForbidden() && !isset($_REQUEST['shadow']) ) {
-    redirect('/403');
+    // redirect('/403');
   }
   // If the node does not exist, redirect to 404.
   elseif (!$node->exists && !isset($_REQUEST['shadow']) && $node->name != '404') {
