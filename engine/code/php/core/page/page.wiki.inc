@@ -53,7 +53,7 @@ function wiki_EMPTY($attributes, $var, $string, $env) {
  * Wiki Hook for BREADCRUMB.
  */
 function wiki_BREADCRUMB($attributes, $var, $string, $env) {
-  $node = Node::current($env);
+  $node = NodeFactory::current($env);
   $breadcrumb = array();
   $node->buildLineage();
   foreach ($node->getLineage() as $n) {

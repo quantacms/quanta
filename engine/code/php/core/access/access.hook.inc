@@ -5,8 +5,6 @@
  * @param $vars
  */
 function access_shadow_access_form($vars) {
-  $father = new Node($vars['env'], $vars['env']->getRequestedPath());
-  $node = new Node($vars['env'], NULL, $father);
   $vars['shadow']->addTab('manage permissions', file_get_contents('core/access/tpl/permissions_form.inc'), 5);
 
 }
@@ -23,6 +21,22 @@ function access_node_presave($vars) {
   foreach($node_permissions as $permission) {
     if (isset($vars['data'][$permission])) {
       $vars['node']->json->permissions->{$permission} = $vars['data'][$permission];
+    }
+  }
+}
+
+/**
+ * Implements hook_node_load().
+ *
+ * @param $vars
+ */
+function access_node_open($vars) {
+  if (!empty($vars['node'])) {
+    $user = User::current($vars['env']);
+    $has_access = $user->checkAccess($vars['node'], NODE_ACTION_VIEW);
+
+    if (!$has_access) {
+      $vars['node'] = NodeFactory::buildForbiddenNode($vars['env']);
     }
   }
 }
