@@ -19,6 +19,7 @@ class Environment extends DataContainer {
   private $modules = array();
   private $includes = array();
   private $items = array();
+  private $context;
 
   // Construct the Environment.
   public function __construct($host = NULL, $request_uri = NULL) {
@@ -41,6 +42,23 @@ class Environment extends DataContainer {
       $this->request_json = json_decode($_REQUEST['json']);
     }
     $this->load();
+  }
+
+
+  /**
+   * Set the content for the shadow.
+   * @param $context
+   */
+  public function setContext($context) {
+    $this->context = $context;
+  }
+
+  /**
+   * Get the context of the shadow.
+   * @return mixed
+   */
+  public function getContext() {
+    return $this->context;
   }
 
   /**
@@ -134,10 +152,10 @@ class Environment extends DataContainer {
         unset ($dirs[$k]);
       }
 
-      if ($attributes['symlinks'] == 'no' && is_link($base_dir . '/' . $dir)) {
+      if (isset($attributes['symlinks']) && $attributes['symlinks'] == 'no' && is_link($base_dir . '/' . $dir)) {
         unset ($dirs[$k]);
       }
-      elseif ($attributes['symlinks'] == 'only' && !is_link($base_dir . '/' . $dir)) {
+      elseif (isset($attributes['symlinks']) && $attributes['symlinks'] == 'only' && !is_link($base_dir . '/' . $dir)) {
         unset ($dirs[$k]);
       }
 

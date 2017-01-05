@@ -42,12 +42,11 @@ function wiki_BLOCK($attributes, $node, $string, $env) {
  * @return string
  */
 function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
-
-  $node = empty($node) ?  NodeFactory::current($env) : NodeFactory::load($env, $node);
+  $node = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
 
   switch($attributes['name']) {
     case 'name':
-      $string = $node->name;
+      $string = $node->getName();
       break;
 
     case 'author':
@@ -85,7 +84,7 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
       break;
 
     case 'father':
-      $string = $node->getFather()->getName();
+      $string = $node->getFather();
       break;
 
     case 'time':
