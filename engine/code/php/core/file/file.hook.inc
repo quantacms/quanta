@@ -8,7 +8,7 @@
 function file_shadow_file_form($vars) {
   $user = User::current($vars['env']);
   $node = $vars['shadow']->getNode();
-  if (!$user->checkAccess($node, $vars['shadow']->getContext())) {
+  if (!$user->checkAccess($node, $vars['env']->getContext())) {
     return FALSE;
   }
   $vars['shadow']->addTab('manage files', file_get_contents('core/file/tpl/upload_form.inc'), 2);

@@ -20,7 +20,6 @@ class Shadow extends Page {
    */
   public function __construct($env, $data) {
     $this->env = $env;
-    $this->context = $data->context;
     $this->type = $data->type;
     $this->widget = $data->widget;
     if (isset($data->components)) {
@@ -57,7 +56,7 @@ class Shadow extends Page {
         if ($tab['title'] != NULL) {
           $tab_titles .= '<li class="shadow-title ' . (($i == 1) ? 'enabled' : '') . '" ><a href="#tab' . $i . '" rel="' . $i . '" id="shadow-title-' . $i . '">' . $tab['title'] . '</a></li>';
         }
-        $tab_contents .= '<div class="shadow-content shadow-content-' . $this->getContext() . ' ' . $tab['classes'] . ' ' . (($i == 1) ? 'enabled' : '') . '" id="shadow-content-' . $i . '">' . $tab['content'] . '</div>';
+        $tab_contents .= '<div class="shadow-content shadow-content-' . $this->env->getContext() . ' ' . $tab['classes'] . ' ' . (($i == 1) ? 'enabled' : '') . '" id="shadow-content-' . $i . '">' . $tab['content'] . '</div>';
       }
     }
     $this->setData('tab_titles', $tab_titles);
@@ -92,7 +91,7 @@ class Shadow extends Page {
     while (isset($this->tabs[$weight])) {
       $weight += 0.1;
     }
-    $this->tabs[$weight][$this->getContext()] = array('title' => $title, 'content' => $content, 'classes' => $classes);
+    $this->tabs[$weight][$this->env->getContext()] = array('title' => $title, 'content' => $content, 'classes' => $classes);
   }
 
   /**
@@ -120,14 +119,6 @@ class Shadow extends Page {
   }
 
   /**
-   * Get the context of the shadow.
-   * @return mixed
-   */
-  public function getContext() {
-    return $this->context;
-  }
-
-  /**
    * Get the type of the shadow.
    * @return mixed
    */
@@ -141,14 +132,6 @@ class Shadow extends Page {
    */
   public function getWidget() {
     return $this->widget;
-  }
-
-  /**
-   * Set the content for the shadow.
-   * @param $context
-   */
-  public function setContext($context) {
-    $this->context = $context;
   }
 
   /**

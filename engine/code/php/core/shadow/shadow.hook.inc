@@ -9,6 +9,7 @@ function shadow_init($vars) {
 
   if (isset($_REQUEST['shadow'])) {
     $shadow_json = json_decode($_REQUEST['shadow']);
+    $vars['env']->setContext($shadow_json->context);
     $shadow = new Shadow($vars['env'], $shadow_json);
     $vars['env']->setData('shadow', $shadow);
     print $shadow->render();

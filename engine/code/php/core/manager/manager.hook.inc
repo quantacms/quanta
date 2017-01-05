@@ -23,7 +23,7 @@ function manager_init($vars) {
 function manager_shadow_manager_form($vars) {
   $user = User::current($vars['env']);
   $node = $vars['shadow']->getNode();
-  if (!$user->checkAccess($node, $vars['shadow']->getContext())) {
+  if (!$user->checkAccess($node, $vars['env']->getContext())) {
     return FALSE;
   }
   $manager = new Manager($vars['env'], $node);
