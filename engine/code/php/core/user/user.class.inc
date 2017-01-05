@@ -42,8 +42,12 @@ class User extends Node {
     return ($this->json->password == pwd($password));
   }
 
+  public function isAnonymous() {
+    return $this->name == USER_ANONYMOUS;
+  }
+
   public function load() {
-    if ($this->name != USER_ANONYMOUS && strlen($this->name) > 0 && $this->exists) {
+    if ( strlen($this->name) > 0 && $this->exists) {
       $this->loadJSON();
       $this->roles = (array) $this->json->roles;
       if (isset($this->json->password)) {
@@ -74,6 +78,15 @@ class User extends Node {
       }
     }
     return $has_role;
+  }
+
+  public function getRoles() {
+    if (empty($this->roles)) {
+      return array(USER_ANONYMOUS);
+    }
+    else {
+      return $this->roles;
+    }
   }
 
   /**

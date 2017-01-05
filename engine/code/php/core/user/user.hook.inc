@@ -17,7 +17,8 @@ function user_init($vars) {
  */
 function user_body_classes($vars) {
   $user = User::current($vars['env']);
-  foreach ($user->roles as $role) {
+  $roles = $user->getRoles();
+  foreach ($roles as $role) {
     $vars['page']->addBodyClass('user-' . trim($role));
   }
 }
