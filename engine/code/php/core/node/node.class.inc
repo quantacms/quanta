@@ -39,7 +39,7 @@ class Node extends DataContainer {
   public function __construct(&$env, $name, $father = NULL, $tpl_node = NULL) {
     $this->env = $env;
     if ($father != NULL) {
-      $this->father = $father;
+      $this->father = NodeFactory::load($env, $father);
     }
 
     if ($name != NODE_NEW) {
@@ -72,6 +72,7 @@ class Node extends DataContainer {
     if (is_file($this->path . '/data.json')) {
       $this->json = (object) json_decode(file_get_contents($this->realpath . '/data.json'));
     } else {
+      $this->json = new StdClass;
       // No json file. Empty node, or incomplete / unknown.
       return;
     }
@@ -374,7 +375,7 @@ class Node extends DataContainer {
    * Eventually use tpl.html files (with dashed depth).
    */
   public function buildTemplate() {
-    $user = User::current($env);
+    $user = User::current($this->env);
     // Use another node as a template.
     if (isset($this->tpl_node)) {
       $tpl_node = new Node($this->env, $this->tpl_node);
@@ -520,10 +521,12 @@ class Node extends DataContainer {
     // Navigate the whole tree gathering real permissions on the node.
     $lineage = $this->getLineage();
     foreach ($lineage as $lineage_node) {
-      $lineage_node_perm = (array) $lineage_node->json->permissions;
-      foreach ($lineage_node_perm as $perm_name => $perm) {
-        if (!empty($perm)) {
-          $grants[$perm_name] = $perm;
+      if (!empty($lineage_node->json->permissions)) {
+        $lineage_node_perm = (array) $lineage_node->json->permissions;
+        foreach ($lineage_node_perm as $perm_name => $perm) {
+          if (!empty($perm)) {
+            $grants[$perm_name] = $perm;
+          }
         }
       }
     }
@@ -637,7 +640,7 @@ class Node extends DataContainer {
    */
   public function wrap($html) {
 
-    $user = User::current($env);
+    $user = User::current($this->env);
     $actions = array();
 
     if ($user->checkAccess($this, NODE_ACTION_EDIT)) {
