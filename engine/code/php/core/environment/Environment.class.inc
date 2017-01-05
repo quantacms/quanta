@@ -101,7 +101,6 @@ class Environment extends DataContainer {
   public function runModule($module) {
     $includes = array('api', 'hook', 'wiki');
     $module_path = $module['path'] . '/' . $module['name'] . '.module';
-
     if (is_file($module_path)) {
       require_once($module_path);
     }
