@@ -17,7 +17,7 @@ function wiki_SHADOW($tagname, $attribute, $string, $env) {
       return $shadow->getData('tab_contents');
     break;
     case 'context':
-      return $shadow->getContext();
+      return $env->getContext();
       break;
     case 'node':
       return $shadow->getNode()->getName();

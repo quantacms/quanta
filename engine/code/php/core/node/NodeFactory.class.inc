@@ -29,13 +29,29 @@ class NodeFactory {
     return $node;
   }
 
+
+  /**
+   * Create an empty node.
+   * @param $env
+   * @param $node
+   */
+  public static function buildEmptyNode($env, $father) {
+    $node = new Node($env, NODE_NEW, $father);
+    return $node;
+  }
+
+
   /**
    * Gets the current viewed node.
    * @return bool
    */
   public static function current($env) {
     $tpl = isset($_REQUEST['tpl']) ? $_REQUEST['tpl'] : NULL;
-    $node = NodeFactory::load($env, $env->getRequestedPath(), $tpl);
+    if ($env->getContext() == NODE_ACTION_ADD) {
+      $node = NodeFactory::buildEmptyNode($env, $env->getRequestedPath());
+    } else {
+      $node = NodeFactory::load($env, $env->getRequestedPath(), $tpl);
+    }
     return $node;
   }
 
@@ -62,7 +78,6 @@ class NodeFactory {
     }
 
     $node = new Node($env, $path, ($action == NODE_ACTION_ADD) ? new Node($env, $nodedata['edit-father']) : NULL);
-    $node->setContext($action);
 
     switch ($action) {
       case NODE_ACTION_ADD:

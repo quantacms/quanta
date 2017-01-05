@@ -21,7 +21,7 @@ function node_shadow_node_delete_access($vars) {
 
 function node_shadow_node_edit_access($vars) {
   $user = User::current($vars['env']);
-  $has_access = $user->checkAccess($vars['shadow']->getNode(), $vars['shadow']->getContext());
+  $has_access = $user->checkAccess($vars['shadow']->getNode(), $vars['env']->getContext());
   $vars['shadow']->setAccess($has_access);
 }
 
@@ -92,10 +92,12 @@ function node_init($vars) {
  * @param $vars
  */
 function node_shadow_node_form($vars) {
-  $action_name = ($vars['shadow']->getContext() == NODE_ACTION_ADD ? 'create' : 'edit') . ' content';
+  $action_name = ($vars['env']->getContext() == NODE_ACTION_ADD ? 'create' : 'edit') . ' content';
+
   $vars['shadow']->addTab($action_name, file_get_contents('core/node/tpl/node_edit.inc'), 1);
   $vars['shadow']->addTab('manage metadata', file_get_contents('core/node/tpl/metadata_form.inc'), 2);
   $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Save');
+
 }
 
 /**
@@ -105,12 +107,12 @@ function node_shadow_node_form($vars) {
 function node_shadow_node_delete_form($vars) {
   $user = User::current($vars['env']);
   $node = $vars['shadow']->getNode();
-  $has_access = $user->checkAccess($node, $vars['shadow']->getContext());
+  $has_access = $user->checkAccess($node, $vars['env']->getContext());
   if (!$has_access) {
     new Message($vars['env'], 'User ' . $user->name . ' attempted to delete a node without access', MESSAGE_WARNING, MESSAGE_TYPE_LOG, 'node');
   }
   else {
-    $vars['shadow']->addTab('Delete', $node->renderDeleteForm($vars['shadow']->getContext()), 1);
+    $vars['shadow']->addTab('Delete', $node->renderDeleteForm($vars['env']->getContext()), 1);
   }
   $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Delete');
 
