@@ -18,9 +18,9 @@ RewriteRule ^([0-9a-zA-Z-]+)/(gallery)/(.*) engine/tmp/%{HTTP_HOST}/wiki/$1/gall
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^(.*)(engine)/([\/0-9a-zA-Z-\.\_]+) engine/$3
 
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*) engine/tmp/%{HTTP_HOST}/wiki/$1 [NC]
+#RewriteCond %{REQUEST_FILENAME} !-f
+#RewriteCond %{REQUEST_FILENAME} !-d
+#RewriteRule ^(.*) engine/tmp/%{HTTP_HOST}/wiki/$1 [NC]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_URI} !=/favicon.ico
