@@ -1,8 +1,6 @@
 <?php
 class Shadow extends Page {
   private $tabs = array();
-  private $context;
-  private $type;
   private $widget;
   private $buttons = array();
   private $access = TRUE;
@@ -20,7 +18,6 @@ class Shadow extends Page {
    */
   public function __construct($env, $data) {
     $this->env = $env;
-    $this->type = $data->type;
     $this->widget = $data->widget;
     if (isset($data->components)) {
       $this->components = $data->components;
@@ -35,7 +32,7 @@ class Shadow extends Page {
     $this->node = (isset($data->node)) ? NodeFactory::load($env, $data->node) : new Node($env, NULL);
 
     foreach ($this->components as $component) {
-      $this->env->hook('shadow_' . $component, array('shadow' => &$this, 'type' => $this->type));
+      $this->env->hook('shadow_' . $component, array('shadow' => &$this));
     }
   }
 
@@ -116,14 +113,6 @@ class Shadow extends Page {
       }
     }
     return FALSE;
-  }
-
-  /**
-   * Get the type of the shadow.
-   * @return mixed
-   */
-  public function getType() {
-    return $this->type;
   }
 
   /**
