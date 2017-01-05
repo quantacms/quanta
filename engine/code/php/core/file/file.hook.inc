@@ -67,3 +67,24 @@ function file_node_save($vars) {
 function file_node_load($vars) {
   $vars['node']->tmp_files_dir = $vars['node']->getName() . '-' . time() . '-' . rand(0, 1000);
 }
+
+/**
+ * Serve a file.
+ *
+ * TODO: no security is being checked for the containing node.
+ *
+ * @param $vars
+ */
+function file_boot($vars) {
+  if (strpos($vars['env']->request[count($vars['env']->request) - 1], '.') > 0) {
+    $filename = $vars['env']->request[count($vars['env']->request) - 1];
+    $nodepath = $vars['env']->nodePath($vars['env']->request[1]);
+    $file = $nodepath . '/' . $filename;
+    if (is_file($file)) {
+      header('Content-Type: '. mime_content_type($file));
+      readfile($file);
+      die();
+    }
+  }
+}
+

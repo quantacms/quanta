@@ -4,9 +4,7 @@
   $env->startSession();
   $env->runModules();
   $env->hook('boot');
-
   $env->checkActions();
-
   $page = new Page($env, 'index.html');
   $env->setData('page', $page);
   $env->hook('init', array('page' => &$page));
