@@ -5,6 +5,7 @@ define('NODE_ACTION_EDIT', 'node_edit');
 define('NODE_ACTION_DELETE', 'node_delete');
 define('NODE_ACTION_DELETE_FILE', 'file_delete');
 define('NODE_NEW', '__NEW__');
+
 date_default_timezone_set('UTC');
 /**
  * Class Node
@@ -19,7 +20,6 @@ class Node extends DataContainer {
   public $teaser = NULL;
   public $content = NULL;
   public $content_raw = NULL;
-  protected $context;
   public $exists;
   public $permissions;
   public $timestamp;
@@ -38,28 +38,31 @@ class Node extends DataContainer {
    */
   public function __construct(&$env, $name, $father = NULL, $tpl_node = NULL) {
     $this->env = $env;
-    $this->setName(strtolower($name));
     if ($father != NULL) {
-      $this->father = $father;
+      $this->father = NodeFactory::load($env, $father);
     }
 
-    $result = $this->env->nodePath($this->getName());
-    // TODO: unify path and realpath.
-    $this->path = $result;
-    $this->realpath = $result;
-    $this->exists = $result != NULL;
+    if ($name != NODE_NEW) {
+      $this->setName(strtolower($name));
+      $result = $this->env->nodePath($this->getName());
+      // TODO: unify path and realpath.
+      $this->path = $result;
+      $this->realpath = $result;
+      $this->exists = $result != NULL;
+    } else {
+      $this->setName(NULL);
+			$this->exists = FALSE;
+    }
 
     // Use another node for rendering.
     if ($tpl_node != NULL) {
       $this->tpl_node = $tpl_node;
     }
 
-    // $user = User::current($env);
-    // $has_access = ($user->checkAccess($this, NODE_ACTION_VIEW));
-
     if ($this->exists || $father != NULL) {
       $this->load();
     }
+
   }
 
   /**
@@ -68,6 +71,10 @@ class Node extends DataContainer {
   public function loadJSON() {
     if (is_file($this->path . '/data.json')) {
       $this->json = (object) json_decode(file_get_contents($this->realpath . '/data.json'));
+    } else {
+      $this->json = new StdClass;
+      // No json file. Empty node, or incomplete / unknown.
+      return;
     }
 
       $this->setTeaser($this->json->teaser);
@@ -80,7 +87,6 @@ class Node extends DataContainer {
       if (isset($this->json->thumbnail)) {
         $this->setThumbnail($this->json->thumbnail);
       }
-
   }
 
   /**
@@ -131,9 +137,7 @@ class Node extends DataContainer {
         'node' => &$this,
       ));
     }
-    if ($this->exists) {
-      $this->fullpath = str_replace($this->env->dir['docroot'], '', $this->realpath);
-    }
+    $this->fullpath = str_replace($this->env->dir['docroot'], '', $this->realpath);
 
     $this->env->hook('node_load', array(
       'node' => &$this,
@@ -334,21 +338,6 @@ class Node extends DataContainer {
   }
 
   /**
-   * Set the node's context.
-   * @param $context
-   */
-  public function setContext($context) {
-    $this->context = $context;
-  }
-
-  /**
-   * Get the node's context.
-   */
-  public function getContext() {
-    return $this->context;
-  }
-
-  /**
    * Set the node's teaser.
    * @param $teaser
    */
@@ -386,7 +375,7 @@ class Node extends DataContainer {
    * Eventually use tpl.html files (with dashed depth).
    */
   public function buildTemplate() {
-    $user = User::current($env);
+    $user = User::current($this->env);
     // Use another node as a template.
     if (isset($this->tpl_node)) {
       $tpl_node = new Node($this->env, $this->tpl_node);
@@ -532,10 +521,12 @@ class Node extends DataContainer {
     // Navigate the whole tree gathering real permissions on the node.
     $lineage = $this->getLineage();
     foreach ($lineage as $lineage_node) {
-      $lineage_node_perm = (array) $lineage_node->json->permissions;
-      foreach ($lineage_node_perm as $perm_name => $perm) {
-        if (!empty($perm)) {
-          $grants[$perm_name] = $perm;
+      if (!empty($lineage_node->json->permissions)) {
+        $lineage_node_perm = (array) $lineage_node->json->permissions;
+        foreach ($lineage_node_perm as $perm_name => $perm) {
+          if (!empty($perm)) {
+            $grants[$perm_name] = $perm;
+          }
         }
       }
     }
@@ -579,19 +570,16 @@ class Node extends DataContainer {
    * @param $context
    * @return mixed
    */
-  public function renderMetadataForm($context) {
-    $this->context = $context;
+  public function renderMetadataForm() {
     $metadata_form = file_get_contents('core/node/tpl/metadata_form.inc');
     return $metadata_form;
   }
 
   /**
    * Renders a node delete form.
-   * @param $context
    * @return mixed
    */
-  public function renderDeleteForm($context) {
-    $this->context = $context;
+  public function renderDeleteForm() {
     $edit_node = file_get_contents('core/node/tpl/node_delete.inc');
     return $edit_node;
   }
@@ -652,7 +640,7 @@ class Node extends DataContainer {
    */
   public function wrap($html) {
 
-    $user = User::current($env);
+    $user = User::current($this->env);
     $actions = array();
 
     if ($user->checkAccess($this, NODE_ACTION_EDIT)) {
@@ -682,3 +670,4 @@ class Node extends DataContainer {
   }
 
 }
+
