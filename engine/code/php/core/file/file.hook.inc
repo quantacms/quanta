@@ -65,8 +65,14 @@ function file_node_save($vars) {
  * @param $vars
  */
 function file_node_load($vars) {
-  $vars['node']->tmp_files_dir = $vars['node']->getName() . '-' . time() . '-' . rand(0, 1000);
-}
+	
+	// When saving a node, select the pre-created temporary files dir. 
+	if (!empty($_REQUEST['json']) && ($json= json_decode($_REQUEST['json'])) && isset($json->tmp_files_dir)) {
+    $vars['node']->tmp_files_dir = $json->tmp_files_dir;
+	} else {
+    $vars['node']->tmp_files_dir = $vars['node']->getName() . '-' . time() . '-' . rand(0, 1000);
+	}
+	}
 
 /**
  * Serve a file.
