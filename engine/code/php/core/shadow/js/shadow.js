@@ -57,8 +57,12 @@ function openShadow(shadowData) {
 function submitShadow() {
     $(document).trigger('shadow_' + shadow.context + '_submit');
     var form_items = {};
-    $('#shadow-outside').find('input, textarea, select').each(function () {
-        form_items[$(this).attr('name')] = $(this).val();
+    $('#shadow-outside').each('input, textarea, select').each(function () {
+        if ($(this).attr('type') == 'checkbox') {
+            form_items[$(this).attr('name')] = $(this).attr('checked') ? $(this).attr['name'] : '';
+        } else {
+            form_items[$(this).attr('name')] = $(this).val();
+        }
     });
     var formData = JSON.stringify(form_items);
     action(formData);
