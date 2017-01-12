@@ -147,7 +147,8 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
         break;
 
       case 'checkbox':
-        $obj = '<input id="' . $id . '"  value="' . $default . '" type="checkbox" name="' . $attributes['name'] . '" class="' . $classes_element_str . '"/>' . $attributes['label'];
+				$checked = ($default == $attributes['value']) ? 'checked' : '';
+        $obj = '<input id="' . $id . '" ' . $checked . ' value="' . $default . '" type="checkbox" name="' . $attributes['name'] . '" class="' . $classes_element_str . '"/>' . $attributes['label'];
         break;
 
       case 'date':
