@@ -47,7 +47,7 @@ function string_normalize($string) {
   $string = str_replace('}', '&rbrace;', $string);
   $string = str_replace(':', '&colon;', $string);
   $string = str_replace('|', '&verbar;', $string);
-  $string = str_replace('=', '&equals;', $string);
+  // $string = str_replace('=', '&equals;', $string);
   // Remove tabs and newlines.
   // TODO: was necessary as it broke INPUT tags by weirdly printing the value...
   return preg_replace('~[\r\n\t]+~', '', $string);
