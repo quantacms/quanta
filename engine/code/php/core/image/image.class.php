@@ -12,6 +12,7 @@ class Image extends File {
   public $height = 'auto';
   public $css = array();
   public $class = array();
+  public $linkto = NULL;
 
   public function loadAttributes($attributes) {
     foreach($attributes as $attname => $attribute) {
@@ -32,6 +33,9 @@ class Image extends File {
         case 'float':
           $this->css[] = 'float:' . $attribute;
           break;
+				case 'link':
+          $this->linkto = $attribute;
+					break;
         default:
           break;
       }
@@ -41,6 +45,12 @@ class Image extends File {
   public function render() {
     $style = (count($this->css) > 0) ? 'style="' . implode(';', $this->css) . '" ' : '';
     $class = (count($this->class) > 0) ?  implode(' ', $this->class) : '';
-    return '<img class="innerimg ' . $class . '" src="' . $this->path . '" ' . $style . " />";
-  }
+    
+		$img = '<img class="innerimg ' . $class . '" src="' . $this->path . '" ' . $style . " />";
+    if (!empty($this->link)) {
+		  $img = '<a href="#">' . $img . '</a>';
+		} 
+		return $img;
+
+	}
 } 
