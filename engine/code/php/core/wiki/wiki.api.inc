@@ -17,10 +17,19 @@ function checkCodeTags(&$env, $html, $options = 'U') {
     foreach ($matches[1] as $tag_value) {
       $tag_full = $delimiters[0] . $tag_value . $delimiters[1];
       $replaces = checkCodeTags($env, $tag_value);
-      foreach($replaces as $tag => $val) {
+      foreach ($replaces as $tag => $val) {
         $tag_value = str_replace($tag, $val, $tag_value);
       }
       $tag = explode(':', $tag_value);
+
+      // If there is more than one : we have to just consider the first chunk
+      // and unify the rest.
+
+      $tag_destination = isset($tag[1]) ? $tag[1] : NULL;
+      for ($i = 2; $i < count($tag); $i++) {
+        $tag_destination .= ':' . $tag[$i];
+      }
+
       $attributes = explode($delimiters[2], $tag[0]);
       $tag_name = $attributes[0];
       $attr_arr = array();
@@ -28,38 +37,50 @@ function checkCodeTags(&$env, $html, $options = 'U') {
       // Assign attributes as specified in the tag.
       foreach ($attributes as $attr_item) {
         $split = explode('=', $attr_item);
-        if (isset($split[1])) {
-          $attr_arr[$split[0]] = $split[1];
-        } else {
-          $attr_arr[$split[0]] = TRUE;
+
+        // If there is more than one = we have to just consider the first chunk
+        // and unify the rest.
+
+        $attribute_name = $split[0];
+        $attribute_value = isset($split[1]) ? $split[1] : NULL;
+        for ($i = 2; $i < count($split); $i++) {
+          $attribute_value .= '=' . $split[$i];
+        }
+
+        if (isset($attribute_value)) {
+          $attr_arr[$attribute_name] = $attribute_value;
+        }
+        else {
+          $attr_arr[$attribute_name] = TRUE;
         }
       }
 
-     if ($tag_name == strtoupper($tag_name) && function_exists('wiki_' . $tag_name)) {
-        $func = 'wiki_' . $tag_name;
-       if (function_exists($func)) {
-         $tag_html = $func($attr_arr, isset($tag[1]) ? $tag[1] : NULL, $html, $env);
-         $wikitag = array($tag_full => $tag_html);
-         $env->hook('wikitag', array(
-           'attributes' => $attr_arr,
-           'wikitag' => &$wikitag
-         ));
+      // when the showtag attribute is used, don't render the tab but just display it.
+      if (!empty($attr_arr['showtag'])) {
+        $replacing[$tag_full] =  string_normalize(str_replace('|showtag', '', $tag_full));
+      }
+      else {
+        if ($tag_name == strtoupper($tag_name) && function_exists('wiki_' . $tag_name)) {
+          $func = 'wiki_' . $tag_name;
+          if (function_exists($func)) {
+            $tag_html = $func($attr_arr, !empty($tag_destination) ? $tag_destination : NULL, $html, $env);
+            $wikitag = array($tag_full => $tag_html);
+            $env->hook('wikitag', array(
+              'attributes' => $attr_arr,
+              'wikitag' => &$wikitag
+            ));
 
-         $tag_content = $wikitag[$tag_full];
+            $tag_content = $wikitag[$tag_full];
 
-         // Replacement where nowiki attribute present. Used for input forms etc.
-         // TODO: maybe should we convert all special chars?
-         if (isset($attr_arr['nowiki'])) {
-           $tag_content = string_normalize($tag_content);
-         }
+            // Replacement where nowiki attribute present. Used for input forms etc.
+            // TODO: maybe should we convert all special chars?
+            if (isset($attr_arr['nowiki'])) {
+              $tag_content = string_normalize($tag_content);
+            }
+            $replacing[$tag_full] = $tag_content;
 
-         $replacing[$tag_full] = $tag_content;
-
-       }
-       // Unknown tag. Try a link
-       else {
-         $replacing[$tag_full] = '<a href="/' . $tag_name . '">' . $tag[1] . '</a>';
-       }
+          }
+        }
       }
     }
   }
@@ -76,7 +97,7 @@ function transformCodeTags(&$env, $html) {
     if (empty($replaces)) {
       break;
     }
-    foreach($replaces as $k => $replace) {
+    foreach ($replaces as $k => $replace) {
 
       $html = str_replace($k, $replace, $html);
     }
