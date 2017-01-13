@@ -118,12 +118,26 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
 
 
 
-function wiki_LINK($attributes, $node, $string, $env) {
-  $node = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
-
-  $normalized = string_normalize($node->getName());
+function wiki_LINK($attributes, $target, $string, $env) {
+  $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
+  $classes = array('link');
   $current = NodeFactory::current($env);
-  $classes = array('link', 'link-' . $normalized);
+
+  if (((substr($target, 0, 4) == 'http') || (substr($target, 0, 4) == 'www.')) && !$node->exists) {
+    $classes[] = 'link-ext';
+    $title_default = $target;
+    $rel = '';
+  } else {
+    // TODO: use something to get the real url...
+    $target = '/' . string_normalize($node->getName());
+    $title_default = $node->title;
+    $classes[] = 'link-' . $target;
+    if ($current->name == $node->name) {
+      $classes[] = 'link-active';
+    }
+    $rel = ' rel="' . $node->getName() . '"';
+  }
+
   if (isset($attributes['class'])) {
     $classes[] = $attributes['class'];
   }
@@ -131,12 +145,8 @@ function wiki_LINK($attributes, $node, $string, $env) {
   $datatype = isset($attributes['type']) ? (' data-type="' . $attributes['type'] . '"') : '';
   $widget = isset($attributes['widget']) ? (' data-widget="' . $attributes['widget'] . '"') : '';
   $tooltip = isset($attributes['tooltip']) ? (' tooltip="' . $attributes['tooltip'] . '"') : '';
-  $rel = ' rel="' . $node->getName() . '"';
 
-  if ($current->name == $node->name) {
-    $classes[] = 'link-active';
-  }
-  $link = '<a' . $datatype . $widget . $tooltip . $rel . ' class="' . implode(' ', $classes). '" href="/' . $normalized . '">' . string_normalize((isset($attributes['title']) ? $attributes['title'] : $node->title)) .'</a>';
+  $link = '<a' . $datatype . $widget . $tooltip . $rel . ' class="' . implode(' ', $classes). '" href="' . $target . '">' . string_normalize((isset($attributes['title']) ? $attributes['title'] : $title_default)) .'</a>';
   return $link;
 }
 
