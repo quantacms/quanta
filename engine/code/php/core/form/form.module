@@ -1,4 +1,2 @@
 <?php
 $this->dependsFrom('core', 'node');
-
-
