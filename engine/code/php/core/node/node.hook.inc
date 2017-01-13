@@ -125,10 +125,11 @@ function node_shadow_node_delete_form($vars) {
 function node_body_classes($vars) {
   // Setup body classes per each item in the current node lineage.
   // TODO: show
-  $node = NodeFactory::current($vars['page']->env);
+  $node = NodeFactory::current($vars['env']);
   $node->buildLineage();
   $lineage = $node->getLineage();
   foreach ($lineage as $lineage_node) {
     $vars['page']->addBodyClass('section-' . $lineage_node->name);
   }
+  $vars['page']->addBodyClass('page-' . $node->name);
 }
