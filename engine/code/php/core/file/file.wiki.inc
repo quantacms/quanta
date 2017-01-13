@@ -26,3 +26,13 @@ function wiki_FILEATTRIBUTE($attributes, $file, $string, $env) {
 
   return $string;
 }
+
+/**
+ * Wiki Hook for FILE.
+ */
+function wiki_FILE($attributes, $file, $string, $env) {
+  $node =  NodeFactory::current($env);
+  $file = new File($env, $file, $node);
+  //$file->loadAttributes($attributes);
+  return $file->render();
+}
