@@ -59,7 +59,7 @@ function submitShadow() {
     var form_items = {};
     $('#shadow-outside').find('input, textarea, select').each(function () {
         if ($(this).attr('type') == 'checkbox') {
-            form_items[$(this).attr('name')] = $(this).attr('checked') ? $(this).attr['name'] : '';
+            form_items[$(this).attr('name')] = $(this).is(':checked') ? $(this).val() : '';
         } else {
             form_items[$(this).attr('name')] = $(this).val();
         }

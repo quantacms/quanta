@@ -12,7 +12,7 @@
 function wiki_AUTHOR($attributes, $var, $string, $env) {
   $node = NodeFactory::current($env);
   $author = $node->getAuthor();
-  return wiki_USER($attributes, $author, $string, $env);
+  return wiki_LINK($attributes, $author, $string, $env);
 }
 
 /**
@@ -27,7 +27,6 @@ function wiki_AUTHOR($attributes, $var, $string, $env) {
  */
 function wiki_BLOCK($attributes, $node, $string, $env) {
   $node = NodeFactory::load($env, $node);
-
   return $node->isForbidden() ? '' : $node->wrap($node->getBody());
 }
 
