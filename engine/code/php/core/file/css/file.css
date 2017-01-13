@@ -1,40 +1,9 @@
-.file-document {
-    background-image: url(/engine/code/php/core/file/img/icons/doc.png);
+.list-item-file {
+    padding-left: 22px;
+    background-repeat: no-repeat;
+    background-position: left center;
+    background-image: url(/engine/img/icons/blank.png);
 }
-
-.file-pdf {
-    background-image: url(/engine/code/php/core/file/img/icons/pdf.png);
-}
-
-.file-xml {
-    background-image: url(/engine/code/php/core/file/img/icons/xml.png);
-}
-
-.file-image {
-    background-image: url(/engine/code/php/core/file/img/icons/img.png);
-}
-
-.file-audio {
-    background-image: url('../img/icons/audio.png')
-}
-
-.file-archive {
-    background-image: url('../img/icons/zip.png')
-}
-
-.file-video {
-    background-image: url('../img/icons/video.png')
-}
-
-.file-sheet {
-    background-image: url('../img/icons/xls.png')
-}
-
-
-/*----------------------------
-    The file edit-files form
------------------------------*/
-
 #filelist .progress-wrapper {
     position: absolute;
     right: -60px;
@@ -226,4 +195,46 @@ li.list-item {
 a.file-link {
     width: 60%;
     display: inline-block;
+}
+
+#filelist ul {
+    margin: 0;
+    padding: 0;
+}
+
+#filelist ul li {
+    display: block;
+    margin-left: 0;
+}
+
+.file-document {
+    background-image: url(/engine/code/php/core/file/img/icons/doc.png);
+}
+
+.file-pdf {
+    background-image: url(/engine/code/php/core/file/img/icons/pdf.png);
+}
+
+.file-xml {
+    background-image: url(/engine/code/php/core/file/img/icons/xml.png);
+}
+
+.file-image {
+    background-image: url(/engine/code/php/core/file/img/icons/img.png);
+}
+
+.file-audio {
+    background-image: url('../img/icons/audio.png')
+}
+
+.file-archive {
+    background-image: url('../img/icons/zip.png')
+}
+
+.file-video {
+    background-image: url('../img/icons/video.png')
+}
+
+.file-sheet {
+    background-image: url('../img/icons/xls.png')
 }

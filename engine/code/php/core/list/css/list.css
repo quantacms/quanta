@@ -3,12 +3,6 @@
 	display: none;
 }
 
-.list-item-file {
-	padding-left: 22px;
-	background-repeat: no-repeat;
-	background-position: left center;
-	background-image: url(/engine/img/icons/blank.png);
-}
 .list {
 	margin: 0;
 	padding: 0;
@@ -19,3 +13,4 @@
   padding: 0;
 	display: block;
 }
+

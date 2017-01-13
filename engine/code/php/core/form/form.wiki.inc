@@ -71,7 +71,7 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
     $classes_item = array('form-item', 'form-item-' . $attributes['name'], 'form-type-' . $attributes['type']);
     $classes_element = array('form-element');
 
-    $attributes['label'] = ($attributes['type'] != 'submit') ? $attributes['title'] : '';
+    $attributes['label'] = ($attributes['type'] != 'submit' && $attributes['type'] != 'checkbox') ? $attributes['title'] : '';
 
     if (!empty($attributes['required'])) {
       $classes_element[] = 'required';
@@ -121,6 +121,9 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
     switch ($attributes['type']) {
       case 'select':
         $values = array();
+        if (isset($attributes['empty'])) {
+          $values[] = '---' . $attributes['empty'];
+        }
         if (isset($attributes['range'])) {
           $split = explode('-', $attributes['range']);
           for ($i = $split[0]; $i < $split[1]; $i++) {
@@ -128,12 +131,14 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
           }
         }
         elseif (isset($attributes['values'])) {
-          $values = explode(',', $attributes['values']);
+          $values += explode(',', $attributes['values']);
         }
+
         $obj = '<select ' . $tag_attributes . '>';
         foreach ($values as $v) {
+          $value = explode('---', $v);
           $v = trim($v);
-          $obj .= '<option value="' . $v . '" ' . (($v == $default) ? 'selected' : '') . '>' . trim($v) . '</option>';
+          $obj .= '<option value="' . $value[0] . '" ' . (($v == $default) ? 'selected' : '') . '>' . (!empty($value[1]) ? trim($value[1]) : trim($value[0])) . '</option>';
         }
         $obj .= '</select>';
         break;
@@ -148,7 +153,7 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
 
       case 'checkbox':
 				$checked = ($default == $attributes['value']) ? 'checked' : '';
-        $obj = '<input id="' . $id . '" ' . $checked . ' value="' . $default . '" type="checkbox" name="' . $attributes['name'] . '" class="' . $classes_element_str . '"/>' . $attributes['label'];
+        $obj = '<input id="' . $id . '" ' . $checked . ' value="' . $default . '" type="checkbox" name="' . $attributes['name'] . '" class="' . $classes_element_str . '"/>' . $attributes['title'];
         break;
 
       case 'date':

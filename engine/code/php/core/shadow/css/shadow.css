@@ -292,3 +292,7 @@ left: 0;
     border-bottom: 2px dotted #ccc;
 }
 
+ul.shadow-titles-list {
+    margin: 0;
+    padding: 0;
+}

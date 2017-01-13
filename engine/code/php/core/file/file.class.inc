@@ -1,4 +1,8 @@
 <?php
+define('FILE_RENDER_NAME', 'file_render_text');
+define('FILE_RENDER_LINK', 'file_render_link');
+define('FILE_RENDER_PATH', 'file_render_path');
+
 /**
  * Class File
  * This class represents a Page (corrisponding to a rendered html page).
@@ -136,8 +140,23 @@ class File {
     return $type;
   }
 
-  public function render() {
-    return $this->path;
+  public function render($mode = FILE_RENDER_LINK) {
+    switch ($mode) {
+
+      case FILE_RENDER_PATH:
+        $render = $this->getPath();
+        break;
+
+      case FILE_RENDER_NAME:
+        $render = $this->getName();
+      break;
+
+      case FILE_RENDER_LINK:
+      default:
+        $render = '<a href="' . $this->path . '">' . $this->getName() . '</a>';
+        break;
+    }
+    return $render;
   }
 
   public function getName() {
