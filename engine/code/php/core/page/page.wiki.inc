@@ -23,6 +23,7 @@ function wiki_HEAD($attributes, $var, $string, $env) {
  * Automatically generated meta data.
  */
 function wiki_META_DATA($attributes, $var, $string, $env) {
+
   $page = $env->getData('page');
   $meta = $page->getData('metadata');
   return implode('
