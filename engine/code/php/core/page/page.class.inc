@@ -79,20 +79,6 @@ class Page extends DataContainer {
     $this->body_classes[] = strtolower(trim($class));
   }
 
-  public function buildContent() {
-    // TODO: check access.
-    $html = new DOMDocument();
-      @$html->loadHTML('<meta http-equiv="content-type" content="text/html; charset=utf-8">' . $this->getData('content'));
-      $this->setData('content', $html->saveXML($html->getElementsByTagName('div')->item(0)));
-
-      // TODO: better way to use tags.
-      // this exmaple is for not applying nl2br on certain nodes.
-      if (!(strpos($this->getData('content'), '@nobr') > 0)) {
-        $this->setData('content', nl2br($this->getData('content')));
-      }
-
-      $this->setTitle(parsetag($this->getData('content'), 'h1'));
-  }
   /**
    * Build the HTML of the page.
    * TODO: needs serious refactoring.
