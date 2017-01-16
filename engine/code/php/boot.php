@@ -10,6 +10,7 @@
   $env->hook('init', array('page' => &$page));
   $page->loadIncludes();
   $page->buildHTML();
+
   print $page->render();
 
 	$env->hook('complete');
