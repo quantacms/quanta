@@ -278,7 +278,7 @@ class Node extends DataContainer {
       return strip_tags($this->teaser);
     }
     else {
-      return substr($this->getBody(), 0, $maxlength);
+      return strip_tags(substr($this->getBody(), 0, $maxlength));
     }
   }
 
