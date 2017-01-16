@@ -148,4 +148,5 @@ class Shadow extends Page {
   public function getAccess() {
     return $this->access;
   }
+
 }

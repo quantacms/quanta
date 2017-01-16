@@ -19,6 +19,34 @@ abstract class DataContainer {
   public function getData($key, $default = NULL) {
     return (isset($this->data[$key]) ? $this->data[$key] : $default);
   }
+
+  public function addData($key, $value, $before = FALSE) {
+    $curr = $this->getData($key);
+
+    if (empty($curr)) {
+      $this->setData($key, $value);
+      return;
+    }
+    if (gettype($value) != gettype($curr)) {
+      print "ERROR: different value type for setdata. " . var_export($curr, 1) . ' and ' . var_export($value, 1) . ' have different data types!';
+    }
+
+    if (is_array($value)) {
+      $sum = ($before) ? (array_merge($value, $curr)) : (array_merge($curr, $value));
+
+    }
+    elseif (is_numeric($value)) {
+      $sum = $curr + $value;
+    }
+    elseif (is_string($value)) {
+      $sum = ($before) ? ($value . $curr) : ($curr . $value);
+    }
+    else {
+      print "UNKNOWN DATA TYPE: " . $value;
+    }
+    $this->setData($key, $sum);
+  }
+
   /**
    *  This is meant only to be extended.
    */

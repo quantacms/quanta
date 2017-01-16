@@ -7,25 +7,41 @@
  */
 
 /**
- * Wiki Hook for PAGE.
- * TODO: to completely refactor. Hook. And fix as box doens't work.
+ * Wiki Hook for HEAD DATA.
+ * Automatically generated header data.
  */
-function wiki_PAGE($attributes, $var, $string, $env) {
+function wiki_HEAD($attributes, $var, $string, $env) {
   $page = $env->getData('page');
-  if (isset($page->vars[$var])) {
-    return $page->vars[$var];
-  }
-  else {
-    return '?';
-  }
+  $head = $page->getData('head');
+  return implode('', $head);
+}
+
+
+/**
+ * Wiki Hook for METADATA.
+ * Automatically generated meta data.
+ */
+function wiki_META_DATA($attributes, $var, $string, $env) {
+  $page = $env->getData('page');
+  $meta = $page->getData('metadata');
+  return implode('', $meta);
+}
+
+/**
+ * Wiki Hook for HEAD DATA.
+ * Automatically generated header data.
+ */
+function wiki_BODYCLASSES($attributes, $var, $string, $env) {
+  $page = $env->getData('page');
+  $body_classes = $page->getData('body_classes');
+  return implode(' ', $body_classes);
 }
 
 /**
  * Wiki Hook for URL.
  */
-function wiki_URL($attributes, $target, $string, $env) {
-  $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
-	return $_SERVER['HTTP_HOST'] . '/' . $node->getName();
+function wiki_URL($attributes, $var, $string, $env) {
+	return $_SERVER['HTTP_HOST'] . '/' . $_SERVER['REQUEST_URI'];
 }
 
 /**
