@@ -63,6 +63,7 @@ function box_wikitag($vars) {
     $classes[] = (!empty($vars['attributes']['centered']) ? 'centered' : '');
 
     $classes[] = 'box-' . $name;
+    $classes[] = 'box-' . $vars['target'];
 
     if (isset($vars['attributes']['margin'])) {
       $styles[] = 'margin:' . $vars['attributes']['margin'] . 'px';

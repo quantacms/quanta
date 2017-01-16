@@ -67,6 +67,7 @@ function checkCodeTags(&$env, $html, $options = 'U') {
             $wikitag = array($tag_full => $tag_html);
             $env->hook('wikitag', array(
               'attributes' => $attr_arr,
+							'target' => $tag_destination,
               'wikitag' => &$wikitag
             ));
 
