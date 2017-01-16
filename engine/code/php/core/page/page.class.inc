@@ -6,7 +6,6 @@
 class Page extends DataContainer {
   public $html;
   public $includes;
-  public $body_classes = array();
   public $file;
 
   /**
@@ -22,6 +21,9 @@ class Page extends DataContainer {
     $this->setData('title', $title);
   }
 
+  /**
+   * Load all the includes (CSS JS etc.) of the page.
+   */
   public function loadIncludes() {
   // TODO: HYPER URGENT! Favicon request running the full stack!
 
@@ -31,9 +33,9 @@ class Page extends DataContainer {
     //TODO: enforcing aggregation now.
     $css = array();
     $js = array();
-
     // Include JS / CSS files.
     foreach ($this->env->getIncludes() as $file) {
+
       if (substr($file['path'], 0, 6) == 'engine') {
         $file['path'] = $_SERVER['DOCUMENT_ROOT'] .'/' . $file['path'];
       }
@@ -70,13 +72,9 @@ class Page extends DataContainer {
     ', $js));
     fclose($fop);
 
-    $this->vars['head'] .= '<link rel="stylesheet" type="text/css" href="/css/?D=' . $temp_aggregate_path . '" />';
-    $this->vars['head'] .= '<script type="text/javascript" src="/js/?D=' . $temp_aggregate_path . '"></script>';
+    $this->addData('head', array('<link rel="stylesheet" type="text/css" href="/css/?D=' . $temp_aggregate_path . '" />'));
+    $this->addData('head', array('<script type="text/javascript" src="/js/?D=\' . $temp_aggregate_path . \'"></script>'));
 
-  }
-
-  public function addBodyClass($class) {
-    $this->body_classes[] = strtolower(trim($class));
   }
 
   /**
@@ -97,6 +95,8 @@ class Page extends DataContainer {
     }
 
     $this->env->hook('page_init', array("page" => &$this));
+    $this->env->hook('metadata', array("page" => &$this));
+    $this->env->hook('body_classes', array("page" => &$this));
     $this->env->hook('page_after_build', array("page" => &$this));
     $this->env->hook('page_complete', array("page" => &$this));
 
