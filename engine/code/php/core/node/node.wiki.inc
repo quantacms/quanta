@@ -105,7 +105,7 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
     default:
       // TODO: security issues.
       if (isset($node->json->{$attributes['name']})) {
-        $string = $node->json->{$attributes['name']};
+        $string = string_normalize($node->json->{$attributes['name']});
       } else {
         $string = '';
       }
@@ -115,7 +115,6 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
 
   return $string;
 }
-
 
 
 function wiki_LINK($attributes, $target, $string, $env) {
@@ -129,9 +128,10 @@ function wiki_LINK($attributes, $target, $string, $env) {
     $rel = '';
   } else {
     // TODO: use something to get the real url...
-    $target = '/' . string_normalize($node->getName());
+    
+		$target = '/' . string_normalize($node->getName());
     $title_default = $node->title;
-    $classes[] = 'link-' . $target;
+    $classes[] = 'link-' . string_normalize($node->getName());
     if ($current->name == $node->name) {
       $classes[] = 'link-active';
     }
