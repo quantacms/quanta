@@ -275,7 +275,7 @@ class Node extends DataContainer {
 
   public function getTeaser($maxlength = 300) {
     if (strlen(trim($this->teaser)) > 0) {
-      return $this->teaser;
+      return strip_tags($this->teaser);
     }
     else {
       return substr($this->getBody(), 0, $maxlength);
