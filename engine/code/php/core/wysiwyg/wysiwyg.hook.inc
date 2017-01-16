@@ -3,7 +3,6 @@
  * @param $vars
  */
 function wysiwyg_init($vars) {
-  $vars['env']->addInclude('/cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css');
   $vars['env']->addInclude('engine/code/php/core/wysiwyg/froala/css/froala_style.min.css');
   $vars['env']->addInclude('engine/code/php/core/wysiwyg/froala/css/froala_editor.min.css');
   $vars['env']->addInclude('engine/code/php/core/wysiwyg/froala/js/froala_editor.min.js');
@@ -16,4 +15,14 @@ function wysiwyg_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/wysiwyg/froala/plugins/line_breaker.min.js');
   $vars['env']->addInclude('engine/code/php/core/wysiwyg/froala/plugins/url.min.js');
   $vars['env']->addInclude('engine/code/php/core/wysiwyg/froala/js/froala-quanta.js');
+
+}
+
+function wysiwyg_metadata($vars) {
+  // Setup body classes per each item in the current node lineage.
+  $vars['page']->addData('metadata', array(
+    '<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />',
+    '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/codemirror.min.css">',
+
+  ));
 }
