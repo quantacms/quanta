@@ -124,7 +124,7 @@ function node_metadata($vars) {
   $node = NodeFactory::current($vars['env']);
   $vars['page']->addData('metadata', array(
     '<meta name="description" content="' . $node->getTeaser() . '" />',
-    '<meta name="author" content="' . $node->getAuthor() . '" />',
+    '<meta name="author" content="[ATTRIBUTE|name=title:' . $node->getAuthor() . ']" />',
     '<meta name="copyright" content="Aldo Tripiciano" />',
     '<meta name="application-name" content="Quanta CMS" />',
     '<meta property="og:title" content="' . $node->getTitle() . '" />',
