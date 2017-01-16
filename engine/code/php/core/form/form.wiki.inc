@@ -131,10 +131,11 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
           }
         }
         elseif (isset($attributes['values'])) {
-          $values += explode(',', $attributes['values']);
+          $values = array_merge($values, explode(',', $attributes['values']));
         }
 
         $obj = '<select ' . $tag_attributes . '>';
+        print_r($values);
         foreach ($values as $v) {
           $value = explode('---', $v);
           $v = trim($v);
