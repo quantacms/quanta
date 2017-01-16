@@ -91,7 +91,10 @@ abstract class ListObject {
     $ajax = (!empty($this->getAttribute('ajax'))) ? ' rel= ' . $this->getAttribute('ajax') : '';
     $tpl = (!empty($this->getAttribute('tpl'))) ? ' tpl= ' . $this->getAttribute('tpl') : '';
 
-    $output = '<ul ' . $ajax . $tpl . ' class="list ' . $this->getTheme() . ' list-' . $this->getTheme() . ' list-' . $this->node->getName() . '">' . $output . '</ul>';
+    // If the "clean" attribute is not present, add some wrapping html.
+    if (empty($this->getAttribute('clean')))  {
+      $output = '<ul ' . $ajax . $tpl . ' class="list ' . $this->getTheme() . ' list-' . $this->getTheme() . ' list-' . $this->node->getName() . '">' . $output . '</ul>';
+    }
 
     if ($this->getAttribute('nolinks')) {
       $output = preg_replace('/<a[^>]+\>/i', "", $output);
