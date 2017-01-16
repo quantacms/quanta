@@ -82,9 +82,6 @@ function node_init($vars) {
     $node->buildTemplate();
   }
 
-  // TODO: move elsewhere.
-  $vars['env']->hook('body_classes', array("page" => &$vars['page']));
-  $vars['page']->vars['body-classes'] = implode(' ', $vars['page']->body_classes);
 }
 
 /**
@@ -122,6 +119,31 @@ function node_shadow_node_delete_form($vars) {
  * Implements hook_body_classes.
  * @param $vars
  */
+function node_metadata($vars) {
+  // Setup body classes per each item in the current node lineage.
+  $node = NodeFactory::current($vars['env']);
+  $vars['page']->addData('metadata', array(
+    '<meta name="description" content="' . $node->getTeaser() . '" />',
+    '<meta name="author" content="' . $node->getAuthor() . '" />',
+    '<meta name="copyright" content="Aldo Tripiciano" />',
+    '<meta name="application-name" content="Quanta CMS" />',
+    '<meta property="og:title" content="' . $node->getTitle() . '" />',
+    '<meta property="og:type" content="article" />',
+    '<meta property="og:image" content="[URL]' . $node->getThumbnail() . '" />',
+    '<meta property="og:url" content="[URL]" />',
+    '<meta property="og:description" content="' . $node->getTeaser() . '" />',
+    '<meta name="twitter:card" content="' . $node->getTeaser() . '" />',
+    '<meta name="twitter:title" content="' . $node->getTitle() . '" />',
+    '<meta name="twitter:description" content="' . $node->getTeaser() . '" />',
+    '<meta name="twitter:image" content="[URL]' . $node->getThumbnail() . '" />',
+
+  ));
+}
+
+/**
+ * Implements hook_body_classes.
+ * @param $vars
+ */
 function node_body_classes($vars) {
   // Setup body classes per each item in the current node lineage.
   // TODO: show
@@ -129,7 +151,7 @@ function node_body_classes($vars) {
   $node->buildLineage();
   $lineage = $node->getLineage();
   foreach ($lineage as $lineage_node) {
-    $vars['page']->addBodyClass('section-' . $lineage_node->name);
+    $vars['page']->addData('body_classes', array('section-' . $lineage_node->name));
   }
-  $vars['page']->addBodyClass('page-' . $node->name);
+  $vars['page']->addData('body_classes', array('page-' . $node->name));
 }
