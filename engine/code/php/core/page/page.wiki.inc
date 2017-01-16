@@ -26,8 +26,9 @@ function wiki_PAGE($attributes, $var, $string, $env) {
 /**
  * Wiki Hook for URL.
  */
-function wiki_URL($attributes, $var, $string, $env) {
-	return $_SERVER['HTTP_HOST'] . '/' . $_SERVER['REQUEST_URI'];
+function wiki_URL($attributes, $target, $string, $env) {
+  $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
+	return $_SERVER['HTTP_HOST'] . '/' . $node->getName();
 }
 
 /**
