@@ -13,7 +13,8 @@
 function wiki_HEAD($attributes, $var, $string, $env) {
   $page = $env->getData('page');
   $head = $page->getData('head');
-  return implode('', $head);
+  return implode('
+  ', $head);
 }
 
 
@@ -24,7 +25,8 @@ function wiki_HEAD($attributes, $var, $string, $env) {
 function wiki_META_DATA($attributes, $var, $string, $env) {
   $page = $env->getData('page');
   $meta = $page->getData('metadata');
-  return implode('', $meta);
+  return implode('
+  ', $meta);
 }
 
 /**
