@@ -129,13 +129,13 @@ function node_metadata($vars) {
     '<meta name="application-name" content="Quanta CMS" />',
     '<meta property="og:title" content="' . $node->getTitle() . '" />',
     '<meta property="og:type" content="article" />',
-    '<meta property="og:image" content="[URL]' . $node->getThumbnail() . '" />',
+    '<meta property="og:image" content="' . $node->getThumbnail() . '" />',
     '<meta property="og:url" content="[URL]" />',
     '<meta property="og:description" content="' . $node->getTeaser() . '" />',
     '<meta name="twitter:card" content="' . $node->getTeaser() . '" />',
     '<meta name="twitter:title" content="' . $node->getTitle() . '" />',
     '<meta name="twitter:description" content="' . $node->getTeaser() . '" />',
-    '<meta name="twitter:image" content="[URL]' . $node->getThumbnail() . '" />',
+    '<meta name="twitter:image" content="' . $node->getThumbnail() . '" />',
 
   ));
 }
