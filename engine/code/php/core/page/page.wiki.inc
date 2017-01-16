@@ -43,7 +43,7 @@ function wiki_BODYCLASSES($attributes, $var, $string, $env) {
  * Wiki Hook for URL.
  */
 function wiki_URL($attributes, $var, $string, $env) {
-	return $_SERVER['HTTP_HOST'] . '/' . $_SERVER['REQUEST_URI'];
+	return 'http://' . $_SERVER['HTTP_HOST'] . '/' . $_SERVER['REQUEST_URI'];
 }
 
 /**
