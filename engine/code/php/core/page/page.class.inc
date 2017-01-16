@@ -73,7 +73,7 @@ class Page extends DataContainer {
     fclose($fop);
 
     $this->addData('head', array('<link rel="stylesheet" type="text/css" href="/css/?D=' . $temp_aggregate_path . '" />'));
-    $this->addData('head', array('<script type="text/javascript" src="/js/?D=\' . $temp_aggregate_path . \'"></script>'));
+    $this->addData('head', array('<script type="text/javascript" src="/js/?D=' . $temp_aggregate_path . '"></script>'));
 
   }
 
