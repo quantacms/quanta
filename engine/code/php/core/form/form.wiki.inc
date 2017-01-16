@@ -135,7 +135,6 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
         }
 
         $obj = '<select ' . $tag_attributes . '>';
-        print_r($values);
         foreach ($values as $v) {
           $value = explode('---', $v);
           $v = trim($v);
