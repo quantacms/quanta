@@ -50,8 +50,8 @@ class Node extends DataContainer {
       $this->realpath = $result;
       $this->exists = $result != NULL;
     } else {
-      $this->setName(NULL);
-			$this->exists = FALSE;
+      $this->setName(NODE_NEW);
+      $this->exists = FALSE;
     }
 
     // Use another node for rendering.
@@ -274,11 +274,12 @@ class Node extends DataContainer {
   }
 
   public function getTeaser($maxlength = 300) {
-    if (strlen(trim($this->teaser)) > 0) {
-      return $this->teaser;
+    
+		if (strlen(trim($this->teaser)) > 0) {
+			return preg_replace('/<[^>]*>/', '', strip_tags($this->teaser));
     }
     else {
-      return substr($this->getBody(), 0, $maxlength);
+      return strip_tags(substr(strip_tags($this->getBody()), 0, $maxlength));
     }
   }
 
@@ -670,4 +671,3 @@ class Node extends DataContainer {
   }
 
 }
-

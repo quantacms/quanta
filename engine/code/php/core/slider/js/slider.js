@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    $('.slider').each(function() {
+    $('.quanta-slider').each(function() {
         $(this).find('.list-item-1').addClass('list-item-active');
         checkSlider($(this));
 
