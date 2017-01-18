@@ -144,9 +144,11 @@ function wiki_LINK($attributes, $target, $string, $env) {
 
   $datatype = isset($attributes['type']) ? (' data-type="' . $attributes['type'] . '"') : '';
   $widget = isset($attributes['widget']) ? (' data-widget="' . $attributes['widget'] . '"') : '';
+  $components = isset($attributes['components']) ? (' data-components="' . $attributes['components'] . '"') : '';
+
   $tooltip = isset($attributes['tooltip']) ? (' tooltip="' . $attributes['tooltip'] . '"') : '';
 
-  $link = '<a' . $datatype . $widget . $tooltip . $rel . ' class="' . implode(' ', $classes). '" href="' . $target . '">' . string_normalize((isset($attributes['title']) ? $attributes['title'] : $title_default)) .'</a>';
+  $link = '<a' . $datatype . $widget . $tooltip . $components . $rel . ' class="' . implode(' ', $classes). '" href="' . $target . '">' . string_normalize((isset($attributes['title']) ? $attributes['title'] : $title_default)) .'</a>';
   return $link;
 }
 
