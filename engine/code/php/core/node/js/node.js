@@ -11,31 +11,31 @@ $(document).bind('refresh', function() {
 
     });
 
-    // TODO: redundant links.
-    // TODO: add 'access_form'.
-    $('.edit-link').off('click').off('click').on('click', function(e) {
+
+    $('.edit-link').off('click').on('click', function(e) {
+        var components = (($(this).attr('data-components') != undefined) ? ($(this).attr('data-components').split(',')) : ['node_form', 'file_form', 'manager_form', 'access_form']);
         openShadow({
             module : 'node',
             context: 'node_edit',
             widget: 'tabs',
-            components: ['node_form', 'file_form', 'manager_form', 'access_form'],
+            components: components,
             node: $(this).attr('rel')
         });
         e.preventDefault();
     });
 
-    $('.add-link').each(function() {
-        $(this).off('click').off('click').on('click', function(e) {
+    $('.add-link').off('click').on('click', function(e) {
+            var components = (($(this).attr('data-components') != undefined) ? ($(this).attr('data-components').split(',')) : ['node_form', 'file_form']);
             openShadow({
                 module: 'node',
                 context: 'node_add',
                 widget: $(this).attr('data-widget'),
-                components: ['node_form', 'file_form'],
+                components: components,
                 node: $(this).attr('rel')
             });
             e.preventDefault();
         });
-    });
+
 
     $('.node-item-actions').parent()
         // TO BE COMPLETED

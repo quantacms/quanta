@@ -18,7 +18,7 @@ function access_node_presave($vars) {
   );
 
   // TODO: review this process.
-  foreach($node_permissions as $permission) {
+  foreach ($node_permissions as $permission) {
     if (isset($vars['data'][$permission])) {
       $vars['node']->json->permissions->{$permission} = $vars['data'][$permission];
     }
@@ -38,5 +38,62 @@ function access_node_open($vars) {
     if (!$has_access) {
       $vars['node'] = NodeFactory::buildForbiddenNode($vars['env']);
     }
+  }
+}
+
+
+/**
+ * Render a box.
+ * TODO: make it open for all node attributes
+ */
+function access_wikitag($vars) {
+  $node = NodeFactory::current($vars['env']);
+  $user = User::current($vars['env']);
+
+  // The user has selected to show the tag only on certain paths / lineage.
+  if (!empty($vars['attributes']['filter'])) {
+
+// [ADD|filter=path@aldo;dario,
+    $filter = explode(',', $vars['attributes']['filter']);
+
+    foreach ($filter as $k => $filter_item) {
+      $exp = explode('@', $filter_item);
+      $filter_type = $exp[0];
+      $filter_values = array_flip(explode(';', $exp[1]));
+
+      switch ($filter_type) {
+        // show the tag only on certaing path...
+        case 'path':
+          $filter_check = array($node->getName());
+          break;
+
+        case 'user':
+          $filter_check = array($user->getName());
+          break;
+
+        case 'role':
+          $filter_check = $user->getRoles();
+          break;
+
+        default:
+
+          break;
+      }
+
+          $filter_match = TRUE;
+          foreach ($filter_check as $check) {
+            if (!isset($filter_values[$check])) {
+              $filter_match = FALSE;
+            }
+            // If there is an active tag filter, and it doesn't match, empty the tag.
+            foreach ($vars['wikitag'] as $tag => $content) {
+              if (!$filter_match) {
+                $vars['wikitag'][$tag] = '';
+
+              }
+            }
+      }
+    }
+
   }
 }

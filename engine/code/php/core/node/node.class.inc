@@ -273,12 +273,18 @@ class Node extends DataContainer {
     $this->body = $body;
   }
 
+  /**
+   * Returns the teaser of the node. Normalized and with tags excluded.
+   * @param int $maxlength
+   * @return mixed
+   */
   public function getTeaser($maxlength = 300) {
-    if (strlen(trim($this->teaser)) > 0) {
-      return strip_tags($this->teaser);
+    
+		if (strlen(trim($this->teaser)) > 0) {
+			return preg_replace('/\[[^>]*\]/', '', strip_tags($this->teaser));
     }
     else {
-      return strip_tags(substr($this->getBody(), 0, $maxlength));
+      return preg_replace('/\[[^>]*\]/', '', (substr(strip_tags($this->getBody()), 0, $maxlength)));
     }
   }
 
