@@ -65,6 +65,7 @@ function checkCodeTags(&$env, $html, $options = 'U') {
           if (function_exists($func)) {
             $tag_html = $func($attr_arr, !empty($tag_destination) ? $tag_destination : NULL, $html, $env);
             $wikitag = array($tag_full => $tag_html);
+            // Let other module hook into the rendered wiki tag.
             $env->hook('wikitag', array(
               'attributes' => $attr_arr,
 							'target' => $tag_destination,
