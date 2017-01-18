@@ -66,7 +66,10 @@ function access_wikitag($vars) {
         case 'path':
           $filter_check = array($node->getName());
           break;
-
+        // show the tag only on certaing path...
+        case 'father':
+          $filter_check = array($node->getFather()->getName());
+          break;
         case 'user':
           $filter_check = array($user->getName());
           break;
@@ -75,23 +78,31 @@ function access_wikitag($vars) {
           $filter_check = $user->getRoles();
           break;
 
+        case 'lineage':
+          $filter_check = array();
+          $lineage = $node->getLineage();
+          foreach ($lineage as $k => $lineage_node) {
+            $filter_check[] = $lineage_node->getName();
+          }
+          break;
         default:
 
           break;
       }
 
-          $filter_match = TRUE;
-          foreach ($filter_check as $check) {
-            if (!isset($filter_values[$check])) {
-              $filter_match = FALSE;
-            }
-            // If there is an active tag filter, and it doesn't match, empty the tag.
-            foreach ($vars['wikitag'] as $tag => $content) {
-              if (!$filter_match) {
-                $vars['wikitag'][$tag] = '';
+      $filter_match = FALSE;
 
-              }
-            }
+      // Check if the filtered item corresponds to the user input.
+      foreach ($filter_check as $k => $check) {
+        if (isset($filter_values[$check])) {
+          $filter_match = TRUE;
+        }
+      }
+      // If there is an active tag filter, and it doesn't match, empty the tag.
+      foreach ($vars['wikitag'] as $tag => $content) {
+        if (!$filter_match) {
+          $vars['wikitag'][$tag] = '';
+        }
       }
     }
 
