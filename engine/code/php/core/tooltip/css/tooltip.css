@@ -6,4 +6,5 @@
     border-radius: 6px;
     padding: 6px;
     text-align: center;
+    z-index: 9999;
 }
