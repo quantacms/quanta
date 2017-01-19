@@ -44,18 +44,18 @@ function wiki_BODYCLASSES($attributes, $var, $string, $env) {
  * Wiki Hook for URL.
  */
 function wiki_URL($attributes, $var, $string, $env) {
-	return 'http://' . $_SERVER['HTTP_HOST'] . '/' . $_SERVER['REQUEST_URI'];
+	return 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 }
 
 /**
- * Wiki Hook for URL.
+ * Wiki Hook for MAIL.
  */
 function wiki_MAIL($attributes, $mail, $string, $env) {
   return '<a href="mailto:' . $mail . '">' . (isset($attributes['title']) ? $attributes['title'] : $mail)  . '</a>';
 }
 
 /**
- * Wiki Hook for URL.
+ * Wiki Hook for PHONE.
  */
 function wiki_PHONE($attributes, $phone, $string, $env) {
 	return '<span class="phone-number">' . $phone . '</span>';

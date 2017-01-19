@@ -124,18 +124,18 @@ function node_metadata($vars) {
   $node = NodeFactory::current($vars['env']);
   $vars['page']->addData('metadata', array(
     '<meta name="description" content="' . $node->getTeaser() . '" />',
-    '<meta name="author" content="[ATTRIBUTE|name=title:' . $node->getAuthor() . ']" />',
     '<meta name="copyright" content="Aldo Tripiciano" />',
     '<meta name="application-name" content="Quanta CMS" />',
+    '<meta property="fb:app_id" content="123352434839142" />',
     '<meta property="og:title" content="' . $node->getTitle() . '" />',
     '<meta property="og:type" content="article" />',
-    '<meta property="og:image" content="' . $node->getThumbnail() . '" />',
+    '<meta property="og:image" content="[URL]' . $node->getThumbnail() . '" />',
     '<meta property="og:url" content="[URL]" />',
     '<meta property="og:description" content="' . $node->getTeaser() . '" />',
     '<meta name="twitter:card" content="' . $node->getTeaser() . '" />',
     '<meta name="twitter:title" content="' . $node->getTitle() . '" />',
     '<meta name="twitter:description" content="' . $node->getTeaser() . '" />',
-    '<meta name="twitter:image" content="' . $node->getThumbnail() . '" />',
+    '<meta name="twitter:image" content="[URL]' . $node->getThumbnail() . '" />',
 
   ));
 }
