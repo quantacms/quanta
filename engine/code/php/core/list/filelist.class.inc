@@ -11,7 +11,6 @@ class FileList extends ListObject {
   // TODO: implement.
   private $allowed_types;
   protected $module_path = 'core/list';
-
   protected $scantype = DIR_FILES;
   /**
    * Construct a FileList object.
@@ -41,7 +40,7 @@ class FileList extends ListObject {
         $tpl = '<li class="' . implode(' ', $classes) . '" index="' . $i . '">' . $tpl . '</li>';
 
         $tpl_item = $tpl;
-        $this->tpl_items[] = $tpl_item;
+        $this->list_items[] = $tpl_item;
       }
     }
   }
