@@ -27,7 +27,7 @@ abstract class ListObject {
   protected $limit;
   protected $dirs = array();
   protected $files = array();
-  protected $tpl_items = array();
+  protected $list_items = array();
   private $attributes = array();
   protected $scantype = DIR_ALL;
   protected $module;
@@ -87,7 +87,7 @@ abstract class ListObject {
   public function render() {
     $this->theme();
 
-    $output = implode('', $this->tpl_items);
+    $output = implode('', $this->list_items);
     $ajax = (!empty($this->getAttribute('ajax'))) ? ' rel= ' . $this->getAttribute('ajax') : '';
     $tpl = (!empty($this->getAttribute('tpl'))) ? ' tpl= ' . $this->getAttribute('tpl') : '';
 
