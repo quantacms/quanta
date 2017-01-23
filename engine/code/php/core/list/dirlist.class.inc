@@ -35,13 +35,18 @@ class DirList extends ListObject {
 
       $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTheme() . '.tpl.php');
 
-      $tpl = transformCodeTags($this->env, preg_replace("/\[LISTITEM\]/is", string_normalize($dir_url), $tpl));
+      $list_item = transformCodeTags($this->env, preg_replace("/\[LISTITEM\]/is", string_normalize($dir_url), $tpl));
       // If the "clean" attribute is not present, add some wrapping html.
       if (empty($this->getAttribute('clean'))) {
-        $tpl = $node->wrap($tpl);
-        $tpl = '<li class="' . implode(' ', $classes) . '">' . $tpl . '</li>';
+        $list_item = $node->wrap($list_item);
+        $this->env->hook('list_item', array(
+          'list' => &$this,
+          'list_item' => &$list_item,
+        ));
+        $list_item = '<li class="' . implode(' ', $classes) . '">' . $list_item . '</li>';
+
       }
-      $this->tpl_items[] = $tpl;
+      $this->list_items[] = $list_item;
     }
   }
 
