@@ -27,9 +27,13 @@ function wiki_AUTHOR($attributes, $var, $string, $env) {
  */
 function wiki_BLOCK($attributes, $node, $string, $env) {
   $node = NodeFactory::load($env, $node);
-  return $node->isForbidden() ? '' : $node->wrap($node->getBody());
+  $body = $node->getBody();
+  $editable = !empty($attributes['editable']) ? $attributes['editable'] : 'true';
+  if ($editable == 'true') {
+    $body = $node->wrap($node->getBody());
+  }
+  return $node->isForbidden() ? '' : $body;
 }
-
 /**
  * Implementation of wiki tag ATTRIBUTE
  * Very important tag that allows retrieving every attribute of a node.
