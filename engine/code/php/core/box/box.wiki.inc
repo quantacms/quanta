@@ -1,4 +1,17 @@
 <?php
+/**
+ * A simple block, boxed and non editable by default.
+ * Wiki Hook for BOX.
+ */
+function wiki_BOX($attributes, $var, $string, $env) {
+  if (!isset($attributes['editable'])) {
+    $attributes['editable'] = 'false';
+  }
+  if (!isset($attributes['box'])) {
+    $attributes['box'] = '';
+  }
+  return wiki_BLOCK($attributes, $var, $string, $env);
+}
 
 /**
  * Ajax-close a container.
