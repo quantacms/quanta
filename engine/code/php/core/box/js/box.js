@@ -1,6 +1,6 @@
 var resizeBoxes = function() {
 
-    $('.box').each(function() {
+    $('.autoresize').each(function() {
         var inner = $(this).find('.inner');
         paddingLeft = parseInt(inner.css('padding-left').replace("px", ""));
         paddingRight = parseInt(inner.css('padding-right').replace("px", ""));

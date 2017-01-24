@@ -78,6 +78,10 @@ class Box extends DataContainer {
       $this->setBorder($attributes['border']);
     }
 
+    // Centered box.
+    if (!($this->isFlat())) {
+      $this->addData('class', array('autoresize'));
+    }
   }
 
   public function setHtml($html) {
