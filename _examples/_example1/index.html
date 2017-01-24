@@ -10,13 +10,14 @@ Its structure is not pre-defined or bound to any special rule.
         <meta charset="utf-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         <!-- Import CSS, JS files from the platform and its modules. -->
-        [PAGE:head]
+        [HEAD]
+        [META_DATA]
         <link rel="stylesheet" type="text/css" href="/files/css/style.css" />
         <title>QuantaCMS example - [ATTRIBUTE|name=title]</title>
     </head>
 
     <!-- Body -->
-    <body class="[PAGE:body-classes]">
+    <body class="[BODY_CLASSES]">
        <div id="page">
             [BLOCK|padding=10|box=100xauto|name=fix-header:header]
             <!-- Display messages (if any) -->
