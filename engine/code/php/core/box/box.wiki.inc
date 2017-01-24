@@ -5,12 +5,12 @@
  */
 function wiki_BOX($attributes, $var, $string, $env) {
   if (!isset($attributes['editable'])) {
-    $attributes['editable'] = 'false';
+    $attributes['editable'] = BOX_NON_EDITABLE;
   }
-  if (!isset($attributes['box'])) {
-    $attributes['box'] = 'true';
-  }
-  return wiki_BLOCK($attributes, $var, $string, $env);
+
+  $box = new Box($env, NULL, NULL, $attributes);
+  $box->setHtml(wiki_BLOCK($attributes, $var, $string, $env));
+  return $box->render();
 }
 
 /**
