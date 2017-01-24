@@ -7,8 +7,11 @@ function wiki_BOX($attributes, $var, $string, $env) {
   if (!isset($attributes['editable'])) {
     $attributes['editable'] = BOX_NON_EDITABLE;
   }
-
+  // TODO: accept sizing variables.
   $box = new Box($env, NULL, NULL, $attributes);
+  if (!empty($attributes['box'])) {
+    unset($attributes['box']);
+  }
   $box->setHtml(wiki_BLOCK($attributes, $var, $string, $env));
   return $box->render();
 }

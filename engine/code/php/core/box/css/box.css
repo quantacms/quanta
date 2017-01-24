@@ -1,13 +1,13 @@
 
-.box {
+.float-box {
     float: left;
 }
 
-.box.clear {
+.clear-box {
     clear: left;
 }
 
-.box.centered {
+.centered-box {
     float: none;
     margin: auto;
 }
