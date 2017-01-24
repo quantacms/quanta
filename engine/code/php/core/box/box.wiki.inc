@@ -8,7 +8,7 @@ function wiki_BOX($attributes, $var, $string, $env) {
     $attributes['editable'] = 'false';
   }
   if (!isset($attributes['box'])) {
-    $attributes['box'] = '';
+    $attributes['box'] = 'true';
   }
   return wiki_BLOCK($attributes, $var, $string, $env);
 }
