@@ -47,11 +47,11 @@ class Box extends DataContainer {
     }
     // Clear non-floating box.
     if (!empty($attributes['clear'])) {
-      $this->addData('class', array('clear'));
+      $this->addData('class', array('clear-box'));
     }
     // Centered box.
     if (!empty($attributes['centered'])) {
-      $this->addData('class', array('centered'));
+      $this->addData('class', array('centered-box'));
     }
 
     // Centered box.
@@ -75,7 +75,7 @@ class Box extends DataContainer {
 
     // Centered box.
     if (!($this->isFlat())) {
-      $this->addData('class', array('autoresize'));
+      $this->addData('class', array('autoresize, float-box'));
     }
   }
 
