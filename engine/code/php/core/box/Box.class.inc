@@ -1,12 +1,7 @@
 <?php
   require_once('Box.class.inc');
-
-define('NODE_ACTION_VIEW', 'node_view');
-define('NODE_ACTION_ADD', 'node_add');
-define('NODE_ACTION_EDIT', 'node_edit');
-define('NODE_ACTION_DELETE', 'node_delete');
-define('NODE_ACTION_DELETE_FILE', 'file_delete');
-define('NODE_NEW', '__NEW__');
+define('BOX_NON_EDITABLE', 'box_non_editable');
+define('BOX_FLAT', 'box_flat');
 
 date_default_timezone_set('UTC');
 /**

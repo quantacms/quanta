@@ -1,11 +1,9 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: aldotripiciano
- * Date: 10/05/15
- * Time: 09:57
- */
 
+/**
+ * Implement hook_init().
+ * @param $vars
+ */
 function box_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/box/js/box.js');
   $vars['env']->addInclude('engine/code/php/core/box/css/box.css');
