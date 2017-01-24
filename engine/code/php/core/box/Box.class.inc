@@ -39,7 +39,7 @@ class Box extends DataContainer {
     $name = isset($attributes['name']) ? $attributes['name'] : 'box-noname-' . rand(10000000, 99999999);
 
     $this->setName($name);
-    $this->addData('class', 'box-' . array($name));
+    $this->addData('class', array('box-' . $name));
 
 
     $id = isset($attributes['id']) ? $attributes['id'] : $this->getName();
