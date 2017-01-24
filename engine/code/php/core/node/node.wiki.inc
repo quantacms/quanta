@@ -34,6 +34,7 @@ function wiki_BLOCK($attributes, $node, $string, $env) {
   }
   return $node->isForbidden() ? '' : $body;
 }
+
 /**
  * Implementation of wiki tag ATTRIBUTE
  * Very important tag that allows retrieving every attribute of a node.
