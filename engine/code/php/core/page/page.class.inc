@@ -135,11 +135,4 @@ class Page extends DataContainer {
     return $this->html;
   }
 
-  public function loadJSON() {
-    // TODO: Implement loadJSON() method.
-  }
-
-  public function updateJSON($ignore = array()) {
-    // TODO: Implement updateJSON() method.
-  }
 }

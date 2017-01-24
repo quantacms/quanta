@@ -333,14 +333,6 @@ class Environment extends DataContainer {
     return $folder;
   }
 
-  public function loadJSON() {
-    // TODO: Implement loadJSON() method.
-  }
-
-  public function updateJSON($ignore = array()) {
-    // TODO: Implement loadJSON() method.
-  }
-
   public function nodePath($folder) {
 
     // Use find to locate the node's directory in the file system.

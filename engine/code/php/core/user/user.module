@@ -1,4 +1,4 @@
 <?php
-require_once('user.class.inc');
+require_once('User.class.inc');
 
 
