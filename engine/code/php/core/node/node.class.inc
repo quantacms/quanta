@@ -12,7 +12,7 @@ date_default_timezone_set('UTC');
  * This class represents a Node (corrisponding to a folder in the file system).
  * This is the core of the engine.
  */
-class Node extends DataContainer {
+class Node extends JSONDataContainer {
   public $name;
   public $title;
   public $author;
