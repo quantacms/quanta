@@ -12,7 +12,7 @@ date_default_timezone_set('UTC');
  * This class represents a Node (corrisponding to a folder in the file system).
  * This is the core of the engine.
  */
-class Node extends DataContainer {
+class Node extends JSONDataContainer {
   public $name;
   public $title;
   public $author;
@@ -77,16 +77,16 @@ class Node extends DataContainer {
       return;
     }
 
-      $this->setTeaser($this->json->teaser);
-      $this->setAuthor($this->json->author);
-      $this->setBody($this->json->body);
-      $this->setTitle($this->json->title);
-      if (isset($this->json->timestamp)) {
-        $this->setTimestamp($this->json->timestamp);
-      }
-      if (isset($this->json->thumbnail)) {
-        $this->setThumbnail($this->json->thumbnail);
-      }
+    $this->setTeaser($this->json->teaser);
+    $this->setAuthor($this->json->author);
+    $this->setBody($this->json->body);
+    $this->setTitle($this->json->title);
+    if (isset($this->json->timestamp)) {
+      $this->setTimestamp($this->json->timestamp);
+    }
+    if (isset($this->json->thumbnail)) {
+      $this->setThumbnail($this->json->thumbnail);
+    }
   }
 
   /**
@@ -273,13 +273,18 @@ class Node extends DataContainer {
     $this->body = $body;
   }
 
+  /**
+   * Returns the teaser of the node. Normalized and with tags excluded.
+   * @param int $maxlength
+   * @return mixed
+   */
   public function getTeaser($maxlength = 300) {
-    
-		if (strlen(trim($this->teaser)) > 0) {
-			return preg_replace('/<[^>]*>/', '', strip_tags($this->teaser));
+
+    if (strlen(trim($this->teaser)) > 0) {
+      return preg_replace('/\[[^>]*\]/', '', strip_tags($this->teaser));
     }
     else {
-      return strip_tags(substr(strip_tags($this->getBody()), 0, $maxlength));
+      return preg_replace('/\[[^>]*\]/', '', (substr(strip_tags($this->getBody()), 0, $maxlength)));
     }
   }
 
@@ -428,7 +433,7 @@ class Node extends DataContainer {
       }
 
     }
-	}
+  }
 
   public function isHome() {
     return $this->name == 'home';
@@ -631,7 +636,7 @@ class Node extends DataContainer {
       $exp = explode('/', $cat_url);
       $categories[] = new Node($this->env, $exp[count($exp) - 2]);
     }
-  return $categories;
+    return $categories;
   }
 
   /**
