@@ -51,14 +51,14 @@ function wiki_URL($attributes, $var, $string, $env) {
  * Wiki Hook for MAIL.
  */
 function wiki_MAIL($attributes, $mail, $string, $env) {
-  return '<a href="mailto:' . $mail . '">' . (isset($attributes['title']) ? $attributes['title'] : $mail)  . '</a>';
+  return '<a class="mail" href="mailto:' . $mail . '">' . (isset($attributes['title']) ? $attributes['title'] : $mail)  . '</a>';
 }
 
 /**
  * Wiki Hook for PHONE.
  */
 function wiki_PHONE($attributes, $phone, $string, $env) {
-	return '<span class="phone-number">' . $phone . '</span>';
+	return '<a class="tel" href="tel:' . $phone . '">' . $phone . '</a>';
 }
 
 /**
