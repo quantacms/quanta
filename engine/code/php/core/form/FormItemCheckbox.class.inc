@@ -37,4 +37,5 @@ class FormItemCheckbox extends FormItem {
       return NULL;
     }
   }
+
 }
