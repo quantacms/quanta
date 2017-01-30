@@ -8,3 +8,44 @@
 .form-item-disabled {
     color: #bbb;
 }
+
+.validation-error {
+    color: white;
+    background: red;
+    padding-left: 5px;
+    padding-right: 5px;
+    height: 20px;
+    line-height: 20px;
+    margin-top: -25px;
+    font-size: 10px;
+    font-family: "Verdana";
+    text-align: center;
+    border-radius: 15px;
+    text-transform: uppercase;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+div.has-validation-errors {
+    border-radius: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-style: dashed;
+    border-width: 1px;
+    border-color: red;
+
+}
+
+.has-validation-errors label {
+    color: red;
+}
+
+.has-validation-errors input, .has-validation-errors select, .has-validation-errors textarea {
+    border-color: red;
+}
+
+.form-item-required {
+    color: red;
+}

@@ -25,7 +25,9 @@ class Environment extends DataContainer {
   public function __construct($host = NULL, $request_uri = NULL) {
     $this->host = ($host == NULL) ? strtolower($_SERVER['HTTP_HOST']) : $host;
     if ($request_uri == NULL) {
-      $this->request_uri = (str_replace('/', '', $_SERVER['REQUEST_URI']) == '') ? 'home/' : $_SERVER['REQUEST_URI'];
+      // Remove querystring to obtain request uri...
+      $exp = explode('?', $_SERVER['REQUEST_URI']);
+      $this->request_uri = (str_replace('/', '', $exp[0]) == '') ? 'home/' : $exp[0];
     } else {
       $this->request_uri = $request_uri;
     }
