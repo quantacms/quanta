@@ -85,10 +85,12 @@ class Form extends DataContainer {
    * @return mixed
    */
   public function render() {
-   $rendered = '<form action="/' . $this->getAction() .
-     '" method="' . $this->getMethod() .
-     '" id="' . $this->getId() . '">
-     <input type="hidden" name="form_submit"/> ';
+   $rendered = '<a name="' . $this->getId() . '"></a>';
+    $rendered .= '<form action="/' . $this->getAction() .
+     '#' . $this->getId() .'" method="' . $this->getMethod() .
+     '" id="' . $this->getId() . '">';
+
+     $rendered .= '<input type="hidden" name="form_submit"/> ';
 
     foreach ($this->items as $form_item_name => $form_item) {
       if ($errors = $this->checkValidationErrors($form_item)) {
