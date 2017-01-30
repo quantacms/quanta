@@ -1,2 +1,17 @@
 <?php
 $this->dependsFrom('core', 'node');
+require_once('Form.class.inc');
+require_once('FormFactory.class.inc');
+require_once('FormItem.class.inc');
+require_once('FormItemString.class.inc');
+require_once('FormItemNumber.class.inc');
+require_once('FormItemPassword.class.inc');
+require_once('FormItemHidden.class.inc');
+require_once('FormItemSelect.class.inc');
+require_once('FormItemFile.class.inc');
+require_once('FormItemText.class.inc');
+require_once('FormItemEmail.class.inc');
+require_once('FormItemTime.class.inc');
+require_once('FormItemDate.class.inc');
+require_once('FormItemCheckbox.class.inc');
+require_once('FormItemSubmit.class.inc');
