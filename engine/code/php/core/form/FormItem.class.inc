@@ -1,4 +1,5 @@
 <?php
+define('INPUT_EMPTY_VALUE', '___INPUT_EMPTY_VALUE___');
 /**
  * Class FormItem
  * This class represents a Form Item - it's to be extended by specific form item types.
@@ -75,8 +76,8 @@ abstract class FormItem extends DataContainer {
 
   public function loadValue() {
     $submitted = $this->getSubmittedValue();
-    $value = (empty($submitted)) ? $this->getInputAttr('value') : $submitted;
-    $this->setData('value', $value);
+    $value = (empty($submitted)) ? (($this->getInputAttr('value') != INPUT_EMPTY_VALUE ? $this->getInputAttr('value') : '')) : $submitted;
+    $this->setValue($value);
   }
 
   public static function parseAllowableValue($v) {
@@ -139,7 +140,7 @@ abstract class FormItem extends DataContainer {
    */
   public function getInputAttr($attribute) {
     return !isset($this->input_arr[$attribute]) ? NULL :
-      (empty($this->input_arr[$attribute]) ? TRUE : $this->input_arr[$attribute]);
+      (empty($this->input_arr[$attribute]) ? INPUT_EMPTY_VALUE : $this->input_arr[$attribute]);
   }
 
   public function setRequired($required) {
