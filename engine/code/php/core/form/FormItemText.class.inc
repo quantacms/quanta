@@ -24,6 +24,8 @@ class FormItemText extends FormItem {
   public function render() {
     $rendered = '<textarea ' .
       ($this->isDisabled() ? 'disabled ' : '') .
+      ($this->isRequired() ? 'required ' : '') .
+      ('placeholder = "' . $this->getPlaceHolder() . '" ') .
       ('class = "' . $this->getClass() . '" ') .
       ('cols = "' . $this->getData('cols') . '" ') .
       ('rows = "' . $this->getData('rows') . '" ') .
