@@ -47,6 +47,10 @@ abstract class FormItem extends DataContainer {
 
   abstract function loadAttributes();
 
+  public function getPlaceHolder() {
+    return $this->getInputAttr('placeholder');
+  }
+
   public function setName($name) {
     $this->name = $name;
   }
