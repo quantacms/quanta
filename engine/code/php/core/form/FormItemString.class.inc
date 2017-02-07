@@ -28,10 +28,6 @@ class FormItemString extends FormItem {
     return 'text';
   }
 
-  public function getPlaceHolder() {
-    return $this->getInputAttr('placeholder');
-  }
-
   public function loadAttributes() {
     // TODO: Implement loadAttributes() method.
   }
