@@ -14,6 +14,7 @@ class FormItemSelect extends FormItem {
   function render() {
     $rendered = '<select ' .
       ($this->isDisabled() ? 'disabled ' : '') .
+      ($this->isRequired() ? 'required ' : '') .
       ('class = "' . $this->getClass() . '" ') .
       ('name = "' . $this->getName() . '" ') .
       ('id = "' . $this->getId() . '" ') .

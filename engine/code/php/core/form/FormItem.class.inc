@@ -30,7 +30,7 @@ abstract class FormItem extends DataContainer {
     $this->checkDisabled();
 
     // TODO: make this better and move elsewhere in validation function.
-    if (isset($_SESSION['validation_errors'][$_REQUEST['form']][$this->getName()])) {
+    if (!empty([$_REQUEST['form']]) && !empty($_SESSION['validation_errors'][$_REQUEST['form']][$this->getName()])) {
       $this->addData('class', array('validation-error'));
     }
 
@@ -122,7 +122,6 @@ abstract class FormItem extends DataContainer {
   public function loadDefault() {
     // If there is already a value set for the input item, ignore the default.
     $this->setData('default_value', !empty($this->getData('value')) ? $this->getData('value') : $this->getInputAttr('default'));
-
   }
 
   public function setType($type) {
@@ -158,7 +157,6 @@ abstract class FormItem extends DataContainer {
   public function isDisabled() {
     return $this->getData('disabled');
   }
-
 
   /**
    * Get the allowed values for a form item.
@@ -205,11 +203,20 @@ abstract class FormItem extends DataContainer {
   }
 
   public function hasValidationErrors() {
-    return (!empty($this->getData('validation_errors')));
-  }
-  public function renderFormItem() {
+    return !empty($this->getValidationErrors());
+     }
 
-    $rendered = '<div class="form-item-wrapper ' . ($this->hasValidationErrors() ? 'has-validation-errors' : '') . '">'
+  /**
+   * Renders this form item.
+   * @return string
+   */
+  public function renderFormItem() {
+    $rendered = '';
+    if ($this->hasValidationErrors()) {
+      $rendered .= '<div class="validation-error validation-error">' . $this->getValidationErrors() . '</div>';
+    }
+
+    $rendered .= '<div class="form-item-wrapper ' . ($this->hasValidationErrors() ? 'has-validation-errors' : '') . '">'
     . (!empty($this->getLabel()) ? ('<div class="form-item-label"><label for="' . $this->getName() . '">' . $this->getLabel() . '</label>' . ($this->isRequired() ? '<span class="form-item-required">*</span>' : '') . '</div>') : '')
 
     . ($this->render())
@@ -231,4 +238,33 @@ abstract class FormItem extends DataContainer {
     return TRUE;
   }
 
+  /**
+   * Get all the validation errors of the submitted form item.
+   * @return null
+   */
+  public function getValidationErrors() {
+    $errors = $this->getForm()->getData('validation_errors');
+    return !empty($errors[$this->getName()]) ? $errors[$this->getName()] : NULL;
+  }
+
+  /**
+   * Check if this item is the last in the form.
+   * (Normally used to create the closing </form> tag.
+   */
+  public function isFirst() {
+    $items = $this->getForm()->getItems();
+    $first = array_pop(array_reverse($items));
+    return ($this->getName() == $first->getName());
+  }
+
+
+  /**
+   * Check if this item is the last in the form.
+   * (Normally used to create the closing </form> tag.
+   */
+  public function isLast() {
+    $items = $this->getForm()->getItems();
+    $last = array_pop($items);
+    return ($this->getName() == $last->getName());
+  }
 }

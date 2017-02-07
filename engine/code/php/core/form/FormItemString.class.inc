@@ -11,9 +11,12 @@ class FormItemString extends FormItem {
    * @return mixed
    */
   function render() {
-    $rendered = '<input value = "' . $this->getDefaultValue() . '" type = "textfield" ' .
+    $rendered = '<input value = "' . $this->getDefaultValue() . '" type = "' . $this->getHTMLType() . '" ' .
       ($this->isDisabled() ? 'disabled ' : '') .
+      ($this->isRequired() ? 'required ' : '') .
+
       ('class = "' . $this->getClass() . '" ') .
+      ('placeholder = "' . $this->getPlaceHolder() . '" ') .
       ('name = "' . $this->getName() . '" ') .
       ('id = "' . $this->getId() . '" ') .
       '/>';
@@ -21,7 +24,15 @@ class FormItemString extends FormItem {
     return $rendered;
   }
 
-  function loadAttributes() {
+  public function getHTMLType() {
+    return 'textfield';
+  }
+
+  public function getPlaceHolder() {
+    return $this->getInputAttr('placeholder');
+  }
+
+  public function loadAttributes() {
     // TODO: Implement loadAttributes() method.
   }
 }

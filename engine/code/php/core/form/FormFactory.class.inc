@@ -10,12 +10,20 @@ class FormFactory {
     return $form;
   }
 
-  public static function getForm($env, $form_id) {
+  public static function getForm($env, $form_id = FORM_PAGE_FORM) {
     $form = $env->getData('form_' . $form_id);
-    return (empty($form)) ? FormFactory::createForm($env, $form_id) : $form;
+    if (empty($form)) {
+      $form = FormFactory::createForm($env, $form_id);
+      $env->setData('form_' . $form_id, $form);
+    }
+
+    return $form;
   }
 
-  public static function createInputItem($env, $input) {
+  public static function createInputItem($env, $input, $form) {
+    if (empty($input['type'])) {
+      $input['type'] = 'string';
+    }
     switch($input['type']) {
 
       case 'file':
@@ -54,6 +62,10 @@ class FormFactory {
         $formitem = new FormItemEmail($env, $input);
         break;
 
+      case 'password':
+        $formitem = new FormItemPassword($env, $input);
+        break;
+
       case 'submit':
         $formitem = new FormItemSubmit($env, $input);
         break;
@@ -65,6 +77,8 @@ class FormFactory {
         break;
 
     }
+
+    $form->addItem($formitem->getName(), $formitem);
     return $formitem;
 
   }
