@@ -25,7 +25,7 @@ class FormItemString extends FormItem {
   }
 
   public function getHTMLType() {
-    return 'textfield';
+    return 'text';
   }
 
   public function getPlaceHolder() {
