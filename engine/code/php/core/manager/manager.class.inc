@@ -21,8 +21,8 @@ class Manager {
     $list = new DirList($this->env, $path, 'simple', array('symlinks' => 'no'));
     $leaves = $list->getDirs();
     $lines = array();
-
     foreach ($leaves as $leaf) {
+
       if ($leaf->name != 'home' && $leaf->name != 'files') {
         $lines[] = $this->renderLeaf($leaf);
       }

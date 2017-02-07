@@ -5,7 +5,7 @@
  * Date: 16/05/15
  * Time: 16:45
  */
-
+define('IMAGE_RENDER_FULL', 'image_full');
 class Image extends File {
 
   public $width = 'auto';
@@ -42,7 +42,7 @@ class Image extends File {
     }
   }
 
-  public function render() {
+  public function render($mode = IMAGE_RENDER_FULL) {
     $style = (count($this->css) > 0) ? 'style="' . implode(';', $this->css) . '" ' : '';
     $class = (count($this->class) > 0) ?  implode(' ', $this->class) : '';
     
