@@ -1,7 +1,7 @@
 <?php
 define("FORM_METHOD_POST", 'post');
 define("FORM_METHOD_GET", 'post');
-
+define("FORM_PAGE_FORM", '___page_form___');
 /**
  * Class Form
  * This class represents a Page (corrisponding to a rendered html page).
@@ -12,6 +12,7 @@ class Form extends DataContainer {
   public $file;
   public $items = array();
   public $id;
+  public $validated = FALSE;
 
   /**
    * @param $env Environment
@@ -28,20 +29,17 @@ class Form extends DataContainer {
 
   public function checkValidate() {
 // FORM submission handler.
-    if (isset($_REQUEST['form_submit'])) {
+    if ($this->isSubmitted()) {
       $this->setData('validation_errors', array());
       $this->env->hook('form_validate', array('form' => $this));
+
+
       if (empty($this->getData('validation_errors'))) {
+        $this->validated = TRUE;
         $this->env->hook('form_submit', array('form' => $this));
         $this->env->hook($this->getId() . '_form_submit');
         return (isset($attributes['ok_message']) ? $attributes['ok_message'] : 'Your form has been submitted.');
-      } else {
-        // TODO: do not use Message here.
-        //foreach ($this->getData('validation_errors') as $error) {
-          //new Message($this->env, $error, MESSAGE_ERROR, MESSAGE_TYPE_SCREEN);
-        //}
       }
-
     } else {
       return FALSE;
     }
@@ -54,6 +52,10 @@ class Form extends DataContainer {
 
   public function getItems() {
     return $this->items;
+  }
+
+  public function getItem($name) {
+    return (isset($this->items[$name]) ? $this->items[$name] : NULL);
   }
 
   public function getMethod() {
@@ -81,27 +83,47 @@ class Form extends DataContainer {
   }
 
   /**
+   * Check if the form contains any item (yet).
+   * @return bool
+   */
+  public function isEmpty() {
+    return (count($this->items) == 0);
+  }
+
+  /**
+   * Check if the form has been submitted.
+   * @return bool
+   */
+  public function isSubmitted() {
+    return (isset($_REQUEST['form_submit']) && ($_REQUEST['form'] == $this->getId()));
+  }
+
+  /**
+   * Check if the form has been submitted.
+   * @return bool
+   */
+  public function isValidated() {
+    return $this->validated;
+  }
+
+  /**
    * Render the form and its HTML.
    * @return mixed
    */
-  public function render() {
+  public function renderFormOpen() {
    $rendered = '<a name="' . $this->getId() . '"></a>';
     $rendered .= '<form action="/' . $this->getAction() .
      '#' . $this->getId() .'" method="' . $this->getMethod() .
      '" id="' . $this->getId() . '">';
+    // TODO: why two fields? check shadow...
+     $rendered .= '<input type="hidden" name="form_submit" value=""/> ';
+    $rendered .= '<input type="hidden" name="form" value="' . $this->getId() . '"/> ';
+    return $rendered;
+  }
 
-     $rendered .= '<input type="hidden" name="form_submit"/> ';
 
-    foreach ($this->items as $form_item_name => $form_item) {
-      if ($errors = $this->checkValidationErrors($form_item)) {
-        $rendered .= '<div class="validation-error validation-error">' . $errors . '</div>';
-        $form_item->addData('validation_errors', $errors);
-      }
-      $rendered .=  $form_item->renderFormItem();
-    }
-
-    $rendered .= '</form>';
-
+  public function renderFormClose() {
+    $rendered = '</form>';
     return $rendered;
   }
 

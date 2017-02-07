@@ -14,8 +14,10 @@ function form_init($vars) {
  * @param $vars
  */
 function form_form_validate($vars) {
-  $form = FormFactory::getForm($vars['env'], $vars['form']->getId());
+  $form = &$vars['form'];
+
   foreach ($form->getItems() as $k => $item) {
+    // Check if the item is required.
     if ($item->isRequired() && (empty($_REQUEST[$item->getName()]) || trim($_REQUEST[$item->getName()]) == '')) {
       $form->validationError($item, 'This item is required!');
     }

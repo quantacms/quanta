@@ -10,9 +10,30 @@
  * @return mixed
  */
 function wiki_INPUT($attributes, $form_id, $string, $env) {
+  $rendered = '';
+
   $form = FormFactory::getForm($env, $form_id);
-  $form->addItem($attributes['name'], FormFactory::createInputItem($env, $attributes));
-  $env->setData('form_' . $form_id, $form);
+  FormFactory::createInputItem($env, $attributes, $form);
+  $rendered .= str_replace('[INPUT|', '[INPUT_RENDER|nowiki|', $attributes['tag_full']);
+  return $rendered;
+}
+
+function wiki_INPUT_RENDER($attributes, $form_id, $string, $env) {
+
+  $rendered = '';
+  $form = FormFactory::getForm($env, $form_id);
+
+  $input = $form->getItem($attributes['name']);
+  if ($input->isFirst()) {
+    $rendered .= $form->renderFormOpen();
+  }
+
+  $rendered .= ($form->isValidated()) ? '' : $input->renderFormItem();
+
+  if ($input->isLast()) {
+      $rendered .= $form->renderFormClose();
+  }
+  return $rendered;
 }
 
 /**
@@ -27,10 +48,8 @@ function wiki_INPUT($attributes, $form_id, $string, $env) {
 function wiki_FORM($attributes, $form_id, $string, $env) {
   $form = FormFactory::getForm($env, $form_id);
   $form->loadAttributes($attributes);
-  $form->addItem('form', FormFactory::createInputItem($env, array('type' => 'hidden', 'name' => 'form', 'value' => $form_id)));
-  if ($validate_ok = $form->checkValidate()) {
+
+  if ($form->isSubmitted() && ($validate_ok = $form->checkValidate())) {
     return $validate_ok;
   }
-
-  return $form->render();
 }
