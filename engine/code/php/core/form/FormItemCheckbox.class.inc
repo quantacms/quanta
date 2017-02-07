@@ -7,12 +7,13 @@ class FormItemCheckbox extends FormItem {
 
 
   /**
-   * Renders the input item.
+   * Renders the inpt item.
    * @return mixed
    */
   function render() {
     $rendered = '<input value = "' . $this->getDefaultValue() . '" type = "checkbox" ' .
       ($this->isDisabled() ? 'disabled ' : '') .
+      ($this->isRequired() ? 'required ' : '') .
       ('class = "' . $this->getClass() . '" ') .
       ($this->isChecked() ? 'checked' : '') .
       ('name = "' . $this->getName() . '" ') .
