@@ -31,7 +31,8 @@ abstract class ListObject {
   private $attributes = array();
   protected $scantype = DIR_ALL;
   protected $module;
-
+  protected $exclude = array();
+  protected $include = array();
   // Construct the List.
 
   public function __construct(&$env, $path, $type, $attr_arr = array(), $module = 'list') {
@@ -178,6 +179,14 @@ abstract class ListObject {
 
         case 'limit':
           $this->limit = $attr;
+          break;
+
+        case 'exclude':
+          $this->exclude = explode(',', $attr);
+          break;
+
+        case 'include':
+          $this->include = explode(',', $attr);
           break;
 
 
