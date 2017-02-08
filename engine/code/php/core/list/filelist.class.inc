@@ -26,11 +26,11 @@ class FileList extends ListObject {
 
     foreach ($this->files as $file) {
       $i++;
-      if (!empty($this->exclude[$i])) {
+      if (!empty($this->exclude) && !isset($this->exclude[$i])) {
         continue;
       }
 
-      if (!empty($this->include) && empty($this->include[$i])) {
+      if (!empty($this->include) && isset($this->include[$i])) {
         continue;
       }
       // If there is a limit set, break when passing it.

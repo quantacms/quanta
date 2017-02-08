@@ -182,11 +182,11 @@ abstract class ListObject {
           break;
 
         case 'exclude':
-          $this->exclude = explode(',', $attr);
+          $this->exclude = array_flip(explode(',', $attr));
           break;
 
         case 'include':
-          $this->include = explode(',', $attr);
+          $this->include = array_flip(explode(',', $attr));
           break;
 
 
