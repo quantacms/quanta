@@ -15,11 +15,20 @@ class DirList extends ListObject {
     $i = 0;
     foreach ($this->dirs as $dir_url => $node) {
       // If user can't access a node, completely exclude it from the list.
+      $i++;
       if ($node->isForbidden()) {
         continue;
       }
-      $i++;
-      // If there is a limit set, break when passing it.
+
+      if (!empty($this->exclude[$i])) {
+        continue;
+      }
+
+      if (!empty($this->include) && empty($this->include[$i])) {
+        continue;
+      }
+
+        // If there is a limit set, break when passing it.
       if (!empty($this->limit) && $i > $this->limit) {
         break;
       }
