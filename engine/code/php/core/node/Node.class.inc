@@ -44,11 +44,23 @@ class Node extends JSONDataContainer {
 
     if ($name != NODE_NEW) {
       $this->setName(strtolower($name));
-      $result = $this->env->nodePath($this->getName());
-      // TODO: unify path and realpath.
-      $this->path = $result;
-      $this->realpath = $result;
-      $this->exists = $result != NULL;
+      // Load node from cache (RAM) if it has been already loaded.
+      if ($cached = Cache::get($this->env, 'node', $this->name)) {
+        foreach (get_object_vars($cached) as $key => $value) {
+          $this->$key = $value;
+        }
+        $this->env->hook('node_load_cache', array(
+          'node' => &$this,
+        ));
+        $this->exists = TRUE;
+      } else {
+        $result = $this->env->nodePath($this->getName());
+
+        // TODO: unify path and realpath.
+        $this->path = $result;
+        $this->realpath = $result;
+        $this->exists = $result != NULL;
+      }
     } else {
       $this->setName(NODE_NEW);
       $this->exists = FALSE;
@@ -76,11 +88,18 @@ class Node extends JSONDataContainer {
       // No json file. Empty node, or incomplete / unknown.
       return;
     }
-
-    $this->setTeaser($this->json->teaser);
-    $this->setAuthor($this->json->author);
-    $this->setBody($this->json->body);
-    $this->setTitle($this->json->title);
+    if (isset($this->json->teaser)) {
+      $this->setTeaser($this->json->teaser);
+    }
+    if (isset($this->json->author)) {
+      $this->setAuthor($this->json->author);
+    }
+    if (isset($this->json->body)) {
+      $this->setBody($this->json->body);
+    }
+    if (isset($this->json->title)) {
+      $this->setTitle($this->json->title);
+    }
     if (isset($this->json->timestamp)) {
       $this->setTimestamp($this->json->timestamp);
     }
@@ -128,15 +147,7 @@ class Node extends JSONDataContainer {
    * Load node with its variables internally.
    */
   public function load() {
-    // Load node from cache (RAM) if it has been already loaded.
-    if ($cached = Cache::get($this->env, 'node', $this->name)) {
-      foreach (get_object_vars($cached) as $key => $value) {
-        $this->$key = $value;
-      }
-      $this->env->hook('node_load_cache', array(
-        'node' => &$this,
-      ));
-    }
+
     $this->fullpath = str_replace($this->env->dir['docroot'], '', $this->realpath);
 
     $this->env->hook('node_load', array(
