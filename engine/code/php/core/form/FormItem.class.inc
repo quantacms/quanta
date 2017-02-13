@@ -30,7 +30,7 @@ abstract class FormItem extends DataContainer {
     $this->checkDisabled();
 
     // TODO: make this better and move elsewhere in validation function.
-    if (!empty([$_REQUEST['form']]) && !empty($_SESSION['validation_errors'][$_REQUEST['form']][$this->getName()])) {
+    if (!empty($_REQUEST['form']) && !empty($_SESSION['validation_errors'][$_REQUEST['form']][$this->getName()])) {
       $this->addData('class', array('validation-error'));
     }
 
@@ -257,7 +257,8 @@ abstract class FormItem extends DataContainer {
    */
   public function isFirst() {
     $items = $this->getForm()->getItems();
-    $first = array_pop(array_reverse($items));
+    $items = array_reverse($items);
+    $first = array_pop($items);
     return ($this->getName() == $first->getName());
   }
 
