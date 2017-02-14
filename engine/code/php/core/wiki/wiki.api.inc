@@ -4,6 +4,7 @@
  * Transform wiki tags in html.
  * Will look for all wiki_TAG functions, in all modules, and apply them to the code
  * to convert tags.
+ * TODO: convert to OO.
  */
 function checkCodeTags(&$env, $html, $options = 'U') {
   $replacing = array();

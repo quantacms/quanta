@@ -52,3 +52,18 @@ function string_normalize($string) {
   // TODO: was necessary as it broke INPUT tags by weirdly printing the value...
   return preg_replace('~[\r\n\t]+~', '', $string);
 }
+
+function html_standard_attributes($attributes) {
+  $standards = array(
+    'id' => TRUE,
+    'class' => TRUE,
+    'rel' => TRUE,
+    );
+  $string = '';
+  foreach ($attributes as $k => $attr) {
+    if (isset($standards[$k])) {
+      $string .= $k . ' = "' . $attr . '"';
+    }
+  }
+  return $string;
+}
