@@ -59,7 +59,7 @@ function generateThumbnail($env, $file, $thumbfile, $maxw, $maxh) {
   $sExtension = strtolower(end($pathArr));
 
   if ($sExtension == 'jpg' || $sExtension == 'jpeg') {
-    $img = imagecreatefromjpeg($sImagePath)
+    $img = imagecreatefromjpeg('.' . $sImagePath)
     or die("Cannot create new JPEG image");
   } else if ($sExtension == 'png') {
 
