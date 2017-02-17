@@ -125,7 +125,7 @@ abstract class FormItem extends DataContainer {
    */
   public function loadDefault() {
     // If there is already a value set for the input item, ignore the default.
-    $this->setData('default_value', !empty($this->getData('value')) ? $this->getData('value') : $this->getInputAttr('default'));
+    $this->setData('default_value', !empty($this->getValue()) ? $this->getValue() : $this->getInputAttr('default'));
   }
 
   public function setType($type) {
@@ -183,7 +183,7 @@ abstract class FormItem extends DataContainer {
    * @return mixed
    */
   public function getValue() {
-    return $this->getData('value');
+    return $this->getData('value') == INPUT_EMPTY_VALUE ? '' : $this->getData('value');
   }
 
   /**
@@ -191,7 +191,7 @@ abstract class FormItem extends DataContainer {
    * @return mixed
    */
   public function getDefaultValue() {
-    return $this->getData('default_value');
+    return $this->getData('default_value') == INPUT_EMPTY_VALUE ? '' : $this->getData('default_value');
   }
 
   public function getClass() {
