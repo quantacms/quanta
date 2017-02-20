@@ -432,7 +432,7 @@ class Node extends JSONDataContainer {
           $min .= '-';
           $file = $lineage->path . '/tpl' . $min . '.html';
           if (file_exists($file)) {
-            $tpl[$tpl_level + $i] = $file;
+              $tpl[$tpl_level + $i] = $file;
           }
 
         }

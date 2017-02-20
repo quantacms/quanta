@@ -5,13 +5,22 @@ require_once('image.class.php');
 
 
 // TODO: move in factory class?
-function generateThumbnail($env, $file, $thumbfile, $maxw, $maxh) {
+function generateThumbnail($env, $file, $thumbfile, $maxw = NULL, $maxh = NULL, $sType = 'crop') {
+
+  if (!(intval($maxw) > 0)) {
+    $maxw = 999999;
+  }
+  if (!(intval($maxh) > 0)) {
+    $maxh = 999999;
+  }
+
   // Get the File path for the image
   $thumbRoot = $env->dir['tmp'] . '/thumbs';
   $sImagePath = $file;
   $thumbImagePath =  $thumbRoot . '/' . $thumbfile;
 
   if (is_file($thumbImagePath)) {
+    unlink($thumbImagePath);
     return;
   }
 
@@ -20,25 +29,25 @@ function generateThumbnail($env, $file, $thumbfile, $maxw, $maxh) {
   // If you want exact dimensions, you
   // will pass 'width' and 'height'
 
-  $iThumbnailWidth = (int)$_GET['width'];
-  $iThumbnailHeight = (int)$_GET['height'];
+  $iThumbnailWidth = (int) $maxw;
+  $iThumbnailHeight = (int) $maxh;
+
 
   // If you want proportional thumbnails,
   // you will pass 'maxw' and 'maxh'
 
-  $iMaxWidth = (int)$_GET["maxw"];
-  $iMaxHeight = (int)$_GET["maxh"];
+  $iMaxWidth = (int) $maxw;
+  $iMaxHeight = (int) $maxh;
 
   // Based on the above we can tell which
   // type of resizing our script must do
 
-  if ($iMaxWidth && $iMaxHeight) $sType = 'scale';
-  else if ($iThumbnailWidth && $iThumbnailHeight) $sType = 'exact';
+
 
   // The 'scale' type will make the image
   // smaller but keep the same dimensions
 
-  // The 'exact' type will make the thumbnail
+  // The 'crop' type will make the thumbnail
   // exactly the width and height you choose
 
   // To start off, we will create a copy
@@ -59,17 +68,17 @@ function generateThumbnail($env, $file, $thumbfile, $maxw, $maxh) {
   $sExtension = strtolower(end($pathArr));
 
   if ($sExtension == 'jpg' || $sExtension == 'jpeg') {
-    $img = imagecreatefromjpeg('.' . $sImagePath)
-    or die("Cannot create new JPEG image");
+    $img = imagecreatefromjpeg($sImagePath)
+    or print("Cannot create new JPEG image: " . $sImagePath);
   } else if ($sExtension == 'png') {
 
     $img = imagecreatefrompng($sImagePath)
-    or die("Cannot create new PNG image");
+    or print("Cannot create new PNG image: " . $sImagePath);
 
   } else if ($sExtension == 'gif') {
 
     $img = imagecreatefromgif($sImagePath)
-    or die("Cannot create new GIF image");
+    or print("Cannot create new GIF image: " . $sImagePath);
 
   }
 
@@ -145,13 +154,15 @@ function generateThumbnail($env, $file, $thumbfile, $maxw, $maxh) {
         $img = $tmpimg;
       }
 
-    } else if ($sType == "exact") {
+    } else if ($sType == "crop") {
 
       // Get scale ratio
 
       $fScale = max($iThumbnailWidth/$iOrigWidth,
         $iThumbnailHeight/$iOrigHeight);
+      print "reducing w from " . $iThumbnailWidth . ' to ' . $iOrigWidth;
 
+      print "reducing h from " . $iThumbnailHeight . ' to ' . $iOrigHeight;
       // This works similarly to other one but
       // rather than the lowest value, we need
       // the highest. For example, if the
