@@ -21,7 +21,7 @@ class Mail extends Node {
     $mail->SMTPAuth = true;
     $mail->SMTPSecure = 'tls';
     $mail->Username = 'aldo.tripiciano@gmail.com';
-    $mail->Password = 'blacklore3X';
+    $mail->Password = '';
     $mail->Port = 587;
     $mail->setFrom('aldo.tripiciano@gmail.com', 'Mailer');
     // $mail->addAddress($this->getData('to'), $this->getData('to'));
