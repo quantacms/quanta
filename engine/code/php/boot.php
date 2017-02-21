@@ -13,6 +13,7 @@
 
   print $page->render();
 
+	if (isset($_GET['phpinfo'])) phpinfo();
 	$env->hook('complete');
 	exit();
 ?>
