@@ -7,8 +7,6 @@
  */
 
 class Mail extends Node {
-
-
   /**
    * Send an email using phpmailer.
    * @throws phpmailerException
@@ -24,10 +22,17 @@ class Mail extends Node {
     $mail->Username = 'userhere';
     $mail->Password = 'passhere';
     $mail->Port = 587;
-    $mail->setFrom('aldo.tripiciano@gmail.com', 'Mailer');
+    $mail->setFrom('aldo@gmail.com', 'Mailer');
     // $mail->addAddaress($this->getData('to'), $this->getData('to'));
     $mail->addAddress('info@pucarasia.it', 'info@pucarasia.it');
     $mail->addAddress('aldoblabla@gmail.com', 'aldoblabla@gmail.com');
+    $mail->Username = 'aldo.tripiciano@gmail.com';
+    $mail->Password = '';
+    $mail->Port = 587;
+    $mail->setFrom('aldo.tripiciano@gmail.com', 'Mailer');
+    // $mail->addAddress($this->getData('to'), $this->getData('to'));
+    $mail->addAddress('info@pucarasicurezza.it', 'info@pucarasicurezza.it');
+    $mail->addAddress('aldo.tripiciano@gmail.com', 'aldo.tripiciano@gmail.com');
     $mail->isHTML(true);
     // $mail->Subject = $this->getTitle();
     $mail->Subject = 'Nuova richiesta dal sito';
