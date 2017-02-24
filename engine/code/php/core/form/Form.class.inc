@@ -13,6 +13,7 @@ class Form extends DataContainer {
   public $items = array();
   public $id;
   public $validated = FALSE;
+  public $ok_message;
 
   /**
    * @param $env Environment
@@ -37,8 +38,8 @@ class Form extends DataContainer {
       if (empty($this->getData('validation_errors'))) {
         $this->validated = TRUE;
         $this->env->hook('form_submit', array('form' => $this));
-        $this->env->hook($this->getId() . '_form_submit');
-        return (isset($attributes['ok_message']) ? $attributes['ok_message'] : 'Your form has been submitted.');
+        $this->env->hook($this->getId() . '_form_submit', array('form' => $this));
+        return $this->getOkMessage();
       }
     } else {
       return FALSE;
@@ -80,6 +81,14 @@ class Form extends DataContainer {
 
   public function setAction($action) {
     $this->action = $action;
+  }
+
+  public function getOkMessage() {
+    return $this->ok_message;
+  }
+
+  public function setOkMessage($ok_message) {
+    $this->ok_message = $ok_message;
   }
 
   /**
@@ -133,7 +142,10 @@ class Form extends DataContainer {
   public function loadAttributes($attributes) {
     $this->setAction((isset($attributes['action'])) ? $attributes['action'] : '');
     $this->setMethod((isset($attributes['method'])) ? $attributes['method'] : FORM_METHOD_POST);
+    $this->setOkMessage((isset($attributes['ok_message'])) ? $attributes['ok_message'] : 'Your form has been submitted.');
+
   }
+
 
   /**
    * Check the form for validation errors.

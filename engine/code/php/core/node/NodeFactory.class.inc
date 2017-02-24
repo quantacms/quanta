@@ -42,6 +42,18 @@ class NodeFactory {
 
 
   /**
+   * Create a node with basic values.
+   * @param $env
+   * @param $node
+   */
+  public static function buildNode($env, $name, $father) {
+    $node = new Node($env, NODE_NEW, $father);
+    $node->setName($name);
+    $node->save();
+    return $node;
+  }
+
+  /**
    * Gets the current viewed node.
    * @return bool
    */
