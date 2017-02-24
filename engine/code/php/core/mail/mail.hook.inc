@@ -23,26 +23,26 @@ function mail_init($vars) {
  * Submitting a mail form.
  * @param $vars
  */
-function mail_mailform_form_submit($vars) {
+function mail_form_submit($vars) {
   $mail_tmp = $vars['env']->dir['docroot'] . '/_mailqueue';
   $vars['env']->sysdir($mail_tmp);
-
   $queue = new Node($vars['env'], '_mailqueue');
+
   // TODO: better way to create unique id for mail.
   $mail = new Mail($vars['env'], time() . '_' . rand(10000, 99999), $queue);
-  $body = '-----<br />';
-  // TODO: Check that form field exists. Validate. Security. XSS. Everything.
-  foreach ($_REQUEST as $k => $v) {
-    if (isset($inputs[$k])) {
-      $mail->setData($k, $v);
-    } else {
-      $body .= $k .': ' . $v . '<br/>';
-    }
+  $body = '';
+
+  $form = $vars['form'];
+  $items = $form->getItems();
+
+  foreach ($items as $item) {
+    $body .= '<b>' . $item->getLabel() . '</b>: <br>' . $item->getValue() . '<br><br>';
   }
-  $mail->setTitle('New email received from ' . $_SERVER['HTTP_HOST']);
-  $mail->setContent($body);
-  $mail->save();
-  // TODO: very bad. No way to send mail?
-  $vars['env']->hook('cron');
+
+  $vars['env']->hook('mailform_' . $vars['form']->getId() . '_send', array('mail' => &$mail));
+  $mail->setBody($body);
+
+  //$mail->save();
+  $mail->send();
 }
 

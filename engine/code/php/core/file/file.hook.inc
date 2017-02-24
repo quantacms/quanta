@@ -82,16 +82,23 @@ function file_node_load($vars) {
  * @param $vars
  */
 function file_boot($vars) {
+
   if (strpos($vars['env']->request[count($vars['env']->request) - 1], '.') > 0) {
     $filename = $vars['env']->request[count($vars['env']->request) - 1];
     $nodepath = $vars['env']->nodePath($vars['env']->request[1]);
 		
 		$file = is_file($vars['env']->dir['docroot'] . $vars['env']->request_uri)  ? ($vars['env']->dir['docroot'] . $vars['env']->request_uri) :  $nodepath . '/' . urldecode($filename);
-		
-		if (is_file($file)) {
+
+    if (is_file($file)) {
 			header('Content-Type:'. mime_content_type($file));
 			//TODO : slow, insecure...
-			readfile($file);
+      $mods = array_flip(apache_get_modules());
+      if (isset($mods['mod_xsendfile'])) {
+
+      }
+      else {
+			  readfile($file);
+      }
 			die();
     } else {
 		  die('broken file? ' . $file);
