@@ -20,7 +20,7 @@ class Mail extends Node {
     $mail->Host = $this->getData('host');
     $mail->SMTPAuth = true;
     $mail->SMTPSecure = 'tls';
-    $mail->SMTPDebug = 0;
+    $mail->SMTPDebug = 1;
     $mail->Username = $this->getData('username');
     $mail->Password = $this->getData('password');
     $mail->Port = $this->getData('port');
