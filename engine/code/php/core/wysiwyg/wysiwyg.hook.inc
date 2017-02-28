@@ -8,6 +8,8 @@ function wysiwyg_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/wysiwyg/froala/js/froala_editor.min.js');
   $vars['env']->addInclude('engine/code/php/core/wysiwyg/froala/plugins/paragraph_style.min.js');
   $vars['env']->addInclude('engine/code/php/core/wysiwyg/froala/plugins/paragraph_format.min.js');
+  $vars['env']->addInclude('engine/code/php/core/wysiwyg/froala/plugins/link.min.js');
+  $vars['env']->addInclude('engine/code/php/core/wysiwyg/froala/plugins/lists.min.js');
   $vars['env']->addInclude('engine/code/php/core/wysiwyg/froala/plugins/table.css');
   $vars['env']->addInclude('engine/code/php/core/wysiwyg/froala/plugins/table.min.js');
   $vars['env']->addInclude('engine/code/php/core/wysiwyg/froala/plugins/align.min.js');
@@ -23,6 +25,5 @@ function wysiwyg_metadata($vars) {
   $vars['page']->addData('metadata', array(
     '<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />',
     '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/codemirror.min.css">',
-
   ));
-}
+} 

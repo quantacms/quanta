@@ -7,5 +7,5 @@
       </div>
     </div>
   </div>
-  <div class="slide-img" style="">[THUMBNAIL:[LISTITEM]]</div>
+  <div class="slide-img" style="">[IMGTHUMB|node=[LISTITEM]|1000x0:{ATTRIBUTE|name=thumbnail:[LISTITEM]}]</div>
 </div>
