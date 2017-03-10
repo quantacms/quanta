@@ -101,7 +101,7 @@ function file_boot($vars) {
       }
 			die();
     } else {
-		  die('broken file? ' . $file);
+		  redirect('404');
 		}
   }
 }
