@@ -28,7 +28,8 @@ class File {
     $this->path = $file_path;
     $exp = explode('.', $file_path);
     $this->extension = strtolower($exp[count($exp) - 1]);
-    $this->name = $exp[0];
+    $split = explode('/', $exp[0]);
+		$this->name = $split[count($split) - 1];;
     $this->type = File::getFileType($this->extension);
     $this->node = $node;
     $this->exists = is_file($this->node->realpath . '/' . $file_path);
@@ -62,6 +63,11 @@ class File {
   public function getPath() {
     return $this->path;
   }
+
+	public function getFullPath() {
+	  return '/' . $this->node->name . '/' . $this->getPath();
+	}
+
   public function getExtension() {
     return $this->extension;
   }
