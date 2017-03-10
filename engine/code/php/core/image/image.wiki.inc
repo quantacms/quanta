@@ -23,9 +23,9 @@ function wiki_IMGTHUMB($attributes, $file, $string, $env) {
   $image->loadAttributes($attributes);
 
   $op = isset($attributes['operation']) ? $attributes['operation'] : 'scale';
-  $thumbfile = 'thumb-' . str_replace('/', '-', $node->getName() . '-' . $image->width . 'x' . $image->height . '-'. $file);
+  $thumbfile = 'thumb-' . str_replace('/', '-', $node->getName() . '-' . $image->width . 'x' . $image->height . '-'. $file->name);
 
-  generateThumbnail($env, $node->realpath . '/' . $file, $thumbfile, $image->width, $image->height, $op);
+  generateThumbnail($env, $node->realpath . '/' . $file->name, $thumbfile, $image->width, $image->height, $op);
 
   // TODO: stupid way to get to the tmp folder...
 

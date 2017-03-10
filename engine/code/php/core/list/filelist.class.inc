@@ -40,7 +40,7 @@ class FileList extends ListObject {
       if ((($file_types == FALSE) || $file_types == $file->getType()) && $file->isPublic()) {
         $tpl = file_get_contents($this->module_path . '/tpl/' . $this->getTheme() . '.tpl.php');
 
-        $tpl = preg_replace("/\{LISTITEM\}/is", string_normalize($file->getPath()), $tpl);
+        $tpl = preg_replace("/\{LISTITEM\}/is", string_normalize($file->getFullPath()), $tpl);
         $tpl = preg_replace("/\{LISTNODE\}/is", string_normalize($this->dir), $tpl);
         $tpl = transformCodeTags($this->env, $tpl);
         $classes = array('file-list-item', 'list-' . $this->getTheme() . '-item', 'list-item-' . $i);
