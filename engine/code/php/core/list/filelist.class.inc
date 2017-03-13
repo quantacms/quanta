@@ -10,7 +10,6 @@
 class FileList extends ListObject {
   // TODO: implement.
   private $allowed_types;
-  protected $module_path = 'core/list';
   protected $scantype = DIR_FILES;
   /**
    * Construct a FileList object.
@@ -23,7 +22,10 @@ class FileList extends ListObject {
     $user = User::current($this->env);
     $file_types = $this->getAttribute('file_types');
     $i = 0;
-
+    if (isset($_GET['debug'])) {
+		print $this->module_path;
+		print "IL MODULO PATH ERA";
+		}
     foreach ($this->files as $file) {
       $i++;
       if (!empty($this->exclude) && !isset($this->exclude[$i])) {
@@ -38,8 +40,8 @@ class FileList extends ListObject {
         break;
       }
       if ((($file_types == FALSE) || $file_types == $file->getType()) && $file->isPublic()) {
-        $tpl = file_get_contents($this->module_path . '/tpl/' . $this->getTheme() . '.tpl.php');
-
+				$tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTheme() . '.tpl.php');
+        $list_item = transformCodeTags($this->env, preg_replace("/\[LISTITEM\]/is", string_normalize($dir_url), $tpl));
         $tpl = preg_replace("/\{LISTITEM\}/is", string_normalize($file->getPath()), $tpl);
         $tpl = preg_replace("/\{LISTNODE\}/is", string_normalize($this->dir), $tpl);
         $tpl = transformCodeTags($this->env, $tpl);
