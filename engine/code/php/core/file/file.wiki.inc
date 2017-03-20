@@ -31,8 +31,11 @@ function wiki_FILEATTRIBUTE($attributes, $file, $string, $env) {
  * Wiki Hook for FILE.
  */
 function wiki_FILE($attributes, $file, $string, $env) {
-  $node =  NodeFactory::current($env);
-  $file = new File($env, $file, $node);
+
+  $file = new File($env, $file, NULL, $attributes['title']);
+  if ($file->exists) {
+    return $file->render();
+
+  }
   //$file->loadAttributes($attributes);
-  return $file->render();
 }

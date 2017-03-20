@@ -34,7 +34,6 @@ function access_node_open($vars) {
   if (!empty($vars['node'])) {
     $user = User::current($vars['env']);
     $has_access = $user->checkAccess($vars['node'], NODE_ACTION_VIEW);
-
     if (!$has_access) {
       $vars['node'] = NodeFactory::buildForbiddenNode($vars['env']);
     }

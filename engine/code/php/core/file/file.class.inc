@@ -10,6 +10,7 @@ define('FILE_RENDER_PATH', 'file_render_path');
 class File {
   public $env;
   public $name;
+  public $filename;
   public $path;
   public $extension;
   public $type;
@@ -21,18 +22,20 @@ class File {
   public $node;
 
   // Construct the Node.
-  public function __construct(&$env, $file_path, $node = NULL) {
-    $fpath_full = explode('/', $file_path);
-    //$file_path = $fpath_full[count($fpath_full) - 1];
-
+  public function __construct(&$env, $file_path, $node = NULL, $name = NULL) {
+    $split = explode('/', $file_path);
+    if ($node == NULL) {
+      $this->node = (count($split) > 1) ?  NodeFactory::load($env, $split[count($split) - 2]) : NodeFactory::current($env);
+    } else {
+      $this->node = $node;
+    }
+    $this->filename = $split[count($split) - 1];
     $this->path = $file_path;
     $exp = explode('.', $file_path);
     $this->extension = strtolower($exp[count($exp) - 1]);
-    $split = explode('/', $exp[0]);
-		$this->name = $split[count($split) - 1];;
+    $this->name = ($name == NULL) ? $file_path : $name;
     $this->type = File::getFileType($this->extension);
-    $this->node = $node;
-    $this->exists = is_file($this->node->realpath . '/' . $file_path);
+    $this->exists = is_file($this->node->realpath . '/' . $this->filename);
   }
 
   /**

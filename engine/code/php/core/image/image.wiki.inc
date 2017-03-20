@@ -28,6 +28,7 @@ function wiki_IMGTHUMB($attributes, $file, $string, $env) {
 	$filearr = explode('/', $file);
 	$filename = $filearr[count($filearr) - 1];
   generateThumbnail($env, $node->realpath . '/' . $filename, $thumbfile, $image->width, $image->height, $op);
+
   // TODO: stupid way to get to the tmp folder...
 
   $thumb = '<img src="' . '/engine/tmp/' . $env->host . '/thumbs/' . $thumbfile . '" />';
