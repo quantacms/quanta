@@ -36,7 +36,17 @@ function mail_form_submit($vars) {
   $items = $form->getItems();
 
   foreach ($items as $item) {
-    $body .= '<b>' . $item->getLabel() . '</b>: <br>' . $item->getValue() . '<br><br>';
+
+    $value = $item->getValue();
+
+    // Non-html email: convert newlines.
+    if (($item->getType() == 'text') && empty($item->getInputArr('wysiwyg')))  {
+      $value = nl2br($value);
+    }
+
+    if ($item->getType() != 'submit') {
+      $body .= '<b>' . $item->getLabel() . '</b>: <br>' . $value . '<br><br>';
+    }
   }
 
   $vars['env']->hook('mailform_' . $vars['form']->getId() . '_send', array('mail' => &$mail));

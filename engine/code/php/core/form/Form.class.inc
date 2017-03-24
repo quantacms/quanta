@@ -75,6 +75,14 @@ class Form extends DataContainer {
     $this->id = $id;
   }
 
+  public function getAnchor() {
+    return $this->getData('anchor');
+  }
+
+  public function setAnchor($anchor) {
+    $this->setData('anchor', $anchor);
+  }
+
   public function getAction() {
     return $this->action;
   }
@@ -122,7 +130,7 @@ class Form extends DataContainer {
   public function renderFormOpen() {
    $rendered = '<a name="' . $this->getId() . '"></a>';
     $rendered .= '<form action="/' . $this->getAction() .
-     '#' . $this->getId() .'" method="' . $this->getMethod() .
+     '#' . $this->getAnchor() .'" method="' . $this->getMethod() .
      '" id="' . $this->getId() . '">';
     // TODO: why two fields? check shadow...
      $rendered .= '<input type="hidden" name="form_submit" value=""/> ';
@@ -143,8 +151,12 @@ class Form extends DataContainer {
     $this->setAction((isset($attributes['action'])) ? $attributes['action'] : '');
     $this->setMethod((isset($attributes['method'])) ? $attributes['method'] : FORM_METHOD_POST);
     $this->setOkMessage((isset($attributes['ok_message'])) ? $attributes['ok_message'] : 'Your form has been submitted.');
+    $this->setAnchor((isset($attributes['anchor'])) ? $attributes['anchor'] : $this->getId());
+
+
 
   }
+
 
 
   /**

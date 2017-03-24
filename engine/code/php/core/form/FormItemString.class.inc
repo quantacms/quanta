@@ -5,6 +5,7 @@
  */
 class FormItemString extends FormItem {
 
+  public $type = 'string';
 
   /**
    * Renders the input item.

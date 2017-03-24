@@ -4,6 +4,7 @@
  * This class represents a Form Item of type File upload
  */
 class FormItemFile extends FormItem {
+  public $type = 'file';
 
 
   /**
