@@ -14,13 +14,15 @@ class Mail extends Node {
   public function send() {
 
     require_once('mailer/PHPMailerAutoload.php');
-    // $mail->SMTPDebug  = 2;
+    // SMTPDebug information (for testing)
+    // 1 = errors and messages
+    // 2 = messages only
     $mail = new PHPMailer();
     $mail->isSMTP();
     $mail->Host = $this->getData('host');
-    $mail->SMTPAuth = true;
-    $mail->SMTPSecure = 'tls';
-    $mail->SMTPDebug = 1;
+    $mail->SMTPAuth = !empty($this->getData('SMTPAuth')) ? $this->getData('SMTPAuth') : true;
+    $mail->SMTPSecure = !empty($this->getData('SMTPSecure')) ? $this->getData('SMTPSecure') : 'tls';
+    $mail->SMTPDebug = !empty($this->getData('SMTPDebug')) ? $this->getData('SMTPDebug') : 0;
     $mail->Username = $this->getData('username');
     $mail->Password = $this->getData('password');
     $mail->Port = $this->getData('port');
