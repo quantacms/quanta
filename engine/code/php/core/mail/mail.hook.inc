@@ -40,7 +40,7 @@ function mail_form_submit($vars) {
     $value = $item->getValue();
 
     // Non-html email: convert newlines.
-    if (($item->getType() == 'text') && empty($item->getInputArr('wysiwyg')))  {
+    if (($item->getType() == 'text') && empty($item->getInputAttr('wysiwyg')))  {
       $value = nl2br($value);
     }
 
