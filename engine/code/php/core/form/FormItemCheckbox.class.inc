@@ -5,6 +5,7 @@
  */
 class FormItemCheckbox extends FormItem {
 
+  public $type = 'checkbox';
 
   /**
    * Renders the inpt item.

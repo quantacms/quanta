@@ -4,6 +4,7 @@
  * This class represents a Form Item of type dropdown Select
  */
 class FormItemDate extends FormItemString {
+  public $type = 'date';
 
   function loadAttributes() {
     $this->addData('class', array('hasDatePicker'));

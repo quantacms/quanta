@@ -4,6 +4,7 @@
  * This class represents a Form Item of type dropdown Select
  */
 class FormItemHidden extends FormItem {
+  public $type = 'hidden';
 
   /**
    * Renders the input item.

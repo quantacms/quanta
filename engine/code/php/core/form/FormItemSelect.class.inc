@@ -6,6 +6,7 @@
  */
 class FormItemSelect extends FormItem {
 
+  public $type = 'select';
 
   /**
    * Renders the input item.

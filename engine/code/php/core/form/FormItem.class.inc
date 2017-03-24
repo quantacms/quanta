@@ -7,7 +7,7 @@ define('INPUT_EMPTY_VALUE', '___INPUT_EMPTY_VALUE___');
 abstract class FormItem extends DataContainer {
   public $env;
   private $name;
-  private $type;
+  protected $type;
   public $allowable_values = array();
   private $input_arr = array();
   private $form;

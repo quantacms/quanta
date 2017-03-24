@@ -5,6 +5,7 @@
  * This class represents a Form Item of type textarea
  */
 class FormItemText extends FormItem {
+  public $type = 'text';
 
   function loadAttributes() {
     $this->setData('label', $this->getData('title'));
