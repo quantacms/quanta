@@ -48,9 +48,9 @@ class File {
   public function isPublic() {
     $is_public =
       ($this->getType() != 'swap') &&
-      ($this->extension != 'access') &&
-      ($this->name != '') &&
-      ($this->name != 'data');
+      ($this->extension != 'html') &&
+      ($this->extension != 'json') &&
+      ($this->name != '');
     return $is_public;
   }
 
