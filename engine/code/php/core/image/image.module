@@ -261,6 +261,9 @@ function generateThumbnail($env, $file, $thumbfile, $maxw = NULL, $maxh = NULL, 
       }
     }
 
+		$transparentindex = imagecolorallocatealpha($img, 255, 255, 255, 127);
+	  imagefill($img, 0, 0, $transparentindex);
+
     // Display the image using the header function to specify
     // the type of output our page is giving
     if ($sExtension == 'jpg' || $sExtension == 'jpeg') {
