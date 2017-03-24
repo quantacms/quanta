@@ -83,6 +83,14 @@ class Form extends DataContainer {
     $this->setData('anchor', $anchor);
   }
 
+  public function getRedirect() {
+    return $this->getData('redirect');
+  }
+
+  public function setRedirect($redirect) {
+    $this->setData('redirect', $redirect);
+  }
+
   public function getAction() {
     return $this->action;
   }
@@ -152,6 +160,7 @@ class Form extends DataContainer {
     $this->setMethod((isset($attributes['method'])) ? $attributes['method'] : FORM_METHOD_POST);
     $this->setOkMessage((isset($attributes['ok_message'])) ? $attributes['ok_message'] : 'Your form has been submitted.');
     $this->setAnchor((isset($attributes['anchor'])) ? $attributes['anchor'] : $this->getId());
+    $this->setRedirect((isset($attributes['redirect'])) ? $attributes['redirect'] : NULL);
 
 
 
