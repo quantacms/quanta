@@ -19,7 +19,6 @@ class Node extends JSONDataContainer {
   public $body = NULL;
   public $teaser = NULL;
   public $content = NULL;
-  public $content_raw = NULL;
   public $exists;
   public $permissions;
   public $timestamp;
@@ -125,6 +124,7 @@ class Node extends JSONDataContainer {
     $this->json->body = $this->getBody();
     $this->json->title = $this->getTitle();
     $this->json->thumbnail = $this->getThumbnail();
+    $this->json->timestamp = $this->getTimestamp();
   }
 
   /**
@@ -157,12 +157,9 @@ class Node extends JSONDataContainer {
     if ($this->content == NULL && $this->exists) {
       $this->buildContent();
     }
-    if ($this->exists) {
+    if ($this->exists && ($this->getTimestamp() == NULL)) {
       // TODO: Sometimes filemtime returns error.
       @$this->setTimestamp(filemtime($this->realpath));
-    }
-    else {
-      $this->setTimestamp(time());
     }
   }
 
@@ -179,7 +176,6 @@ class Node extends JSONDataContainer {
       $html_content = file_get_contents($this->path . '/data.html');
       $this->setBody(preg_replace('!<\s*(h1).*?>((.*?)</\1>)?!is', '', $html_content));
       $this->setContent($html_content);
-      $this->content_raw = $this->content;
       $this->setTitle(parsetag($this->content, 'h1'));
     }
     else {
@@ -253,7 +249,7 @@ class Node extends JSONDataContainer {
       'node' => &$this,
     ));
     $this->updateJSON();
-    $this->saveJSON(array('content_raw', 'path', 'fullpath', 'exists', 'realpath', 'father', 'tmp_files_dir'));
+    $this->saveJSON(array('path', 'fullpath', 'exists', 'realpath', 'father', 'tmp_files_dir'));
     $this->saveHTML();
     $this->env->hook('node_insert', array(
       'node' => &$this,
@@ -310,10 +306,6 @@ class Node extends JSONDataContainer {
   public function getContent() {
     // TODO: < and > break in the body. Urgent fix to do.
     return '<h1>' . $this->getTitle() . '</h1>' . $this->getBody();
-  }
-
-  public function getRawContent() {
-    return $this->content_raw;
   }
 
   public function setAuthor($author) {
@@ -374,6 +366,8 @@ class Node extends JSONDataContainer {
     if ($this->isHome()) {
       return;
     }
+
+    // TODO: dismiss fullpath.
     $bca = explode('/', $this->fullpath);
     foreach ($bca as $bread_node) {
       if ($bread_node == '') {
