@@ -167,3 +167,7 @@
     bottom: 0px;
   }
 }
+
+.flickity-link {
+	text-decoration: none;
+}
