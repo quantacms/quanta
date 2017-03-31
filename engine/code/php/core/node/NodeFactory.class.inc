@@ -11,7 +11,7 @@ class NodeFactory {
    * @param $env
    * @param $node
    */
-  public static function load($env, $node, $tpl = NULL) {
+  public static function load(Environment $env, $node, $tpl = NULL) {
     $node = new Node($env, $node);
     $env->hook('node_open', array('node' => &$node), NULL, $tpl);
     return $node;
@@ -57,7 +57,7 @@ class NodeFactory {
    * Gets the current viewed node.
    * @return bool
    */
-  public static function current($env) {
+  public static function current(Environment $env) {
     $tpl = isset($_REQUEST['tpl']) ? $_REQUEST['tpl'] : NULL;
     if ($env->getContext() == NODE_ACTION_ADD) {
       $node = NodeFactory::buildEmptyNode($env, $env->getRequestedPath());
@@ -74,7 +74,7 @@ class NodeFactory {
    * @param $action string
    * @return string
    */
-  public static function requestAction($env, $action, $nodedata) {
+  public static function requestAction(Environment $env, $action, $nodedata) {
     $response = new StdClass();
 
     // TODO: circular dependency to user.
@@ -104,6 +104,7 @@ class NodeFactory {
           $node->setThumbnail($nodedata['edit-thumbnail']);
         }
         $datetime = strtotime($nodedata['edit-date'] . ' ' . $nodedata['edit-time']);
+        // TODO: why $has_access is unused?
         $has_access = ($user->checkAccess(($action == NODE_ACTION_ADD) ? $node->father : $node, $action));
         if (TRUE) {
           $node->setTitle($nodedata['edit-title']);
