@@ -1,6 +1,6 @@
 <?php
 define("FORM_METHOD_POST", 'post');
-define("FORM_METHOD_GET", 'post');
+define("FORM_METHOD_GET", 'get');
 define("FORM_PAGE_FORM", '___page_form___');
 /**
  * Class Form
@@ -137,7 +137,7 @@ class Form extends DataContainer {
    */
   public function renderFormOpen() {
    $rendered = '<a name="' . $this->getId() . '"></a>';
-    $rendered .= '<form action="/' . $this->getAction() .
+    $rendered .= '<form action="' . $this->getAction() .
      '#' . $this->getAnchor() .'" method="' . $this->getMethod() .
      '" id="' . $this->getId() . '">';
     // TODO: why two fields? check shadow...
@@ -156,11 +156,11 @@ class Form extends DataContainer {
    * Load form attributes.
    */
   public function loadAttributes($attributes) {
-    $this->setAction((isset($attributes['action'])) ? $attributes['action'] : '');
+    $this->setAction((isset($attributes['action'])) ? '/' . $attributes['action'] : '?');
     $this->setMethod((isset($attributes['method'])) ? $attributes['method'] : FORM_METHOD_POST);
     $this->setOkMessage((isset($attributes['ok_message'])) ? $attributes['ok_message'] : 'Your form has been submitted.');
     $this->setAnchor((isset($attributes['anchor'])) ? $attributes['anchor'] : $this->getId());
-    $this->setRedirect((isset($attributes['redirect'])) ? $attributes['redirect'] : NULL);
+    //$this->setRedirect((isset($attributes['redirect'])) ? $attributes['redirect'] : NULL);
 
 
 
