@@ -26,12 +26,12 @@ class FormItemText extends FormItem {
     $rendered = '<textarea ' .
       ($this->isDisabled() ? 'disabled ' : '') .
       ($this->isRequired() ? 'required ' : '') .
-      ('placeholder = "' . $this->getPlaceHolder() . '" ') .
-      ('class = "' . $this->getClass() . '" ') .
-      ('cols = "' . $this->getData('cols') . '" ') .
-      ('rows = "' . $this->getData('rows') . '" ') .
-      ('name = "' . $this->getName() . '" ') .
-      ('id = "' . $this->getId() . '" ') .
+      ('placeholder="' . $this->getPlaceHolder() . '" ') .
+      ('class="' . $this->getClass() . '" ') .
+      ('cols="' . $this->getData('cols') . '" ') .
+      ('rows="' . $this->getData('rows') . '" ') .
+      ('name="' . $this->getName() . '" ') .
+      ('id="' . $this->getId() . '" ') .
       '>' .
       $this->getDefaultValue() .
       '</textarea>';

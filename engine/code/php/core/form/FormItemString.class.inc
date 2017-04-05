@@ -12,14 +12,14 @@ class FormItemString extends FormItem {
    * @return mixed
    */
   function render() {
-    $rendered = '<input value = "' . $this->getDefaultValue() . '" type = "' . $this->getHTMLType() . '" ' .
+    $rendered = '<input value="' . $this->getDefaultValue() . '" type="' . $this->getHTMLType() . '" ' .
       ($this->isDisabled() ? 'disabled ' : '') .
       ($this->isRequired() ? 'required ' : '') .
 
-      ('class = "' . $this->getClass() . '" ') .
-      ('placeholder = "' . $this->getPlaceHolder() . '" ') .
-      ('name = "' . $this->getName() . '" ') .
-      ('id = "' . $this->getId() . '" ') .
+      ('class="' . $this->getClass() . '" ') .
+      ('placeholder="' . $this->getPlaceHolder() . '" ') .
+      ('name="' . $this->getName() . '" ') .
+      ('id="' . $this->getId() . '" ') .
       '/>';
 
     return $rendered;

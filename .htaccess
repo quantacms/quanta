@@ -23,5 +23,5 @@ RewriteRule ^(.*)(engine)/([\/0-9a-zA-Z-\.\_]+) engine/$3
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_URI} !=/favicon.ico
-RewriteRule ^([0-9a-zA-Z-]+) engine/code/php/boot.php [L]
+RewriteRule ^([0-9a-zA-Z-]+) engine/code/php/boot.php [L,QSA]
 

@@ -11,10 +11,10 @@ class FormItemHidden extends FormItem {
    * @return mixed
    */
   function render() {
-    $rendered = '<input value = "' . $this->getDefaultValue() .
-      '" type = "hidden" ' .
-      ('name = "' . $this->getName() . '" ') .
-      ('id = "' . $this->getId() . '" ') .
+    $rendered = '<input value="' . $this->getDefaultValue() .
+      '" type="hidden" ' .
+      ('name="' . $this->getName() . '" ') .
+      ('id="' . $this->getId() . '" ') .
       '/>';
     return $rendered;
   }
