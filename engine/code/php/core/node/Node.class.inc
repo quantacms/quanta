@@ -405,38 +405,37 @@ class Node extends JSONDataContainer {
 
       if (is_file($this->realpath . '/tpl.html')) {
         $this->tpl = file_get_contents($this->realpath . '/tpl.html');
-      }
-      foreach ($this->lineage as $lineage) {
+      } else {
+        foreach ($this->lineage as $lineage) {
 
-        $tpl_level++;
-        // a template in the same directory has always priority.
-        if (is_file($lineage->path . '/tpl.html')) {
-          $this->tpl = file_get_contents($lineage->path . '/tpl.html');
-        }
-
-        $min = '';
-
-        // We support 5 levels of sub-level templates for now.
-        // level 0 = tpl.html
-        // level 1 = tpl-.html
-        // level 2 = tpl--.html
-        // etc...
-
-        for ($i = 1; $i <= 6; $i++) {
-          $min .= '-';
-          $file = $lineage->path . '/tpl' . $min . '.html';
-          if (file_exists($file)) {
-              $tpl[$tpl_level + $i] = $file;
+          $tpl_level++;
+          // a template in the same directory has always priority.
+          if (is_file($lineage->path . '/tpl.html')) {
+            $this->tpl = file_get_contents($lineage->path . '/tpl.html');
           }
 
+          $min = '';
+
+          // We support 5 levels of sub-level templates for now.
+          // level 0 = tpl.html
+          // level 1 = tpl-.html
+          // level 2 = tpl--.html
+          // etc...
+
+          for ($i = 1; $i <= 6; $i++) {
+            $min .= '-';
+            $file = $lineage->path . '/tpl' . $min . '.html';
+            if (file_exists($file)) {
+                $tpl[$tpl_level + $i] = $file;
+            }
+          } 
+        }
+
+        // check if there is a sub-level template.
+        if (isset($tpl[$tpl_level])) {
+          $this->tpl = file_get_contents($tpl[$tpl_level]);
         }
       }
-
-      // check if there is a sub-level template.
-      if (isset($tpl[$tpl_level])) {
-        $this->tpl = file_get_contents($tpl[$tpl_level]);
-      }
-
     }
   }
 
