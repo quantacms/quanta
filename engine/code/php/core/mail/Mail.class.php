@@ -33,6 +33,9 @@ class Mail extends Node {
     $mail->Subject = $this->getData('subject');
     $mail->Body    = $this->getBody();
     $mail->AltBody = $this->getBody();
+    if (!empty($this->getData('reply_to'))){
+      $mail->AddReplyTo($this->getData('reply_to'), '');    
+    }
 
     if(!$mail->send()) {
       new Message($this->env, 'Mailer Error: ' . $mail->ErrorInfo, MESSAGE_ERROR);
