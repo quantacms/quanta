@@ -49,7 +49,7 @@ function mail_form_submit($vars) {
     }
   }
 
-  $vars['env']->hook('mailform_' . $vars['form']->getId() . '_send', array('mail' => &$mail));
+  $vars['env']->hook('mailform_' . $vars['form']->getId() . '_send', array('mail' => &$mail, 'form' => &$form));
   $mail->setBody($body);
 
   //$mail->save();
