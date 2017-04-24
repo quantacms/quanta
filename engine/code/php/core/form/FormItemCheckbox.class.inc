@@ -16,7 +16,7 @@ class FormItemCheckbox extends FormItem {
       ($this->isDisabled() ? 'disabled ' : '') .
       ($this->isRequired() ? 'required ' : '') .
       ('class="' . $this->getClass() . '" ') .
-      ($this->isChecked() ? 'checked' : '') .
+      ($this->isChecked() ? 'checked ' : '') .
       ('name="' . $this->getName() . '" ') .
       ('id="' . $this->getId() . '" ') .
       '/> ' . $this->getData('title');
