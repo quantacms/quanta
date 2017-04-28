@@ -405,7 +405,7 @@ class Environment extends DataContainer
             new Message($this, 'Warning: there is more than one folder named ' . $folder . ': <br/>' . var_export($found_folders, 1) . '<br>Check integrity!');
         }
         elseif (empty($result) ) {
-            new Message($this, 'Warning: there is no folder named ' . $folder . '<br>Check integrity!');
+            //new Message($this, 'Warning: there is no folder named ' . $folder . '<br>Check integrity!');
         } else {
             return $result;
         }
