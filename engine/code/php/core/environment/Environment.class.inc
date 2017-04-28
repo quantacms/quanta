@@ -32,7 +32,7 @@ class Environment extends DataContainer {
       $this->request_uri = $request_uri;
     }
     $this->request = explode('/', $this->request_uri);
-    $this->request_wiki = $this->request[count($this->request) - 2];
+    $this->request_path = $this->request[count($this->request) - 2];
     $this->dir['docroot'] = $_SERVER['DOCUMENT_ROOT'] . '/sites/' . $this->host;
     $this->dir['tmp'] = $_SERVER['DOCUMENT_ROOT'] . '/engine/tmp/' . $this->host;
     $this->dir['modules_core'] = $_SERVER['DOCUMENT_ROOT'] . '/engine/code/php/core';
@@ -68,7 +68,7 @@ class Environment extends DataContainer {
    * @return string mixed
    */
   public function getRequestedPath() {
-    return $this->request_wiki;
+    return $this->request_path;
   }
 
   /**
@@ -183,8 +183,11 @@ class Environment extends DataContainer {
    */
   public function scanDirectoryDeep($base_dir, $dir, $dirs = array(), $attributes = array('exclude_dirs' => DIR_INACTIVE, 'type' => DIR_ALL, 'level' => 'leaf'), $depth = 0) {
     $scan = ($this->scanDirectory($base_dir . '/' . $dir, $attributes));
-    if (count($scan) == 0 || is_link($base_dir)) {
-      $dirs[] = $dir;
+    if (count($scan) == 0 || ($depth != 0 && is_link($base_dir))) {
+      $dirs[] = array(
+        'path' => $dir,
+        'name',
+        );
     } else {
       $i = 0;
       if ($attributes['level'] == 'tree') {
@@ -339,14 +342,25 @@ class Environment extends DataContainer {
 
     // Use find to locate the node's directory in the file system.
     // TODO: run a sanity check that there is only one folder or throw error instead?
-    $findcmd = 'find ' . $this->dir['docroot'] . '/ -type d -name "' . $folder . '"';
+    // TODO:
+    $findcmd = 'find ' . $this->dir['docroot'] . '/ -name "' . $folder . '"';
     exec($findcmd, $results);
+    $found_folders = 0;
+    // Check that there are not duplicate folders. Don't count symlinks.
+    for ($i = 0; $i < count($results); $i++) {
 
-    if (count($results) > 1) {
-      new Message($this, 'Warning: there is more than one folder named ' . $folder . ': <br/>' . var_export($results, 1) . '<br>Check integrity!');
+      if (is_dir($results[$i]) && !is_link($results[$i])) {
+        //print ($results[$i] . "IS NOT A LINK!");
+        $found_folders++;
+      }
+
+      $result = $results[$i];
+
+      if ($found_folders > 1) {
+        new Message($this, 'Warning: there is more than one folder named ' . $folder . ': <br/>' . var_export($results, 1) . '<br>Check integrity!');
+      }
     }
 
-    $result = array_pop($results);
     return $result;
   }
 }
