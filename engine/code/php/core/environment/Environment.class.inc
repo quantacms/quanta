@@ -23,7 +23,7 @@ class Environment extends DataContainer {
 
   // Construct the Environment.
   public function __construct($host = NULL, $request_uri = NULL) {
-    $this->host = ($host == NULL) ? strtolower($_SERVER['HTTP_HOST']) : $host;
+    $this->host = (($host == NULL) ? strtolower($_SERVER['HTTP_HOST']) : $host);
     if ($request_uri == NULL) {
       // Remove querystring to obtain request uri...
       $exp = explode('?', $_SERVER['REQUEST_URI']);
@@ -62,6 +62,14 @@ class Environment extends DataContainer {
   public function getContext() {
     return $this->context;
   }
+
+    /**
+     * Get the context of the shadow.
+     * @return mixed
+     */
+    public function getBaseUrl() {
+        return (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] && !in_array(strtolower($_SERVER['HTTPS']),array('off','no')) ? 'https' : 'http') . '://' . $this->host;
+    }
 
   /**
    * Returns the current requested path.
@@ -183,15 +191,18 @@ class Environment extends DataContainer {
    */
   public function scanDirectoryDeep($base_dir, $dir, $dirs = array(), $attributes = array('exclude_dirs' => DIR_INACTIVE, 'type' => DIR_ALL, 'level' => 'leaf'), $depth = 0) {
     $scan = ($this->scanDirectory($base_dir . '/' . $dir, $attributes));
+
+    $item = array(
+        'path' => $base_dir . '/' . $dir,
+        'name' => $dir,
+        'depth' => $depth,
+    );
     if (count($scan) == 0 || ($depth != 0 && is_link($base_dir))) {
-      $dirs[] = array(
-        'path' => $dir,
-        'name',
-        );
+      $dirs[] = $item;
     } else {
       $i = 0;
       if ($attributes['level'] == 'tree') {
-        $dirs[] = $dir;
+        $dirs[] = $item;
       }
       $depth++;
       foreach ($scan as $scandir) {
@@ -204,7 +215,7 @@ class Environment extends DataContainer {
       }
       // If $i didn't grow, means the directory contains only files, so it's a leaf.
       if ($i == 0 && $attributes['level'] == 'leaf') {
-        $dirs[] = $dir;
+        $dirs[] = $item;
       }
     }
     return $dirs;
@@ -361,6 +372,10 @@ class Environment extends DataContainer {
       }
     }
 
-    return $result;
+      if (empty($result)) {
+          new Message($this, 'Warning: there is no folder named ' . $folder . '<br>Check integrity!');
+      } else {
+        return $result;
+      }
   }
 }

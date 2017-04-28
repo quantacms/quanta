@@ -13,17 +13,20 @@ function sitemap_init($vars) {
       'level' => 'tree'
     ));
 
+    foreach ($site_pages as $item) {
+        $modtime = (file_exists($item['path'] . '/data.json') ? filemtime($item['path'] . '/data.json') : filemtime($item['path']));
 
-    foreach ($site_pages as $page) {
+        $priority = ($item['name'] == '') ? 1 : 0.7;
+        $freq = ($item['name'] == '' ? 'daily' : 'weekly');
+
       print '<url>
 ';
-      print '<loc>' . $_SERVER['HTTP_HOST'] . '/</loc>
+      print '<loc>' . $vars['env']->getBaseUrl() . '/' . $item['name'] . '</loc>
 ';
-      print '<lastmod>' . filemtime($page . '/data.json') . '</lastmod>
+      print '<lastmod>' . date('Y-m-d', $modtime) . '</lastmod>';
+      print '<changefreq>' . $freq . '</changefreq>
 ';
-      print '<changefreq>' . ('weekly') . '</changefreq>
-';
-      print '<priority>1</priority>
+      print '<priority>' . $priority . '</priority>
 ';
       print '</url>
 ';

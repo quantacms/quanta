@@ -133,16 +133,16 @@ abstract class ListObject {
       ));
     }
 
-    foreach ($list_pages as $data_url) {
+    foreach ($list_pages as $item) {
 
       if ($this->scantype == DIR_DIRS) {
-        $node = NodeFactory::load($this->env, $data_url);
+        $node = NodeFactory::load($this->env, $item['name']);
         if ($node->exists) {
-          $this->dirs[$data_url] = $node;
+          $this->dirs[$item['name']] = $node;
         }
       }
       elseif (($this->scantype == DIR_FILES) && $this->node != NULL) {
-				$file = new File($this->env, $data_url, $this->node);
+				$file = new File($this->env, $item['name'], $this->node);
         if ($file->isPublic()) {
           $this->files[] = $file;
         }
