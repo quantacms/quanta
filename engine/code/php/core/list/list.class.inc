@@ -135,14 +135,15 @@ abstract class ListObject {
 
     foreach ($list_pages as $item) {
 
+        $item_name = is_array($item) ? $item['name'] : $item;
       if ($this->scantype == DIR_DIRS) {
-        $node = NodeFactory::load($this->env, $item['name']);
+        $node = NodeFactory::load($this->env, $item_name);
         if ($node->exists) {
-          $this->dirs[$item['name']] = $node;
+          $this->dirs[$item_name] = $node;
         }
       }
       elseif (($this->scantype == DIR_FILES) && $this->node != NULL) {
-				$file = new File($this->env, $item['name'], $this->node);
+				$file = new File($this->env, $item_name, $this->node);
         if ($file->isPublic()) {
           $this->files[] = $file;
         }
