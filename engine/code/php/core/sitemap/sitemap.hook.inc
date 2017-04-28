@@ -1,9 +1,10 @@
 <?php
 function sitemap_init($vars) {
   // TODO: object oriented, using templates, etc. etc.
-    header("Content-type: text/xml");
   if ($vars['env']->getRequestedPath() == 'google_sitemap') {
-    print '<?xml version="1.0" encoding="utf-8">
+      header("Content-type: text/xml");
+
+      print '<?xml version="1.0" encoding="utf-8">
     ';
     print '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     ';
