@@ -31,7 +31,7 @@ function wiki_IMGTHUMB($attributes, $file, $string, $env) {
 
   // TODO: stupid way to get to the tmp folder...
 
-  $thumb = '<img src="' . '/engine/tmp/' . $env->host . '/thumbs/' . $thumbfile . '" />';
+  $thumb = '<img alt="' . $filename . '" src="' . '/engine/tmp/' . $env->host . '/thumbs/' . $thumbfile . '" />';
 
   if (isset($attributes['link'])) {
     $link = empty($attributes['link']) ? ($node->name . '/' . $file) : $attributes['link'];

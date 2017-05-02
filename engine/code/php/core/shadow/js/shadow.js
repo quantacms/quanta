@@ -22,7 +22,7 @@ function openShadow(shadowData) {
     }
 
     var shadowPath = '/' + ((shadow.node != undefined) ? (shadow.node + '/') : '') + '?shadow=' + JSON.stringify(shadow);
-    $('#shadow-item').html('').attr('rel', shadow.context).load(shadowPath, function () {
+    $('#shadow-item').html('').attr('data-rel', shadow.context).load(shadowPath, function () {
             if (shadow.callback != undefined) {
                 shadow.callback();
             }
@@ -40,7 +40,7 @@ function openShadow(shadowData) {
                 if (!($(this).parent().hasClass('enabled'))) {
                     $('.enabled').removeClass('enabled');
                     $(this).parent().addClass('enabled');
-                    $('#shadow-content-' + $(this).attr('rel')).addClass('enabled');
+                    $('#shadow-content-' + $(this).attr('data-rel')).addClass('enabled');
                 }
                 return false;
             });

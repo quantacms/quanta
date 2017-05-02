@@ -140,7 +140,7 @@ function wiki_LINK($attributes, $target, $string, $env) {
     if ($current->name == $node->name) {
       $classes[] = 'link-active';
     }
-    $rel = ' rel="' . $node->getName() . '"';
+    $rel = ' data-rel="' . $node->getName() . '"';
   }
 
   if (isset($attributes['class'])) {
