@@ -36,7 +36,10 @@ class Image extends File {
 				case 'link':
           $this->linkto = $attribute;
 					break;
-        default:
+        case 'title':
+					$this->title = $attribute;
+					break;
+				default:
           break;
       }
     }
@@ -46,7 +49,7 @@ class Image extends File {
     $style = (count($this->css) > 0) ? 'style="' . implode(';', $this->css) . '" ' : '';
     $class = (count($this->class) > 0) ?  implode(' ', $this->class) : '';
     
-		$img = '<img class="innerimg ' . $class . '" src="' . $this->path . '" ' . $style . " />";
+		$img = '<img alt="' . $this->title . '" class="innerimg ' . $class . '" src="' . $this->path . '" ' . $style . " />";
     if (!empty($this->link)) {
 		  $img = '<a href="#">' . $img . '</a>';
 		} 

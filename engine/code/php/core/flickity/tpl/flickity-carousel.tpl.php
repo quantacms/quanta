@@ -1,4 +1,4 @@
-<div class="slide" href="[URL:[LISTITEM]]">
+<div class="slide">
   <div class="slide-content">
     <div class="vertical-aligner">
       <div class="vertical-aligner-inner">

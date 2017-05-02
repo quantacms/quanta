@@ -662,7 +662,7 @@ class Node extends JSONDataContainer {
     }
 
     // TODO: it produces a space before the name. Why?
-    $wrap = '<div class="node-item rel="' . $this->getName() . '">';
+    $wrap = '<div class="node-item" data-rel="' . $this->getName() . '">';
     if (!empty($actions)) {
       $wrap .= '<div class="node-item-actions">' . implode($actions) . '</div>';
     }
