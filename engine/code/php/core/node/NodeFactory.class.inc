@@ -25,6 +25,7 @@ class NodeFactory {
   public static function buildForbiddenNode($env) {
     $node = new Node($env, NULL);
     $node->forbidden = TRUE;
+    $node->exists = TRUE;
     $node->setBody('FORBIDDEN');
     return $node;
   }

@@ -29,7 +29,9 @@ class File {
     } else {
       $this->node = $node;
     }
-    $this->filename = $split[count($split) - 1];
+    $this->setFileName($split[count($split) - 1]);
+
+    // TODO: set / get functions.
     $this->path = $file_path;
     $exp = explode('.', $file_path);
     $this->extension = strtolower($exp[count($exp) - 1]);
@@ -222,6 +224,13 @@ class File {
     exit;
   }
 
+  public function getFileName() {
+    return $this->filename;
+  }
+
+  public function setFileName($filename) {
+    $this->filename = $filename;
+  }
   /**
    * Request the deletion of a file.
    * @param $file File
