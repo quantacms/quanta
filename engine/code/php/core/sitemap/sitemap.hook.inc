@@ -40,3 +40,4 @@ function sitemap_init($vars) {
     exit();
   }
 }
+

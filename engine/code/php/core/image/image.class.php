@@ -13,6 +13,7 @@ class Image extends File {
   public $css = array();
   public $class = array();
   public $linkto = NULL;
+  public $title = NULL;
 
   public function loadAttributes($attributes) {
     foreach($attributes as $attname => $attribute) {
@@ -37,19 +38,29 @@ class Image extends File {
           $this->linkto = $attribute;
 					break;
         case 'title':
-					$this->title = $attribute;
+					$this->setTitle($attribute);
 					break;
 				default:
           break;
       }
     }
+    if (empty($this->getTitle())) {
+      $this->setTitle($this->getFileName());
+    }
   }
 
+  public function setTitle($title) {
+    $this->title = $title;
+  }
+
+  public function getTitle() {
+    return $this->title;
+  }
   public function render($mode = IMAGE_RENDER_FULL) {
     $style = (count($this->css) > 0) ? 'style="' . implode(';', $this->css) . '" ' : '';
     $class = (count($this->class) > 0) ?  implode(' ', $this->class) : '';
     
-		$img = '<img alt="' . $this->title . '" class="innerimg ' . $class . '" src="' . $this->path . '" ' . $style . " />";
+		$img = '<img alt="' . $this->getTitle() . '" class="innerimg ' . $class . '" src="' . $this->path . '" ' . $style . " />";
     if (!empty($this->link)) {
 		  $img = '<a href="#">' . $img . '</a>';
 		} 

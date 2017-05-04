@@ -1,5 +1,6 @@
 <?php
 define('INPUT_EMPTY_VALUE', '___INPUT_EMPTY_VALUE___');
+
 /**
  * Class FormItem
  * This class represents a Form Item - it's to be extended by specific form item types.
@@ -28,6 +29,7 @@ abstract class FormItem extends DataContainer {
     $this->setData('id', !empty($this->getInputAttr('id')) ? $this->getInputAttr('id') : ('input-' . $this->getInputAttr('name')));
     $this->checkRequired();
     $this->checkDisabled();
+    $this->checkMultiple();
 
     // TODO: make this better and move elsewhere in validation function.
     if (!empty($_REQUEST['form']) && !empty($_SESSION['validation_errors'][$_REQUEST['form']][$this->getName()])) {
@@ -65,6 +67,11 @@ abstract class FormItem extends DataContainer {
 
   public function getForm() {
     return $this->form;
+  }
+
+  public function checkMultiple() {
+    $this->setMultiple($this->getInputAttr('multiple'));
+    $this->addData('class', array($this->isMultiple() ? 'form-item-multiple' : 'form-item-single'));
   }
 
   public function checkDisabled() {
@@ -105,8 +112,7 @@ abstract class FormItem extends DataContainer {
       for ($i = $split[0]; $i <= $split[1]; $i++) {
         $values[$i] = $i;
       }
-    }
-    // ...otherwise look for the values attribute (that might be NULL, of course!)
+    } // ...otherwise look for the values attribute (that might be NULL, of course!)
     else {
       $values = explode(',', $this->getInputAttr('values'));
     }
@@ -162,6 +168,14 @@ abstract class FormItem extends DataContainer {
     return $this->getData('disabled');
   }
 
+  public function setMultiple($multiple) {
+    $this->setData('multiple', (!empty($multiple)));
+  }
+
+  public function isMultiple() {
+    return $this->getData('multiple');
+  }
+
   /**
    * Get the allowed values for a form item.
    * @return array
@@ -208,7 +222,7 @@ abstract class FormItem extends DataContainer {
 
   public function hasValidationErrors() {
     return !empty($this->getValidationErrors());
-     }
+  }
 
   /**
    * Renders this form item.
@@ -221,10 +235,10 @@ abstract class FormItem extends DataContainer {
     }
 
     $rendered .= '<div class="form-item-wrapper ' . ($this->hasValidationErrors() ? 'has-validation-errors' : '') . '">'
-    . (!empty($this->getLabel()) ? ('<div class="form-item-label"><label for="' . $this->getName() . '">' . $this->getLabel() . '' . ($this->isRequired() ? '<span class="form-item-required">*</span>' : '') . '</label></div>') : '')
+      . (!empty($this->getLabel()) ? ('<div class="form-item-label"><label for="' . $this->getName() . '">' . $this->getLabel() . '' . ($this->isRequired() ? '<span class="form-item-required">*</span>' : '') . '</label></div>') : '')
 
-    . ($this->render())
-    . '</div>';
+      . ($this->render())
+      . '</div>';
     return $rendered;
   }
 

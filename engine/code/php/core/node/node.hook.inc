@@ -1,4 +1,4 @@
-<?php
+    <?php
 
 /**
  * Implementation of hook_shadow_node_delete_access.
@@ -67,15 +67,25 @@ function node_init($vars) {
 
   $node = NodeFactory::current($vars['env']);
 
-  // If user can't access the node, redirect to 403.
-  if ($node->isForbidden() && !isset($_REQUEST['shadow']) ) {
-    // redirect('/403');
-  }
   // If the node does not exist, redirect to 404.
-  elseif (!$node->exists && !isset($_REQUEST['shadow']) && $node->name != '404') {
-    die($node->name . ' NON ESISTE');
-    redirect('/404');
+  if (!$node->exists && !isset($_REQUEST['shadow']) && $node->name != '404') {
+    $node_404 = NodeFactory::load($vars['env'], '404');
+    if ($node_404->exists) {
+      redirect('/404');
+    } else {
+      die('404 - Page not found.');
+    }
   }
+  // If user can't access the node, redirect to 403.
+  elseif ($node->isForbidden() && !isset($_REQUEST['shadow']) ) {
+    $node_403 = NodeFactory::load($vars['env'], '403');
+    if ($node_403->exists) {
+      redirect('/403');
+    } else {
+      die('403 - Forbidden.');
+    }
+  }
+
   else {
     new Message($vars['env'], 'user is viewing this page: ' . $node->name . '.', MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
     // BUILD Template and content.
@@ -90,7 +100,6 @@ function node_init($vars) {
  */
 function node_shadow_node_form($vars) {
   $action_name = ($vars['env']->getContext() == NODE_ACTION_ADD ? 'create' : 'edit') . ' content';
-
   $vars['shadow']->addTab($action_name, file_get_contents('core/node/tpl/node_edit.inc'), 1);
   $vars['shadow']->addTab('manage metadata', file_get_contents('core/node/tpl/metadata_form.inc'), 2);
   $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Save');
@@ -137,7 +146,6 @@ function node_metadata($vars) {
     '<meta name="twitter:title" content="' . $node->getTitle() . '" />',
     '<meta name="twitter:description" content="' . $node->getTeaser() . '" />',
     '<meta name="twitter:image" content="[URL]' . $node->getThumbnail() . '" />',
-
   ));
 }
 
