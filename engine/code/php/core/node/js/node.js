@@ -5,7 +5,7 @@ $(document).bind('refresh', function() {
             context: 'node_delete',
             widget: 'single',
             components: ['node_delete_form'],
-            node: $(this).attr('rel')
+            node: $(this).attr('data-rel')
         });
         e.preventDefault();
 
@@ -19,7 +19,7 @@ $(document).bind('refresh', function() {
             context: 'node_edit',
             widget: 'tabs',
             components: components,
-            node: $(this).attr('rel')
+            node: $(this).attr('data-rel')
         });
         e.preventDefault();
     });
@@ -31,7 +31,7 @@ $(document).bind('refresh', function() {
                 context: 'node_add',
                 widget: $(this).attr('data-widget'),
                 components: components,
-                node: $(this).attr('rel')
+                node: $(this).attr('data-rel')
             });
             e.preventDefault();
         });
