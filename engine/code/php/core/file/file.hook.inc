@@ -90,14 +90,17 @@ function file_boot($vars) {
 		$file = is_file($vars['env']->dir['docroot'] . $vars['env']->request_uri)  ? ($vars['env']->dir['docroot'] . $vars['env']->request_uri) :  $nodepath . '/' . urldecode($filename);
 
     if (is_file($file)) {
-			header('Content-Type:'. mime_content_type($file));
+
+      die($file);
+      header('Content-Type:'. mime_content_type($file));
 			//TODO : slow, insecure...
       $mods = array_flip(apache_get_modules());
       if (isset($mods['mod_xsendfile'])) {
-
+        die("MOD X SEND FILE not implemented yet!");
       }
       else {
 			  readfile($file);
+
       }
 			die();
     } else {

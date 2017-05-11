@@ -6,6 +6,8 @@
  */
 function form_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/form/css/form.css');
+  $vars['env']->addInclude('engine/code/php/core/form/js/form.js');
+
 }
 
 /**
