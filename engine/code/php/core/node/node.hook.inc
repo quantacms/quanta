@@ -1,4 +1,4 @@
-    <?php
+<?php
 
 /**
  * Implementation of hook_shadow_node_delete_access.
