@@ -84,6 +84,15 @@ function access_wikitag($vars) {
             $filter_check[] = $lineage_node->getName();
           }
           break;
+
+        case 'category':
+          $filter_check = array();
+          $categories = $node->getCategories();
+          foreach ($categories as $k => $category_node) {
+            $filter_check[] = $category_node->getName();
+          }
+          break;
+
         default:
 
           break;
