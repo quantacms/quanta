@@ -23,7 +23,7 @@ function wysiwyg_init($vars) {
 function wysiwyg_metadata($vars) {
   // Setup body classes per each item in the current node lineage.
   $vars['page']->addData('metadata', array(
-    '<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />',
+    //'<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />',
     '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/codemirror.min.css">',
   ));
 } 
