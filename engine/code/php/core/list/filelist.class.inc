@@ -19,13 +19,9 @@ class FileList extends ListObject {
    * @param $page
    */
   public function theme() {
-    $user = User::current($this->env);
     $file_types = $this->getAttribute('file_types');
     $i = 0;
-    if (isset($_GET['debug'])) {
-		print $this->module_path;
-		print "IL MODULO PATH ERA";
-		}
+
     foreach ($this->files as $file) {
       $i++;
       if (!empty($this->exclude) && !isset($this->exclude[$i])) {

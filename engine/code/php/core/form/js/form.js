@@ -16,7 +16,7 @@ var refreshForms = function () {
                 var rel_add = $(this).attr('href');
                 var new_id = inputItem;
                 var newFormItem = $(rel_add).clone().attr('id', new_id).attr('value', '');
-                wrapper.after('<div class="form-item-multiple-wrapper">' + newFormItem.prop('outerHTML') + '</div>');
+                wrapper.before('<div class="form-item-multiple-wrapper">' + newFormItem.prop('outerHTML') + '</div>');
                 formItemMultipleActions($('#' + new_id));
             });
 

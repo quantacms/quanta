@@ -30,17 +30,19 @@ abstract class ListObject {
   protected $list_items = array();
   private $attributes = array();
   protected $scantype = DIR_ALL;
-  protected $module;
+  protected $module = NULL;
   protected $exclude = array();
   protected $include = array();
   // Construct the List.
 
-  public function __construct(&$env, $path, $type, $attr_arr = array(), $module = 'list') {
+  public function __construct(&$env, $path, $type, $attr_arr = array(), $module = NULL) {
     if ($path == NULL) {
       $path = $env->getRequestedPath();
     }
 
-    $this->module = $module;
+    if (empty($this->module) && !empty($module)) {
+      $this->module = $module;
+    }
     $this->env = $env;
     // TODO: no need to rebuild node when it's current page.
     $this->dir = $path;
