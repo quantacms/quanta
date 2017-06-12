@@ -13,7 +13,7 @@ function wiki_LIST($attributes, $path, $string, $env) {
  * Detect content FILETABLE and eventually create HTML.
  */
 function wiki_FILETABLE($attributes, $value, $string, $env) {
-  $filelist = new FileList($env, $value, 'file_table', $attributes);
+  $filelist = new FileList($env, $value, 'file_table', $attributes, 'list');
   return $filelist->render();
 }
 
