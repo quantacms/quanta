@@ -42,6 +42,8 @@ abstract class ListObject {
 
     if (empty($this->module) && !empty($module)) {
       $this->module = $module;
+    } else {
+      $this->module = 'list';
     }
     $this->env = $env;
     // TODO: no need to rebuild node when it's current page.
