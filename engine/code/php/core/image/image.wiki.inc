@@ -30,8 +30,14 @@ function wiki_IMGTHUMB($attributes, $file, $string, $env) {
   generateThumbnail($env, $node->realpath . '/' . $filename, $thumbfile, $image->width, $image->height, $op);
 
   // TODO: stupid way to get to the tmp folder...
+  $src = $env->dir['tmp'] . '/thumbs/' . $thumbfile;
 
-  $thumb = '<img alt="' . $filename . '" src="' . '/engine/tmp/' . $env->host . '/thumbs/' . $thumbfile . '" />';
+  if (isset($attributes['url'])) {
+    $thumb = $src;
+  }
+  else {
+    $thumb = '<img alt="' . $filename . '" src="' . $src . '" />';
+  }
 
   if (isset($attributes['link'])) {
     $link = empty($attributes['link']) ? ($node->name . '/' . $file) : $attributes['link'];
@@ -39,4 +45,9 @@ function wiki_IMGTHUMB($attributes, $file, $string, $env) {
   }
 
   return $thumb;
+}
+
+function IMGTHUMBURL($attributes, $file, $string, $env) {
+  $attributes['url'] = TRUE;
+  return wiki_IMGTHUMB($attributes, $file, $string, $env);
 }

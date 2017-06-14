@@ -156,6 +156,10 @@ left: 0;
     display: none;
 }
 
+.shadow-grouped-contents .shadow-content {
+    display: block;
+}
+
 .shadow-content.enabled {
     display: block;
 }
@@ -281,6 +285,12 @@ left: 0;
 #shadow-buttons a:hover {
     opacity: 0.7;
     background: #fafafa;
+}
+
+.shadow-grouped-contents #shadow-buttons {
+    position: relative;
+    display: block;
+    clear: both;
 }
 
 .shadow-content h2 {
