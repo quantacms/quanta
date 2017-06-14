@@ -290,7 +290,7 @@ class User extends Node {
   public function checkAccess($node = NULL, $action = NULL) {
 
     // If node doesn't exist, allow no permission to it.
-    if (!$node->exists) {
+    if (!is_object($node) || !$node->exists) {
       return FALSE;
     }
 

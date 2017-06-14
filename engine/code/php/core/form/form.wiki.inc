@@ -22,7 +22,7 @@ function wiki_INPUT_RENDER($attributes, $form_id, $string, $env) {
 
   $rendered = '';
   $form = FormFactory::getForm($env, $form_id);
-  if (empty($form->getItem($attributes['name']))) {
+  if (empty($attributes['name']) || empty($form->getItem($attributes['name']))) {
     return;
   }
   $input = $form->getItem($attributes['name']);
