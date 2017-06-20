@@ -17,7 +17,7 @@ $(document).bind('refresh', function() {
         openShadow({
             module : 'node',
             context: 'node_edit',
-            widget: 'tabs',
+            widget: $(this).attr('data-widget'),
             components: components,
             node: $(this).attr('data-rel')
         });
