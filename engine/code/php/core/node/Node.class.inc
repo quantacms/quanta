@@ -37,6 +37,7 @@ class Node extends JSONDataContainer {
    */
   public function __construct(&$env, $name, $father = NULL, $tpl_node = NULL) {
     $this->env = $env;
+    $this->json = new stdClass();
     if ($father != NULL) {
       $this->father = NodeFactory::load($env, $father);
     }
@@ -245,6 +246,9 @@ class Node extends JSONDataContainer {
    * Save this node on the file system.
    */
   public function save() {
+    if (empty($this->realpath)) {
+      $this->realpath = $this->env->nodePath($this->getFather()->getName()) . '/' . $this->getName();
+    }
     $this->env->hook('node_preinsert', array(
       'node' => &$this,
     ));
@@ -261,6 +265,7 @@ class Node extends JSONDataContainer {
    */
   public function saveHTML() {
     // Add-edit file.
+
     if (!is_dir($this->realpath)) {
       mkdir($this->realpath) or die('cannot create dir: ' . $this->realpath);
     }
