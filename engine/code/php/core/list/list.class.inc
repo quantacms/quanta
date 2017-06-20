@@ -39,11 +39,12 @@ abstract class ListObject {
     if ($path == NULL) {
       $path = $env->getRequestedPath();
     }
-
-    if (empty($this->module) && !empty($module)) {
-      $this->module = $module;
-    } else {
-      $this->module = 'list';
+    if (empty($this->module)) {
+      if (!empty($module)) {
+        $this->module = $module;
+      } else {
+        $this->module = 'list';
+      }
     }
     $this->env = $env;
     // TODO: no need to rebuild node when it's current page.
