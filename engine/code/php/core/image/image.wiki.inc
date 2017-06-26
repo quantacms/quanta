@@ -47,7 +47,7 @@ function wiki_IMGTHUMB($attributes, $file, $string, $env) {
   return $thumb;
 }
 
-function IMGTHUMBURL($attributes, $file, $string, $env) {
+function wiki_IMGTHUMBURL($attributes, $file, $string, $env) {
   $attributes['url'] = TRUE;
   return wiki_IMGTHUMB($attributes, $file, $string, $env);
 }
