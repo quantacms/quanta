@@ -119,6 +119,7 @@ class NodeFactory {
         if (isset($nodedata['edit-thumbnail'])) {
           $node->setThumbnail($nodedata['edit-thumbnail']);
         }
+
         $datetime = strtotime($nodedata['edit-date'] . ' ' . $nodedata['edit-time']);
         // TODO: why $has_access is unused?
         $has_access = ($user->checkAccess(($action == NODE_ACTION_ADD) ? $node->father : $node, $action));
@@ -139,10 +140,12 @@ class NodeFactory {
 
           if ($node->validate()) {
             $node->save();
+
             $env->hook('node_save', array(
               'node' => &$node,
               'data' => $nodedata
             ));
+
             $response->redirect = '/' . $node->getName() . '/';
           }
           else {
@@ -153,6 +156,7 @@ class NodeFactory {
         else {
           $response->redirect = '/403';
         }
+
         break;
 
       case NODE_ACTION_DELETE:
@@ -164,7 +168,9 @@ class NodeFactory {
         }
         break;
     }
+
     $response_json = json_encode($response);
+
     return $response_json;
   }
 

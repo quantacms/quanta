@@ -312,7 +312,9 @@ class Environment extends DataContainer
     public function checkActions()
     {
         if (isset($this->request_json->action)) {
+
             $this->request_json->action = array_pop($this->request_json->action);
+
             $this->hook('action_' . $this->request_json->action, array('data' => (array) $this->request_json));
         }
     }

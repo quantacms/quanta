@@ -223,7 +223,7 @@ abstract class FormItem extends DataContainer {
   }
 
   public function getCurrentValue() {
-    return $this->getData('current_value') == INPUT_EMPTY_VALUE ? '' : $this->getData('current_value');
+    return empty($this->getData('current_value')) ? $this->getData('default_value') : $this->getData('current_value');
   }
 
   public function getClass() {
