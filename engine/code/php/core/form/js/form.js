@@ -31,7 +31,6 @@ var refreshMultiple = function (inputItem) {
   $('*[name=' + inputItemName + ']').last().after('<input type="button" value="+" rel="' + inputItemID + '" id="' + form_item_add_id + '" class="form-item-add">');
 
   $('#' + form_item_add_id).unbind().bind('click', function () {
-      alert("add");
     multipleCounters++;
     var new_id = inputItemName + '_' + multipleCounters;
     var newFormItem = inputItem.clone().attr('id', new_id).attr('value', '');
