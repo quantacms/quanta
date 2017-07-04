@@ -49,3 +49,11 @@ div.has-validation-errors {
 .form-item-required {
     color: red;
 }
+
+.form-item-add {
+    color: green;
+}
+
+.form-item-remove {
+    color: red;
+}

@@ -26,8 +26,8 @@ class Page extends DataContainer {
    */
   public function loadIncludes() {
   // TODO: HYPER URGENT! Favicon request running the full stack!
-
     if ($_SERVER['REQUEST_URI'] == '/favicon.ico') die();
+    if (substr($_SERVER['REQUEST_URI'], 0, 7) == '/engine') die();
 
     if (isset($_REQUEST['ajax'])) { return; }
     //TODO: enforcing aggregation now.

@@ -1,38 +1,46 @@
-var multipleCounters = [];
+var multipleCounters = 0;
 
 var refreshForms = function () {
 
-    $('input[data-multiple]').each(function () {
-
+    $('*[data-multiple]').each(function () {
         var inputItem = $(this);
-        var wrapper = $(this).closest('.form-item-multiple-wrapper');
-
-        // In the case of multiple items...
-        if (!($(this).closest('.form-item-wrapper').find('.form-item-actions').length)) {
-            formItemMultipleActions(inputItem);
-            //multipleCounters[];
-
-            wrapper.find('.form-item-add').unbind().bind('click', function () {
-                var rel_add = $(this).attr('href');
-                var new_id = inputItem;
-                var newFormItem = $(rel_add).clone().attr('id', new_id).attr('value', '');
-                wrapper.before('<div class="form-item-multiple-wrapper">' + newFormItem.prop('outerHTML') + '</div>');
-                formItemMultipleActions($('#' + new_id));
-            });
-
-            wrapper.find('.form-item-remove').on('click', function () {
-                $(this).closest('.form-item-multiple-wrapper').remove();
-            });
-            refreshForms();
-        }
-
-
+        refreshMultiple(inputItem);
     });
 }
 
-var formItemMultipleActions = function (inputItem) {
-    var input_id = inputItem.attr('id');
-    inputItem.after('<div class="form-item-actions"><a href="#' + input_id + '" class="form-item-add">+</a><a href="#' + input_id + '" class="form-item-remove">-</a></div>');
+var refreshMultiple = function (inputItem) {
+
+  var wrapper = inputItem.closest('.form-item-multiple-wrapper');
+  var inputItemID = inputItem.attr('id');
+  var inputItemName = inputItem.attr('name');
+  // REMOVE button.
+  $('*[name=' + inputItemName + ']').each(function() {
+      var form_item_remove_id = 'form-item-remove-' + $(this).attr('id');
+      if (!$('#' + form_item_remove_id).length) {
+        $(this).after('<input type="button" rel="' + $(this).attr('id') + '" id="' + form_item_remove_id + '" class="form-item-remove" value="-" />');
+        $('#' + form_item_remove_id).unbind().bind('click', function () {
+          $(this).closest('.form-item-multiple-wrapper').detach();
+          refreshMultiple($(this));
+        });
+      }
+  });
+
+  // ADD BUTTON.
+  var form_item_add_id = 'form-item-add-' + inputItemName;
+  $('#' + form_item_add_id).detach();
+  $('*[name=' + inputItemName + ']').last().after('<input type="button" value="+" rel="' + inputItemID + '" id="' + form_item_add_id + '" class="form-item-add">');
+
+  $('#' + form_item_add_id).unbind().bind('click', function () {
+      alert("add");
+    multipleCounters++;
+    var new_id = inputItemName + '_' + multipleCounters;
+    var newFormItem = inputItem.clone().attr('id', new_id).attr('value', '');
+    wrapper.after('<div class="form-item-multiple-wrapper">' + newFormItem.prop('outerHTML') + '</div>');
+    refreshMultiple(inputItem);
+  });
+
+
+
 }
 
 $(document).bind('refresh', function () {

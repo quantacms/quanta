@@ -130,8 +130,9 @@ abstract class FormItem extends DataContainer {
    * Load the default value for the input item.
    */
   public function loadDefault() {
+    $value = $this->getValue();
     // If there is already a value set for the input item, ignore the default.
-    $this->setData('default_value', !empty($this->getValue()) ? $this->getValue() : $this->getInputAttr('default'));
+    $this->setData('default_value', !empty($value) ? array_pop($value) : $this->getInputAttr('default'));
   }
 
   public function setType($type) {
@@ -189,7 +190,20 @@ abstract class FormItem extends DataContainer {
    * @param mixed $value
    */
   public function setValue($value = NULL) {
+    // In order to support multiple values, we use an array.
+    if (!is_array($value)) {
+      $value = explode(GLOBAL_SEPARATOR, $value);
+    }
     $this->setData('value', $value);
+  }
+
+  /**
+   * Set the value for a form item.
+   * @param mixed $value
+   */
+  public function setCurrentValue($value = NULL) {
+    // In order to support multiple values, we use an array.
+    $this->setData('current_value', $value);
   }
 
   /**
@@ -208,8 +222,16 @@ abstract class FormItem extends DataContainer {
     return $this->getData('default_value') == INPUT_EMPTY_VALUE ? '' : $this->getData('default_value');
   }
 
+  public function getCurrentValue() {
+    return $this->getData('current_value') == INPUT_EMPTY_VALUE ? '' : $this->getData('current_value');
+  }
+
   public function getClass() {
     return implode(' ', $this->getData('class'));
+  }
+
+  public function setId($id) {
+    $this->setData('id', $id);
   }
 
   public function getId() {
@@ -230,15 +252,34 @@ abstract class FormItem extends DataContainer {
    */
   public function renderFormItem() {
     $rendered = '';
-    if ($this->hasValidationErrors()) {
-      $rendered .= '<div class="validation-error validation-error">' . $this->getValidationErrors() . '</div>';
+    $values = $this->getValue();
+    $i = 0;
+    // Load and render all existing values...
+    foreach ($values as $value) {
+
+      $this->setCurrentValue($value);
+      if ($i > 0) {
+        $this->setId($this->getId() . '_' . $i);
+      }
+
+      $rend = $this->render();
+
+      $rendered .= ($this->isMultiple()) ? '<div class="form-item-multiple-wrapper">' . $rend . '</div>' : $rend;
+      $i++;
     }
 
-    $rendered .= '<div class="form-item-wrapper ' . ($this->hasValidationErrors() ? 'has-validation-errors' : '') . '">'
-      . (!empty($this->getLabel()) ? ('<div class="form-item-label"><label for="' . $this->getName() . '">' . $this->getLabel() . '' . ($this->isRequired() ? '<span class="form-item-required">*</span>' : '') . '</label></div>') : '')
+    // Add wrapping & label...
+    $rendered = '<div class="form-item-wrapper ' .
+      ($this->hasValidationErrors() ? 'has-validation-errors' : '') .
+      '">' .
+      (!empty($this->getLabel()) ? ('<div class="form-item-label"><label for="' . $this->getName() . '">' . $this->getLabel() . '' . ($this->isRequired() ? '<span class="form-item-required">*</span>' : '') . '</label></div>') : '') .
+      $rendered .
+      '</div>';
 
-      . ($this->render())
-      . '</div>';
+    if ($this->hasValidationErrors()) {
+      $rendered = '<div class="validation-error validation-error">' . $this->getValidationErrors() . '</div>' . $rendered;
+    }
+
     return $rendered;
   }
 
