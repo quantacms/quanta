@@ -93,15 +93,18 @@ abstract class ListObject {
   public function render() {
     $this->theme();
 
-    $output = implode('', $this->list_items);
+    $separator = empty($this->getAttribute('separator')) ? '' : $this->getAttribute('separator');
+    $output = implode($separator, $this->list_items);
+
     $ajax = (!empty($this->getAttribute('ajax'))) ? ' rel= ' . $this->getAttribute('ajax') : '';
     $tpl = (!empty($this->getAttribute('tpl'))) ? ' tpl= ' . $this->getAttribute('tpl') : '';
 
     // If the "clean" attribute is not present, add some wrapping html.
     if (empty($this->getAttribute('clean')))  {
-      $output = '<ul ' . $ajax . $tpl . ' class="list ' . $this->getTheme() . ' list-' . $this->getTheme() . ' list-' . $this->node->getName() . '">' . $output . '</ul>';
+      '<ul ' . $ajax . $tpl . ' class="list ' . $this->getTheme() . ' list-' . $this->getTheme() . ' list-' . $this->node->getName() . '">' . $output . '</ul>';
     }
 
+    // If the "nolinks" attribute is present, remove links from output.
     if ($this->getAttribute('nolinks')) {
       $output = preg_replace('/<a[^>]+\>/i', "", $output);
     }

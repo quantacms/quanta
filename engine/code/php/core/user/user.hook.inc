@@ -6,10 +6,22 @@ function user_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/user/js/user.js');
   $vars['env']->addInclude('engine/code/php/core/user/css/user.css');
 
+  $basic_roles = array(
+    'anonymous' => array('title' => 'Anonymous'),
+    'logged' => array('title' => 'Logged-in User'),
+    'admin' => array('title' => 'Admin'),
+  );
+  foreach ($basic_roles as $role => $roledata) {
+    if (!is_dir($vars['env']->dir['roles'] . '/' . $role)) {
+      NodeFactory::buildNode($vars['env'], $role, '_roles', $roledata);
+    }
+  }
+
 	// TODO: temporary for generating passwords.
 	if (isset($_GET['pass123'])) {
-	print pwd($_GET['pass123']);
+	  print pwd($_GET['pass123']);
 	}
+
 }
 
 /**
@@ -30,8 +42,8 @@ function user_body_classes($vars) {
  */
 function user_action_login($vars) {
 
-  $tmp_user = new User($vars['env'], $vars['data']['username']);
-  $login = $tmp_user->logIn($vars['data']['password']);
+  $tmp_user = new User($vars['env'], array_pop($vars['data']['username']));
+  $login = $tmp_user->logIn(array_pop($vars['data']['password']));
   exit($login);
 }
 

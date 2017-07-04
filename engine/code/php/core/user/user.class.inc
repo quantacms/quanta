@@ -204,6 +204,12 @@ class User extends Node {
    * @param $form_data
    */
   public static function requestAction($env, $action, $form_data) {
+    // TODO: this shit is needed with new approach.
+    foreach ($form_data as $k => $v) {
+      if (is_array($form_data[$k]) && (count($form_data[$k]) == 1)) {
+        $form_data[$k] = array_pop($v);
+      }
+    }
     // This variable is used to check eventual errors in the user save process.
     $valid = FALSE;
     $curr_user = User::current($env);
@@ -297,30 +303,29 @@ class User extends Node {
     $permissions = $node->getPermissions();
 
     $action = trim(strtolower($action));
-    $permission = (string) strtolower(trim($permissions[$action]));
 
-    // Strange case in which no permission is set.
-    if (!isset($permissions[$action])) {
-      new Message($this->env, 'Error: the permission ' . $action . ' does not exist for the node ' . $node->getName() . '.', MESSAGE_ERROR);
-      return FALSE;
+    // Conversion to array as of new approach to values.
+    if (!is_array($permissions[$action])) {
+      $permissions[$action] = array($permissions[$action]);
     }
+    $perm_array = array_flip($permissions[$action]);
 
+
+
+    //$permission = (string) strtolower(trim($permissions[$action]));
     $has_permissions = array();
-    if (isset($action) && isset($permissions[$action]) && $permission == ROLE_ANONYMOUS) {
+
+    if (isset($action) && isset($perm_array[ROLE_ANONYMOUS])) {
       return TRUE;
-    }
-    foreach ($permissions as $perm_name => $perm_role) {
-      if ($this->hasRole($perm_role)) {
-        $has_permissions[$perm_name] = $perm_name;
+    } else {
+      foreach ($perm_array as $perm_role => $counter) {
+        if ($this->hasRole($perm_role)) {
+          return TRUE;
+        }
       }
     }
+    return FALSE;
 
-    if (isset($action)) {
-      return isset($has_permissions[$action]);
-    }
-    else {
-      return $has_permissions;
-    }
   }
 
   // TODO: refactor.

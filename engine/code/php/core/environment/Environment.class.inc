@@ -4,7 +4,7 @@ define("DIR_ALL", 'all');
 define("DIR_DIRS", 'dirs');
 define("DIR_FILES", 'files');
 define("DIR_MODULES", 'modules');
-
+define("GLOBAL_SEPARATOR", '@\@/@\@/@\@/@');
 
 /**
  * Class Environment
@@ -39,10 +39,14 @@ class Environment extends DataContainer
         $this->dir['tmp'] = $_SERVER['DOCUMENT_ROOT'] . '/engine/tmp/' . $this->host;
         $this->dir['modules_core'] = $_SERVER['DOCUMENT_ROOT'] . '/engine/code/php/core';
         $this->dir['modules_custom'] = $this->dir['docroot'] . '/_modules';
+        // TODO: move to files module.
         $this->dir['tmp_files'] = $this->dir['tmp'] . '/files';
         $this->dir['log'] = $_SERVER['DOCUMENT_ROOT'] . '/engine/tmp/' . $this->host . '/log';
+        // TODO: move to user module.
         $this->dir['users'] = $this->dir['docroot'] . '/_users';
-        if (isset($_REQUEST['json'])) {
+        $this->dir['roles'] = $this->dir['docroot'] . '/_roles';
+
+      if (isset($_REQUEST['json'])) {
             $this->request_json = json_decode($_REQUEST['json']);
         }
         $this->load();
@@ -308,7 +312,8 @@ class Environment extends DataContainer
     public function checkActions()
     {
         if (isset($this->request_json->action)) {
-            $this->hook('action_' . $this->request_json->action, array('data' => (array)$this->request_json));
+            $this->request_json->action = array_pop($this->request_json->action);
+            $this->hook('action_' . $this->request_json->action, array('data' => (array) $this->request_json));
         }
     }
 

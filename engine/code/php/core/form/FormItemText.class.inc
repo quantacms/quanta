@@ -32,6 +32,7 @@ class FormItemText extends FormItem {
       ('rows="' . $this->getData('rows') . '" ') .
       ('name="' . $this->getName() . '" ') .
       ('id="' . $this->getId() . '" ') .
+      ($this->isMultiple() ? 'data-multiple ' : ' ') .
       '>' .
       $this->getDefaultValue() .
       '</textarea>';

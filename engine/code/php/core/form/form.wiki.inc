@@ -55,3 +55,15 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
     return $validate_ok;
   }
 }
+
+/**
+ * Use subnodes of a node as possible values for a form item.
+ */
+function wiki_LIST_VALUES($attributes, $value, $string, $env) {
+
+  $attributes['clean'] = TRUE;
+  $attributes['separator'] = ',';
+  $dirlist = new DirList($env, '_roles', 'list-values', $attributes, 'form');
+
+  return $dirlist->render();
+}
