@@ -23,18 +23,18 @@ function register() {
 $(document).ready(function() {
     $('.register-link').click(function (e) {
         register();
-        e.defaultPrevented();
+        e.preventDefault();
     });
     $('.login-link').click(function (e) {
         logIn();
-        e.defaultPrevented();
+        e.preventDefault();
     });
     $('.logout-link').click(function(e) {
         logOut();
-        e.defaultPrevented();
+        e.preventDefault();
     });
     $('.user-edit-link').click(function (e) {
         openShadow({ module: 'user', context: 'user_edit', widget: 'tabs'});
-        e.defaultPrevented();
+        e.preventDefault();
     });
 });
