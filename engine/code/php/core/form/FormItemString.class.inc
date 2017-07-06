@@ -21,6 +21,9 @@ class FormItemString extends FormItem {
       ('name="' . $this->getName() . '" ') .
       ('id="' . $this->getId() . '" ') .
       ($this->isMultiple() ? 'data-multiple ' : ' ') .
+      ($this->isDistinct() ? 'data-distinct ' : ' ') .
+      ($this->isMultiple() ? 'data-limit="' . $this->getData('limit'). '" ' : ' ') .
+
       '/>';
 
     return $rendered;

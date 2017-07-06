@@ -30,6 +30,8 @@ abstract class FormItem extends DataContainer {
     $this->checkRequired();
     $this->checkDisabled();
     $this->checkMultiple();
+    $this->checkLimit();
+    $this->checkDistinct();
 
     // TODO: make this better and move elsewhere in validation function.
     if (!empty($_REQUEST['form']) && !empty($_SESSION['validation_errors'][$_REQUEST['form']][$this->getName()])) {
@@ -72,6 +74,16 @@ abstract class FormItem extends DataContainer {
   public function checkMultiple() {
     $this->setMultiple($this->getInputAttr('multiple'));
     $this->addData('class', array($this->isMultiple() ? 'form-item-multiple' : 'form-item-single'));
+  }
+
+  public function checkLimit() {
+    $this->setLimit($this->getInputAttr('limit'));
+    $this->addData('class', array($this->getData('limit') ? 'form-item-limited' : 'form-item-unlimited'));
+  }
+
+  public function checkDistinct() {
+    $this->setDistinct($this->getInputAttr('distinct'));
+    $this->addData('class', array($this->isDistinct() ? 'form-item-distinct' : 'form-item-not-distinct'));
   }
 
   public function checkDisabled() {
@@ -175,6 +187,22 @@ abstract class FormItem extends DataContainer {
 
   public function isMultiple() {
     return $this->getData('multiple');
+  }
+
+  public function setLimit($limit) {
+    $this->setData('limit', $limit);
+  }
+
+  public function getLimit() {
+    return $this->type;
+  }
+
+  public function setDistinct($multiple) {
+    $this->setData('distinct', (!empty($multiple)));
+  }
+
+  public function isDistinct() {
+    return $this->getData('distinct');
   }
 
   /**
