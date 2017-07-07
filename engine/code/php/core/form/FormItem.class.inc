@@ -30,6 +30,8 @@ abstract class FormItem extends DataContainer {
     $this->checkRequired();
     $this->checkDisabled();
     $this->checkMultiple();
+    $this->checkLimit();
+    $this->checkDistinct();
 
     // TODO: make this better and move elsewhere in validation function.
     if (!empty($_REQUEST['form']) && !empty($_SESSION['validation_errors'][$_REQUEST['form']][$this->getName()])) {
@@ -72,6 +74,16 @@ abstract class FormItem extends DataContainer {
   public function checkMultiple() {
     $this->setMultiple($this->getInputAttr('multiple'));
     $this->addData('class', array($this->isMultiple() ? 'form-item-multiple' : 'form-item-single'));
+  }
+
+  public function checkLimit() {
+    $this->setLimit($this->getInputAttr('limit'));
+    $this->addData('class', array($this->getData('limit') ? 'form-item-limited' : 'form-item-unlimited'));
+  }
+
+  public function checkDistinct() {
+    $this->setDistinct($this->getInputAttr('distinct'));
+    $this->addData('class', array($this->isDistinct() ? 'form-item-distinct' : 'form-item-not-distinct'));
   }
 
   public function checkDisabled() {
@@ -130,8 +142,9 @@ abstract class FormItem extends DataContainer {
    * Load the default value for the input item.
    */
   public function loadDefault() {
+    $value = $this->getValue();
     // If there is already a value set for the input item, ignore the default.
-    $this->setData('default_value', !empty($this->getValue()) ? $this->getValue() : $this->getInputAttr('default'));
+    $this->setData('default_value', !empty($value) ? array_pop($value) : $this->getInputAttr('default'));
   }
 
   public function setType($type) {
@@ -176,6 +189,22 @@ abstract class FormItem extends DataContainer {
     return $this->getData('multiple');
   }
 
+  public function setLimit($limit) {
+    $this->setData('limit', $limit);
+  }
+
+  public function getLimit() {
+    return $this->type;
+  }
+
+  public function setDistinct($multiple) {
+    $this->setData('distinct', (!empty($multiple)));
+  }
+
+  public function isDistinct() {
+    return $this->getData('distinct');
+  }
+
   /**
    * Get the allowed values for a form item.
    * @return array
@@ -189,7 +218,20 @@ abstract class FormItem extends DataContainer {
    * @param mixed $value
    */
   public function setValue($value = NULL) {
+    // In order to support multiple values, we use an array.
+    if (!is_array($value)) {
+      $value = explode(GLOBAL_SEPARATOR, $value);
+    }
     $this->setData('value', $value);
+  }
+
+  /**
+   * Set the value for a form item.
+   * @param mixed $value
+   */
+  public function setCurrentValue($value = NULL) {
+    // In order to support multiple values, we use an array.
+    $this->setData('current_value', $value);
   }
 
   /**
@@ -208,8 +250,16 @@ abstract class FormItem extends DataContainer {
     return $this->getData('default_value') == INPUT_EMPTY_VALUE ? '' : $this->getData('default_value');
   }
 
+  public function getCurrentValue() {
+    return empty($this->getData('current_value')) ? $this->getData('default_value') : $this->getData('current_value');
+  }
+
   public function getClass() {
     return implode(' ', $this->getData('class'));
+  }
+
+  public function setId($id) {
+    $this->setData('id', $id);
   }
 
   public function getId() {
@@ -230,15 +280,34 @@ abstract class FormItem extends DataContainer {
    */
   public function renderFormItem() {
     $rendered = '';
-    if ($this->hasValidationErrors()) {
-      $rendered .= '<div class="validation-error validation-error">' . $this->getValidationErrors() . '</div>';
+    $values = $this->getValue();
+    $i = 0;
+    // Load and render all existing values...
+    foreach ($values as $value) {
+
+      $this->setCurrentValue($value);
+      if ($i > 0) {
+        $this->setId($this->getId() . '_' . $i);
+      }
+
+      $rend = $this->render();
+
+      $rendered .= ($this->isMultiple()) ? '<div class="form-item-multiple-wrapper">' . $rend . '</div>' : $rend;
+      $i++;
     }
 
-    $rendered .= '<div class="form-item-wrapper ' . ($this->hasValidationErrors() ? 'has-validation-errors' : '') . '">'
-      . (!empty($this->getLabel()) ? ('<div class="form-item-label"><label for="' . $this->getName() . '">' . $this->getLabel() . '' . ($this->isRequired() ? '<span class="form-item-required">*</span>' : '') . '</label></div>') : '')
+    // Add wrapping & label...
+    $rendered = '<div class="form-item-wrapper ' .
+      ($this->hasValidationErrors() ? 'has-validation-errors' : '') .
+      '">' .
+      (!empty($this->getLabel()) ? ('<div class="form-item-label"><label for="' . $this->getName() . '">' . $this->getLabel() . '' . ($this->isRequired() ? '<span class="form-item-required">*</span>' : '') . '</label></div>') : '') .
+      $rendered .
+      '</div>';
 
-      . ($this->render())
-      . '</div>';
+    if ($this->hasValidationErrors()) {
+      $rendered = '<div class="validation-error validation-error">' . $this->getValidationErrors() . '</div>' . $rendered;
+    }
+
     return $rendered;
   }
 

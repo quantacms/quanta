@@ -41,7 +41,9 @@ function node_action_node_add($vars) {
  * @param $vars
  */
 function node_action_node_edit($vars) {
+
   $response_json = NodeFactory::requestAction($vars['env'], $vars['data']['action'], $vars['data']);
+
   exit($response_json);
 }
 

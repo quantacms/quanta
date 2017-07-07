@@ -13,8 +13,7 @@ class FormItemString extends FormItem {
    */
   function render() {
     $rendered = '';
-    $rendered .= $this->isMultiple() ? '<div class="form-item-multiple-wrapper">' : '';
-    $rendered .= '<input value="' . $this->getDefaultValue() . '" type="' . $this->getHTMLType() . '" ' .
+    $rendered .= '<input value="' . $this->getCurrentValue() . '" type="' . $this->getHTMLType() . '" ' .
       ($this->isDisabled() ? 'disabled ' : '') .
       ($this->isRequired() ? 'required ' : '') .
       ('class="' . $this->getClass() . '" ') .
@@ -22,8 +21,10 @@ class FormItemString extends FormItem {
       ('name="' . $this->getName() . '" ') .
       ('id="' . $this->getId() . '" ') .
       ($this->isMultiple() ? 'data-multiple ' : ' ') .
+      ($this->isDistinct() ? 'data-distinct ' : ' ') .
+      ($this->isMultiple() ? 'data-limit="' . $this->getData('limit'). '" ' : ' ') .
+
       '/>';
-    $rendered .= $this->isMultiple() ? '</div>' : '';
 
     return $rendered;
   }
