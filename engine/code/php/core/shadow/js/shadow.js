@@ -58,13 +58,18 @@ function submitShadow() {
     $(document).trigger('shadow_' + shadow.context + '_submit');
     var form_items = {};
     $('#shadow-outside').find('input, textarea, select').each(function () {
+        var item_name = $(this).attr('name');
+        if (form_items[item_name] == undefined) {
+            form_items[item_name] = [];
+        }
         if ($(this).attr('type') == 'checkbox') {
-            form_items[$(this).attr('name')] = $(this).is(':checked') ? $(this).val() : '';
+            form_items[item_name].push($(this).is(':checked') ? $(this).val() : '');
         } else {
-            form_items[$(this).attr('name')] = $(this).val();
+            form_items[item_name].push($(this).val());
         }
     });
     var formData = JSON.stringify(form_items);
+
     action(formData);
 }
 

@@ -19,6 +19,9 @@ function checkCodeTags(&$env, $html, $options = 'U') {
       $tag_full = $delimiters[0] . $tag_value . $delimiters[1];
       $replaces = checkCodeTags($env, $tag_value);
       foreach ($replaces as $tag => $val) {
+        if (is_array($val)) {
+          $val = implode(GLOBAL_SEPARATOR, $val);
+        }
         $tag_value = str_replace($tag, $val, $tag_value);
       }
       $tag = explode(':', $tag_value);
@@ -102,6 +105,10 @@ function transformCodeTags(&$env, $html) {
       break;
     }
     foreach ($replaces as $k => $replace) {
+
+      if (is_array($replace)) {
+        $replace = implode(GLOBAL_SEPARATOR, $replace);
+      }
 
       $html = str_replace($k, $replace, $html);
     }

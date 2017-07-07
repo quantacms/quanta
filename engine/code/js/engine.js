@@ -43,6 +43,7 @@ var refreshButtons = function() {
 }
 
 var action = function(dataJson) {
+
     $.ajax({
         type: "POST",
         dataType: 'json',
@@ -66,7 +67,6 @@ var actionSuccess = function(data) {
 
     }
     else if (data.redirect == undefined) {
-        console.log(data);
         alert("There was an error with your submission.");
     } else {
         top.location.href = data.redirect;

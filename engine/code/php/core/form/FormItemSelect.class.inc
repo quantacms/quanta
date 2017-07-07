@@ -19,10 +19,16 @@ class FormItemSelect extends FormItem {
       ('class="' . $this->getClass() . '" ') .
       ('name="' . $this->getName() . '" ') .
       ('id="' . $this->getId() . '" ') .
+      ($this->isMultiple() ? 'data-multiple ' : ' ') .
+      ($this->isDistinct() ? 'data-distinct ' : ' ') .
+      ($this->isMultiple() ? 'data-limit="' . $this->getData('limit'). '" ' : ' ') .
       '>';
 
+
+    $value = $this->getCurrentValue();
+
     foreach ($this->allowable_values as $k => $v) {
-      $rendered .= '<option value="' . $k . '" ' . (($k == $this->getData('value')) ? 'selected' : '') . '>' . $v . '</option>';
+      $rendered .= '<option value="' . $k . '" ' . ($value == $k ? 'selected' : '') . '>' . $v . '</option>';
     }
     $rendered .= '</select>';
 

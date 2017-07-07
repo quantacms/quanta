@@ -47,9 +47,16 @@ class NodeFactory {
    * @param $env
    * @param $node
    */
-  public static function buildNode($env, $name, $father) {
+  public static function buildNode($env, $name, $father, $vars = array()) {
     $node = new Node($env, NODE_NEW, $father);
     $node->setName($name);
+    if (isset($vars['title'])) {
+      $node->setTitle($vars['title']);
+    }
+    if (isset($vars['body'])) {
+      $node->setBody($vars['body']);
+    }
+
     $node->save();
     return $node;
   }
@@ -76,6 +83,14 @@ class NodeFactory {
    * @return string
    */
   public static function requestAction(Environment $env, $action, $nodedata) {
+
+    // TODO: this shit is needed with new approach.
+    foreach ($nodedata as $k => $v) {
+      if (is_array($nodedata[$k]) && (count($nodedata[$k]) == 1)) {
+        $nodedata[$k] = array_pop($v);
+      }
+    }
+
     $response = new StdClass();
 
     // TODO: circular dependency to user.
@@ -104,6 +119,7 @@ class NodeFactory {
         if (isset($nodedata['edit-thumbnail'])) {
           $node->setThumbnail($nodedata['edit-thumbnail']);
         }
+
         $datetime = strtotime($nodedata['edit-date'] . ' ' . $nodedata['edit-time']);
         // TODO: why $has_access is unused?
         $has_access = ($user->checkAccess(($action == NODE_ACTION_ADD) ? $node->father : $node, $action));
@@ -124,10 +140,12 @@ class NodeFactory {
 
           if ($node->validate()) {
             $node->save();
+
             $env->hook('node_save', array(
               'node' => &$node,
               'data' => $nodedata
             ));
+
             $response->redirect = '/' . $node->getName() . '/';
           }
           else {
@@ -138,6 +156,7 @@ class NodeFactory {
         else {
           $response->redirect = '/403';
         }
+
         break;
 
       case NODE_ACTION_DELETE:
@@ -149,7 +168,9 @@ class NodeFactory {
         }
         break;
     }
+
     $response_json = json_encode($response);
+
     return $response_json;
   }
 
