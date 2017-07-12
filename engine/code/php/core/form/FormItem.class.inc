@@ -194,7 +194,7 @@ abstract class FormItem extends DataContainer {
   }
 
   public function getLimit() {
-    return $this->type;
+    return $this->getData('limit');
   }
 
   public function setDistinct($multiple) {
