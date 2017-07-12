@@ -57,3 +57,4 @@ var refreshMultiple = function (inputItem) {
 $(document).bind('refresh', function () {
     refreshForms();
 });
+
