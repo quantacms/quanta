@@ -1,5 +1,5 @@
 <?php
-function sitemap_init($vars) {
+function sitemap_boot($vars) {
   // TODO: object oriented, using templates, etc. etc.
   if ($vars['env']->getRequestedPath() == 'google_sitemap') {
       header("Content-type: text/xml");
