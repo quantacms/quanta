@@ -20,8 +20,7 @@ function file_shadow_file_form($vars) {
  */
 function file_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/file/css/file.css');
-  $vars['env']->addInclude('engine/code/php/core/file/js/jquery.fileupload.js');
-  $vars['env']->addInclude('engine/code/php/core/file/js/file-upload.js');
+
   $node = NodeFactory::current($vars['env']);
 
   if (isset($_FILES['upl'])) {

@@ -7,5 +7,5 @@
 </div>
 <div id="filelist">[FILES:{ATTRIBUTE|name=realname|nowiki}]</div>
 
-<script src="/engine/code/php/core/file/js/jquery.fileupload.js"></script>
-<script src="/engine/code/php/core/file/js/file-upload.js"></script>
+<script src="/engine/code/php/core/file/js/jquery.fileupload.js?D"></script>
+<script src="/engine/code/php/core/file/js/file-upload.js?T"></script>

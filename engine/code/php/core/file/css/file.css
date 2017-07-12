@@ -1,4 +1,4 @@
-.list-item-file {
+.file-link-item {
     padding-left: 22px;
     background-repeat: no-repeat;
     background-position: left center;
@@ -172,22 +172,22 @@ li.list-item {
 .file_admin {
     font-size: 0.8em;
 }
-.list-item-file-admin {
+#filelist .list-item-file {
     border-bottom: 1px dotted #ddd;
     padding: 4px;
     padding-left: 24px;
     width: 60%;
 }
 
-.list-item-file-admin:hover {
+#filelist .list-item-file:hover {
     background-color: #ddd;
 }
 
-.list-item-file-admin .imgcode {
+#filelist .list-item-file .imgcode {
     float: right;
 }
 
-.list-item-file-admin a {
+#filelist .list-item-file a {
     text-decoration: none;
     font-size: 12px;
 }

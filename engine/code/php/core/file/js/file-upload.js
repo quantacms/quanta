@@ -1,12 +1,12 @@
 $(function(){
-
     var ul = $('#filelist ul');
 
     $('#drop a').click(function(){
         // Simulate a click on the file input button
         // to show the file browser dialog
-        $(this).parent().find('input').click();
+      $(this).parent().find('input').click();
     });
+
     // Initialize the jQuery File Upload plugin
     $('#edit-files').fileupload({
 
@@ -19,7 +19,7 @@ $(function(){
 
             var tfile = data.files[0].name.split('.');
 
-            var tpl = $('<li class="working list-item list-item-file list-item-file-admin file-' + tfile[1] + '"><span class="filename"></span><span class="progress-wrapper"><span class="progress"></span><input type="text" value="0" data-width="20" data-height="20"'+
+            var tpl = $('<li class="working list-item list-item-file file-' + tfile[1] + '"><span class="filename"></span><span class="progress-wrapper"><span class="progress"></span><input type="text" value="0" data-width="20" data-height="20"'+
                 ' data-fgColor="#0788a5" data-readOnly="1" data-bgColor="#3e4043" /></span></li>');
 
             // Append the file name and file size

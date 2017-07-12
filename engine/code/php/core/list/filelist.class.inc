@@ -40,7 +40,7 @@ class FileList extends ListObject {
         $tpl = preg_replace("/\{LISTITEM\}/is", string_normalize($file->getPath()), $tpl);
         $tpl = preg_replace("/\{LISTNODE\}/is", string_normalize($this->dir), $tpl);
         $tpl = transformCodeTags($this->env, $tpl);
-        $classes = array('file-list-item', 'list-' . $this->getTheme() . '-item', 'list-item-' . $i);
+        $classes = array('file-list-item', 'list-item-' . $this->getTheme(), 'list-item-' . $i);
         $tpl = '<li class="' . implode(' ', $classes) . '" index="' . $i . '">' . $tpl . '</li>';
 
         $tpl_item = $tpl;
