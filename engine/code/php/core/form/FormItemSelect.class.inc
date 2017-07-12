@@ -21,7 +21,7 @@ class FormItemSelect extends FormItem {
       ('id="' . $this->getId() . '" ') .
       ($this->isMultiple() ? 'data-multiple ' : ' ') .
       ($this->isDistinct() ? 'data-distinct ' : ' ') .
-      ($this->isMultiple() ? 'data-limit="' . $this->getData('limit'). '" ' : ' ') .
+      ($this->getLimit() ? 'data-limit="' . $this->getLimit() . '" ' : ' ') .
       '>';
 
 
