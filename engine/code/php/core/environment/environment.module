@@ -2,3 +2,4 @@
   require_once('DataContainer.class.inc');
   require_once('JSONDataContainer.class.inc');
   require_once('Environment.class.inc');
+  require_once('Garbage.class.inc');
