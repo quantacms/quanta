@@ -18,7 +18,8 @@ class Garbage {
    */
   public function collect() {
     $tmp_dir = $this->env->dir['tmp'] . '/files';
-    $scan = scandir($tmp_dir);
+    $scan = $this->env->scanDirectory($tmp_dir, array('type' => DIR_FILES));
+
     foreach ($scan as $tmp_file) {
       $filepath = $tmp_dir . '/' . $tmp_file;
       $lastmod = filemtime($filepath);
