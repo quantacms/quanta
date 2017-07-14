@@ -13,7 +13,7 @@ function environment_boot($vars) {
     if (unlink($file)) {
       die();
     } else {
-      new Message($this->env, 'Error: CSS - TMP filee could not be deleted.', MESSAGE_ERROR, MESSAGE_TYPE_SCREEN);
+      new Message($vars['env'], 'Error: CSS - TMP filee could not be deleted.', MESSAGE_ERROR, MESSAGE_TYPE_SCREEN);
     }
   }
   // Request the page's JS aggregated file.
@@ -23,7 +23,7 @@ function environment_boot($vars) {
     if (unlink($file)) {
       die();
     } else {
-      new Message($this->env, 'Error: JS - TMP filee could not be deleted.', MESSAGE_ERROR, MESSAGE_TYPE_SCREEN);
+      new Message($vars['env'], 'Error: JS - TMP filee could not be deleted.', MESSAGE_ERROR, MESSAGE_TYPE_SCREEN);
     }
   }
   else {
