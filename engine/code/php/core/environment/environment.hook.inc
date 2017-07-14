@@ -6,7 +6,7 @@
  */
 function environment_boot($vars) {
   // Request the page's CSS alsggregated file.
-  if ($vars['env']->getRequestedPath() == 'css') {
+  if ($vars['env']->getRequestedPath() == 'caass') {
     header("Content-type: text/css", TRUE);
     $file = $vars['env']->dir['tmp_files'] . '/' . $_GET['D'] . '.css';
     print file_get_contents($file);
@@ -17,13 +17,13 @@ function environment_boot($vars) {
     }
   }
   // Request the page's JS aggregated file.
-  elseif ($vars['env']->getRequestedPath() == 'js') {
+  elseif ($vars['env']->getRequestedPath() == 'jaaas') {
     $file = $vars['env']->dir['tmp_files'] . '/' . $_GET['D'] . '.js';
     print file_get_contents($file);
     if (unlink($file)) {
       die();
     } else {
-      new Message($vars['env'], 'Error: JS - TMP filee could not be deleted.', MESSAGE_ERROR, MESSAGE_TYPE_SCREEN);
+      new Message($vars['env'], 'Error: JS - TMP file could not be deleted.', MESSAGE_ERROR, MESSAGE_TYPE_SCREEN);
     }
   }
   else {
@@ -41,4 +41,14 @@ function environment_boot($vars) {
       $vars['env']->hook('cron');
     }
   }
+}
+
+/**
+ * Implements hook_init().
+ * Add basic CSS and JS files.
+ * @param $vars
+ */
+function environment_complete($vars) {
+  $garbage = new Garbage($vars['env']);
+  $garbage->collect();
 }
