@@ -143,8 +143,10 @@ abstract class FormItem extends DataContainer {
    */
   public function loadDefault() {
     $value = $this->getValue();
+    $single_value = array_pop($value);
+
     // If there is already a value set for the input item, ignore the default.
-    $this->setData('default_value', !empty($value) ? array_pop($value) : $this->getInputAttr('default'));
+    $this->setData('default_value', !empty($single_value) ? $single_value : $this->getInputAttr('default'));
   }
 
   public function setType($type) {

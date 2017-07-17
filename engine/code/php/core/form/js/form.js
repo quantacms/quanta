@@ -39,7 +39,7 @@ var refreshMultiple = function (inputItem) {
 
 
   // Add the + button... only if limit not reached.
-  if ((limit == undefined) || (totItems < limit)) {
+  if ((limit == undefined) || !limit || (totItems < limit)) {
     last_item.after('<input type="button" value="+" rel="' + inputItemID + '" id="' + form_item_add_id + '" class="form-item-add">');
     $('#' + form_item_add_id).unbind().bind('click', function () {
       multipleCounters++;
