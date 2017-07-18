@@ -70,6 +70,11 @@ class FormFactory {
         $formitem = new FormItemSubmit($env, $input);
         break;
 
+      case 'autocomplete':
+        print "CIAO";
+        $formitem = new FormItemAutocomplete($env, $input);
+        break;
+
       case 'string':
       default:
       // TODO: use a hook to eventually get custom formitem items from other modules.

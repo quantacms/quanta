@@ -100,9 +100,7 @@ function file_boot($vars) {
         readfile($file);
       }
 			die();
-    } else {
-		  redirect('404');
-		}
+    }
   }
 }
 

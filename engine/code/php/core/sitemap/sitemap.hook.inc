@@ -4,10 +4,8 @@ function sitemap_boot($vars) {
   if ($vars['env']->getRequestedPath() == 'google_sitemap') {
       header("Content-type: text/xml");
 
-      print '<?xml version="1.0" encoding="utf-8" ?>
-    ';
-    print '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-    ';
+      print "<?xml version=\"1.0\" encoding=\"utf-8\" ?>" . "\n";
+    echo "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n";
     $site_pages = $vars['env']->scanDirectoryDeep($vars['env']->dir['docroot'], '', array(), array(
       'exclude_dirs' => DIR_INACTIVE,
       'symlinks' => FALSE,
@@ -15,27 +13,25 @@ function sitemap_boot($vars) {
       'level' => 'tree'
     ));
 
+    $already_done = array();
     foreach ($site_pages as $item) {
         $modtime = (file_exists($item['path'] . '/data.json') ? filemtime($item['path'] . '/data.json') : filemtime($item['path']));
 
+        if (isset($already_done[$item['name']])) {
+          next;
+        }
+        $already_done[$item['name']] = TRUE;
         $priority = ($item['name'] == '') ? 1 : 0.7;
         $freq = ($item['name'] == '' ? 'daily' : 'weekly');
 
-      print '<url>
-';
-      print '<loc>' . $vars['env']->getBaseUrl() . '/' . $item['name'] . '</loc>
-';
-      print '<lastmod>' . date('Y-m-d', $modtime) . '</lastmod>';
-      print '<changefreq>' . $freq . '</changefreq>
-';
-      print '<priority>' . $priority . '</priority>
-';
-      print '</url>
-';
+      echo "<url>\n";
+      echo "<loc>" . $vars['env']->getBaseUrl() . "/" . $item['name'] . "</loc>";
+      echo "<lastmod>" . date('Y-m-d', $modtime) . "</lastmod>\n";
+      echo "<changefreq>" . $freq . "</changefreq>\n";
+      echo "<priority>" . $priority . "</priority>\n";
+      echo "</url>\n";
     }
-
-    print '</urlset>
-';
+    print "</urlset>\n";
 
     exit();
   }

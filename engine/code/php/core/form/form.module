@@ -15,3 +15,4 @@ require_once('FormItemTime.class.inc');
 require_once('FormItemDate.class.inc');
 require_once('FormItemCheckbox.class.inc');
 require_once('FormItemSubmit.class.inc');
+require_once('FormItemAutocomplete.class.inc');
