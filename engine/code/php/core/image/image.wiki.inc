@@ -17,13 +17,22 @@ function wiki_THUMBNAIL($attributes, $name, $string, $env) {
   return '<a href="/' . $name. '">' . $image->render() . '</a>';
 }
 
+/**
+ * Create a thumbnail / edited version of an image on the fly.
+ * @param $attributes
+ * @param $file
+ * @param $string
+ * @param $env
+ * @return string
+ */
 function wiki_IMGTHUMB($attributes, $file, $string, $env) {
   $node = isset($attributes['node']) ? NodeFactory::load($env, $attributes['node']) : NodeFactory::current($env);
   $image = new Image($env, $file, $node);
   $image->loadAttributes($attributes);
 
   $op = isset($attributes['operation']) ? $attributes['operation'] : 'scale';
-  $thumbfile = 'thumb-' . str_replace('/', '-', $node->getName() . '-' . $image->width . 'x' . $image->height . '-'. $file);
+  $thumbfile = 'thumb-' . str_replace(' ', '-', str_replace('/', '-', $node->getName() . '-' . $image->width . 'x' . $image->height . '-'. $file));
+  preg_replace("/[^A-Za-z0-9 ]/", '', $thumbfile);
 
 	$filearr = explode('/', $file);
 	$filename = $filearr[count($filearr) - 1];

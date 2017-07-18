@@ -49,7 +49,10 @@ class User extends Node {
   public function load() {
     if ( strlen($this->name) > 0 && $this->exists) {
       $this->loadJSON();
-      $this->roles = (array) $this->json->roles;
+      if (isset($this->json->roles)) {
+        $this->roles = (array) $this->json->roles;
+      }
+
       if (isset($this->json->password)) {
         $this->password = $this->json->password;
       }

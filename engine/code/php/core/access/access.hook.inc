@@ -19,7 +19,7 @@ function access_node_presave($vars) {
 
   // TODO: review this process.
   foreach ($node_permissions as $permission) {
-    if (isset($vars['data'][$permission])) {
+    if (isset($vars['data'][$permission]) && isset($vars['node']->json->permissions)) {
       $vars['node']->json->permissions->{$permission} = $vars['data'][$permission];
     }
   }
