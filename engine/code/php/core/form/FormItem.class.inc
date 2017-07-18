@@ -35,7 +35,7 @@ abstract class FormItem extends DataContainer {
 
     // TODO: make this better and move elsewhere in validation function.
     if (!empty($_REQUEST['form']) && !empty($_SESSION['validation_errors'][$_REQUEST['form']][$this->getName()])) {
-      $this->addData('class', array('validation-error'));
+      $this->addClass('validation-error');
     }
 
     $this->loadValue();
@@ -258,6 +258,10 @@ abstract class FormItem extends DataContainer {
 
   public function getClass() {
     return implode(' ', $this->getData('class'));
+  }
+
+  public function addClass($class) {
+    $this->addData('class', array($class));
   }
 
   public function setId($id) {

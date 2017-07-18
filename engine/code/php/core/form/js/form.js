@@ -1,13 +1,29 @@
 var multipleCounters = 0;
 
+/**
+ * Refresh all forms.
+ */
 var refreshForms = function () {
-
     $('*[data-multiple]').each(function () {
         var inputItem = $(this);
         refreshMultiple(inputItem);
     });
+    refreshAutocomplete();
 }
 
+/**
+ * Refresh autocomplete fields.
+ */
+var refreshAutocomplete = function() {
+  $(".autocomplete").each(function() {
+    $(this).easyAutocomplete({data: ["BLA BLA", 'ciao ciao', 'come vaaa']});
+  });
+}
+
+/**
+ * Refresh multiple fields.
+ * @param inputItem
+ */
 var refreshMultiple = function (inputItem) {
   var wrapper = inputItem.closest('.form-item-multiple-wrapper');
   var inputItemID = inputItem.attr('id');
@@ -51,10 +67,10 @@ var refreshMultiple = function (inputItem) {
     });
     }
 
+    refreshAutocomplete();
 
 }
 
 $(document).bind('refresh', function () {
     refreshForms();
 });
-

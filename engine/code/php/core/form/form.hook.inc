@@ -7,7 +7,9 @@
 function form_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/form/css/form.css');
   $vars['env']->addInclude('engine/code/php/core/form/js/form.js');
-
+  $vars['env']->addInclude('engine/code/php/core/form/addons/autocomplete/easy-autocomplete.min.css');
+  $vars['env']->addInclude('engine/code/php/core/form/addons/autocomplete/easy-autocomplete.themes.min.css');
+  $vars['env']->addInclude('engine/code/php/core/form/addons/autocomplete/jquery.easy-autocomplete.min.js');
 }
 
 /**
@@ -24,6 +26,17 @@ function form_form_validate($vars) {
       $form->validationError($item, 'This item is required!');
     }
     $item->validate();
+  }
+}
+
+
+function form_boot($vars) {
+  // TODO: object oriented, using templates, etc. etc.
+  if ($vars['env']->getRequestedPath() == 'autocomplete') {
+    header("Content-type: application/json");
+    $results = array('test', 'aldo', 'alien', 'tette', 'ararara', 'seguito');
+    print json_encode($results);
+    die();
   }
 }
 
