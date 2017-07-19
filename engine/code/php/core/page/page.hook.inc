@@ -16,7 +16,6 @@ function page_boot($vars) {
     header("Content-Type: text/plain");
     $user_agents = array('*' => array());
     $user_agents['*'][] = 'Disallow: /search';
-    $user_agents['*'][] = 'Disallow: /google_sitemap';
     $user_agents['*'][] = 'Disallow: /files*';
     $user_agents['*'][] = 'Disallow: /css*';
     $user_agents['*'][] = 'Disallow: /js*';
