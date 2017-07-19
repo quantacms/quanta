@@ -34,6 +34,24 @@ function wiki_BLOCK($attributes, $node, $string, $env) {
   }
   return $node->isForbidden() ? '' : $body;
 }
+/**
+ * Implementation of wiki tag JSONATTRIBUTE
+ * Very important tag that allows retrieving every attribute of a node.
+ *
+ * @param $attributes
+ * @param $node
+ * @param $string
+ * @param $env
+ * @return string
+ */
+function wiki_JSONATTRIBUTE($attributes, $node, $string, $env) {
+  $attribute = wiki_ATTRIBUTE($attributes, $node, $string, $env);
+	$explode = explode(GLOBAL_SEPARATOR, $attribute);
+	if (count($explode) > 1) {
+		$attribute = $explode;
+	}
+	return json_encode($attribute);
+}
 
 /**
  * Implementation of wiki tag ATTRIBUTE
