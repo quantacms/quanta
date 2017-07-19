@@ -417,5 +417,61 @@ class Environment extends DataContainer
         } else {
             return $result;
         }
+
+
     }
+
+  /**
+   * The doctor function fixes all symlinks in the system.
+   */
+  public function doctor() {
+
+    $path = is_link($this->dir['docroot']) ? ($_SERVER['DOCUMENT_ROOT'] . '/sites/' . readlink($this->dir['docroot'])) : $this->dir['docroot'];
+    print "Searching for all symlinks in " . $path . "...";
+    flush();
+    $symlinks_find_cmd = "find " . $path . " -type l";
+    exec($symlinks_find_cmd, $results_arr);
+    print "..." . count($results_arr) . ' found.<br>';
+    $wrong_links = 0;
+    $fixed_links = 0;
+    $unfixable_links = array();
+
+    // Cycle all symlinks in the system.
+    foreach ($results_arr as $k => $result_string) {
+      $link_exists = is_dir(readlink($result_string));
+      $link_name = array_reverse(explode('/', $result_string))[0];
+      // If a link is not corresponding to a dir, attempt to find the real dir.
+
+      if (!$link_exists) {
+        $wrong_links++;
+        $realpath = $this->nodePath($link_name);
+
+        print "Looking for " . $link_name . ' (' . $realpath . ')...<br>';
+        if (is_dir($realpath)) {
+          // Attempt to change the target dir of the link.
+          unlink($result_string);
+          link($realpath, $result_string);
+          print "...fixed! :-) <br>";
+          $fixed_links++;
+        }
+        else {
+          print "...none found :-( <br>";
+          $unfixable_links[] = $result_string;
+        }
+
+      }
+
+      }
+    print $wrong_links . " wrong links found.<br>";
+    if ($fixed_links > 0) {
+      print $fixed_links . " wrong links <b style='color: green'>FIXED</b>!<br>";
+    }
+    if (count($unfixable_links) > 0) {
+      print "<b style='color:red'>Could not fix those " . count($unfixable_links) . " wrong links. Maybe they were deleted?</b><br>";
+      print implode('<br>', $unfixable_links);
+    }
+
+    die();
+  }
+
 }
