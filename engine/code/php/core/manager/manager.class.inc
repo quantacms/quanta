@@ -23,7 +23,7 @@ class Manager {
     $lines = array();
     foreach ($leaves as $leaf) {
 
-      if ($leaf->name != 'home' && $leaf->name != 'files') {
+      if (!empty($leaf->name) && $leaf->name != 'home' && $leaf->name != 'files') {
         $lines[] = $this->renderLeaf($leaf);
       }
     }
@@ -36,14 +36,14 @@ class Manager {
    * @return string
    */
   public function renderLeaf($leaf) {
-    $selected = $leaf->hasChild($this->node->name);
+    $selected = !empty($this->node->name) ? $leaf->hasChild($this->node->name) : FALSE;
     $is_father = ($leaf->name == $this->node->getFather()->name);
     $classes = array('manager-leaf');
     if ($leaf->hasChildren()) {
       $classes[] = "has-children";
     }
 
-    if ($leaf->name == $this->node->name) {
+    if (!empty($this->node->name) && ($leaf->name == $this->node->name)) {
       $txt = '(current node)';
     } elseif ($is_father) {
       $txt = '(main category)';
