@@ -21,7 +21,7 @@ function manager_init($vars) {
  * @return bool
  */
 function manager_shadow_manager_form($vars) {
-  $user = UserFactory::current($vars['env']);
+  $user = User::current($vars['env']);
   $node = $vars['shadow']->getNode();
   if (!$user->checkAccess($node, $vars['env']->getContext())) {
     return FALSE;
