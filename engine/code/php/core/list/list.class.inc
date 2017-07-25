@@ -99,7 +99,7 @@ abstract class ListObject {
 
     // If the "clean" attribute is not present, add some wrapping html.
     if (empty($this->getAttribute('clean')))  {
-      $output = '<ul ' . $ajax . $tpl . ' class="list ' . $this->getTheme() . ' list-' . $this->getTheme() . ' list-' . $this->node->getName() . '">' . $output . '</ul>';
+      $output = '<ul ' . $ajax . $tpl . ' class="list ' . $this->getTheme() . ' list-' . $this->getTheme() . ' list-' . $this->node->getName() . '" data-node="' . $this->node->getName() . '">' . $output . '</ul>';
     }
 
     // If the "nolinks" attribute is present, remove links from output.

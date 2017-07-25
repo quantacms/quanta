@@ -29,7 +29,8 @@ class FormItemCheckbox extends FormItem {
   }
 
   public function loadAttributes() {
-    $this->setData('checked', $this->getDefaultValue() == array_pop($this->getValue()));
+    $value = $this->getValue();
+    $this->setData('checked', $this->getDefaultValue() == array_pop($value));
     // TODO: Implement loadAttributes() method.
   }
 
