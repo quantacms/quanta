@@ -104,8 +104,9 @@ var refreshFileActions = function() {
         var filepath = $(this).parents('li').find('.file-link').attr('href');
         var parent = $(this).closest('li');
         if (confirm('Are you sure you want to delete this file? \n' + filepath)) {
+            var node_name = ($(this).closest('.list').data('node'));
             $.ajax({
-                url: "?file_delete=" + filepath,
+                url: "/" + node_name + "/?file_delete=" + filepath,
                 success: function() {
                     parent.fadeOut('slow');
                 },
