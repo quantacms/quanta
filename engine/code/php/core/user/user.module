@@ -1,4 +1,7 @@
 <?php
 require_once('User.class.inc');
+require_once('UserFactory.class.inc');
+
+
 
 

@@ -94,7 +94,7 @@ class NodeFactory {
     $response = new StdClass();
 
     // TODO: circular dependency to user.
-    $user = User::current($env);
+    $user = UserFactory::current($env);
 
     // TODO: refactor this stuff.
     // When user didn't enter a path...

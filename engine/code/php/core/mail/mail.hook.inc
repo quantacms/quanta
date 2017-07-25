@@ -23,8 +23,9 @@ function mail_init($vars) {
  * Submitting a mail form.
  * @param $vars
  */
-function mail_form_submit($vars) {
-  $mail_tmp = $vars['env']->dir['docroot'] . '/_mailqueue';
+function mail_form_type_mailform_submit($vars) {
+  print_r($vars['form']->getType());
+$mail_tmp = $vars['env']->dir['docroot'] . '/_mailqueue';
   $vars['env']->sysdir($mail_tmp);
   $queue = new Node($vars['env'], '_mailqueue');
 

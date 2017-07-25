@@ -18,27 +18,12 @@ class User extends Node {
   // Action being performed on the user
   public $context;
   public $roles = array();
-  public $exists;
   public $password;
 
-  /**
-   * Get the current navigating user.
-   */
-  static function current($env, $reload = FALSE) {
-    if (!isset($_SESSION['user'])) {
-      $_SESSION['user'] = serialize(new User($env, USER_ANONYMOUS));
-    }
-    $user = unserialize($_SESSION['user']);
-
-    if ($reload) {
-      $user = new User($env, $user->name);
-    }
-    $user->env = $env;
-
-    return $user;
-  }
-
   private function checkPassword($password) {
+    if (!isset($this->json->password)) {
+      return FALSE;
+    }
     return ($this->json->password == pwd($password));
   }
 
@@ -135,13 +120,13 @@ class User extends Node {
   }
 
   public function isCurrent() {
-    $curr_user = User::current($this->env);
+    $curr_user = UserFactory::current($this->env);
     return ($curr_user->getName() == $this->getName());
   }
 
   public function save() {
     $this->env->hook('user_save', array('user' => $this));
-    $this->loadJSON();
+    $this->updateJSON();
     $this->saveJSON();
 
     if ($this->isCurrent()) {
@@ -155,21 +140,20 @@ class User extends Node {
    * @param $form_data
    * @return bool|void
    */
-  private function register($form_data) {
+  public function register($form_data) {
     $this->password = pwd($form_data['edit-password']);
     $this->email = $form_data['edit-email'];
     $this->setData('first_name', $form_data['edit-first_name']);
     $this->setData('last_name', $form_data['edit-last_name']);
     if ($valid = $this->validate($form_data)) {
       $valid = $this->save();
-      new Message($this->env, 'User ' . $this->name . ' was registered correctly!', MESSAGE_CONFIRM, MESSAGE_TYPE_SCREEN, 'user');
+      //new Message($this->env, 'User ' . $this->name . ' was registered correctly!', MESSAGE_CONFIRM, MESSAGE_TYPE_SCREEN, 'user');
     }
     return $valid;
   }
 
   // Todo:update() and register() look too much similar.
-
-  private function update($form_data) {
+  public function update($form_data) {
     foreach ($form_data as $k => $value) {
       $field = str_replace('edit-', '', $k);
       switch ($field) {
@@ -202,50 +186,10 @@ class User extends Node {
   }
 
   /**
-   * @param Environment $env
-   * @param $action
-   * @param $form_data
+   * Validate the user as a valid user.
+   * @param array $form_data
+   * @return bool
    */
-  public static function requestAction($env, $action, $form_data) {
-    // TODO: this shit is needed with new approach.
-    foreach ($form_data as $k => $v) {
-      if (is_array($form_data[$k]) && (count($form_data[$k]) == 1)) {
-        $form_data[$k] = array_pop($v);
-      }
-    }
-    // This variable is used to check eventual errors in the user save process.
-    $valid = FALSE;
-    $curr_user = User::current($env);
-    $edit_same_user = $curr_user->name == $form_data['edit-name'];
-    $response = new StdClass();
-    $can_edit =
-      ($action == USER_ACTION_REGISTER && $curr_user->checkAccess(NULL, USER_ACTION_REGISTER)) ||
-      ($action == USER_ACTION_EDIT && $curr_user->checkAccess(NULL, USER_ACTION_EDIT)) ||
-      ($action == USER_ACTION_EDIT && $edit_same_user && $curr_user->checkAccess(NULL, USER_ACTION_EDIT_OWN));
-    if (!$can_edit) {
-      new Message($env, 'Sorry, you don\'t have the permissions to perform this action.', MESSAGE_WARNING, MESSAGE_TYPE_SCREEN);
-    }
-    else {
-      $user = new User($env, $form_data['edit-name'], array(ROLE_LOGGED => ROLE_LOGGED));
-      $user->context = $action;
-      if ($action == USER_ACTION_REGISTER) {
-        $valid = $user->register($form_data);
-      }
-      elseif ($action == USER_ACTION_EDIT) {
-        $valid = $user->update($form_data);
-      }
-    }
-
-    if ($valid) {
-      $response->redirect = '/' . $env->getRequestedPath();
-      $user->rebuildSession();
-    } else {
-      $response->errors = Message::burnMessages();
-    }
-    $response_json = json_encode($response);
-    return $response_json;
-  }
-
   public function validate($form_data = array()) {
     $valid = FALSE;
     if ($this->exists) {
@@ -291,6 +235,21 @@ class User extends Node {
 
   }
 
+  public function getEmail() {
+    return $this->email;
+  }
+
+  public function setEmail($email) {
+    $this->email = $email;
+  }
+
+  public function getPassword() {
+    return $this->password;
+  }
+
+  public function setPassword($password) {
+    $this->password = $password;
+  }
   /**
    *
    * Check if user can access a node
@@ -361,11 +320,25 @@ class User extends Node {
     return date('Y-m-d', $this->getTime());
   }
 
-  private function rebuildSession() {
+  public function rebuildSession() {
     $_SESSION['user'] = serialize($this);
   }
 
   public function updateJSON($ignore = array()) {
-    // TODO: Implement updateJSON() method.
+    $this->json->email = $this->getEmail();
+    $this->json->first_name = $this->getData('first_name');
+    $this->json->last_name = $this->getData('last_name');
+    $this->json->password = $this->getPassword();
+    parent::updateJSON();
   }
+
+  /**
+   * @deprecated by UserFactory::current().
+   * @param $env
+   * @return mixed|User
+   */
+  public static function current($env) {
+    return UserFactory::current($env);
+  }
+
 }

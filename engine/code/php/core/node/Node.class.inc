@@ -210,7 +210,8 @@ class Node extends JSONDataContainer {
    * @return bool
    */
   public function hasChild($name) {
-    return is_dir($this->realpath . '/' . $name);
+
+    return (empty($name) ? FALSE : is_dir($this->realpath . '/' . $name));
   }
 
   /**
@@ -391,7 +392,7 @@ class Node extends JSONDataContainer {
    * Eventually use tpl.html files (with dashed depth).
    */
   public function buildTemplate() {
-    $user = User::current($this->env);
+    $user = UserFactory::current($this->env);
     // Use another node as a template.
     if (isset($this->tpl_node)) {
       $tpl_node = new Node($this->env, $this->tpl_node);
@@ -582,7 +583,6 @@ class Node extends JSONDataContainer {
 
   /**
    * Renders a node edit form.
-   * @param $context
    * @return mixed
    */
   public function renderMetadataForm() {
@@ -619,10 +619,15 @@ class Node extends JSONDataContainer {
     if (isset($this->father)) {
       return $this->father;
     }
-    else {
+    elseif ($this->exists) {
       $rpath_arr = explode('/', $this->realpath);
-      $fatherpath = ($rpath_arr[count($rpath_arr) - 2]);
-      $this->father = ($fatherpath == $this->env->host) ? new Node($this->env, 'home') : new Node($this->env, $fatherpath);
+      // Look for the node's father.
+      if (count($rpath_arr) >= 2) {
+        $fatherpath = ($rpath_arr[count($rpath_arr) - 2]);
+        $this->father = ($fatherpath == $this->env->host) ? new Node($this->env, 'home') : new Node($this->env, $fatherpath);
+      } else {
+        $this->father = NodeFactory::current($this->env);
+      }
     }
   }
 
@@ -655,7 +660,7 @@ class Node extends JSONDataContainer {
    */
   public function wrap($html) {
 
-    $user = User::current($this->env);
+    $user = UserFactory::current($this->env);
     $actions = array();
 
     if ($user->checkAccess($this, NODE_ACTION_EDIT)) {

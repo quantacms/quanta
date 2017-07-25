@@ -15,8 +15,9 @@ class FormItemEmail extends FormItemString {
   }
 
   public function validate() {
-   if (!valid_email($this->getValue())) {
-     $this->getForm()->validationError($this, 'Insert a valid email');
-   };
+    $value = $this->getValue();
+    if (!valid_email(array_pop($value))) {
+       $this->getForm()->validationError($this, 'Insert a valid email');
+    };
   }
 }

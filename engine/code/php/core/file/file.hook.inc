@@ -6,7 +6,7 @@
  * @return bool
  */
 function file_shadow_file_form($vars) {
-  $user = User::current($vars['env']);
+  $user = UserFactory::current($vars['env']);
   $node = $vars['shadow']->getNode();
   if (!$user->checkAccess($node, $vars['env']->getContext())) {
     return FALSE;
