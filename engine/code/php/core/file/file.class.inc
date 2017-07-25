@@ -178,7 +178,7 @@ class File {
    * Check the uploads being made to a node.
    */
   public static function checkUploads($node) {
-    $user = User::current($node->env);
+    $user = UserFactory::current($node->env);
     if (!$user->checkAccess($node, NODE_ACTION_EDIT)) {
       new Message($node->env, 'Error: you have no permissions to upload files in this node', MESSAGE_ERROR);
     }
@@ -236,7 +236,7 @@ class File {
    * @param $file File
    */
   public static function deleteFile($node, $file) {
-    $user = User::current($node->env);
+    $user = UserFactory::current($node->env);
     if (!$user->checkAccess($node, NODE_ACTION_EDIT)) {
       new Message($node->env, 'Error: you have no permissions to upload files in this node', MESSAGE_ERROR);
     }

@@ -45,6 +45,12 @@ class Box extends DataContainer {
     if (isset($attributes['class'])) {
       $this->addData('class', array($attributes['class']));
     }
+
+    // Set custom classes.
+    if (isset($attributes['title'])) {
+      $this->addData('title', array($attributes['title']));
+    }
+
     // Clear non-floating box.
     if (!empty($attributes['clear'])) {
       $this->addData('class', array('clear-box'));
@@ -85,6 +91,10 @@ class Box extends DataContainer {
 
   public function getHtml() {
     return $this->html;
+  }
+
+  public function getTitle() {
+    return $this->getData('title');
   }
 
   public function setMargin($margin) {
@@ -162,6 +172,10 @@ class Box extends DataContainer {
     }
     else {
       $box_content = $this->getHtml();
+      if (!empty($this->getData('title'))) {
+        $box_content = '<h3>' . @array_pop($this->getData('title')) . '</h3>' . $box_content;
+      }
+
       if (!$this->isFlat()) {
         $box_content = '<div class="inner" style="' . implode(';', $this->getData('inner_style')) . '" >' . $box_content . '</div>';
       }

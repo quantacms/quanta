@@ -22,7 +22,7 @@
 
 /* > 600px */
 @media all and (max-width:861px) {
-    .w-25-50, .w-50-75, .w-75-100 {
+    .w-25-50, .w-50-75, .w-75-100, .w-50, .w-75 {
         width: 100% !important;
     }
 

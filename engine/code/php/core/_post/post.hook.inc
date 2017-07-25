@@ -7,7 +7,7 @@ function post_init($vars) {
 
 function post_shadow_post_add($vars) {
 
-    $user = User::current($vars['env']);
+    $user = UserFactory::current($vars['env']);
     // ADD a post.
     if ($vars['shadow']->getContext() == NODE_ACTION_ADD) {
       $father = NodeFactory::current($env);
