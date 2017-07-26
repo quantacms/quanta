@@ -1,6 +1,6 @@
 <?php
 function tags_shadow_node_edit($vars) {
-  $user = User::current($vars['env']);
+  $user = UserFactory::current($vars['env']);
   if (!$user->checkAccess(NodeFactory::current($env), $vars['env']->getContext())) {
     return FALSE;
   }

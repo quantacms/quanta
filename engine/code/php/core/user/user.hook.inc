@@ -28,7 +28,7 @@ function user_init($vars) {
  * Implements hook_body_classes.
  */
 function user_body_classes($vars) {
-  $user = User::current($vars['env']);
+  $user = UserFactory::current($vars['env']);
   $roles = $user->getRoles();
   foreach ($roles as $role) {
     $vars['page']->addData('body_classes', array('user-' . trim($role)));
@@ -52,7 +52,7 @@ function user_action_login($vars) {
  * @param $vars
  */
 function user_shadow_user_register_form($vars) {
-  $user = User::current($vars['env']);
+  $user = UserFactory::current($vars['env']);
   $tab = $user->renderEditForm($vars['shadow']->getContext());
   $vars['shadow']->addTab('Insert your data', $tab, 1);
   $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Sign Up!');
@@ -63,7 +63,7 @@ function user_shadow_user_register_form($vars) {
  * @param $vars
  */
 function user_shadow_user_edit_form($vars) {
-  $curr_user = User::current($vars['env']);
+  $curr_user = UserFactory::current($vars['env']);
   $user = new User($vars['env'], $curr_user->name);
   $tab = $user->renderEditForm($vars['shadow']->getContext());
   $vars['shadow']->addTab('Your Profile', $tab, 1);
@@ -75,7 +75,7 @@ function user_shadow_user_edit_form($vars) {
  * @param $vars
  */
 function user_shadow_user_login_form($vars) {
-  $user = User::current($vars['env']);
+  $user = UserFactory::current($vars['env']);
   $tab = $user->renderLoginForm();
   $vars['shadow']->addTab('Your Login Data', $tab, 1);
   $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Login');
@@ -88,7 +88,7 @@ function user_shadow_user_login_form($vars) {
  * @param $vars
  */
 function user_action_user_edit($vars) {
-  $response_json = User::requestAction($vars['env'], $vars['data']['action'], $vars['data']);
+  $response_json = UserFactory::requestAction($vars['env'], $vars['data']['action'], $vars['data']);
   exit($response_json);
 }
 
@@ -98,7 +98,7 @@ function user_action_user_edit($vars) {
  * @param $vars
  */
 function user_action_user_register($vars) {
-  $response_json = User::requestAction($vars['env'], $vars['data']['action'], $vars['data']);
+  $response_json = UserFactory::requestAction($vars['env'], $vars['data']['action'], $vars['data']);
   exit($response_json);
 }
 
@@ -108,6 +108,6 @@ function user_action_user_register($vars) {
  * @param $vars
  */
 function user_action_logout($vars) {
-  $user = User::current($vars['env']);
+  $user = UserFactory::current($vars['env']);
   exit($user->logOut());
 }

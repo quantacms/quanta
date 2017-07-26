@@ -16,22 +16,22 @@
     padding-right: 5px;
     height: 20px;
     line-height: 20px;
-    margin-top: 20px;
     font-size: 10px;
     font-family: "Verdana";
     text-align: center;
     border-radius: 15px;
     text-transform: uppercase;
     display: inline-block;
-    margin-bottom: 10px;
+    position: absolute;
+    bottom: -25px;
+    left: 0;
+    overflow:scroll;
+    overflow-y: hidden;
+    white-space:nowrap;
+
 }
 
 div.has-validation-errors {
-    border-radius: 20px;
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-top: 5px;
-    padding-bottom: 5px;
     border-style: dashed;
     border-width: 1px;
     border-color: red;
@@ -56,4 +56,8 @@ div.has-validation-errors {
 
 .form-item-remove {
     color: red;
+}
+
+.form-item-wrapper {
+    position: relative;
 }

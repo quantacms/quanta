@@ -190,7 +190,7 @@ function wiki_LINK($attributes, $target, $string, $env) {
 function wiki_ADD($attributes, $node, $string, $env) {
   $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
 
-  $user = User::current($env);
+  $user = UserFactory::current($env);
   if (!$user->checkAccess($nodeobj, NODE_ACTION_ADD)) {
     return;
   }
@@ -215,7 +215,7 @@ function wiki_ADD($attributes, $node, $string, $env) {
 function wiki_EDIT($attributes, $node, $string, $env) {
   $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
 
-  $user = User::current($env);
+  $user = UserFactory::current($env);
   if (!$user->checkAccess($nodeobj, NODE_ACTION_EDIT)) {
     return;
   }
@@ -239,7 +239,7 @@ function wiki_EDIT($attributes, $node, $string, $env) {
 function wiki_DELETE($attributes, $node, $string, $env) {
   $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
 
-  $user = User::current($env);
+  $user = UserFactory::current($env);
   if (!$user->checkAccess($nodeobj, NODE_ACTION_DELETE)) {
     return;
   }

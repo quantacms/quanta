@@ -6,7 +6,7 @@
  * @return bool
  */
 function ecommerce_shadow_product_form($vars) {
-  $user = User::current($vars['env']);
+  $user = UserFactory::current($vars['env']);
   $node = NodeFactory::current($env);
   if (!$user->checkAccess($node, NODE_ACTION_EDIT)) {
     return FALSE;
