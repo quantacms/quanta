@@ -20,7 +20,7 @@ function node_shadow_node_delete_access($vars) {
 }
 
 function node_shadow_node_edit_access($vars) {
-  $user = User::current($vars['env']);
+  $user = UserFactory::current($vars['env']);
   $has_access = $user->checkAccess($vars['shadow']->getNode(), $vars['env']->getContext());
   $vars['shadow']->setAccess($has_access);
 }
@@ -113,7 +113,7 @@ function node_shadow_node_form($vars) {
  * @param $vars
  */
 function node_shadow_node_delete_form($vars) {
-  $user = User::current($vars['env']);
+  $user = UserFactory::current($vars['env']);
   $node = $vars['shadow']->getNode();
   $has_access = $user->checkAccess($node, $vars['env']->getContext());
   if (!$has_access) {

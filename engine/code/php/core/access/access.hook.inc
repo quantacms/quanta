@@ -32,7 +32,7 @@ function access_node_presave($vars) {
  */
 function access_node_open($vars) {
   if (!empty($vars['node'])) {
-    $user = User::current($vars['env']);
+    $user = UserFactory::current($vars['env']);
     $has_access = $user->checkAccess($vars['node'], NODE_ACTION_VIEW);
     if (!$has_access) {
       $vars['node'] = NodeFactory::buildForbiddenNode($vars['env']);
@@ -47,7 +47,7 @@ function access_node_open($vars) {
  */
 function access_wikitag($vars) {
   $node = NodeFactory::current($vars['env']);
-  $user = User::current($vars['env']);
+  $user = UserFactory::current($vars['env']);
 
   // The user has selected to show the tag only on certain paths / lineage.
   if (!empty($vars['attributes']['filter'])) {

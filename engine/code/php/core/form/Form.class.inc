@@ -14,6 +14,7 @@ class Form extends DataContainer {
   public $id;
   public $validated = FALSE;
   public $ok_message;
+  public $type;
 
   /**
    * @param $env Environment
@@ -29,15 +30,18 @@ class Form extends DataContainer {
   }
 
   public function checkValidate() {
-// FORM submission handler.
+    // FORM submission handler.
     if ($this->isSubmitted()) {
       $this->setData('validation_errors', array());
-      $this->env->hook('form_validate', array('form' => $this));
 
+      $this->env->hook('form_validate', array('form' => $this));
+      $this->env->hook('form_type_' . $this->getType() . '_validate', array('form' => $this));
+      $this->env->hook($this->getId() . '_form_validate', array('form' => $this));
 
       if (empty($this->getData('validation_errors'))) {
         $this->validated = TRUE;
         $this->env->hook('form_submit', array('form' => $this));
+        $this->env->hook('form_type_' . $this->getType() . '_submit', array('form' => $this));
         $this->env->hook($this->getId() . '_form_submit', array('form' => $this));
         return $this->getOkMessage();
       }
@@ -99,6 +103,14 @@ class Form extends DataContainer {
     $this->action = $action;
   }
 
+  public function getType() {
+    return $this->type;
+  }
+
+  public function setType($type) {
+    $this->type = $type;
+  }
+
   public function getOkMessage() {
     return $this->ok_message;
   }
@@ -143,6 +155,8 @@ class Form extends DataContainer {
     // TODO: why two fields? check shadow...
      $rendered .= '<input type="hidden" name="form_submit" value=""/> ';
     $rendered .= '<input type="hidden" name="form" value="' . $this->getId() . '"/> ';
+    $rendered .= '<input type="hidden" name="form_type" value="' . $this->getType() . '"/> ';
+
     return $rendered;
   }
 
@@ -156,13 +170,12 @@ class Form extends DataContainer {
    * Load form attributes.
    */
   public function loadAttributes($attributes) {
+    $this->setType((isset($attributes['type'])) ? $attributes['type'] : 'form');
     $this->setAction((isset($attributes['action'])) ? '/' . $attributes['action'] : '?');
     $this->setMethod((isset($attributes['method'])) ? $attributes['method'] : FORM_METHOD_POST);
     $this->setOkMessage((isset($attributes['ok_message'])) ? $attributes['ok_message'] : 'Your form has been submitted.');
     $this->setAnchor((isset($attributes['anchor'])) ? $attributes['anchor'] : $this->getId());
     //$this->setRedirect((isset($attributes['redirect'])) ? $attributes['redirect'] : NULL);
-
-
 
   }
 
