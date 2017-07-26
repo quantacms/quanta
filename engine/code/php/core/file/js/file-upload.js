@@ -105,6 +105,7 @@ var refreshFileActions = function() {
         var parent = $(this).closest('li');
         if (confirm('Are you sure you want to delete this file? \n' + filepath)) {
             var node_name = ($(this).closest('.list').data('node'));
+
             $.ajax({
                 url: "/" + node_name + "/?file_delete=" + filepath,
                 success: function() {
@@ -137,19 +138,19 @@ $(document).bind('refresh', function() {
     var thumb_href = $('#edit_thumbnail').val();
 
     $('#filelist .list-item-file').on('mouseenter', function() {
-       $(this).find('.file-actions').remove();
-        // TODO: how to create a full path?
-        var href = ($(this).find('.file-link').attr('href'));
+      $(this).find('.file-actions').remove();
+      // TODO: how to create a full path?
+      var href = ($(this).find('.file-link').attr('href'));
 
-        var selectedThumbnail = (href == thumb_href) ? 'selected-thumbnail' : '';
+      var selectedThumbnail = (href == thumb_href) ? 'selected-thumbnail' : '';
 
-        var tagType = $(this).find('.file-link-item').hasClass('file-image') ? 'IMG' : 'FILE';
+      var tagType = $(this).find('.file-link-item').hasClass('file-image') ? 'IMG' : 'FILE';
 
-       $(this).append('<span class="file-actions"><input type="text" value="[' + tagType + ':' + href + ']" /><a class="delete-file" href="#">x</a><a class="set-thumbnail ' + selectedThumbnail + '" href="#">&#9786;</a></span>');
+     $(this).append('<span class="file-actions"><input type="text" value="[' + tagType + ':' + href + ']" /><a class="delete-file" href="#">x</a><a class="set-thumbnail ' + selectedThumbnail + '" href="#">&#9786;</a></span>');
 
-       refreshFileActions();
+     refreshFileActions();
     }).on('mouseleave', function() {
-        $(this).find('.file-actions').remove();
+      $(this).find('.file-actions').hide();
     });
 
     refreshFileActions();
