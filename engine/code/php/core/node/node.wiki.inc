@@ -282,7 +282,7 @@ function wiki_CATEGORIES($attributes, $var, $string, $env) {
   $html = '';
   $cats = $node->getCategories($var);
   foreach ($cats as $cat) {
-    $html .= '[LINK|title=' . $cat->title . ':' . $cat->name . ']';
+    $html .= '[LINK:' . $cat->name . ']';
   }
   return $html;
 }
