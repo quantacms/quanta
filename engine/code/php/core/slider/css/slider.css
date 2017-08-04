@@ -34,19 +34,6 @@
     letter-spacing: 1px;
 }
 
-.slider-actions a, .blog-actions a {
-    background: orange;
-    color: white;
-    text-decoration: none;
-    text-transform: uppercase;
-    padding: 8px;
-    padding-top: 4px;
-    padding-bottom: 4px;
-    display: inline-block;
-    margin-top: 8px;
-    font-size: 0.8em;
-}
-
 .slider-title {
     color: white;
     z-index: 10;

@@ -29,6 +29,7 @@ function wiki_IMGTHUMB($attributes, $file, $string, $env) {
   $node = isset($attributes['node']) ? NodeFactory::load($env, $attributes['node']) : NodeFactory::current($env);
   $image = new Image($env, $file, $node);
   $image->loadAttributes($attributes);
+  $tooltip = isset($attributes['tooltip']) ? (' tooltip="' . $attributes['tooltip'] . '"') : NULL;
 
   $op = isset($attributes['operation']) ? $attributes['operation'] : 'scale';
   $thumbfile = 'thumb-' . str_replace(' ', '-', str_replace('/', '-', $node->getName() . '-' . $image->width . 'x' . $image->height . '-'. $file));
@@ -45,7 +46,7 @@ function wiki_IMGTHUMB($attributes, $file, $string, $env) {
     $thumb = $src;
   }
   else {
-    $thumb = '<img alt="' . $filename . '" src="' . $src . '" />';
+    $thumb = '<img alt="' . $filename . '" ' . $tooltip . 'src="' . $src . '" />';
   }
 
   if (isset($attributes['link'])) {
