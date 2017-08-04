@@ -146,7 +146,7 @@ class NodeFactory {
               'data' => $nodedata
             ));
 
-            $response->redirect = '/' . $node->getName() . '/';
+            $response->redirect = !empty($node->getData('redirect')) ? $node->getData('redirect') : ('/' . $node->getName() . '/');
           }
           else {
             // TODO: make this good.
@@ -164,7 +164,7 @@ class NodeFactory {
         if ($has_access) {
           $node->delete();
           new Message($node->env, $node->getName() . ' was deleted correctly');
-          $response->redirect = '/' . $node->getFather()->getName() . '/';
+          $response->redirect = !empty($node->getData('redirect')) ? $node->getData('redirect') : ('/' . $node->getFather()->getName() . '/');          
         }
         break;
     }
