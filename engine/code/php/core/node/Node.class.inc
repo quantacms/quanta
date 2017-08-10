@@ -128,6 +128,16 @@ class Node extends JSONDataContainer {
     $this->json->timestamp = $this->getTimestamp();
   }
 
+
+
+  //*** TEMPORARY FIX ***
+  public function getAttributeJSON($attr_name){
+    if (isset($this->json->$attr_name)) {
+      return $this->json->$attr_name;
+    }
+  }
+
+
   /**
    * Gets the name (equal to folder name) of the node.
    * @return mixed
