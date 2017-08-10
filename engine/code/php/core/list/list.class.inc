@@ -196,7 +196,6 @@ abstract class ListObject {
           $this->include = array_flip(explode(',', $attr));
           break;
 
-
         default:
           // Unkown attribute for generic list - do nothing.
           // @TODO: maybe add a message?
@@ -210,13 +209,13 @@ abstract class ListObject {
   }
 
   public function getAttribute($attr_name) {
+
     if (isset($this->attributes[$attr_name])) {
       return $this->attributes[$attr_name];
     }
     else {
       return FALSE;
     }
-
   }
 
   /**
@@ -242,8 +241,8 @@ abstract class ListObject {
   }
 
   private function sortBy($x, $y) {
-    switch ($this->sort) {
 
+    switch ($this->sort) {
       case 'name':
         $check = strcasecmp($x->getName(), $y->getName()) > 0;
         break;
@@ -257,7 +256,8 @@ abstract class ListObject {
         break;
 
       default:
-        $check = TRUE;
+        //Sort by Number DESC
+        $check = ($x->getAttributeJSON($this->sort) < $y->getAttributeJSON($this->sort));
         break;
 
     }
