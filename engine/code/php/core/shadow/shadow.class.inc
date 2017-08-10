@@ -27,6 +27,9 @@ class Shadow extends Page {
         $this->setData($key, $value);
       }
     }
+    if (isset($data->redirect)) {
+      $this->setData('redirect', $data->redirect);
+    }
 
     // TODO: default to home is not making sense.
     $this->node = (isset($data->node)) ? NodeFactory::load($env, $data->node) : new Node($env, NULL);
