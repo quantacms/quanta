@@ -13,7 +13,7 @@ function domain_action_domain_search($vars) {
 
 
 function domain_init($vars) {
-  $user = User::current($vars['env'], TRUE);
+  $user = UserFactory::current($vars['env'], TRUE);
   $vars['env']->addInclude('engine/code/php/contrib/domain/js/search.js');
   $vars['env']->addInclude('engine/code/php/contrib/domain/css/domain.css');
   switch ($vars['env']->getRequestedPath()) {
@@ -112,7 +112,7 @@ function domain_user_save($vars) {
 */
 
 function domain_shadow_user_edit($vars) {
-  $user = User::current($vars['env']);
+  $user = UserFactory::current($vars['env']);
   // TODO: refactor / hook
 
   $tab = '<table><th>Domain</th><th>Status</th><th></th>';
