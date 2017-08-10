@@ -168,10 +168,10 @@ function wiki_LINK($attributes, $target, $string, $env) {
   $datatype = isset($attributes['type']) ? (' data-type="' . $attributes['type'] . '"') : '';
   $widget = isset($attributes['widget']) ? (' data-widget="' . $attributes['widget'] . '"') : '';
   $components = isset($attributes['components']) ? (' data-components="' . $attributes['components'] . '"') : '';
-
   $tooltip = isset($attributes['tooltip']) ? (' tooltip="' . $attributes['tooltip'] . '"') : '';
+  $redirect = isset($attributes['redirect']) ? (' data-redirect="' . $attributes['redirect'] . '"') : '';
 
-  $link = '<a' . $datatype . $widget . $tooltip . $components . $rel . ' class="' . implode(' ', $classes). '" href="' . $target . '">' . string_normalize((isset($attributes['title']) ? $attributes['title'] : $title_default)) .'</a>';
+  $link = '<a' . $datatype . $widget . $tooltip . $components . $rel . $redirect . ' class="' . implode(' ', $classes). '" href="' . $target . '">' . string_normalize((isset($attributes['title']) ? $attributes['title'] : $title_default)) .'</a>';
   return $link;
 }
 
@@ -223,6 +223,8 @@ function wiki_EDIT($attributes, $node, $string, $env) {
   $attributes['class'] .= ' edit-link';
   $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Edit <i>' . $nodeobj->getTitle() . '</i>...';
   $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&#9998;';
+  $attributes['redirect'] = isset($attributes['redirect']) ? $attributes['redirect'] : '';
+
   return wiki_LINK($attributes, $node, $string, $env);
 }
 
