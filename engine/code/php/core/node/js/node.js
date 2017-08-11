@@ -19,7 +19,8 @@ $(document).bind('refresh', function() {
             context: 'node_edit',
             widget: $(this).attr('data-widget'),
             components: components,
-            node: $(this).attr('data-rel')
+            node: $(this).attr('data-rel'),
+            redirect: $(this).attr('data-redirect')
         });
         e.preventDefault();
     });

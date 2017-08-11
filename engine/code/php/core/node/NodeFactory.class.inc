@@ -131,6 +131,9 @@ class NodeFactory {
           $node->setContent('<h1>' . $node->getTitle() . '</h1>' . $node->getBody());
           $node->setTimestamp($datetime > 0 ? $datetime : time());
           $node->tmp_files_dir = $nodedata['tmp_files_dir'];
+          if (isset($nodedata['redirect'])){
+            $node->setData('redirect',$nodedata['redirect']);
+          }
 
           $env->hook('node_presave', array(
             'node' => &$node,

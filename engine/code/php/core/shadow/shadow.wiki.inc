@@ -9,6 +9,7 @@
  */
 function wiki_SHADOW($tagname, $attribute, $string, $env) {
   $shadow = $env->getData('shadow');
+
   switch ($attribute) {
     case 'tab-titles':
       return $shadow->getData('tab_titles');
@@ -29,6 +30,9 @@ function wiki_SHADOW($tagname, $attribute, $string, $env) {
       }
       $buttons .= '</div>';
       return $buttons;
-      break;
+    break;
+    case 'redirect':
+      return $shadow->getData('redirect');
+    break;    
   }
 }
