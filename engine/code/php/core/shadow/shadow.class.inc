@@ -16,16 +16,19 @@ class Shadow extends Page {
    * @param $context String
    * @param null $id
    */
-  public function __construct($env, $data) {
+  public function __construct($env, $data = NULL) {
     $this->env = $env;
     $this->widget = $data->widget;
     if (isset($data->components)) {
       $this->components = $data->components;
     }
-    if (isset($data->data)) {
-      foreach ($data->data as $key => $value) {
+    if (is_array($data)) {
+      foreach ($data as $key => $value) {
         $this->setData($key, $value);
       }
+    }
+    if (isset($data->redirect)) {
+      $this->setData('redirect', $data->redirect);
     }
 
     // TODO: default to home is not making sense.
