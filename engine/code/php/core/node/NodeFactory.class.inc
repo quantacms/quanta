@@ -148,6 +148,11 @@ class NodeFactory {
               'node' => &$node,
               'data' => $nodedata
             ));
+            
+            $env->hook('node_post_save', array(
+              'node' => &$node,
+              'data' => $nodedata
+            ));
 
             $response->redirect = !empty($node->getData('redirect')) ? $node->getData('redirect') : ('/' . $node->getName() . '/');
           }
