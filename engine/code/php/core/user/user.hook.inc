@@ -17,11 +17,6 @@ function user_init($vars) {
     }
   }
 
-	// TODO: temporary for generating passwords.
-	if (isset($_GET['pass123'])) {
-	  print pwd($_GET['pass123']);
-	}
-
 }
 
 /**

@@ -31,8 +31,13 @@ abstract class ListObject {
   private $attributes = array();
   protected $scantype = DIR_ALL;
   protected $module = NULL;
+  // Exclude some nodes from listing.
   protected $exclude = array();
+  // Include only some nodes in listing.
   protected $include = array();
+  // Filter by status.
+  protected $status = array();
+
   // Construct the List.
 
   public function __construct(&$env, $path, $type, $attr_arr = array(), $module = NULL) {
@@ -122,6 +127,9 @@ abstract class ListObject {
     }
 
     $symlinks = $this->getAttribute('symlinks');
+    if (!empty($this->getAttribute('status'))) {
+      $this->status = array_flip(explode(',', $this->getAttribute('status')));
+    }
 
     if ($this->getAttribute('level') == 'leaf' || $this->getAttribute('level') == 'tree') {
       $list_pages = $this->env->scanDirectoryDeep($this->realpath, '', array(), array(
@@ -144,7 +152,7 @@ abstract class ListObject {
         $item_name = is_array($item) ? $item['name'] : $item;
       if ($this->scantype == DIR_DIRS) {
         $node = NodeFactory::load($this->env, $item_name);
-        if ($node->exists) {
+        if ($node->exists && $this->validateStatus($node)) {
           $this->dirs[$item_name] = $node;
         }
       }
@@ -157,9 +165,18 @@ abstract class ListObject {
     }
 
     $this->loadAttributes();
-    
+
 		return TRUE;
 
+  }
+
+  // Check if a node has a status that can be displayed in the list.
+  public function validateStatus($node) {
+    if (!empty($this->status)) {
+      return isset ($this->status[$node->getStatus()]);
+    } else {
+      return $node->isPublished();
+    }
   }
 
   /**

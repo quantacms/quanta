@@ -7,6 +7,6 @@
  */
 
 class ProductList extends DirList {
-  protected $module = 'core/ecommerce';
+  protected $module_path = 'core/ecommerce';
 
 }

@@ -4,6 +4,9 @@ define('NODE_ACTION_ADD', 'node_add');
 define('NODE_ACTION_EDIT', 'node_edit');
 define('NODE_ACTION_DELETE', 'node_delete');
 define('NODE_ACTION_DELETE_FILE', 'file_delete');
+define('NODE_STATUS_DRAFT', 'node_status_draft');
+define('NODE_STATUS_PUBLISHED', 'node_status_published');
+define('NODE_STATUS_UNPUBLISHED', 'node_status_unpublished');
 define('NODE_NEW', '__NEW__');
 
 date_default_timezone_set('UTC');
@@ -21,6 +24,7 @@ class Node extends JSONDataContainer {
   public $content = NULL;
   public $exists;
   public $permissions;
+  public $status;
   public $timestamp;
   public $father = NULL;
   public $thumbnail = NULL;
@@ -97,6 +101,11 @@ class Node extends JSONDataContainer {
     if (isset($this->json->body)) {
       $this->setBody($this->json->body);
     }
+    if (isset($this->json->status)) {
+      $this->setStatus($this->json->status);
+    } else {
+      $this->setStatus(NODE_STATUS_PUBLISHED);
+    }
     if (isset($this->json->title)) {
       $this->setTitle($this->json->title);
     }
@@ -109,10 +118,14 @@ class Node extends JSONDataContainer {
   }
 
   /**
-   * Unpublished nodes' folders will always start with _.
+   * Check if the node is published.
    */
   public function isPublished() {
-    return (substr($this->name, 0, 1) != '_');
+    // Nodes starting with _ are system nodes, not public by default.
+    if (substr($this->name, 0, 1) == '_') {
+      return FALSE;
+    }
+    return ($this->getStatus() == NODE_STATUS_PUBLISHED);
   }
 
   /**
@@ -126,9 +139,8 @@ class Node extends JSONDataContainer {
     $this->json->title = $this->getTitle();
     $this->json->thumbnail = $this->getThumbnail();
     $this->json->timestamp = $this->getTimestamp();
+    $this->json->status = $this->getStatus();
   }
-
-
 
   //*** TEMPORARY FIX ***
   public function getAttributeJSON($attr_name){
@@ -294,6 +306,14 @@ class Node extends JSONDataContainer {
 
   public function setBody($body) {
     $this->body = $body;
+  }
+
+  public function getStatus() {
+    return $this->status;
+  }
+
+  public function setStatus($status) {
+    $this->status = $status;
   }
 
   /**
