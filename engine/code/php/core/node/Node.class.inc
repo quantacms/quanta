@@ -101,11 +101,13 @@ class Node extends JSONDataContainer {
     if (isset($this->json->body)) {
       $this->setBody($this->json->body);
     }
-    if (isset($this->json->status)) {
+
+    if (!empty($this->json->status)) {
       $this->setStatus($this->json->status);
     } else {
       $this->setStatus(NODE_STATUS_PUBLISHED);
     }
+
     if (isset($this->json->title)) {
       $this->setTitle($this->json->title);
     }

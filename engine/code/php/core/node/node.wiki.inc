@@ -125,6 +125,10 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
       $string = $node->getThumbnail();
       break;
 
+    case 'status':
+      $string = $node->getStatus();
+      break;
+
     default:
       // TODO: security issues.
       if (isset($node->json->{$attributes['name']})) {
