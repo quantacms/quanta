@@ -50,8 +50,7 @@ function file_node_save($vars) {
       $fileobj = new File($vars['node']->env, $fpath, $vars['node']);
       if (!$fileobj->isPublic()) {
         new Message($vars['node']->env, 'The file <b>' . $file . '</b> has an invalid name. Please use a different name.', MESSAGE_WARNING);
-      }
-      elseif (is_file($fpath)) {
+      } elseif (is_file($fpath)) {
         copy($fpath, $vars['node']->realpath . '/' . $file);
         unlink($fpath);
       }
@@ -64,14 +63,14 @@ function file_node_save($vars) {
  * @param $vars
  */
 function file_node_load($vars) {
-	
-	// When saving a node, select the pre-created temporary files dir. 
-	if (!empty($_REQUEST['json']) && ($json= json_decode($_REQUEST['json'])) && isset($json->tmp_files_dir)) {
+
+  // When saving a node, select the pre-created temporary files dir.
+  if (!empty($_REQUEST['json']) && ($json = json_decode($_REQUEST['json'])) && isset($json->tmp_files_dir)) {
     $vars['node']->tmp_files_dir = $json->tmp_files_dir;
-	} else {
+  } else {
     $vars['node']->tmp_files_dir = $vars['node']->getName() . '-' . time() . '-' . rand(0, 1000);
-	}
-	}
+  }
+}
 
 /**
  * Serve a file.
@@ -86,20 +85,19 @@ function file_boot($vars) {
     $filename = $vars['env']->request[count($vars['env']->request) - 1];
     $nodepath = $vars['env']->nodePath($vars['env']->request[1]);
 
-		$file = is_file($vars['env']->dir['docroot'] . $vars['env']->request_uri)  ? ($vars['env']->dir['docroot'] . $vars['env']->request_uri) :  $nodepath . '/' . urldecode($filename);
+    $file = is_file($vars['env']->dir['docroot'] . $vars['env']->request_uri) ? ($vars['env']->dir['docroot'] . $vars['env']->request_uri) : $nodepath . '/' . urldecode($filename);
 
     if (is_file($file)) {
-      header('Content-Type:'. mime_content_type($file));
+      header('Content-Type: ' . mime_content_type($file));
       $mods = array_flip(apache_get_modules());
       if (isset($mods['mod_xsendfile'])) {
         // TODO: support for xsendfile.
         readfile($file);
-      }
-      else {
+      } else {
         //TODO : slow, insecure...
         readfile($file);
       }
-			die();
+      die();
     }
   }
 }

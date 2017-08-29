@@ -67,6 +67,18 @@ function node_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/node/js/node.js');
   $vars['env']->addInclude('engine/code/php/core/node/css/node.css');
 
+  $basic_statuses = array(
+    NODE_STATUS_DRAFT => array('title' => 'Draft'),
+    NODE_STATUS_UNPUBLISHED => array('title' => 'Unpublished'),
+    NODE_STATUS_PUBLISHED => array('title' => 'Published'),
+  );
+
+  foreach ($basic_statuses as $status => $statusdata) {
+    if (!is_dir($vars['env']->dir['statuses'] . '/' . $status)) {
+      NodeFactory::buildNode($vars['env'], $status, '_statuses', $statusdata);
+    }
+  }
+
   $node = NodeFactory::current($vars['env']);
 
   // If the node does not exist, redirect to 404.
