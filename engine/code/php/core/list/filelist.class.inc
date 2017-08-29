@@ -48,4 +48,7 @@ class FileList extends ListObject {
       }
     }
   }
+  public function getFiles() {
+    return $this->files;
+  }
 }

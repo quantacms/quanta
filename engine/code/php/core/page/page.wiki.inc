@@ -58,7 +58,12 @@ function wiki_MAIL($attributes, $mail, $string, $env) {
  * Wiki Hook for PHONE.
  */
 function wiki_PHONE($attributes, $phone, $string, $env) {
-  $attributes['class'] .= ' tel';
+  if (isset($attributes['class'])){
+    $attributes['class'] .= ' tel';
+  } else {
+    $attributes['class'] = ' tel';
+  }
+  
 	return '<a ' . html_standard_attributes($attributes) . ' href="tel:' . $phone . '">' . $phone . '</a>';
 }
 
