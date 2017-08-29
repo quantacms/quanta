@@ -1,4 +1,4 @@
-  <?php
+<?php
 /**
  * @param $replace string
  * @param $tagname string
