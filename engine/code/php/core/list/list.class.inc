@@ -173,7 +173,7 @@ abstract class ListObject {
   // Check if a node has a status that can be displayed in the list.
   public function validateStatus($node) {
     if (!empty($this->status)) {
-      return ($this->status == 'all') || (isset ($this->status[$node->getStatus()]));
+      return (isset($this->status['all'])) || (isset ($this->status[$node->getStatus()]));
     } else {
       return $node->isPublished();
     }
