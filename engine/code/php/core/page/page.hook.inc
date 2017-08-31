@@ -11,20 +11,16 @@ function page_body_classes($vars) {
  * @param $vars
  */
 function page_boot($vars) {
+  // Start robots.txt configuration.
   // TODO: object oriented, using templates, etc. etc.
   if ($vars['env']->request[count($vars['env']->request) - 1] == 'robots.txt') {
+    $robots = new Robots($vars['env']);
+    $robots->disallow('*', '/search');
+    $robots->disallow('*', '/files*');
+    $robots->disallow('*', '/css*');
+    $robots->disallow('*', '/js*');
     header("Content-Type: text/plain");
-    $user_agents = array('*' => array());
-    $user_agents['*'][] = 'Disallow: /search';
-    $user_agents['*'][] = 'Disallow: /files*';
-    $user_agents['*'][] = 'Disallow: /css*';
-    $user_agents['*'][] = 'Disallow: /js*';
-
-    foreach ($user_agents as $agent => $directives) {
-      echo ('User-agent: ' . $agent . "\n");
-      echo (implode("\n", $directives));
-
-    }
+    print $robots->render();
     exit();
   }
 }
