@@ -36,11 +36,11 @@ class FileList extends ListObject {
         break;
       }
       if ((($file_types == FALSE) || $file_types == $file->getType()) && $file->isPublic()) {
-				$tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTheme() . '.tpl.php');
+				$tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
         $tpl = preg_replace("/\{LISTITEM\}/is", string_normalize($file->getPath()), $tpl);
         $tpl = preg_replace("/\{LISTNODE\}/is", string_normalize($this->dir), $tpl);
         $tpl = transformCodeTags($this->env, $tpl);
-        $classes = array('file-list-item', 'list-item-' . $this->getTheme(), 'list-item-' . $i);
+        $classes = array('file-list-item', 'list-item-' . $this->getTpl(), 'list-item-' . $i);
         $tpl = '<li class="' . implode(' ', $classes) . '" index="' . $i . '">' . $tpl . '</li>';
 
         $tpl_item = $tpl;
