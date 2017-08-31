@@ -15,10 +15,11 @@ function sitemap_boot($vars) {
 
     $already_done = array();
     foreach ($site_pages as $item) {
+        $node = NodeFactory::load($vars['env'], $item['name']);
         $modtime = (file_exists($item['path'] . '/data.json') ? filemtime($item['path'] . '/data.json') : filemtime($item['path']));
 
-        if (isset($already_done[$item['name']])) {
-          next;
+        if (!($node->isPublished()) || isset($already_done[$item['name']])) {
+          continue;
         }
         $already_done[$item['name']] = TRUE;
         $priority = ($item['name'] == '') ? 1 : 0.7;
