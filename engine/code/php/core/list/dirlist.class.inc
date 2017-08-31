@@ -32,7 +32,7 @@ class DirList extends ListObject {
       if (!empty($this->limit) && $i > $this->limit) {
         break;
       }
-      $classes = array('dir-list-item', 'list-' . $this->getTheme() . '-item', 'list-item-' . $i);
+      $classes = array('dir-list-item', 'list-' . $this->getTpl() . '-item', 'list-item-' . $i);
       if ($node->isCurrent()) {
         $classes[] = 'list-selected';
       }
@@ -42,7 +42,7 @@ class DirList extends ListObject {
       }
 
 
-      $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTheme() . '.tpl.php');
+      $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
 
       $list_item = transformCodeTags($this->env, preg_replace("/\[LISTITEM\]/is", string_normalize($dir_url), $tpl));
       // If the "clean" attribute is not present, add some wrapping html.

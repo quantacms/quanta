@@ -22,7 +22,7 @@ abstract class ListObject {
   protected $env;
   protected $node;
   protected $dir;
-  protected $type;
+  protected $tpl;
   protected $contents;
   protected $limit;
   protected $dirs = array();
@@ -38,9 +38,20 @@ abstract class ListObject {
   // Filter by status.
   protected $status = array();
 
-  // Construct the List.
-
-  public function __construct(&$env, $path, $type, $attr_arr = array(), $module = NULL) {
+  /**
+   * ListObject constructor.
+   * @param $env
+   *   The environment.
+   * @param $path
+   *   The path (node) to use as a base for listing.
+   * @param $tpl
+   *   The template file to use.
+   * @param array $attr_arr
+   *   The attributes.
+   * @param null $module
+   *   The module in where to look for the template file (defaults to list).
+   */
+  public function __construct(&$env, $path, $tpl, $attr_arr = array(), $module = NULL) {
     if ($path == NULL) {
       $path = $env->getRequestedPath();
     }
@@ -54,7 +65,7 @@ abstract class ListObject {
     $this->env = $env;
     // TODO: no need to rebuild node when it's current page.
     $this->dir = $path;
-    $this->type = strtolower($type);
+    $this->tpl = strtolower($tpl);
 
     if ($path == 'root') {
       $this->path = $env->dir['docroot'];
@@ -104,7 +115,7 @@ abstract class ListObject {
 
     // If the "clean" attribute is not present, add some wrapping html.
     if (empty($this->getAttribute('clean')))  {
-      $output = '<ul ' . $ajax . $tpl . ' class="list ' . $this->getTheme() . ' list-' . $this->getTheme() . ' list-' . $this->node->getName() . '" data-node="' . $this->node->getName() . '">' . $output . '</ul>';
+      $output = '<ul ' . $ajax . $tpl . ' class="list ' . $this->getTpl() . ' list-' . $this->getTpl() . ' list-' . $this->node->getName() . '" data-node="' . $this->node->getName() . '">' . $output . '</ul>';
     }
 
     // If the "nolinks" attribute is present, remove links from output.
@@ -245,16 +256,8 @@ abstract class ListObject {
    * Return the theme of this list.
    * @return string
    */
-  public function getTheme() {
-    return $this->getType();
-  }
-
-  /**
-   * Return the type of this list.
-   * @return string
-   */
-  public function getType() {
-    return $this->type;
+  public function getTpl() {
+    return $this->tpl;
   }
 
   private function sortBy($x, $y) {
