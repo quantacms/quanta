@@ -45,7 +45,7 @@ abstract class ListObject {
    * @param $path
    *   The path (node) to use as a base for listing.
    * @param $tpl
-   *   The template file to use.
+   *   The template file to use. I.e. dir for using dir.tpl.php.
    * @param array $attr_arr
    *   The attributes.
    * @param null $module
