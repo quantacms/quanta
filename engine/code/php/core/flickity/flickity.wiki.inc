@@ -25,14 +25,27 @@ function wiki_CAROUSEL($attributes, $node, $string, $env) {
   }
 
   $carousel_attributes = array(
-    'autoPlay' => 5000,
-    'wrapAround' => 'true',
+    // TODO: Define all Flickity attributes. See https://flickity.metafizzy.co/options.html
+    'prevNextButtons' => 'true',
+    'pageDots' => 'true',
+    'autoPlay' => 5000, //Slide duration in milliseconds
+    'wrapAround' => 'true', //Never ending slides
+    'contain' => 'false', //Fills start and end of carousel with cells (no extra-spaces). Has no effect if wrapAround: true.
+    'freeScroll' => 'false', //Free slides scroll without aligning them to an end position
+    'pauseAutoPlayOnHover' => 'true',
+    'adaptiveHeight' => 'false', //Dinamically adapt to current slide's height
+    'imagesLoaded' => 'false', //if true, re-positions cells once their images have loaded
+    'initialIndex' => 0, //First slide
+    'accessibility' => 'true', //Enable keyboard navigation
+    'setGallerySize' => 'true', //Carousel's height by the tallest cell
+    'resize' => 'true', //Resize carousel when windows is resized
+    'cellAlign' => '"center"', //Cell horizontal alignment within the carousel
+    'draggable' => 'true', //Draggable carousel
   );
 
   $carousel_attributes_arr = array();
   foreach ($carousel_attributes as $k => $attr) {
     $carousel_attributes_arr[] = $k . ':' . (isset($attributes[$k]) ? $attributes[$k] : $attr);
-
   }
 
   $rand_class = rand(0, 99999999);
