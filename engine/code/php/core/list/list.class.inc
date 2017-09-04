@@ -284,4 +284,14 @@ abstract class ListObject {
 
     return ($check) ? 1 : -1;
   }
+
+
+  /**
+   * Return list items.
+   * @return array
+   */
+  public function countItems() {
+    return count($this->dirs) + count($this->files);
+  }
+
 }
