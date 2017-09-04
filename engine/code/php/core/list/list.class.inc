@@ -287,8 +287,8 @@ abstract class ListObject {
 
 
   /**
-   * Return list items.
-   * @return array
+   * Return items' count.
+   * @return integer
    */
   public function countItems() {
     return count($this->dirs) + count($this->files);
