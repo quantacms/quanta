@@ -1,4 +1,4 @@
 /* FROALA OVERRIDE FOR SHADOW */
 .fr-popup{
-  z-index:80 !important; /* Stesso z-index of shadow */
+  z-index:80 !important; /* Same z-index of shadow */
 }
