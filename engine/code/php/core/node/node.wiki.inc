@@ -320,3 +320,22 @@ function wiki_COUNT($attributes, $node, $string, $env) {
   return array_pop($results_arr);
 
 }
+
+
+/**
+ * Implementation of wiki tag STATUS.
+ *
+ * @param $attributes
+ * @param $node
+ * @param $string
+ * @param $env
+ * @return string
+ */
+function wiki_STATUS($attributes, $node, $string, $env) {
+  $node = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
+
+  $status = $node->getStatus();
+  $status_node = NodeFactory::load($env, $status);
+
+  return $status_node->getTitle();
+}
