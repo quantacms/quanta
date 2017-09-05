@@ -127,7 +127,6 @@ class NodeFactory {
           $node->setTitle($nodedata['edit-title']);
           $node->setBody($nodedata['edit-content']);
           $node->setAuthor($nodedata['edit-author']);
-          $node->setStatus($nodedata['edit-status']);
           $node->setTeaser($nodedata['edit-teaser']);
           $node->setContent('<h1>' . $node->getTitle() . '</h1>' . $node->getBody());
           $node->setTimestamp($datetime > 0 ? $datetime : time());
