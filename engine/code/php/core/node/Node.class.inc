@@ -215,6 +215,23 @@ class Node extends JSONDataContainer {
   }
 
   /**
+   * Check if the node has a specific parent in its lineage.
+   * @param $name
+   * @return bool
+   */
+  public function hasParent($name) {
+    $ret = false;
+    $lineage = $this->getLineage();
+     
+    foreach ($lineage as $lineage_node) {
+      if ($lineage_node->getName() == $name) {
+        $ret = true;
+      }
+    }
+    return $ret;
+  }
+
+  /**
    * Check if the node has any children.
    * @return bool
    */
