@@ -82,6 +82,7 @@ class Environment extends DataContainer {
    * @return string mixed
    */
   public function getRequestedPath() {
+    return $this->request_path;
     return normalizePath(urldecode($this->request_path));
   }
 
