@@ -67,18 +67,6 @@ function node_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/node/js/node.js');
   $vars['env']->addInclude('engine/code/php/core/node/css/node.css');
 
-  $basic_statuses = array(
-    NODE_STATUS_DRAFT => array('title' => 'Draft'),
-    NODE_STATUS_UNPUBLISHED => array('title' => 'Unpublished'),
-    NODE_STATUS_PUBLISHED => array('title' => 'Published'),
-  );
-
-  foreach ($basic_statuses as $status => $statusdata) {
-    if (!is_dir($vars['env']->dir['statuses'] . '/' . $status)) {
-      NodeFactory::buildNode($vars['env'], $status, '_statuses', $statusdata);
-    }
-  }
-
   $node = NodeFactory::current($vars['env']);
 
   // If the node does not exist, redirect to 404.
@@ -116,7 +104,6 @@ function node_shadow_node_form($vars) {
   $action_name = ($vars['env']->getContext() == NODE_ACTION_ADD ? 'create' : 'edit') . ' content';
   $vars['shadow']->addTab($action_name, file_get_contents('core/node/tpl/node_edit.inc'), 1);
   $vars['shadow']->addTab('manage metadata', file_get_contents('core/node/tpl/metadata_form.inc'), 2);
-  $vars['shadow']->addTab('manage status', file_get_contents('core/node/tpl/status_form.inc'), 2);
   $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Save');
 
 }
