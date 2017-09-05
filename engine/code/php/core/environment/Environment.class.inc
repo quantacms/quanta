@@ -82,7 +82,7 @@ class Environment extends DataContainer {
    * @return string mixed
    */
   public function getRequestedPath() {
-    return $this->request_path;
+    return normalizePath(urldecode($this->request_path));
   }
 
   /**
@@ -331,7 +331,8 @@ class Environment extends DataContainer {
    * @return string
    */
   public function getCandidatePath($title) {
-    $candidate_path = strtolower(str_replace('_', '-', preg_replace('/[\s\W]+/', '', str_replace(' ', '_', trim($title)))));
+    $candidate_path = normalizePath($title);
+
     $i = 0;
     while (TRUE) {
       $node = new Node($this, $candidate_path);
