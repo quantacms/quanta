@@ -70,10 +70,10 @@ function html_standard_attributes($attributes) {
 
 function normalizePath($s) {
   $s = trim($s);
-  $s = str_replace('_', '-', $s);
   $s = remove_accents($s);
   $s = strtolower($s);
-  $s = preg_replace('/[\s\W]+/', '', $s);
+  $s = str_replace('_', '-', $s);
+  $s = preg_replace('/[^\pL\pN@-]+/', '', $s);
   return $s;
 }
 
