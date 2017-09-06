@@ -19,7 +19,7 @@ function access_node_presave($vars) {
   );
   // TODO: review this process.
   if (!isset($vars['node']->json->permissions)) {
-    $vars['node']->json->permissions = StdClass;
+    $vars['node']->json->permissions = new StdClass();
   }
   foreach ($node_permissions as $permission) {
     if (isset($vars['data'][$permission])) {
