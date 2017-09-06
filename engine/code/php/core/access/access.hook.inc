@@ -10,16 +10,19 @@ function access_shadow_access_form($vars) {
 }
 
 function access_node_presave($vars) {
+
   $node_permissions = array(
     'node_add',
     'node_edit',
     'node_delete',
     'node_view',
   );
-
   // TODO: review this process.
+  if (!isset($vars['node']->json->permissions)) {
+    $vars['node']->json->permissions = StdClass;
+  }
   foreach ($node_permissions as $permission) {
-    if (isset($vars['data'][$permission]) && isset($vars['node']->json->permissions)) {
+    if (isset($vars['data'][$permission])) {
       $vars['node']->json->permissions->{$permission} = $vars['data'][$permission];
     }
   }
