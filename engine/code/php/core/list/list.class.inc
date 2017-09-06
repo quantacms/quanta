@@ -160,7 +160,7 @@ abstract class ListObject {
 
     foreach ($list_pages as $item) {
 
-        $item_name = is_array($item) ? $item['name'] : $item;
+      $item_name = is_array($item) ? $item['name'] : $item;
       if ($this->scantype == DIR_DIRS) {
         $node = NodeFactory::load($this->env, $item_name);
         if ($node->exists && $this->validateStatus($node)) {
@@ -291,7 +291,9 @@ abstract class ListObject {
    * @return integer
    */
   public function countItems() {
-    return count($this->dirs) + count($this->files);
+    //TODO: theme() should not be invoked here but list_items is not valorized otherwise
+    $this->theme();
+    return count($this->list_items);
   }
 
 }
