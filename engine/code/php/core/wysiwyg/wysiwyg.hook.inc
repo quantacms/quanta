@@ -17,8 +17,10 @@ function wysiwyg_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/wysiwyg/froala/plugins/line_breaker.min.js');
   $vars['env']->addInclude('engine/code/php/core/wysiwyg/froala/plugins/url.min.js');
   $vars['env']->addInclude('engine/code/php/core/wysiwyg/froala/js/froala-quanta.js');
-
+  $vars['env']->addInclude('engine/code/php/core/wysiwyg/css/wysiwyg.css');  
 }
+
+
 
 function wysiwyg_metadata($vars) {
   // Setup body classes per each item in the current node lineage.
