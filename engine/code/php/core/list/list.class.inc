@@ -31,12 +31,14 @@ abstract class ListObject {
   private $attributes = array();
   protected $scantype = DIR_ALL;
   protected $module = NULL;
-  // Exclude some nodes from listing.
+  // Exclude some nodes from listing. TODO: discontinue.
   protected $exclude = array();
-  // Include only some nodes in listing.
+  // Include only some nodes in listing. TODO: discontinue.
   protected $include = array();
-  // Filter by status.
+  // Filter by status. TODO: discontinue.
   protected $status = array();
+  // Filter
+  protected $list_filter;
 
   /**
    * ListObject constructor.
@@ -138,8 +140,14 @@ abstract class ListObject {
     }
 
     $symlinks = $this->getAttribute('symlinks');
+
+    // TODO: discontinue.
     if (!empty($this->getAttribute('status'))) {
       $this->status = array_flip(explode(',', $this->getAttribute('status')));
+    }
+
+    if (!empty($this->getAttribute('list_filter'))) {
+      $this->list_filter = $this->getAttribute('list_filter');
     }
 
     if ($this->getAttribute('level') == 'leaf' || $this->getAttribute('level') == 'tree') {
