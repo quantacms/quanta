@@ -142,6 +142,10 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
         if (isset($negate)) {
           $filter_match = !$filter_match;
           unset($negate);
+
+          if (!$filter_match) {
+            $break = TRUE;
+          }
         }
 
         if ($break) {
