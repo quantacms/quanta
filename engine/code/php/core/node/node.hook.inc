@@ -79,7 +79,7 @@ function node_init($vars) {
     }
   }
   // If user can't access the node, redirect to 403.
-  elseif ($node->isForbidden() && !isset($_REQUEST['shadow']) ) {
+  elseif ($vars['env']->request_path != '403' && $node->isForbidden() && !isset($_REQUEST['shadow']) ) {
     $node_403 = NodeFactory::load($vars['env'], '403');
     if ($node_403->exists) {
       redirect('/403');

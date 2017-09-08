@@ -329,6 +329,7 @@ class User extends Node {
     $this->json->first_name = $this->getData('first_name');
     $this->json->last_name = $this->getData('last_name');
     $this->json->password = $this->getPassword();
+    $this->json->roles = $this->getRoles();
     parent::updateJSON();
   }
 
