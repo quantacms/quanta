@@ -3,3 +3,5 @@
   require_once('JSONDataContainer.class.inc');
   require_once('Environment.class.inc');
   require_once('Garbage.class.inc');
+  require_once('Doctor.class.inc');
+
