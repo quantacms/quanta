@@ -34,7 +34,8 @@ class DirList extends ListObject {
         continue;
       }
 
-        // If there is a limit set, break when passing it.
+      // If there is a limit set, break when passing it.
+      // TODO: set the limit AFTER list filtering.
       if (!empty($this->limit) && $i > $this->limit) {
         break;
       }
