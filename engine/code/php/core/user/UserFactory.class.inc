@@ -47,7 +47,9 @@ class UserFactory {
     }
     // TODO: security issue when no pass set!
     $user->password = (isset($vars['password'])) ? pwd($vars['password']) : pwd($name . rand(1, 1000000));
+    $user->roles = (isset($vars['roles'])) ? $vars['roles'] : array();
     $user->realpath = $env->dir['users']. '/' . $name;
+
     $user->save();
     return $user;
   }
