@@ -115,6 +115,10 @@ abstract class ListObject {
     $ajax = (!empty($this->getAttribute('ajax'))) ? ' rel= ' . $this->getAttribute('ajax') : '';
     $tpl = (!empty($this->getAttribute('tpl'))) ? ' tpl= ' . $this->getAttribute('tpl') : '';
 
+    if (!empty($this->getAttribute('empty_message')) && (count($this->list_items) == 0)) {
+      $output = $this->getAttribute('empty_message');
+    }
+
     // If the "clean" attribute is not present, add some wrapping html.
     if (empty($this->getAttribute('clean')))  {
       $output = '<ul ' . $ajax . $tpl . ' class="list ' . $this->getTpl() . ' list-' . $this->getTpl() . ' list-' . $this->node->getName() . '" data-node="' . $this->node->getName() . '">' . $output . '</ul>';
