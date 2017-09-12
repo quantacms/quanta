@@ -261,8 +261,11 @@ function generateThumbnail($env, $file, $thumbfile, $maxw = NULL, $maxh = NULL, 
       }
     }
 
-		$transparentindex = imagecolorallocatealpha($img, 255, 255, 255, 127);
-	  imagefill($img, 0, 0, $transparentindex);
+    if ($sExtension == 'png') {
+      //Preserve transparency.
+      imageAlphaBlending($img, true);
+      imageSaveAlpha($img, true);
+    }
 
     // Display the image using the header function to specify
     // the type of output our page is giving
