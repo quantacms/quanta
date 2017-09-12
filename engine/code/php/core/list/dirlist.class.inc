@@ -15,7 +15,6 @@ class DirList extends ListObject {
     $i = 0;
     foreach ($this->dirs as $dir_url => $node) {
       // If user can't access a node, completely exclude it from the list.
-      $i++;
       if ($node->isForbidden()) {
         continue;
       }
@@ -34,8 +33,9 @@ class DirList extends ListObject {
         continue;
       }
 
+      $i++;
+
       // If there is a limit set, break when passing it.
-      // TODO: set the limit AFTER list filtering.
       if (!empty($this->limit) && $i > $this->limit) {
         break;
       }
