@@ -46,6 +46,7 @@ class Environment extends DataContainer {
     $this->dir['users'] = $this->dir['docroot'] . '/_users';
     $this->dir['roles'] = $this->dir['docroot'] . '/_roles';
     $this->dir['statuses'] = $this->dir['docroot'] . '/_statuses';
+    $this->dir['languages'] = $this->dir['docroot'] . '/_languages';
     $this->dir['pages'] = $this->dir['docroot'] . '/_pages';
 
     if (isset($_REQUEST['json'])) {
@@ -228,11 +229,8 @@ class Environment extends DataContainer {
     return $dirs;
   }
 
-  // Load all system directories. Create those that are not created yet.
+  // Load all system directories.
   private function load() {
-    foreach ($this->dir as $folder) {
-      $this->sysdir($folder);
-    }
     $this->loadCoreModules();
     $this->loadContribModules();
   }
@@ -355,10 +353,8 @@ class Environment extends DataContainer {
    * @param $folder
    * @return mixed
    */
-  public function sysdir($folder) {
-    if (!is_dir($folder) && !is_link($folder)) {
-      mkdir($folder) or die("Error: can not create " . $folder . '. Check permission and path.');
-    }
+  public function sysdir($name, $folder) {
+    $this->dir[$name] = $this->dir['docroot'] . '/' . $folder;
     return $folder;
   }
 
