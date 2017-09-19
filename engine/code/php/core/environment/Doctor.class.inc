@@ -10,13 +10,28 @@ class Doctor extends DataContainer {
     $this->env = $env;
   }
 
+  public function checkSystemPaths() {
+    Doctor::talk("Checking system paths.");
+      foreach ($this->env->dir as $dirname => $folder) {
+        Doctor::talk('Checking ' . $dirname . '(<i>' . $folder. ')</i>');
+        if (!is_dir($folder) && !is_link($folder)) {
+          Doctor::ko('non existing. Creating...');
+          mkdir($folder) or die("Error: can not create " . $folder . '. Check permission and path.');
+          Doctor::ok();
+        } else {
+          Doctor::ok();
+        }
+      }
+  }
+
+  // Check & repair any broken links.
   public function checkBrokenLinks() {
     $path = is_link($this->env->dir['docroot']) ? ($_SERVER['DOCUMENT_ROOT'] . '/sites/' . readlink($this->env->dir['docroot'])) : $this->env->dir['docroot'];
-    print "Searching for all symlinks in " . $path . "...";
+    Doctor::talk("Searching for all symlinks in " . $path . "...");
     flush();
     $symlinks_find_cmd = "find " . $path . " -type l";
     exec($symlinks_find_cmd, $results_arr);
-    print "..." . count($results_arr) . ' found.<br>';
+    Doctor::talk("..." . count($results_arr) . ' found.<br>');
     $wrong_links = 0;
     $fixed_links = 0;
     $unfixable_links = array();
@@ -31,64 +46,83 @@ class Doctor extends DataContainer {
         $wrong_links++;
         $realpath = $this->env->nodePath($link_name);
 
-        print "Looking for " . $link_name . ' (' . $realpath . ')...<br>';
+        Doctor::talk("Looking for " . $link_name . ' (' . $realpath . ')...<br>');
         if (is_dir($realpath)) {
           // Attempt to change the target dir of the link.
           unlink($result_string);
           link($realpath, $result_string);
-          print "...fixed! :-) <br>";
+          Doctor::ok("...fixed! :-) <br>");
           $fixed_links++;
         } else {
-          print "...none found :-( <br>";
+          Doctor::ko("...none found :-( <br>");
           $unfixable_links[] = $result_string;
         }
 
       }
 
     }
-    print $wrong_links . " wrong links found.<br>";
+    Doctor::ko($wrong_links . " wrong links found.");
     if ($fixed_links > 0) {
-      print $fixed_links . " wrong links <b style='color: green'>FIXED</b>!<br>";
+      Doctor::ok($fixed_links . " wrong links <b style='color: green'>FIXED</b>!<br>");
     }
     if (count($unfixable_links) > 0) {
-      print "<b style='color:red'>Could not fix those " . count($unfixable_links) . " wrong links. Maybe they were deleted?</b><br>";
-      print implode('<br>', $unfixable_links);
+      Doctor::ko("<b style='color:red'>Could not fix those " . count($unfixable_links) . " wrong links. Maybe they were deleted?");
+      Doctor::talk(implode('<br>', $unfixable_links));
     }
 
   }
 
   public function checkExistingHome() {
-    print 'Looking for <b>Homepage...</b> node<br>';
+    Doctor::talk('Looking for <b>Homepage...</b> node<br>');
     $homenode = NodeFactory::load($this->env, 'home');
     if (!($homenode->exists)) {
-      print 'Not found! Attempting to create Homepage...<br>';
-      $home = NodeFactory::buildNode($this->env, 'home', '_pages', array('title' => 'Your Homepage', 'Welcome in your new Homepage. That\'s where everything begins...'));
+      Doctor::ko('Not found! Attempting to create Homepage...');
+      NodeFactory::buildNode($this->env, 'home', '_pages', array('title' => 'Your Homepage', 'Welcome in your new Homepage. That\'s where everything begins...'));
 
     }
     else {
-    print '<b style="color:green">Found at ' . $homenode->realpath . '!</b><br>';
+      Doctor::ok('Found at ' . $homenode->realpath . '!</b><br>');
     }
   }
 
   public function checkAdminUser() {
-    print 'Looking for <b>Admin</b> user<br>';
+    Doctor::talk('Looking for <b>Admin</b> user');
     $adminuser = UserFactory::load($this->env, 'administrator');
     if (!($adminuser->exists)) {
-      print 'Not found! Attempting to create Admin User...<br>';
+      Doctor::talk('Not found! Attempting to create Admin User...');
       $adminuser = UserFactory::buildUser($this->env, 'administrator', array('title' => 'Administrator', 'password' => 'pass', 'roles' => array('admin')));
-      print 'Done!<br>';
+      Doctor::ok('Done!');
     }
     else {
-      print '<b style="color:green">Found!</b><br>';
+      Doctor::ok('Found!');
     }
   }
 
   public function runAllTasks() {
+    $this->checkSystemPaths();
     $this->checkBrokenLinks();
     $this->checkExistingHome();
     $this->checkAdminUser();
+    // Run all setup hooks.
+    $this->env->hook('setup');
+    // Run all doctor hooks.
+    $this->env->hook('doctor');
 
     print "<b>Doctor has finished curing your environment!</b>";
     die();
+  }
+
+  public static function talk($phrase, $color = '#fff') {
+    print '<div class="doctor-line" style="background:#000"><div class="doctor-phrase" style="color:' . $color . '">' . $phrase . '</div></div>';
+    flush();
+    sleep(1);
+  }
+
+  public static function ok($phrase = 'OK') {
+    Doctor::talk($phrase, '#0f0');
+  }
+
+  public static function ko($phrase = 'KO') {
+    Doctor::talk($phrase, '#f00');
   }
 }
