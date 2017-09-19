@@ -5,10 +5,10 @@
  * @param $vars
  */
 function mail_init($vars) {
-  $mail_tmp = $vars['env']->dir['docroot'] . '/_mailqueue';
-  $vars['env']->sysdir($mail_tmp);
+  $vars['env']->sysdir('mailqueue', '_mailqueue');
   // Get the mails to queue.
-  $mail_nodes = ($vars['env']->scanDirectory($mail_tmp, array(
+  // TODO: don't check all emails at every page load. Use CRON instead?
+  $mail_nodes = ($vars['env']->scanDirectory($vars['env']->dir['mailqueue'], array(
     'exclude_dirs' => DIR_INACTIVE,
     'type' => DIR_DIRS,
     )));
@@ -24,9 +24,8 @@ function mail_init($vars) {
  * @param $vars
  */
 function mail_form_type_mailform_submit($vars) {
-  print_r($vars['form']->getType());
-$mail_tmp = $vars['env']->dir['docroot'] . '/_mailqueue';
-  $vars['env']->sysdir($mail_tmp);
+  $mail_tmp = $vars['env']->dir['docroot'] . '/_mailqueue';
+  $vars['env']->sysdir('mailqueue', $mail_tmp);
   $queue = new Node($vars['env'], '_mailqueue');
 
   // TODO: better way to create unique id for mail.
