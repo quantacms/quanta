@@ -64,6 +64,7 @@ function wiki_JSONATTRIBUTE($attributes, $node, $string, $env) {
  * @return string
  */
 function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
+  
   $node = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
 
   switch($attributes['name']) {
@@ -95,6 +96,7 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
       // TODO: why sometimes template it's not built yet?
       $node->buildTemplate();
       $string = $node->render();
+
       break;
 
     case 'body':
@@ -149,34 +151,45 @@ function wiki_LINK($attributes, $target, $string, $env) {
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $classes = array('link');
   $current = NodeFactory::current($env);
+  $querystring = array();
+
 
   if (((substr($target, 0, 4) == 'http') || (substr($target, 0, 4) == 'www.')) && !$node->exists) {
     $classes[] = 'link-ext';
     $title_default = $target;
-    $rel = '';
+    $attributes['rel'] = NULL;
   } else {
     // TODO: use something to get the real url...
-    
 		$target = '/' . string_normalize($node->getName());
     $title_default = $node->title;
     $classes[] = 'link-' . string_normalize($node->getName());
     if ($current->name == $node->name) {
       $classes[] = 'link-active';
     }
-    $rel = ' data-rel="' . $node->getName() . '"';
+    $attributes['rel'] = $node->getName();
   }
 
   if (isset($attributes['class'])) {
     $classes[] = $attributes['class'];
   }
 
-  $datatype = isset($attributes['type']) ? (' data-type="' . $attributes['type'] . '"') : '';
-  $widget = isset($attributes['widget']) ? (' data-widget="' . $attributes['widget'] . '"') : '';
-  $components = isset($attributes['components']) ? (' data-components="' . $attributes['components'] . '"') : '';
-  $tooltip = isset($attributes['tooltip']) ? (' tooltip="' . $attributes['tooltip'] . '"') : '';
-  $redirect = isset($attributes['redirect']) ? (' data-redirect="' . $attributes['redirect'] . '"') : '';
+  if (isset($attributes['language'])) {
+    $querystring[] = 'lang=' . $attributes['language'];
+  }
 
-  $link = '<a' . $datatype . $widget . $tooltip . $components . $rel . $redirect . ' class="' . implode(' ', $classes). '" href="' . $target . '">' . string_normalize((isset($attributes['title']) ? $attributes['title'] : $title_default)) .'</a>';
+  $link_data = array();
+  // TODO: make just a big variable "data".
+  $data_types = array('rel', 'language', 'type', 'widget', 'components', 'tooltip', 'redirect');
+  foreach ($data_types as $data_type) {
+    if (isset($attributes[$data_type])) {
+      $link_data[] = 'data-' . $data_type . '="' . $attributes[$data_type] . '"';
+    }
+  }
+
+  $query = (!empty($querystring))  ? ('?' . implode('&', $querystring)) : '';
+
+
+  $link = '<a ' . implode(' ', $link_data) . ' class="' . implode(' ', $classes). '" href="' . $target . $query . '">' . string_normalize((isset($attributes['title']) ? $attributes['title'] : $title_default)) .'</a>';
   return $link;
 }
 
@@ -203,6 +216,7 @@ function wiki_ADD($attributes, $node, $string, $env) {
   $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
   $attributes['class'] .= 'add-link';
   $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Add to <i>' . $nodeobj->getTitle() . '</i>...';
+  $attributes['language'] = isset($attributes['language']) ? $attributes['language'] : $env->getLanguage();
   $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&oplus;';
   return wiki_LINK($attributes, $node, $string, $env);
 }
@@ -227,6 +241,8 @@ function wiki_EDIT($attributes, $node, $string, $env) {
   $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
   $attributes['class'] .= ' edit-link';
   $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Edit <i>' . $nodeobj->getTitle() . '</i>...';
+  $attributes['language'] = isset($attributes['language']) ? $attributes['language'] : $env->getLanguage();
+
   $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&#9998;';
   $attributes['redirect'] = isset($attributes['redirect']) ? $attributes['redirect'] : '';
 

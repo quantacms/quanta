@@ -19,6 +19,8 @@ class Shadow extends Page {
   public function __construct($env, $data = NULL) {
     $this->env = $env;
     $this->widget = $data->widget;
+    $this->setLanguage(isset($data->language) ? $data->language : $env->getLanguage());
+
     if (isset($data->components)) {
       $this->components = $data->components;
     }
@@ -32,7 +34,7 @@ class Shadow extends Page {
     }
 
     // TODO: default to home is not making sense.
-    $this->node = (isset($data->node)) ? NodeFactory::load($env, $data->node) : new Node($env, NULL);
+    $this->node = (isset($data->node)) ? NodeFactory::load($env, $data->node, NULL, $this->getLanguage()) : new Node($env, NULL);
 
     foreach ($this->components as $component) {
       $this->env->hook('shadow_' . $component, array('shadow' => &$this));

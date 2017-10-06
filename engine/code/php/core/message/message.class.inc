@@ -36,7 +36,7 @@ class Message {
     $this->type = $type;
     $this->module = $module;
     $this->severity = $severity;
-    $this->env->addItem($this, 'message');
+    $this->env->addData('message', array($this));
     if ($type == MESSAGE_TYPE_SCREEN) {
       $_SESSION['messages'][] = serialize($this);
     }

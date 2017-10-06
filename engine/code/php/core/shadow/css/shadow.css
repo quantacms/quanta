@@ -306,3 +306,7 @@ ul.shadow-titles-list {
     margin: 0;
     padding: 0;
 }
+
+#shadow-extra {
+    float: right;
+}
