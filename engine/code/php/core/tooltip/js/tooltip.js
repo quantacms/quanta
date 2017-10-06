@@ -3,10 +3,10 @@ $(document).ready(function() {
 });
 
 $(document).bind('refresh', function() {
-    $('[tooltip]').on('mouseover', function(e) {
+    $('[data-tooltip]').on('mouseover', function(e) {
 
 
-        $('#tooltip').html($(this).attr('tooltip')).show();
+        $('#tooltip').html($(this).attr('data-tooltip')).show();
         var tooltip = $('#tooltip');
 				tooltip.css('color', $(this).css('color'));
 				$(document).off('mousemove').on('mousemove', function(e) {
@@ -18,7 +18,7 @@ $(document).bind('refresh', function() {
             });
         });
     });
-    $('[tooltip]').on('mouseout', function(e) {
+    $('[data-tooltip]').on('mouseout', function(e) {
         $('#tooltip').unbind();
         $('#tooltip').hide();
     });

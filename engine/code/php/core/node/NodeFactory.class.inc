@@ -11,8 +11,11 @@ class NodeFactory {
    * @param $env
    * @param $node
    */
-  public static function load(Environment $env, $node, $tpl = NULL) {
-    $node = new Node($env, $node);
+  public static function load(Environment $env, $node, $tpl = NULL, $language = NULL) {
+    if (empty($language)) {
+      $language = $env->getLanguage();
+    }
+    $node = new Node($env, $node, NULL, $tpl, $language);
     $env->hook('node_open', array('node' => &$node), NULL, $tpl);
     return $node;
   }
@@ -56,8 +59,12 @@ class NodeFactory {
     if (isset($vars['body'])) {
       $node->setBody($vars['body']);
     }
+    if (isset($vars['language'])) {
+      $node->setLanguage($vars['language']);
+    }
 
     $node->save();
+
     return $node;
   }
 
