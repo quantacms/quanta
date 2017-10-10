@@ -29,7 +29,8 @@ function wiki_BLOCK($attributes, $node, $string, $env) {
   $node = NodeFactory::load($env, $node);
 
   if (is_file($node->realpath . '/tpl.html')) {
-    $body = file_get_contents($node->realpath . '/tpl.html');
+    $node->buildTemplate();
+    $body = $node->render();
   } else {
     $body = $node->getBody();
   }
