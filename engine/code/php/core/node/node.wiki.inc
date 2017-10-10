@@ -133,7 +133,8 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
       // TODO: security issues.
       if (isset($node->json->{$attributes['name']})) {
         $string = string_normalize($node->json->{$attributes['name']});
-      } else {
+      }
+      else {
         $string = '';
       }
 
