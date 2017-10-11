@@ -28,7 +28,7 @@ function wiki_AUTHOR($attributes, $var, $string, $env) {
 function wiki_BLOCK($attributes, $node, $string, $env) {
   $node = NodeFactory::load($env, $node);
 
-  if (is_file($node->realpath . '/tpl.html')) {
+  if (isset($attributes['rendered'])) {
     $node->buildTemplate();
     $body = $node->render();
   } else {
