@@ -27,10 +27,17 @@ function wiki_AUTHOR($attributes, $var, $string, $env) {
  */
 function wiki_BLOCK($attributes, $node, $string, $env) {
   $node = NodeFactory::load($env, $node);
-  $body = $node->getBody();
+
+  if (isset($attributes['rendered'])) {
+    $node->buildTemplate();
+    $body = $node->render();
+  } else {
+    $body = $node->getBody();
+  }
+  
   $editable = !empty($attributes['editable']) ? $attributes['editable'] : 'true';
   if ($editable == 'true') {
-    $body = $node->wrap($node->getBody());
+    $body = $node->wrap($body);
   }
   return $node->isForbidden() ? '' : $body;
 }
