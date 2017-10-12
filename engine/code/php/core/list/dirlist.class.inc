@@ -82,4 +82,12 @@ class DirList extends ListObject {
     return $this->dirs;
   }
 
+  /**
+   * Remove one of the loaded directories.
+   * @param $dir
+   */
+  public function removeDir($dir) {
+    unset($this->dirs[$dir]);
+  }
+
 }

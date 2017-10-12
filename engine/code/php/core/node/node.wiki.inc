@@ -93,10 +93,8 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
       break;
 
     case 'content':
-      // TODO: why sometimes template it's not built yet?
       $node->buildTemplate();
       $string = $node->render();
-
       break;
 
     case 'body':
@@ -241,7 +239,7 @@ function wiki_EDIT($attributes, $node, $string, $env) {
   $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
   $attributes['class'] .= ' edit-link';
   $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Edit <i>' . $nodeobj->getTitle() . '</i>...';
-  $attributes['language'] = isset($attributes['language']) ? $attributes['language'] : $env->getLanguage();
+  //$attributes['language'] = isset($attributes['language']) ? $attributes['language'] : $env->getLanguage();
 
   $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&#9998;';
   $attributes['redirect'] = isset($attributes['redirect']) ? $attributes['redirect'] : '';

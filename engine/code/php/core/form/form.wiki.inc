@@ -60,7 +60,7 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
  * Use subnodes of a node as possible values for a form item.
  */
 function wiki_LIST_VALUES($attributes, $node, $string, $env) {
-
+  $attributes['nowrap'] = TRUE;
   $attributes['clean'] = TRUE;
   $attributes['separator'] = ',';
   $dirlist = new DirList($env, $node, 'list-values', $attributes, 'form');
