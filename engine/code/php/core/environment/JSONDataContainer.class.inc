@@ -25,6 +25,7 @@ abstract class JSONDataContainer extends DataContainer {
     $language = empty($this->getLanguage()) ? $this->env->getLanguage() : $this->getLanguage();
 
     $jsonpath = $this->realpath . '/data_' . $language . '.json';
+
     foreach ($ignore as $ignore_value) {
       if (isset($this->json->{$ignore_value})) {
         unset($this->json->{$ignore_value});
