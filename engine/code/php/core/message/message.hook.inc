@@ -5,7 +5,8 @@
  * @param $vars
  */
 function message_page_after_build($vars) {
-    $messages = $vars['env']->getItems('message');
+  $messages = $vars['env']->getData('message');
+
   foreach ($messages as $message) {
     if ($message->type == MESSAGE_TYPE_LOG) {
     $username = UserFactory::current($vars['env'])->name;

@@ -1,6 +1,8 @@
 <?php
 
 abstract class JSONDataContainer extends DataContainer {
+  public $name;
+  // public $context;
   public $json;
 
   /**
@@ -20,7 +22,9 @@ abstract class JSONDataContainer extends DataContainer {
     if (!is_dir($this->realpath)) {
       mkdir($this->realpath) or die('cannot create dir: ' . $this->realpath);
     }
-    $jsonpath = $this->realpath . '/data.json';
+    $language = empty($this->getLanguage()) ? $this->env->getLanguage() : $this->getLanguage();
+
+    $jsonpath = $this->realpath . '/data_' . $language . '.json';
     foreach ($ignore as $ignore_value) {
       if (isset($this->json->{$ignore_value})) {
         unset($this->json->{$ignore_value});
@@ -31,6 +35,22 @@ abstract class JSONDataContainer extends DataContainer {
     fclose($fh);
 
     unset($user_json);
+  }
+
+  /**
+   * Gets the name (equal to folder name) of the node.
+   * @return mixed
+   */
+  public function getName() {
+    return $this->name;
+  }
+
+  /**
+   * Sets the name (equal to folder name) of the container.
+   * @param $name
+   */
+  public function setName($name) {
+    $this->name = $name;
   }
 
 }

@@ -40,11 +40,12 @@ class DirList extends ListObject {
         break;
       }
       $classes = array('dir-list-item', 'list-' . $this->getTpl() . '-item', 'list-item-' . $i);
-      if ($node->isCurrent()) {
+
+      if ($node->isCurrent() || ($this->getAttribute('active_items') == $node->getName())) {
         $classes[] = 'list-selected';
       }
       $node_father = NodeFactory::current($this->env)->getFather();
-      if ($node_father->exists && ($node_father->name == $node->name)) {
+      if ($node_father->exists && ($node_father->getName() == $node->getName())) {
         $classes[] = 'list-selected-father';
       }
 
@@ -52,19 +53,32 @@ class DirList extends ListObject {
       $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
 
       $list_item = transformCodeTags($this->env, preg_replace("/\[LISTITEM\]/is", string_normalize($dir_url), $tpl));
+      $list_item = transformCodeTags($this->env, preg_replace("/\[LISTNODE\]/is", string_normalize($this->dir), $list_item));
+
       // If the "clean" attribute is not present, add some wrapping html.
       $this->env->hook('list_item', array(
         'list' => &$this,
         'list_item' => &$list_item,
       ));
-      if (empty($this->getAttribute('clean'))) {
+
+      // Wrap in the inline editor.
+      if (empty($this->getAttribute('nowrap'))) {
         $list_item = $node->wrap($list_item);
+      }
+
+      // Check if output should be list item or plain.
+      if (empty($this->getAttribute('clean'))) {
         $list_item = '<li class="' . implode(' ', $classes) . '">' . $list_item . '</li>';
       }
+
       $this->list_items[] = $list_item;
     }
   }
 
+  /**
+   * Return all directories (nodes) found by the list.
+   * @return array
+   */
   public function getDirs() {
     return $this->dirs;
   }

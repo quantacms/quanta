@@ -10,6 +10,7 @@ abstract class DataContainer {
   public $fullpath;
   public $realpath;
   public $dir;
+  public $language;
 
   public function setData($key, $value) {
     $this->data[$key] = $value;
@@ -44,6 +45,23 @@ abstract class DataContainer {
       print "UNKNOWN DATA TYPE: " . $value;
     }
     $this->setData($key, $sum);
+  }
+
+  /**
+   * Gets the name (equal to folder name) of the container.
+   * @return mixed
+   */
+  public function getLanguage() {
+
+    return $this->language;
+  }
+
+  /**
+   * Sets the name (equal to folder name) of the container.
+   * @param $name
+   */
+  public function setLanguage($language) {
+    $this->language = $language;
   }
 
 }

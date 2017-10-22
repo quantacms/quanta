@@ -13,10 +13,8 @@ define("USER_MIN_NAME_LENGTH", 4);
  * This class represents an user in the system.
  */
 class User extends Node {
-  public $name;
   public $email;
   // Action being performed on the user
-  public $context;
   public $roles = array();
   public $password;
 
@@ -308,9 +306,6 @@ class User extends Node {
 
   }
 
-  public function getName() {
-    return $this->name;
-  }
 
   public function getTime() {
     return 0;
