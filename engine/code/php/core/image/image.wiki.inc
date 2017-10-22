@@ -14,7 +14,7 @@ function wiki_THUMBNAIL($attributes, $name, $string, $env) {
   $node = empty($name) ? NodeFactory::current($env) : NodeFactory::load($env, $name);
   $image = new Image($env, '/' . $node->getName() . '/' . $node->getThumbnail(), $node);
   $image->loadAttributes($attributes);
-  return '<a href="/' . $name. '">' . $image->render() . '</a>';
+  return '<a class="thumbnail" href="/' . $name. '">' . $image->render() . '</a>';
 }
 
 /**
@@ -37,7 +37,7 @@ function wiki_IMGTHUMB($attributes, $file, $string, $env) {
 
 	$filearr = explode('/', $file);
 	$filename = $filearr[count($filearr) - 1];
-  generateThumbnail($env, $node->realpath . '/' . $filename, $thumbfile, $image->width, $image->height, $op);
+  $image->generateThumbnail($env, $thumbfile, $image->width, $image->height, $op);
 
   // TODO: stupid way to get to the tmp folder...
   $src = $env->dir['tmp'] . '/thumbs/' . $thumbfile;

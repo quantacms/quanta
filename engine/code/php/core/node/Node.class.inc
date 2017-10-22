@@ -41,15 +41,16 @@ class Node extends JSONDataContainer {
   public function __construct(&$env, $name, $father = NULL, $tpl_node = NULL, $language = NULL) {
     $this->env = $env;
     $this->json = new stdClass();
-
+    // Load node's language.
     if (!empty($language)) {
       $this->setLanguage(!empty($language) ? $language : $this->env->getLanguage());
     }
-
+    // Load node's father (parent folder).
     if ($father != NULL) {
       $this->father = NodeFactory::load($env, $father);
     }
 
+    // Checking if this is not a new node.
     if ($name != NODE_NEW) {
       $this->setName(strtolower($name));
       // Load node from cache (RAM) if it has been already loaded.
@@ -71,7 +72,9 @@ class Node extends JSONDataContainer {
         $this->exists = $result != NULL;
       }
 
-    } else {
+    }
+    // ...Adding a new node. No values to load.
+    else {
       $this->setName(NODE_NEW);
       $this->exists = FALSE;
     }
@@ -89,41 +92,54 @@ class Node extends JSONDataContainer {
 
   /**
    * Load the node from json.
+   * TODO: move standard part into JSONDataContainer.
    */
   public function loadJSON() {
-    $json_path = is_file($this->path . '/data_' . $this->getLanguage() . '.json') ? ($this->path . '/data_' . $this->getLanguage() . '.json') : $this->path . '/data.json';
-
-    if (is_file($json_path)) {
-      $this->json = (object) json_decode(file_get_contents($json_path));
+    // Look for a language version.
+    if (is_file($this->path . '/data_' . $this->getLanguage() . '.json')) {
+      $json_path = ($this->path . '/data_' . $this->getLanguage() . '.json');
     }
+    // Look for a language neutral version.
+    elseif (is_file($this->path . '/data.json')) {
+      $json_path = ($this->path . '/data.json');
+    }
+    // Impossible to load json. Error or empty Node.
     else {
       $this->json = new StdClass;
-      // No json file. Empty node, or incomplete / unknown.
       return;
     }
 
+    $this->json = (object) json_decode(file_get_contents($json_path));
+
+    // Load the node teaser from JSON.
     if (isset($this->json->teaser)) {
       $this->setTeaser($this->json->teaser);
     }
+    // Load the node author from JSON.
     if (isset($this->json->author)) {
       $this->setAuthor($this->json->author);
     }
+    // Load the node body from JSON.
     if (isset($this->json->body)) {
       $this->setBody($this->json->body);
     }
-
+    // Load the node status from JSON.
     if (!empty($this->json->status)) {
       $this->setStatus($this->json->status);
-    } else {
+    }
+    // Use published as a fallback. TODO: is this correct?
+    else {
       $this->setStatus(NODE_STATUS_PUBLISHED);
     }
-
+    // Load the node title from json.
     if (isset($this->json->title)) {
       $this->setTitle($this->json->title);
     }
+    // Load the node timestamp / craeted time from json.
     if (isset($this->json->timestamp)) {
       $this->setTimestamp($this->json->timestamp);
     }
+    // Load the node Thumbnail from json.
     if (isset($this->json->thumbnail)) {
       $this->setThumbnail($this->json->thumbnail);
     }
@@ -144,6 +160,7 @@ class Node extends JSONDataContainer {
    * Update node's json values.
    */
   public function updateJSON($ignore = array()) {
+    // Here we generate the json value, using the node object's values.
     $this->json->name = $this->getName();
     $this->json->teaser = $this->getTeaser();
     $this->json->author = $this->getAuthor();
@@ -165,7 +182,6 @@ class Node extends JSONDataContainer {
    * Load node with its variables internally.
    */
   public function load() {
-
     $this->fullpath = str_replace($this->env->dir['docroot'], '', $this->realpath);
     $this->env->hook('node_load', array(
       'node' => &$this,
@@ -196,10 +212,6 @@ class Node extends JSONDataContainer {
         $this->setContent($html_content);
         $this->setTitle(parsetag($this->content, 'h1'));
       }
-
-    }
-    else {
-      $this->setTitle($this->name);
     }
 
     $this->env->hook('node_build', array(
@@ -350,7 +362,7 @@ class Node extends JSONDataContainer {
   }
 
   public function setTitle($title) {
-    $this->title = htmlspecialchars($title);
+    $this->title = htmlentities($title);
   }
 
   public function getContent() {
@@ -473,7 +485,7 @@ class Node extends JSONDataContainer {
           // level 2 = tpl--.html
           // etc...
 
-          for ($i = 0; $i <= 6; $i++) {
+          for ($i = 1; $i <= 6; $i++) {
             $min .= '-';
             $file = $lineage->path . '/tpl' . $min . '.html';
             if (file_exists($file)) {
@@ -729,11 +741,20 @@ class Node extends JSONDataContainer {
   }
 
   /**
-   * Check if the node is forbidden (aka access denied).
+   * Check if the Node is forbidden (aka access denied).
    * @return bool
    */
   public function isForbidden() {
     return $this->forbidden;
+  }
+
+  /**
+   * Check if the Node is available in a certain language.
+   * @param $language
+   * @return bool
+   */
+  public function hasTranslation($language) {
+    return is_file($this->realpath . '/data_' . $language . '.json');
   }
 
 }

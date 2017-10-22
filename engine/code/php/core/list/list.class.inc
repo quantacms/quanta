@@ -174,9 +174,11 @@ abstract class ListObject {
     foreach ($list_pages as $item) {
 
       $item_name = is_array($item) ? $item['name'] : $item;
+
       if ($this->scantype == DIR_DIRS) {
         $node = NodeFactory::load($this->env, $item_name);
         if ($node->exists && $this->validateStatus($node)) {
+
           $this->dirs[$item_name] = $node;
         }
       }
