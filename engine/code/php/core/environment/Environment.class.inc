@@ -398,6 +398,7 @@ class Environment extends DataContainer {
    */
   public function switchLanguage($lang) {
     $language = NodeFactory::load($this, $lang);
+
     if ($language->exists) {
       $_SESSION['language'] = $lang;
       new Message($this, 'Language switched to ' . $language->getTitle());

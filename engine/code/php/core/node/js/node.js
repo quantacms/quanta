@@ -15,15 +15,21 @@ $(document).bind('refresh', function() {
     $('.edit-link').off('click').on('click', function(e) {
         var components = (($(this).attr('data-components') != undefined) ? ($(this).attr('data-components').split(',')) : ['node_form', 'file_form', 'manager_form', 'access_form', 'status_form']);
 
-      openShadow({
-            module : 'node',
-            context: 'node_edit',
-            widget: $(this).attr('data-widget'),
-            language: $(this).attr('data-language'),
-            components: components,
-            node: $(this).attr('data-rel'),
-            redirect: $(this).attr('data-redirect')
-        });
+        var shadow = {
+          module : 'node',
+          context: 'node_edit',
+          widget: $(this).attr('data-widget'),
+          components: components,
+          node: $(this).attr('data-rel'),
+          redirect: $(this).attr('data-redirect')
+        }
+
+        if ($(this).attr('data-language') != undefined) {
+          shadow.language = $(this).attr('data-language');
+        }
+
+      openShadow(shadow);
+
         e.preventDefault();
     });
 
