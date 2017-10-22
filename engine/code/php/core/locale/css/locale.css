@@ -1,0 +1,11 @@
+.language_switcher .dir-list-item, .translate_links .dir-list-item {
+	display: inline-block;
+	padding: 3px;
+	text-transform: uppercase;
+	font-size: 0.6em;
+	font-family: Arial;
+}
+
+.language_switcher .list-selected, .translate_links .list-selected {
+	background: #ddd;
+}

@@ -19,7 +19,6 @@ class Environment extends DataContainer {
   public $request = array();
   private $modules = array();
   private $includes = array();
-  private $items = array();
   private $context;
 
   // Construct the Environment.
@@ -301,32 +300,6 @@ class Environment extends DataContainer {
   }
 
   /**
-   * Adds an item to the environment. An item can be everything
-   * (messages, nodes, ...)
-   * @param $item
-   */
-  public function addItem($item, $module) {
-    if (!is_object($item)) {
-      die('Error: ' . var_export($item, 1) . ' is not a valid engine object');
-    }
-    $this->items[strtolower($module)][] = $item;
-  }
-
-  /**
-   * Get all items of one type / module (i.e. message)
-   * @param $module
-   * @return object
-   */
-  public function getItems($module) {
-    if (isset($this->items[strtolower($module)])) {
-      $items = $this->items[strtolower($module)];
-    } else {
-      $items = array();
-    }
-    return $items;
-  }
-
-  /**
    * Verifies the path and / or creates a candidate path.
    * @param $title
    * @return string
@@ -340,7 +313,8 @@ class Environment extends DataContainer {
       if (!$node->exists) {
         $path = $candidate_path;
         break;
-      } else {
+      }
+      else {
         $i++;
         $candidate_path = $candidate_path . '-' . $i;
       }
@@ -394,4 +368,42 @@ class Environment extends DataContainer {
 
   }
 
+  /**
+   * Environment's language is always current one.
+   * @return mixed
+   */
+  public function getLanguage() {
+    // TODO: better handling of fallback.
+    if (isset($_SESSION['language'])) {
+      $lang = $_SESSION['language'];
+    }
+    else {
+      $lang = $this->getFallbackLanguage();
+    }
+    return $lang;
+  }
+
+  /**
+   * Environment's language is always current one.
+   * @return mixed
+   */
+  public function getFallbackLanguage() {
+    // TODO: better handling of fallback.
+    return 'en';
+  }
+
+  /**
+   * Switch the current language.
+   * @param $lang
+   */
+  public function switchLanguage($lang) {
+    $language = NodeFactory::load($this, $lang);
+    if ($language->exists) {
+      $_SESSION['language'] = $lang;
+      new Message($this, 'Language switched to ' . $language->getTitle());
+    }
+    else {
+      new Message($this, 'Error - this language is not enabled: ' . $lang);
+    }
+  }
 }

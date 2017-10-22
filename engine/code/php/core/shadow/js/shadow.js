@@ -21,7 +21,9 @@ function openShadow(shadowData) {
         shadow.widget = 'tabs';
     }
 
-    var shadowPath = '/' + ((shadow.node != undefined) ? (shadow.node + '/') : '') + '?shadow=' + JSON.stringify(shadow);
+    var shadowLanguage = (shadow.language != undefined) ? (shadow.language) : 'fallback';
+    var shadowPath = '/' + ((shadow.node != undefined) ? (shadow.node + '/') : '') + '?lang=' + shadowLanguage + '&shadow=' + JSON.stringify(shadow);
+
     $('#shadow-item').html('').attr('data-rel', shadow.context).load(shadowPath, function () {
             if (shadow.callback != undefined) {
                 shadow.callback();

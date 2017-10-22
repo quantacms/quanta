@@ -16,7 +16,6 @@ date_default_timezone_set('UTC');
  * This is the core of the engine.
  */
 class Node extends JSONDataContainer {
-  public $name;
   public $title;
   public $author;
   public $body = NULL;
@@ -39,9 +38,14 @@ class Node extends JSONDataContainer {
    * @param $name
    * @param null $father
    */
-  public function __construct(&$env, $name, $father = NULL, $tpl_node = NULL) {
+  public function __construct(&$env, $name, $father = NULL, $tpl_node = NULL, $language = NULL) {
     $this->env = $env;
     $this->json = new stdClass();
+
+    if (!empty($language)) {
+      $this->setLanguage(!empty($language) ? $language : $this->env->getLanguage());
+    }
+
     if ($father != NULL) {
       $this->father = NodeFactory::load($env, $father);
     }
@@ -57,14 +61,16 @@ class Node extends JSONDataContainer {
           'node' => &$this,
         ));
         $this->exists = TRUE;
-      } else {
+      }
+      // If node is not in cache, load it from file system.
+      else {
         $result = $this->env->nodePath($this->getName());
-
         // TODO: unify path and realpath.
         $this->path = $result;
         $this->realpath = $result;
         $this->exists = $result != NULL;
       }
+
     } else {
       $this->setName(NODE_NEW);
       $this->exists = FALSE;
@@ -85,13 +91,17 @@ class Node extends JSONDataContainer {
    * Load the node from json.
    */
   public function loadJSON() {
-    if (is_file($this->path . '/data.json')) {
-      $this->json = (object) json_decode(file_get_contents($this->realpath . '/data.json'));
-    } else {
+    $json_path = is_file($this->path . '/data_' . $this->getLanguage() . '.json') ? ($this->path . '/data_' . $this->getLanguage() . '.json') : $this->path . '/data.json';
+
+    if (is_file($json_path)) {
+      $this->json = (object) json_decode(file_get_contents($json_path));
+    }
+    else {
       $this->json = new StdClass;
       // No json file. Empty node, or incomplete / unknown.
       return;
     }
+
     if (isset($this->json->teaser)) {
       $this->setTeaser($this->json->teaser);
     }
@@ -151,35 +161,17 @@ class Node extends JSONDataContainer {
     }
   }
 
-
-  /**
-   * Gets the name (equal to folder name) of the node.
-   * @return mixed
-   */
-  public function getName() {
-    return $this->name;
-  }
-
-  /**
-   * Sets the name (equal to folder name) of the node.
-   * @param $name
-   */
-  public function setName($name) {
-    $this->name = $name;
-  }
-
   /**
    * Load node with its variables internally.
    */
   public function load() {
 
     $this->fullpath = str_replace($this->env->dir['docroot'], '', $this->realpath);
-
     $this->env->hook('node_load', array(
       'node' => &$this,
     ));
 
-    if ($this->content == NULL && $this->exists) {
+    if ($this->body == NULL && $this->exists) {
       $this->buildContent();
     }
     if ($this->exists && ($this->getTimestamp() == NULL)) {
@@ -199,9 +191,12 @@ class Node extends JSONDataContainer {
     // TODO: at some point loading data from data.html should be discontinued...
     if (is_file($this->path . '/data.html')) {
       $html_content = file_get_contents($this->path . '/data.html');
-      $this->setBody(preg_replace('!<\s*(h1).*?>((.*?)</\1>)?!is', '', $html_content));
-      $this->setContent($html_content);
-      $this->setTitle(parsetag($this->content, 'h1'));
+      if (empty($this->getBody())) {
+        $this->setBody(preg_replace('!<\s*(h1).*?>((.*?)</\1>)?!is', '', $html_content));
+        $this->setContent($html_content);
+        $this->setTitle(parsetag($this->content, 'h1'));
+      }
+
     }
     else {
       $this->setTitle($this->name);
@@ -442,7 +437,9 @@ class Node extends JSONDataContainer {
    */
   public function buildTemplate() {
     $user = UserFactory::current($this->env);
-    // Use another node as a template.
+
+
+    // Use another node as a base for the template.
     if (isset($this->tpl_node)) {
       $tpl_node = new Node($this->env, $this->tpl_node);
       if ($user->checkAccess($tpl_node, NODE_ACTION_VIEW)) {
@@ -457,14 +454,13 @@ class Node extends JSONDataContainer {
       $this->tpl = $this->getContent();
       $tpl = array();
       $tpl_level = 0;
-
+      // a template in the same directory has always priority.
       if (is_file($this->realpath . '/tpl.html')) {
         $this->tpl = file_get_contents($this->realpath . '/tpl.html');
       } else {
         foreach ($this->lineage as $lineage) {
 
           $tpl_level++;
-          // a template in the same directory has always priority.
           if (is_file($lineage->path . '/tpl.html')) {
             $this->tpl = file_get_contents($lineage->path . '/tpl.html');
           }
@@ -477,7 +473,7 @@ class Node extends JSONDataContainer {
           // level 2 = tpl--.html
           // etc...
 
-          for ($i = 1; $i <= 6; $i++) {
+          for ($i = 0; $i <= 6; $i++) {
             $min .= '-';
             $file = $lineage->path . '/tpl' . $min . '.html';
             if (file_exists($file)) {
@@ -486,9 +482,11 @@ class Node extends JSONDataContainer {
           } 
         }
 
+
         // check if there is a sub-level template.
         if (isset($tpl[$tpl_level])) {
           $this->tpl = file_get_contents($tpl[$tpl_level]);
+
         }
       }
     }
