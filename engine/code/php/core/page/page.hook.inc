@@ -16,9 +16,9 @@ function page_boot($vars) {
   if ($vars['env']->request[count($vars['env']->request) - 1] == 'robots.txt') {
     $robots = new Robots($vars['env']);
     $robots->disallow('*', '/search');
-    $robots->disallow('*', '/files*');
-    $robots->disallow('*', '/css*');
-    $robots->disallow('*', '/js*');
+    // $robots->disallow('*', '/files*');
+    // $robots->disallow('*', '/css*');
+    // $robots->disallow('*', '/js*');
     header("Content-Type: text/plain");
     print $robots->render();
     exit();
