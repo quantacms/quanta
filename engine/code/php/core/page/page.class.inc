@@ -17,8 +17,6 @@ class Page extends DataContainer {
   public function __construct(&$env, $file, $title = NULL, $content = NULL) {
     $this->env = $env;
     $this->file = $file;
-    $this->title = $title;
-    $this->setData('title', $title);
   }
 
   /**
@@ -30,12 +28,11 @@ class Page extends DataContainer {
     if (substr($_SERVER['REQUEST_URI'], 0, 7) == '/engine') die();
 
     if (isset($_REQUEST['ajax'])) { return; }
-    //TODO: enforcing aggregation now.
+    //TODO: enforcing aggregation now. Maybe optional non-aggregated loading?
     $css = array();
     $js = array();
     // Include JS / CSS files.
     foreach ($this->env->getIncludes() as $file) {
-
       if (substr($file['path'], 0, 6) == 'engine') {
         $file['path'] = $_SERVER['DOCUMENT_ROOT'] .'/' . $file['path'];
       }
@@ -91,31 +88,6 @@ class Page extends DataContainer {
     $this->env->hook('page_after_build', array("page" => &$this));
     $this->env->hook('page_complete', array("page" => &$this));
 
-  }
-
-  /**
-   * Sets the page title.
-   * @param $title
-   */
-  public function setTitle($title) {
-    $this->setData('title', $title);
-  }
-
-  /**
-   * Sets the page content
-   * TODO: deprecate?
-   * @param $content
-   */
-  public function setContent($content) {
-    $this->setData('content', $content);
-  }
-
-  /**
-   * Gets the title - h1 of the page.
-   * @return $string
-   */
-  public function getTitle() {
-    return $this->getData('title');
   }
 
   /**
