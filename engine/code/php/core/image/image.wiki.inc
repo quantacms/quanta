@@ -3,8 +3,6 @@
  * Wiki Hook for IMG.
  */
 function wiki_IMG($attributes, $file, $string, $env) {
-  print $file;
-  print '<br>';
   $node =  NodeFactory::current($env);
   $image = new Image($env, $file, $node);
   $image->loadAttributes($attributes);
