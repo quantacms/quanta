@@ -90,13 +90,12 @@ class Image extends File {
   /**
    * Generate a thumbnail of an image
    * @param $env
-   * @param $file
    * @param $thumbfile
    * @param null $maxw
    * @param null $maxh
    * @param string $sType
    */
-  public function generateThumbnail($env, $file, $thumbfile, $maxw = NULL, $maxh = NULL, $sType = 'crop') {
+  public function generateThumbnail($env, $thumbfile, $maxw = NULL, $maxh = NULL, $sType = 'crop') {
 
     if (!(intval($maxw) > 0)) {
       $maxw = 999999;
@@ -107,7 +106,7 @@ class Image extends File {
 
     // Get the File path for the image
     $thumbRoot = $env->dir['tmp'] . '/thumbs';
-    $sImagePath = $file;
+    $sImagePath = $this->getRealPath();
     $thumbImagePath =  $thumbRoot . '/' . $thumbfile;
 
     if (is_file($thumbImagePath)) {
