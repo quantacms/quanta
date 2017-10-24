@@ -61,7 +61,7 @@ class Doctor extends DataContainer {
       }
 
     }
-    Doctor::ko($wrong_links . " wrong links found.");
+    Doctor::talk($wrong_links . " wrong links found.");
     if ($fixed_links > 0) {
       Doctor::ok($fixed_links . " wrong links <b style='color: green'>FIXED</b>!<br>");
     }
@@ -103,10 +103,15 @@ class Doctor extends DataContainer {
     $this->checkBrokenLinks();
     $this->checkExistingHome();
     $this->checkAdminUser();
+    Doctor::talk('Running setup hooks...');
     // Run all setup hooks.
     $this->env->hook('setup');
+    Doctor::ok();
+
+    Doctor::talk('Running doctor hooks...');
     // Run all doctor hooks.
     $this->env->hook('doctor');
+    Doctor::ok();
 
     print "<b>Doctor has finished curing your environment!</b>";
     die();
@@ -115,7 +120,6 @@ class Doctor extends DataContainer {
   public static function talk($phrase, $color = '#fff') {
     print '<div class="doctor-line" style="background:#000"><div class="doctor-phrase" style="color:' . $color . '">' . $phrase . '</div></div>';
     flush();
-    sleep(1);
   }
 
   public static function ok($phrase = 'OK') {
