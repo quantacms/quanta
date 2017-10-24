@@ -33,6 +33,11 @@ function wiki_SHADOW($tagname, $attribute, $string, $env) {
     break;
     case 'redirect':
       return $shadow->getData('redirect');
-    break;    
+    break;
+    case 'extra':
+      $html = '';
+      $env->hook('shadow_extra', array('html' => &$html));
+      return $html;
+      break;
   }
 }

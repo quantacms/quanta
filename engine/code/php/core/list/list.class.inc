@@ -84,6 +84,7 @@ abstract class ListObject {
     foreach ($attr_arr as $attr_key => $attr_val) {
       $this->setAttribute($attr_key, $attr_val);
     }
+
     $this->load();
   }
 
