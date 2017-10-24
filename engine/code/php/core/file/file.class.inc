@@ -69,6 +69,9 @@ class File {
     return $this->path;
   }
 
+  public function getRealPath() {
+    return $this->node->realpath . '/' . $this->getPath();
+  }
 	public function getFullPath() {
 	  return '/' . $this->node->name . '/' . $this->getPath();
 	}
@@ -210,12 +213,13 @@ class File {
     }
 
     if (isset($_FILES['upl']) && $_FILES['upl']['error'] == 0) {
+      $filename = pathinfo($_FILES['upl']['name'], PATHINFO_FILENAME);
       $extension = pathinfo($_FILES['upl']['name'], PATHINFO_EXTENSION);
       if (!in_array(strtolower($extension), $allowed)) {
         echo '{"status":"error"}';
         exit;
       }
-      if (move_uploaded_file($_FILES['upl']['tmp_name'], $upload_dir . '/' . strip_tags($_FILES['upl']['name']))) {
+      if (move_uploaded_file($_FILES['upl']['tmp_name'], $upload_dir . '/' . normalizePath($filename) . '.' . $extension)) {
         echo '{"status":"success"}';
         exit;
       }
