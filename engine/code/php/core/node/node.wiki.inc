@@ -27,11 +27,20 @@ function wiki_AUTHOR($attributes, $var, $string, $env) {
  */
 function wiki_BLOCK($attributes, $node, $string, $env) {
   $node = NodeFactory::load($env, $node);
-  $body = $node->getBody();
+
+  if (isset($attributes['rendered'])) {
+    $node->buildTemplate();
+    $body = $node->render();
+  }
+  else {
+    $body = isset($attributes['with-title']) ? ('<h2 class="block-title">' . $node->getTitle() . '</h2>' . $node->getBody()) : $node->getBody();
+  }
+  
   $editable = !empty($attributes['editable']) ? $attributes['editable'] : 'true';
   if ($editable == 'true') {
-    $body = $node->wrap($node->getBody());
+    $body = $node->wrap($body);
   }
+  // If user can't see the node, don't display it.
   return $node->isForbidden() ? '' : $body;
 }
 /**
@@ -89,7 +98,7 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
      break;
 
     case 'title':
-      $string = $node->title;
+      $string = $node->getTitle();
       break;
 
     case 'content':

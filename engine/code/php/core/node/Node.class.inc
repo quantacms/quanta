@@ -362,7 +362,7 @@ class Node extends JSONDataContainer {
   }
 
   public function setTitle($title) {
-    $this->title = htmlspecialchars($title);
+    $this->title = htmlentities($title);
   }
 
   public function getContent() {

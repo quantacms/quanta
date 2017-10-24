@@ -3,6 +3,8 @@
  * Wiki Hook for IMG.
  */
 function wiki_IMG($attributes, $file, $string, $env) {
+  print $file;
+  print '<br>';
   $node =  NodeFactory::current($env);
   $image = new Image($env, $file, $node);
   $image->loadAttributes($attributes);
@@ -37,7 +39,6 @@ function wiki_IMGTHUMB($attributes, $file, $string, $env) {
 
 	$filearr = explode('/', $file);
 	$filename = $filearr[count($filearr) - 1];
-	print_r($image);
   $image->generateThumbnail($env, $thumbfile, $image->width, $image->height, $op);
 
   // TODO: stupid way to get to the tmp folder...

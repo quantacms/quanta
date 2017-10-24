@@ -62,7 +62,9 @@ class NodeFactory {
     if (isset($vars['language'])) {
       $node->setLanguage($vars['language']);
     }
-
+    if (isset($vars['status'])) {
+      $node->setStatus($vars['status']);
+    }
     $node->save();
 
     return $node;

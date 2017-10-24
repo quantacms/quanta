@@ -26,12 +26,11 @@ function locale_setup($vars) {
 
   $basic_languages = array(
     'en' => 'English',
-    'it' => 'Italiano',
   );
 
   foreach ($basic_languages as $langcode => $lang) {
     if (!is_dir($vars['env']->dir['languages'] . '/' . $langcode)) {
-      NodeFactory::buildNode($vars['env'], $langcode, '_languages', array('title' => $lang, 'language' => $langcode));
+      NodeFactory::buildNode($vars['env'], $langcode, '_languages', array('title' => $lang, 'language' => $langcode, 'status' => NODE_STATUS_PUBLISHED));
     }
   }
 

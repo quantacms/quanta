@@ -36,15 +36,6 @@ class Page extends DataContainer {
       if (substr($file['path'], 0, 6) == 'engine') {
         $file['path'] = $_SERVER['DOCUMENT_ROOT'] .'/' . $file['path'];
       }
-      elseif (substr($file['path'], 0, 4) != 'http' && substr($file['path'], 0, 1) != '.') {
-        $file['path'] = '/' . $file['path'];
-        if ($file['type'] == 'css') {
-          $this->vars['head'] .= '<link rel="stylesheet" type="text/css" href="' . $file['path'] . '" />';
-        } elseif ($file['type'] == 'js') {
-          $this->vars['head'] .= '<script async type="text/javascript" src="' . $file['path'] . '"></script>';
-        }
-        continue;
-      }
 
       if ($file['type'] == 'css') {
         $css[] = file_get_contents($file['path']);
