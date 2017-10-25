@@ -53,18 +53,38 @@ class NodeFactory {
   public static function buildNode($env, $name, $father, $vars = array()) {
     $node = new Node($env, NODE_NEW, $father);
     $node->setName($name);
-    if (isset($vars['title'])) {
-      $node->setTitle($vars['title']);
-    }
-    if (isset($vars['body'])) {
-      $node->setBody($vars['body']);
-    }
-    if (isset($vars['language'])) {
-      $node->setLanguage($vars['language']);
-    }
-    if (isset($vars['status'])) {
-      $node->setStatus($vars['status']);
-    }
+
+    foreach($vars as $field_name => $field_value) {
+      switch ($field_name) {
+        case 'title':
+          $node->setTitle($field_value);
+          break;
+
+        case 'body':
+          $node->setBody($field_value);
+          break;
+
+        case 'language':
+          $node->setLanguage($field_value);
+          break;
+
+        case 'status':
+          $node->setStatus($field_value);
+          break;
+
+        case 'author':
+          $node->setAuthor($field_value);
+          break;
+
+        case 'timestamp':
+          $node->setTimestamp($field_value);
+          break;
+
+        default: 
+          $node->json->{$field_name} = $field_value;
+          break;
+      }
+    }    
     $node->save();
 
     return $node;
