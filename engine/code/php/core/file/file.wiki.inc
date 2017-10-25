@@ -1,9 +1,8 @@
 <?php
 function wiki_FILEATTRIBUTE($attributes, $file, $string, $env) {
 
-  $node = NodeFactory::current($env);
+  $node = empty($attributes['node']) ? NodeFactory::current($env) : NodeFactory::load($env, $attributes['node']);
   $file = new File($env, $file, $node);
-
 
   switch($attributes['name']) {
     case 'name':
@@ -11,7 +10,7 @@ function wiki_FILEATTRIBUTE($attributes, $file, $string, $env) {
       break;
 
     case 'path':
-      $string = $file->getPath();
+      $string = $file->getFullPath();
 
       break;
 
