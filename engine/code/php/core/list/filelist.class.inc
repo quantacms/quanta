@@ -38,7 +38,7 @@ class FileList extends ListObject {
       if ((($file_types == FALSE) || $file_types == $file->getType()) && $file->isPublic()) {
 				$tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
         $tpl = preg_replace("/\{LISTITEM\}/is", string_normalize($file->getPath()), $tpl);
-        $tpl = preg_replace("/\{LISTNODE\}/is", string_normalize($this->dir), $tpl);
+        $tpl = preg_replace("/\{LISTNODE\}/is", string_normalize($this->node->getName()), $tpl);
         $tpl = transformCodeTags($this->env, $tpl);
 
         if (empty($this->getAttribute('clean'))) {
