@@ -223,7 +223,7 @@ function wiki_ADD($attributes, $node, $string, $env) {
   $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
   $attributes['class'] .= 'add-link';
   $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Add to <i>' . $nodeobj->getTitle() . '</i>...';
-  $attributes['language'] = isset($attributes['language']) ? $attributes['language'] : $env->getLanguage();
+  $attributes['language'] = isset($attributes['language']) ? $attributes['language'] : Locale::getLanguage($env);
   $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&oplus;';
   return wiki_LINK($attributes, $node, $string, $env);
 }

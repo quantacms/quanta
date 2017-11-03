@@ -2,26 +2,39 @@
 
 /**
  * Returns current language.
+ *
+ * @param array $attributes
+ *
+ * @param string $target
+ *
+ * @param string $string
+ *
+ * @param Environment $env
+ *
+ * @return $language
+ *   The language.
  */
-function wiki_LANGUAGE($attributes, $form_id, $string, $env) {
-  //$language = $env->getLanguageNode();
-  //return $language->getName();
+function wiki_LANGUAGE($attributes, $target, $string, Environment $env) {
+  return Locale::getLanguage($env);
+}
+
+function wiki_FALLBACK_LANGUAGE($attributes, $target, $string, Environment $env) {
+  return Locale::getFallbackLanguage($env);
 }
 
 /**
  * Language switcher.
  */
-function wiki_LANGUAGE_SWITCHER($attributes, $target, $string, $env) {
+function wiki_LANGUAGE_SWITCHER($attributes, $target, $string, Environment $env) {
 
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
 
   // We don't want translate links to be considered as editable nodes.
   $attributes['nowrap'] = TRUE;
-  $attributes['active_items'] = $env->getLanguage();
+  $attributes['active_items'] = Locale::getLanguage($env);
 
   $dirlist = new DirList($env, '_languages', 'language_switcher', array('sortbytime' => 'asc') + $attributes, 'locale');
 
-  print "TEST";
   // Don't show language switch link, if node is not available in that language.
   foreach ($dirlist->getDirs() as $langcode => $lang) {
     if (!$node->hasTranslation($langcode)) {
@@ -36,7 +49,7 @@ function wiki_LANGUAGE_SWITCHER($attributes, $target, $string, $env) {
  * Translate links.
  */
 function wiki_TRANSLATE_LINKS($attributes, $value, $string, $env) {
-  $attributes['active_items'] = $env->getLanguage();
+  $attributes['active_items'] = Locale::getLanguage($env);
   // We don't want translate links to be considered as editable nodes.
   $attributes['nowrap'] = TRUE;
   $dirlist = new DirList($env, '_languages', 'translate_links', array('sortbytime' => 'asc') + $attributes, 'locale');

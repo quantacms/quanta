@@ -88,7 +88,8 @@ function node_init($vars) {
     }
   }
 
-  else if (!$node->hasTranslation($vars['env']->getLanguage())) {
+  // TODO: move in locale?
+  else if (!$node->hasTranslation(Locale::getLanguage($vars['env']))) {
     $node->setTitle('No translation available');
     $node->setBody('We are sorry: no translation for this content is available in the current language (' . $vars['env']->getLanguage() . ').<br>Please select another language version.');
   }
