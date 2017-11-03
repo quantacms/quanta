@@ -1,5 +1,10 @@
 <?php
-
+/**
+ * Class JSONDataContainer
+ * This class represents a JSON Data Container - aka a folder in the system
+ * containing one or more data_xx.json files.
+ * @see Node
+ */
 abstract class JSONDataContainer extends DataContainer {
   public $name;
   // public $context;
@@ -22,7 +27,7 @@ abstract class JSONDataContainer extends DataContainer {
     if (!is_dir($this->realpath)) {
       mkdir($this->realpath) or die('cannot create dir: ' . $this->realpath);
     }
-    $language = empty($this->getLanguage()) ? $this->env->getLanguage() : $this->getLanguage();
+    $language = empty($this->getLanguage()) ? Locale::getLanguage($this->env) : $this->getLanguage();
 
     $jsonpath = $this->realpath . '/data_' . $language . '.json';
 
