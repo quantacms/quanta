@@ -30,7 +30,7 @@ class Locale {
    * @return mixed
    */
   public static function getFallbackLanguage($env) {
-    return readlink($env->nodePath('fallback', true));
+    return $env->linkToNode('fallback');
   }
 
   /**
