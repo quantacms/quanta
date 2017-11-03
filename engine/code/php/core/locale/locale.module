@@ -1,1 +1,2 @@
 <?php
+require_once ("Locale.class.inc");

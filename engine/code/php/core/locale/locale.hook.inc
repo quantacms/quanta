@@ -12,18 +12,23 @@ function locale_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/locale/js/locale.js');
 }
 
+/**
+ * Implements hook_boot.
+ * Checks language switch request.
+ *
+ * @param $vars
+ */
 function locale_boot($vars) {
   if (isset($_GET['lang'])) {
-    $vars['env']->switchLanguage($_GET['lang']);
+    Locale::switchLanguage($vars['env'], $_GET['lang']);
   }
 }
 
 /**
- * Setup languages.
+ * Main setup of languages.
  * @param $vars
  */
 function locale_setup($vars) {
-
   $basic_languages = array(
     'en' => 'English',
   );
@@ -40,7 +45,10 @@ function locale_setup($vars) {
   }
 }
 
-
+/**
+ * Add translation links to node edit shadow form.
+ * @param $vars
+ */
 function locale_shadow_extra($vars) {
   $vars['html'] .= wiki_TRANSLATE_LINKS(array(), NULL, NULL, $vars['env']);
 }
