@@ -370,4 +370,17 @@ class Environment extends DataContainer {
       return $result;
     }
   }
+
+  /**
+   * Given a link, returns the system path of the related node (folder).
+   * @param $folder
+   * @param bool $link
+   */
+  public function linkToNode($link) {
+    // Find the link target.
+    $target = readlink($this->nodePath($link, true));
+    // Return the node name the last part of the path of the node.
+    $node_name = array_slice(explode('/', $target), -1)[0];
+    return $node_name;
+  }
 }
