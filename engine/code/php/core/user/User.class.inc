@@ -11,6 +11,8 @@ define("USER_MIN_NAME_LENGTH", 4);
 
 /**
  * This class represents an user in the system.
+ * Users in Quanta CMS are just extensions of Node objects,
+ * AKA folder + json file inside.
  */
 class User extends Node {
   public $email;
@@ -18,6 +20,11 @@ class User extends Node {
   public $roles = array();
   public $password;
 
+  /**
+   * Check if the user entered a correct password.
+   * @param $password
+   * @return bool
+   */
   private function checkPassword($password) {
     if (!isset($this->json->password)) {
       return FALSE;
@@ -25,10 +32,17 @@ class User extends Node {
     return ($this->json->password == pwd($password));
   }
 
+  /**
+   * Check if the user is anonymous / guest user.
+   * @return bool
+   */
   public function isAnonymous() {
     return $this->name == USER_ANONYMOUS;
   }
 
+  /**
+   * Load the user object.
+   */
   public function load() {
     if ( strlen($this->name) > 0 && $this->exists) {
       $this->loadJSON();
@@ -66,6 +80,10 @@ class User extends Node {
     return $has_role;
   }
 
+  /**
+   * Returns all the roles of the user.
+   * @return array
+   */
   public function getRoles() {
     if (empty($this->roles)) {
       return array(USER_ANONYMOUS);
@@ -117,11 +135,19 @@ class User extends Node {
     return $response_json;
   }
 
+  /**
+   * Checks if the user is the current user.
+   * @return bool
+   */
   public function isCurrent() {
     $curr_user = UserFactory::current($this->env);
     return ($curr_user->getName() == $this->getName());
   }
 
+  /**
+   * Save the user.
+   * @return bool
+   */
   public function save() {
     $this->env->hook('user_save', array('user' => $this));
     $this->updateJSON();
@@ -251,17 +277,15 @@ class User extends Node {
   /**
    *
    * Check if user can access a node
+   * TODO: should really be in access module...
    * @return User
    */
   public function checkAccess($node = NULL, $action = NULL) {
-
     // If node doesn't exist, allow no permission to it.
     if (!is_object($node) || !$node->exists) {
       return FALSE;
     }
-
     $permissions = $node->getPermissions();
-
     $action = trim(strtolower($action));
 
     // Conversion to array as of new approach to values.
@@ -269,11 +293,6 @@ class User extends Node {
       $permissions[$action] = array($permissions[$action]);
     }
     $perm_array = array_flip($permissions[$action]);
-
-
-
-    //$permission = (string) strtolower(trim($permissions[$action]));
-    $has_permissions = array();
 
     if (isset($action) && isset($perm_array[ROLE_ANONYMOUS])) {
       return TRUE;
@@ -325,6 +344,7 @@ class User extends Node {
     $this->json->last_name = $this->getData('last_name');
     $this->json->password = $this->getPassword();
     $this->json->roles = $this->getRoles();
+    // Run all Node-related json.
     parent::updateJSON();
   }
 

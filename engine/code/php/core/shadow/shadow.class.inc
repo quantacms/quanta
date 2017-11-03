@@ -19,7 +19,7 @@ class Shadow extends Page {
   public function __construct($env, $data = NULL) {
     $this->env = $env;
     $this->widget = $data->widget;
-    $this->setLanguage(isset($data->language) ? $data->language : $env->getLanguage());
+    $this->setLanguage(isset($data->language) ? $data->language : Locale::getLanguage($env));
 
     if (isset($data->components)) {
       $this->components = $data->components;

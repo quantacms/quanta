@@ -1,0 +1,52 @@
+<?php
+
+/**
+ * Class Locale
+ * This class manages languages in the system.
+ */
+class Locale {
+
+  /**
+   * Environment's language is always current one.
+   * @return mixed
+   */
+  public static function getLanguage($env) {
+    // TODO: better handling of fallback.
+    if (isset($_SESSION['language'])) {
+      $lang = $_SESSION['language'];
+    }
+    else {
+      // TODO: we have to check that the fallback language is OK
+      // without creating a loop in loading the language node...
+      $lang = Locale::getFallbackLanguage($env);
+      // No language set. Set the current language as the fallback language.
+      $_SESSION['language'] = $lang;
+    }
+    return $lang;
+  }
+
+  /**
+   * Environment's language is always current one.
+   * @return mixed
+   */
+  public static function getFallbackLanguage($env) {
+    return readlink($env->nodePath('fallback', true));
+  }
+
+  /**
+   * Switch the current language.
+   * @param $lang
+   */
+  public static function switchLanguage($env, $lang) {
+    $language = NodeFactory::load($env, $lang);
+
+    if ($language->exists) {
+      $_SESSION['language'] = $lang;
+      new Message($env, 'Language switched to ' . $language->getTitle());
+    }
+    else {
+      new Message($env, 'Error - this language is not enabled: ' . $lang);
+    }
+  }
+
+}

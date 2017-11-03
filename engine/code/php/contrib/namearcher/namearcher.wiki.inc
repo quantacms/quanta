@@ -1,5 +1,6 @@
 <?php
 function wiki_LEVEL($attributes, $usr, $string, $env) {
+  return "PROVA";
   if ($usr == NULL) {
     $user = UserFactory::current($env,  TRUE);
   } else {
