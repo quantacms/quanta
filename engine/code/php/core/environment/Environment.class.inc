@@ -332,7 +332,12 @@ class Environment extends DataContainer {
     return $folder;
   }
 
-  public function nodePath($folder) {
+  /**
+   * Returns the system path of a node (folder).
+   * @param $folder
+   * @param bool $link
+   */
+  public function nodePath($folder, $link = FALSE) {
     // Use find to locate the node's directory in the file system.
     // TODO: run a sanity check that there is only one folder or throw error instead?
     $findcmd = 'find ' . $this->dir['docroot'] . '/ -name "' . $folder . '"';
@@ -348,7 +353,7 @@ class Environment extends DataContainer {
     // Check that there are not duplicate folders. Don't count symlinks.
     foreach ($results as $i => $res) {
 
-      if (is_dir($results[$i]) && !is_link($results[$i])) {
+      if (is_dir($results[$i]) && ($link ? true : !is_link($results[$i]))) {
         $found_folders[] = $results[$i];
         $result = $results[$i];
 
@@ -363,48 +368,6 @@ class Environment extends DataContainer {
       //new Message($this, 'Warning: there is no folder named ' . $folder . '<br>Check integrity!');
     } else {
       return $result;
-    }
-
-
-  }
-
-  /**
-   * Environment's language is always current one.
-   * @return mixed
-   */
-  public function getLanguage() {
-    // TODO: better handling of fallback.
-    if (isset($_SESSION['language'])) {
-      $lang = $_SESSION['language'];
-    }
-    else {
-      $lang = $this->getFallbackLanguage();
-    }
-    return $lang;
-  }
-
-  /**
-   * Environment's language is always current one.
-   * @return mixed
-   */
-  public function getFallbackLanguage() {
-    // TODO: better handling of fallback.
-    return 'en';
-  }
-
-  /**
-   * Switch the current language.
-   * @param $lang
-   */
-  public function switchLanguage($lang) {
-    $language = NodeFactory::load($this, $lang);
-
-    if ($language->exists) {
-      $_SESSION['language'] = $lang;
-      new Message($this, 'Language switched to ' . $language->getTitle());
-    }
-    else {
-      new Message($this, 'Error - this language is not enabled: ' . $lang);
     }
   }
 }

@@ -90,7 +90,14 @@ class Doctor extends DataContainer {
     $adminuser = UserFactory::load($this->env, 'administrator');
     if (!($adminuser->exists)) {
       Doctor::talk('Not found! Attempting to create Admin User...');
-      $adminuser = UserFactory::buildUser($this->env, 'administrator', array('title' => 'Administrator', 'password' => 'pass', 'roles' => array('admin')));
+      UserFactory::buildUser($this->env, 'administrator', array(
+        'title' => 'Administrator',
+        'password' => 'pass',
+        'roles' => array('admin'),
+        'email' => 'admin@changeme.com',
+        'first_name' => 'John',
+        'last_name' => 'Doe',
+        ));
       Doctor::ok('Done!');
     }
     else {

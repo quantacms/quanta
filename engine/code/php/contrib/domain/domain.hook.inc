@@ -1,6 +1,4 @@
 <?php
-mysql_connect('localhost', 'root', 'root');
-mysql_select_db('domains');
 /**
  * Implementation of hook_action_node_add.
  * There is a node add request.
@@ -124,9 +122,4 @@ function domain_shadow_user_edit($vars) {
   $tab .= '</table>';
 
   $vars['shadow']->addTab('Your Shots', $tab, 10);
-}
-
-
-function domain_complete($vars) {
-  mysql_close();
 }
