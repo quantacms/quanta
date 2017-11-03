@@ -29,7 +29,8 @@ abstract class JSONDataContainer extends DataContainer {
     }
     $language = empty($this->getLanguage()) ? Locale::getLanguage($this->env) : $this->getLanguage();
 
-    $jsonpath = $this->realpath . '/data_' . $language . '.json';
+    $suffix = ($language == LANGUAGE_NEUTRAL) ? '' : ('_' . $language);
+    $jsonpath = $this->realpath . '/data' . $suffix . '.json';
 
     foreach ($ignore as $ignore_value) {
       if (isset($this->json->{$ignore_value})) {

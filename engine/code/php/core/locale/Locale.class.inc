@@ -1,4 +1,5 @@
 <?php
+define("LANGUAGE_NEUTRAL", 'und');
 
 /**
  * Class Locale
