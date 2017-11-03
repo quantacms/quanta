@@ -43,10 +43,16 @@ class UserFactory {
       }
     }
     if (isset($vars['email'])) {
-      $user->email = $vars['email'];
+      $user->setEmail($vars['email']);
     }
+    if (isset($vars['title'])) {
+      $user->setTitle($vars['title']);
+    }
+
     // TODO: security issue when no pass set!
-    $user->password = (isset($vars['password'])) ? pwd($vars['password']) : pwd($name . rand(1, 1000000));
+
+    $pass =(isset($vars['password'])) ? pwd($vars['password']) : pwd($name . rand(1, 1000000));
+    $user->setPassword($pass);
     $user->roles = (isset($vars['roles'])) ? $vars['roles'] : array();
     $user->realpath = $env->dir['users']. '/' . $name;
 

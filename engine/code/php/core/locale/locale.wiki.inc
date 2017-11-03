@@ -4,7 +4,8 @@
  * Returns current language.
  */
 function wiki_LANGUAGE($attributes, $form_id, $string, $env) {
-  $language = $env->getLanguageNode();
+  //$language = $env->getLanguageNode();
+  //return $language->getName();
 }
 
 /**
@@ -20,6 +21,7 @@ function wiki_LANGUAGE_SWITCHER($attributes, $target, $string, $env) {
 
   $dirlist = new DirList($env, '_languages', 'language_switcher', array('sortbytime' => 'asc') + $attributes, 'locale');
 
+  print "TEST";
   // Don't show language switch link, if node is not available in that language.
   foreach ($dirlist->getDirs() as $langcode => $lang) {
     if (!$node->hasTranslation($langcode)) {
