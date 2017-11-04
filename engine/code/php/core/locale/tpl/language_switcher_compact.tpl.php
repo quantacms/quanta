@@ -1,0 +1,1 @@
+<a href="/?lang=[ATTRIBUTE|name=name:[LISTITEM]]" title="[ATTRIBUTE|name=title:[LISTITEM]]">[ATTRIBUTE|name=name:[LISTITEM]]</a>

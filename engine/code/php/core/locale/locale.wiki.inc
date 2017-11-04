@@ -28,12 +28,19 @@ function wiki_FALLBACK_LANGUAGE($attributes, $target, $string, Environment $env)
 function wiki_LANGUAGE_SWITCHER($attributes, $target, $string, Environment $env) {
 
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
+  $language_switcher_tpl = 'language_switcher';
 
   // We don't want translate links to be considered as editable nodes.
   $attributes['nowrap'] = TRUE;
   $attributes['active_items'] = Locale::getLanguage($env);
 
-  $dirlist = new DirList($env, '_languages', 'language_switcher', array('sortbytime' => 'asc') + $attributes, 'locale');
+
+  if (isset($attributes['compact'])){
+    //uses name for label instead of title
+    $language_switcher_tpl = 'language_switcher_compact';
+  }
+
+  $dirlist = new DirList($env, '_languages', $language_switcher_tpl, array('sortbytime' => 'asc') + $attributes, 'locale');
 
   // Don't show language switch link, if node is not available in that language.
   foreach ($dirlist->getDirs() as $langcode => $lang) {
