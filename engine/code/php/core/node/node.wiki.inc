@@ -159,6 +159,7 @@ function wiki_LINK($attributes, $target, $string, $env) {
   $classes = array('link');
   $current = NodeFactory::current($env);
   $querystring = array();
+  $link_title = '';
 
 
   if (((substr($target, 0, 4) == 'http') || (substr($target, 0, 4) == 'www.')) && !$node->exists) {
@@ -180,6 +181,10 @@ function wiki_LINK($attributes, $target, $string, $env) {
     $classes[] = $attributes['class'];
   }
 
+  if (isset($attributes['link_title'])) {
+    $link_title = 'title="'.$attributes['link_title'].'"';
+  }
+
   if (isset($attributes['language'])) {
     $querystring[] = 'lang=' . $attributes['language'];
   }
@@ -196,7 +201,7 @@ function wiki_LINK($attributes, $target, $string, $env) {
   $query = (!empty($querystring))  ? ('?' . implode('&', $querystring)) : '';
 
 
-  $link = '<a ' . implode(' ', $link_data) . ' class="' . implode(' ', $classes). '" href="' . $target . $query . '">' . string_normalize((isset($attributes['title']) ? $attributes['title'] : $title_default)) .'</a>';
+  $link = '<a ' . implode(' ', $link_data) . ' class="' . implode(' ', $classes). '" ' . $link_title . ' href="' . $target . $query . '">' . string_normalize((isset($attributes['title']) ? $attributes['title'] : $title_default)) .'</a>';
   return $link;
 }
 

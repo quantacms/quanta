@@ -9,3 +9,8 @@
 .language_switcher .list-selected, .translate_links .list-selected {
 	background: #ddd;
 }
+
+.language_switcher_compact .dir-list-item{
+	display: inline-block;
+	text-transform: uppercase;	
+}
