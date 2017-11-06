@@ -7,7 +7,7 @@
  * @param $vars
  */
 function locale_init($vars) {
-  $vars['env']->sysdir('languages', '_languages');
+  $vars['env']->sysdir('languages', DIR_LANGUAGES);
   $vars['env']->addInclude('engine/code/php/core/locale/css/locale.css');
   $vars['env']->addInclude('engine/code/php/core/locale/js/locale.js');
 }
@@ -35,7 +35,7 @@ function locale_setup($vars) {
 
   foreach ($basic_languages as $langcode => $lang) {
     if (!is_dir($vars['env']->dir['languages'] . '/' . $langcode)) {
-      NodeFactory::buildNode($vars['env'], $langcode, '_languages', array('title' => $lang, 'language' => LANGUAGE_NEUTRAL, 'status' => NODE_STATUS_PUBLISHED));
+      NodeFactory::buildNode($vars['env'], $langcode, DIR_LANGUAGES, array('title' => $lang, 'language' => LANGUAGE_NEUTRAL, 'status' => NODE_STATUS_PUBLISHED));
     }
   }
 

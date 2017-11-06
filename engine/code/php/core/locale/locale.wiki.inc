@@ -40,7 +40,7 @@ function wiki_LANGUAGE_SWITCHER($attributes, $target, $string, Environment $env)
     $language_switcher_tpl = 'language_switcher_compact';
   }
 
-  $dirlist = new DirList($env, '_languages', $language_switcher_tpl, array('sortbytime' => 'asc') + $attributes, 'locale');
+  $dirlist = new DirList($env, DIR_LANGUAGES, $language_switcher_tpl, array('sortbytime' => 'asc') + $attributes, 'locale');
 
   // Don't show language switch link, if node is not available in that language.
   foreach ($dirlist->getDirs() as $langcode => $lang) {
@@ -59,7 +59,7 @@ function wiki_TRANSLATE_LINKS($attributes, $value, $string, $env) {
   $attributes['active_items'] = Locale::getLanguage($env);
   // We don't want translate links to be considered as editable nodes.
   $attributes['nowrap'] = TRUE;
-  $dirlist = new DirList($env, '_languages', 'translate_links', array('sortbytime' => 'asc') + $attributes, 'locale');
+  $dirlist = new DirList($env, DIR_LANGUAGES, 'translate_links', array('sortbytime' => 'asc') + $attributes, 'locale');
   return $dirlist->render();
 }
 
