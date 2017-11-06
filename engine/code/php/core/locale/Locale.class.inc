@@ -1,5 +1,6 @@
 <?php
 define("LANGUAGE_NEUTRAL", 'und');
+define("DIR_LANGUAGES", "_languages");
 
 /**
  * Class Locale
@@ -43,7 +44,10 @@ class Locale {
 
     if ($language->exists) {
       $_SESSION['language'] = $lang;
-      new Message($env, 'Language switched to ' . $language->getTitle());
+
+      if (isset($_GET['notify'])){
+        new Message($env, 'Language switched to ' . $language->getTitle());
+      }
     }
     else {
       new Message($env, 'Error - this language is not enabled: ' . $lang);
