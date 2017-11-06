@@ -1,5 +1,6 @@
 <?php
 define("LANGUAGE_NEUTRAL", 'und');
+define("DIR_LANGUAGES", "_languages");
 
 /**
  * Class Locale
@@ -49,9 +50,7 @@ class Locale {
       }
     }
     else {
-      if (isset($_GET['notify'])){
-        new Message($env, 'Error - this language is not enabled: ' . $lang);
-      }
+      new Message($env, 'Error - this language is not enabled: ' . $lang);
     }
   }
 

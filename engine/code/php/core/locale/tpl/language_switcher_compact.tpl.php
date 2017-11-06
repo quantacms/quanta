@@ -1,1 +1,1 @@
-<a href="/?lang=[ATTRIBUTE|name=name:[LISTITEM]]" title="[ATTRIBUTE|name=title:[LISTITEM]]">[ATTRIBUTE|name=name:[LISTITEM]]</a>
+[LINK|title=[LISTITEM]|link_title={ATTRIBUTE|name=title:[LISTITEM]}|language=[LISTITEM]]
