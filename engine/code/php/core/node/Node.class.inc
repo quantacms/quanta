@@ -203,22 +203,9 @@ class Node extends JSONDataContainer {
   public function buildContent() {
     // Load data from JSON file if possible.
     $this->loadJSON();
-
-    // if data.html is present load data from data.html
-    // TODO: at some point loading data from data.html should be discontinued...
-    if (is_file($this->path . '/data.html')) {
-      $html_content = file_get_contents($this->path . '/data.html');
-      if (empty($this->getBody())) {
-        $this->setBody(preg_replace('!<\s*(h1).*?>((.*?)</\1>)?!is', '', $html_content));
-        $this->setContent($html_content);
-        $this->setTitle(parsetag($this->content, 'h1'));
-      }
-    }
-
     $this->env->hook('node_build', array(
       'node' => &$this,
     ));
-
     Cache::set($this->env, 'node', $this->name, $this);
   }
 
@@ -304,27 +291,9 @@ class Node extends JSONDataContainer {
     ));
     $this->updateJSON();
     $this->saveJSON(array('path', 'fullpath', 'exists', 'realpath', 'father', 'tmp_files_dir'));
-    $this->saveHTML();
     $this->env->hook('node_insert', array(
       'node' => &$this,
     ));
-  }
-
-  /**
-   * Save this node on a data.html file.
-   */
-  public function saveHTML() {
-    // Add-edit file.
-
-    if (!is_dir($this->realpath)) {
-      mkdir($this->realpath) or die('cannot create dir: ' . $this->realpath);
-    }
-    $htmlpath = $this->realpath . '/data.html';
-    $fh = fopen($htmlpath, 'w+');
-    fwrite($fh, $this->getContent()) or die('Cannot write on file: ' . $this->realpath);
-    fclose($fh);
-
-    new Message($this->env, 'user edited this file: ' . $this->getName(), MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
   }
 
   public function getBody() {
