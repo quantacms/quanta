@@ -187,7 +187,8 @@ class Node extends JSONDataContainer {
       'node' => &$this,
     ));
 
-    if ($this->body == NULL && $this->exists) {
+    //TODO: find a better way to check node existence
+    if (!isset($this->json->timestamp) && $this->exists) {
       $this->buildContent();
     }
     if ($this->exists && ($this->getTimestamp() == NULL)) {
@@ -290,7 +291,6 @@ class Node extends JSONDataContainer {
     ));
     $this->updateJSON();
     $this->saveJSON(array('path', 'fullpath', 'exists', 'realpath', 'father', 'tmp_files_dir'));
-
     $this->env->hook('node_insert', array(
       'node' => &$this,
     ));
