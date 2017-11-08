@@ -228,6 +228,14 @@ class Image extends File {
           $tmpimg = imagecreatetruecolor($iNewWidth,
             $iNewHeight);
 
+          if ($sExtension == 'png') {
+            //Preserve transparency when scaling PNG
+            imagealphablending($tmpimg, false);
+            imagesavealpha($tmpimg,true);
+            $transparent = imagecolorallocatealpha($tmpimg, 255, 255, 255, 127);
+            imagefilledrectangle($tmpimg, 0, 0, $iNewWidth, $iNewWidth, $transparent);
+          }
+
           // The function below copies the original
           // image and re-samples it into the new one
           // using the new width and height
@@ -241,6 +249,11 @@ class Image extends File {
 
           imagedestroy($img);
           $img = $tmpimg;
+
+        } else if ($sExtension == 'png') {
+          //Preserve transparency for non scaled PNG
+          imagealphablending($img, true);
+          imagesavealpha($img,true);
         }
 
       } else if ($sType == "crop") {
@@ -249,9 +262,11 @@ class Image extends File {
 
         $fScale = max($iThumbnailWidth/$iOrigWidth,
           $iThumbnailHeight/$iOrigHeight);
-        print "reducing w from " . $iThumbnailWidth . ' to ' . $iOrigWidth;
 
-        print "reducing h from " . $iThumbnailHeight . ' to ' . $iOrigHeight;
+        //DEBUG CROP:
+        //print "reducing w from " . $iThumbnailWidth . ' to ' . $iOrigWidth;
+        //print "reducing h from " . $iThumbnailHeight . ' to ' . $iOrigHeight;
+
         // This works similarly to other one but
         // rather than the lowest value, we need
         // the highest. For example, if the
@@ -288,6 +303,20 @@ class Image extends File {
             $iNewHeight);
           $tmp2img = imagecreatetruecolor($iThumbnailWidth,
             $iThumbnailHeight);
+
+          if ($sExtension == 'png') {
+            //Preserve transparency when scaling & cropping PNG
+            //tmpimg
+            imagealphablending($tmpimg, false);
+            imagesavealpha($tmpimg,true);
+            $transparent = imagecolorallocatealpha($tmpimg, 255, 255, 255, 127);
+            imagefilledrectangle($tmpimg, 0, 0, $iNewWidth, $iNewWidth, $transparent);
+            //tmp2img
+            imagealphablending($tmp2img, false);
+            imagesavealpha($tmp2img,true);
+            $transparent = imagecolorallocatealpha($tmp2img, 255, 255, 255, 127);
+            imagefilledrectangle($tmp2img, 0, 0, $iNewWidth, $iNewWidth, $transparent);            
+          }
 
           // The function below copies the original
           // image and re-samples it into the new one
@@ -348,16 +377,20 @@ class Image extends File {
           imagedestroy($img);
           imagedestroy($tmpimg);
           $img = $tmp2img;
+
+        } else if ($sExtension == 'png') {
+          //Preserve transparency for non scaled cropped PNG
+          imagealphablending($img, true);
+          imagesavealpha($img,true);
         }
       }
 
-      $transparentindex = imagecolorallocatealpha($img, 255, 255, 255, 127);
-      imagefill($img, 0, 0, $transparentindex);
+
 
       // Display the image using the header function to specify
       // the type of output our page is giving
       if ($sExtension == 'jpg' || $sExtension == 'jpeg') {
-        imagejpeg($img, $thumbImagePath);
+        imagejpeg($img, $thumbImagePath, 90);
       } else if ($sExtension == 'png') {
         imagepng($img, $thumbImagePath);
       } else if ($sExtension == 'gif') {
@@ -365,5 +398,4 @@ class Image extends File {
       }
     }
   }
-
 } 
