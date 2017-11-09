@@ -263,10 +263,6 @@ class Image extends File {
         $fScale = max($iThumbnailWidth/$iOrigWidth,
           $iThumbnailHeight/$iOrigHeight);
 
-        //DEBUG CROP:
-        //print "reducing w from " . $iThumbnailWidth . ' to ' . $iOrigWidth;
-        //print "reducing h from " . $iThumbnailHeight . ' to ' . $iOrigHeight;
-
         // This works similarly to other one but
         // rather than the lowest value, we need
         // the highest. For example, if the
@@ -306,12 +302,12 @@ class Image extends File {
 
           if ($sExtension == 'png') {
             //Preserve transparency when scaling & cropping PNG
-            //tmpimg
+            //$tmpimg
             imagealphablending($tmpimg, false);
             imagesavealpha($tmpimg,true);
             $transparent = imagecolorallocatealpha($tmpimg, 255, 255, 255, 127);
             imagefilledrectangle($tmpimg, 0, 0, $iNewWidth, $iNewWidth, $transparent);
-            //tmp2img
+            //$tmp2img
             imagealphablending($tmp2img, false);
             imagesavealpha($tmp2img,true);
             $transparent = imagecolorallocatealpha($tmp2img, 255, 255, 255, 127);
@@ -379,7 +375,7 @@ class Image extends File {
           $img = $tmp2img;
 
         } else if ($sExtension == 'png') {
-          //Preserve transparency for non scaled cropped PNG
+          //Preserve transparency for non cropped PNG
           imagealphablending($img, true);
           imagesavealpha($img,true);
         }
