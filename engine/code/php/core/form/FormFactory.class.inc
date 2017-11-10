@@ -71,7 +71,6 @@ class FormFactory {
         break;
 
       case 'autocomplete':
-        print "CIAO";
         $formitem = new FormItemAutocomplete($env, $input);
         break;
 
