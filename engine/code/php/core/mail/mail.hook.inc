@@ -37,7 +37,7 @@ function mail_form_type_mailform_submit($vars) {
 
   foreach ($items as $item) {
 
-    $value = $item->getValue();
+    $value = $item->getValue()[0];
 
     // Non-html email: convert newlines.
     if (($item->getType() == 'text') && empty($item->getInputAttr('wysiwyg')))  {
@@ -48,7 +48,7 @@ function mail_form_type_mailform_submit($vars) {
       $body .= '<b>' . $item->getLabel() . '</b>: <br>' . $value . '<br><br>';
     }
   }
-
+  
   $vars['env']->hook('mailform_' . $vars['form']->getId() . '_send', array('mail' => &$mail, 'form' => &$form));
   $mail->setBody($body);
 
