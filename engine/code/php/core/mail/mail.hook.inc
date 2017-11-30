@@ -29,7 +29,7 @@ function mail_form_type_mailform_submit($vars) {
   $queue = new Node($vars['env'], '_mailqueue');
 
   // TODO: better way to create unique id for mail.
-  $mail = new Mail($vars['env'], time() . '_' . rand(10000, 99999), $queue);
+  $mail = new Mail($vars['env'], time() . '_' . rand(10000, 99999), $queue->getName());
   $body = '';
 
   $form = $vars['form'];
