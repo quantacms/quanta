@@ -1,14 +1,28 @@
 var shadow;
+var shadowUpdated = false;
 
 $(document).bind('refresh', function () {
   $('#shadow-inside, #shadow-image').off('click').on('click', function () {
     closeShadow();
   });
 
+  // When some update is done inside the shadow, make shadow aware.
+  var setShadowUpdated = function() {
+    shadowUpdated = true;
+  }
+
+  // If users have updated anything, make shadow aware, to prevent accidental
+  // window closing, and losing of the work.
+  $('#shadow-item').find('input,select,textarea').bind('change', setShadowUpdated);
+
 });
 
+// Close the shadow.
 function closeShadow() {
-  $('#shadow-outside, .shadow-element').hide();
+  // Prevent accidental closing of shadow when there are unsaved changes.
+  if (!shadowUpdated || confirm('You have unsaved changes. Are you sure you want to close the window?')) {
+    $('#shadow-outside, .shadow-element').hide();
+  }
 }
 
 /**
@@ -17,6 +31,7 @@ function closeShadow() {
  */
 function openShadow(shadowData) {
   shadow = shadowData;
+  shadowUpdated = false;
   if (shadow.widget == undefined) {
     shadow.widget = 'tabs';
   }

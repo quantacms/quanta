@@ -15,8 +15,41 @@ var refreshForms = function () {
  * Refresh autocomplete fields.
  */
 var refreshAutocomplete = function() {
+
   $(".autocomplete").each(function() {
-    $(this).easyAutocomplete({data: ["BLA BLA", 'ciao ciao', 'come vaaa']});
+    // TODO FIX DOESN'T WORk
+    var node = $(this).data('node');
+    var options = {
+      url: function(phrase) {
+        return "/autocomplete?search_string=" + phrase + "&search_node=" + node;
+      },
+      getValue: "name",
+      placeholder: "write your tag here",
+      template: {
+        type: "description",
+        fields: {
+          description: "title"
+        }
+      },
+
+      list: {
+        match: {
+          enabled: true
+        },
+        maxNumberOfElements: 5,
+        showAnimation: {
+          type: "slide",
+          time: 50
+        },
+        hideAnimation: {
+          type: "slide",
+          time: 50
+        }
+      },
+      theme: "round"
+    };
+
+    $(this).easyAutocomplete(options);
   });
 }
 
@@ -40,6 +73,7 @@ var refreshMultiple = function (inputItem) {
         $('#' + form_item_remove_id).unbind().bind('click', function () {
           $(this).closest('.form-item-multiple-wrapper').detach();
           refreshMultiple(inputItem);
+          refreshAutocomplete();
         });
       }
   });
@@ -64,13 +98,15 @@ var refreshMultiple = function (inputItem) {
       var newFormItem = last_item.clone().attr('id', new_id).attr('value', '');
       last_item.closest('.form-item-multiple-wrapper').after('<div class="form-item-multiple-wrapper">' + newFormItem.prop('outerHTML') + '</div>');
       refreshMultiple(inputItem);
+      refreshAutocomplete();
     });
     }
-
-    refreshAutocomplete();
 
 }
 
 $(document).bind('refresh', function () {
     refreshForms();
 });
+
+
+

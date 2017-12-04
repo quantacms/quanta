@@ -13,6 +13,9 @@ class DirList extends ListObject {
    */
   public function theme() {
     $i = 0;
+    $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
+    $node_father = NodeFactory::current($this->env)->getFather();
+
     foreach ($this->dirs as $dir_url => $node) {
       // If user can't access a node, completely exclude it from the list.
       if ($node->isForbidden()) {
@@ -32,7 +35,6 @@ class DirList extends ListObject {
       if (!empty($this->list_filter) && !_access_filter($this->env, $this->list_filter, $node)) {
         continue;
       }
-
       $i++;
 
       // If there is a limit set, break when passing it.
@@ -41,16 +43,13 @@ class DirList extends ListObject {
       }
       $classes = array('dir-list-item', 'list-' . $this->getTpl() . '-item', 'list-item-' . $i);
 
+      // Check if the list item is the current / active one.
       if ($node->isCurrent() || ($this->getAttribute('active_items') == $node->getName())) {
         $classes[] = 'list-selected';
       }
-      $node_father = NodeFactory::current($this->env)->getFather();
       if ($node_father->exists && ($node_father->getName() == $node->getName())) {
         $classes[] = 'list-selected-father';
       }
-
-
-      $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
 
       $list_item = transformCodeTags($this->env, preg_replace("/\[LISTITEM\]/is", string_normalize($dir_url), $tpl));
       $list_item = transformCodeTags($this->env, preg_replace("/\[LISTNODE\]/is", string_normalize($this->dir), $list_item));

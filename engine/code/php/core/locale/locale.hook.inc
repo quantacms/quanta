@@ -41,7 +41,7 @@ function locale_setup($vars) {
 
   // TODO: select which language to use for fallback?
   if (!file_exists($vars['env']->dir['languages'] . '/fallback')) {
-    symlink($vars['env']->dir['languages'] . '/en', $vars['env']->dir['languages'] . '/fallback');
+    NodeFactory::linkNodes($vars['env'], 'en', 'locale', 'fallback');
   }
 }
 

@@ -64,11 +64,11 @@ function node_action_node_delete($vars) {
  * @param $vars
  */
 function node_init($vars) {
+
+  NodeFactory::unlinkNodes($vars['env'], 'ciao', '_languages', array('if_not_exists' => 'ignore'));
   $vars['env']->addInclude('engine/code/php/core/node/js/node.js');
   $vars['env']->addInclude('engine/code/php/core/node/css/node.css');
-
   $node = NodeFactory::current($vars['env']);
-
   // If the node does not exist, redirect to 404.
   if (!$node->exists && !isset($_REQUEST['shadow']) && $node->name != '404') {
     $node_404 = NodeFactory::load($vars['env'], '404');
