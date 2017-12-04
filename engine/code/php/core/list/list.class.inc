@@ -30,7 +30,7 @@ abstract class ListObject {
   protected $list_items = array();
   private $attributes = array();
   protected $scantype = DIR_ALL;
-  protected $module = NULL;
+  protected $module = 'list';
   // Exclude some nodes from listing. TODO: discontinue.
   protected $exclude = array();
   // Include only some nodes in listing. TODO: discontinue.
@@ -57,12 +57,9 @@ abstract class ListObject {
     if ($path == NULL) {
       $path = $env->getRequestedPath();
     }
-    if (empty($this->module)) {
-      if (!empty($module)) {
-        $this->module = $module;
-      } else {
-        $this->module = 'list';
-      }
+    // Check if the template is in a different module than the default.
+    if (!empty($module)) {
+      $this->module = $module;
     }
     $this->env = $env;
     // TODO: no need to rebuild node when it's current page.

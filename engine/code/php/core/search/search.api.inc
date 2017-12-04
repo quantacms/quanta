@@ -1,44 +1,29 @@
 <?php
-function search($env) {
-  $output = '';
+define("SEARCH_OUTPUT_MATCH", 'match');
+define("SEARCH_OUTPUT_FILENAME", 'filename');
+define("SEARCH_OUTPUT_MATCH_FILENAME", 'match_filename');
+
+function search($env, $search_string = NULL, $search_in_node = NULL, $search_fields = array('body'), $search_output = SEARCH_OUTPUT_MATCH_FILENAME) {
+  $search_dir = ($search_in_node == NULL) ? $env->dir['docroot'] : $search_in_node->realpath;
   $results_arr = array();
-  $results = array();
+  if (empty($search_string)) {
+    $search_string = $_REQUEST['search'];
+  }
+  $grep_params = array('-R', '-i', '-m100');
+
+  if ($search_output == SEARCH_OUTPUT_MATCH || $search_output == SEARCH_OUTPUT_MATCH_FILENAME) {
+    $grep_params[] = '-o';
+  }
+  $search_arr = array();
+  foreach ($search_fields as $search_field) {
+    $search_arr[] = $search_field . '\"\:\".*' . $search_string . '.*\"' ;
+
+  }
   // TODO: VERY insecure!
-  $search_cmd = "grep -r -i -o -P -m100  --include \*.html  '.{0,140}" . $_REQUEST['search'] . ".{0,140}' " . $env->dir['docroot'];
+  $search_cmd = "grep " . implode(' ', $grep_params) . "  --include \*.json  '" . implode('|', $search_arr) . "' " . $search_dir;
   // $search_cmd = "find " . $page['dir']['docroot'] . " -iname=\"*.html\" -exec grep -r -i -o -m100 -P  '.{0,140}" . $_REQUEST['search'] . ".{0,140}' {} \; ";
   // Command with find: find "/Applications/MAMP/htdocs/websmenu"  -iname "*.html" -exec grep -r -i -o -m100  '.\{0,140\}mente.\{0,140\}' {} \;
 
   exec($search_cmd, $results_arr);
-  $output .= '<div>You are searching for: <b>' . $_REQUEST['search'] . ' </div>
-    <div id="data" class="search-results">';
-  if (count($results_arr) == 0) {
-    $output .= '<div class="search-no-results">No results found</div>';
-  }
-  foreach ($results_arr as $k => $result_string) {
-    $r = explode(':' , $result_string);
-    $result = preg_replace('/(' . $_REQUEST['search'] . ')/is', '<b class="search-result-match">$1</b>', strip_tags(nl2br(str_replace($r[0], '', $r[1]))));
-    $filepath_exp = explode('/', $r[0]);
-    $result_pagename = $filepath_exp[count($filepath_exp) - 2];
-    if (substr($result_pagename, 0, 1) != '_') {
-      $results[$result_pagename][] = '<div class="search-result-string">... ' . preg_replace('/\[(.*?)\]/', '', trim($result)) . ' ...</div>';
-    }
-  }
-  $counter = array();
-  $total_files = 0;
-  $total_matches = 0;
-
-  foreach ($results as $pname => $v) {
-    $c = count($results[$pname]);
-    $total_files++;
-    $total_matches += $c;
-    $counter[$pname] = $c;
-  }
-  arsort($counter);
-  foreach ($counter as $pname => $result_count) {
-    $output .= '<div class="search-result">' . $results[$pname][0] . '<div class="search-result-file"><b>' . $result_count. '</b> <span translate="yes">results found in:</span> [LINK:' . $pname . ']</div></div>';
-  }
-
-  $output .= '<div class="search-results-total">Total: <b>' . $total_matches . '</b> matches found in <b>' . $total_files . '</b> files.</div>';
-  $output .= '</div>';
-  return $output;
+  return $results_arr;
 }
