@@ -6,5 +6,3 @@ function list_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/list/js/list.js');
   $vars['env']->addInclude('engine/code/php/core/list/css/list.css');
 }
-
-

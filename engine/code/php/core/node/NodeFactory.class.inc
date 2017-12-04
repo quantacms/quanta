@@ -33,6 +33,15 @@ class NodeFactory {
     return $node;
   }
 
+  /**
+   * Load a node from its realpath.
+   * @param Environment $env
+   * @param $realpath
+   */
+  public static function loadFromRealPath(Environment $env, $realpath) {
+    $exp = explode('/', $realpath);
+    return NodeFactory::load($env, $exp[count($exp) - 2]);
+  }
 
   /**
    * Create an empty node.
@@ -44,6 +53,101 @@ class NodeFactory {
     return $node;
   }
 
+  /**
+   * Remove an existing symlink between nodes.
+   * @param Environment $env
+   *   The Environment.
+   * @param $symlink_name
+   *   The name of the symlink to be removed.
+   * @param $symlink_folder
+   *   The Folder (node) where the symlink is located.
+   * @param $vars
+   *  Mixed variables.
+   */
+  public static function unlinkNodes($env, $symlink_name, $symlink_folder, $vars = array()) {
+    $symlink_folder_node = NodeFactory::load($env, $symlink_folder);
+    // Set the behavior to adopt if the symlink already exists.
+    $if_not_exists = isset($vars['if_not_exists']) ? $vars['if_not_exists'] : 'error';
+
+    if (!$symlink_folder_node->exists) {
+      new Message($env, 'Error: could not unlink ' . $symlink_name . ' from ' . $symlink_folder . '. ' . $symlink_folder . ' doesn\'t exist');
+    }
+    elseif (!is_link($symlink_folder_node->realpath . '/' . $symlink_name)) {
+      switch ($if_not_exists) {
+        case 'error':
+          new Message($env, 'Error: could not unlink ' . $symlink_name . ' from ' . $symlink_folder . '. ' . $symlink_folder . '/' . $symlink_name . ' doesn\'t exist');
+          break;
+
+        case 'ignore':
+          break;
+      }
+    }
+    else {
+      try {
+        unlink($symlink_folder_node->realpath . '/' . $symlink_name);
+      }
+      catch (Exception $ex) {
+        new Message($vars['env'], 'Error: could not unlink ' . $symlink_name . ' from ' . $symlink_folder);
+      }
+    }
+  }
+
+  /**
+   * Create a symlink to a node.
+   * @param Environment $env
+   *   The Environment.
+   * @param $from
+   *   The Node to be linked
+   * @param $folder
+   *   The Folder where we place the symlink
+   * @param $to
+   *   The name of the symlink
+   * @param $vars
+   *   Mixed variables
+   *
+   */
+  public static function linkNodes($env, $source_node, $symlink_folder, $vars = array()) {
+    // If no name is set for the symlink, use the source node name as default.
+    $symlink_name = isset($vars['symlink_name']) ? $vars['symlink_name'] : $source_node;
+
+    // Set the behavior to adopt if the symlink already exists.
+    $if_exists = isset($vars['if_exists']) ? $vars['if_exists'] : 'error';
+
+      $from_node = NodeFactory::load($env, $source_node);
+    $symlink_folder_node = NodeFactory::load($env, $symlink_folder);
+
+    // Check that source nodes and destination folder do actually exist.
+    if (!$from_node->exists) {
+      new Message($env, 'Error: could not link ' . $source_node . ' into ' . $symlink_folder . '. ' . $source_node . ' doesn\'t exist');
+    }
+    elseif (!$symlink_folder_node->exists) {
+      new Message($env, 'Error: could not link ' . $source_node . ' into ' . $symlink_folder . '. ' . $symlink_folder . ' doesn\'t exist');
+    }
+    // What to do if the symlink exists already.
+    elseif (file_exists($symlink_folder_node->realpath . '/' . $symlink_name)) {
+
+      switch ($if_exists) {
+        case 'error':
+          new Message($env, 'Error: could not link ' . $source_node . ' into ' . $symlink_folder . '. ' . $symlink_folder . '/' . $symlink_name . ' already exists.');
+        break;
+
+        case 'ignore':
+          break;
+
+        case 'override':
+          // TODO: implement symlink override, if needed.
+          break;
+      }
+    }
+    else {
+      try {
+        symlink($from_node->realpath, $symlink_folder_node->realpath . '/' . $symlink_name);
+      }
+      catch (Exception $ex) {
+        new Message($vars['env'], 'Error: could not link ' . $source_node . ' to ' . $symlink_folder);
+      }
+    }
+  }
 
   /**
    * Create a node with basic values.
