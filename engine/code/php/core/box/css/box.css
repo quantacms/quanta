@@ -26,8 +26,8 @@
         width: 100% !important;
     }
 
-    .w25 {
-        width: 50%;
+    .w-25 {
+        width: 50% !important;
     }
 
     .box, .box .inner {
@@ -38,8 +38,8 @@
 }
 
 /* > 600px */
-@media all and (max-width:541px) {
-    .w-0-25 {
+@media all and (max-width:641px) {
+    .w-25 {
         width: 100% !important;
     }
 
