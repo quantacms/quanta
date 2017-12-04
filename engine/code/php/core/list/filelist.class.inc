@@ -21,7 +21,7 @@ class FileList extends ListObject {
   public function theme() {
     $file_types = $this->getAttribute('file_types');
     $i = 0;
-
+    $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
     foreach ($this->files as $file) {
       $i++;
       if (!empty($this->exclude) && !isset($this->exclude[$i])) {
@@ -36,18 +36,18 @@ class FileList extends ListObject {
         break;
       }
       if ((($file_types == FALSE) || $file_types == $file->getType()) && $file->isPublic()) {
-				$tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
-        $tpl = preg_replace("/\{LISTITEM\}/is", string_normalize($file->getPath()), $tpl);
-        $tpl = preg_replace("/\{LISTNODE\}/is", string_normalize($this->node->getName()), $tpl);
-        $tpl = transformCodeTags($this->env, $tpl);
 
+        $list_item = preg_replace("/\{LISTITEM\}/is", string_normalize($file->getPath()), $tpl);
+        $list_item = preg_replace("/\{LISTNODE\}/is", string_normalize($this->node->getName()), $list_item);
+        $list_item = transformCodeTags($this->env, $list_item);
+
+        // If "clean" mode is set don't add wrapping li tags.
         if (empty($this->getAttribute('clean'))) {
           $classes = array('file-list-item', 'list-item-' . $this->getTpl(), 'list-item-' . $i);
-          $tpl = '<li class="' . implode(' ', $classes) . '" index="' . $i . '">' . $tpl . '</li>';
+          $list_item = '<li class="' . implode(' ', $classes) . '" index="' . $i . '">' . $list_item . '</li>';
         }
 
-        $tpl_item = $tpl;
-        $this->list_items[] = $tpl_item;
+        $this->list_items[] = $list_item;
       }
     }
   }

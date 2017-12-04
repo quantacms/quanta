@@ -53,13 +53,15 @@ abstract class ListObject {
    * @param null $module
    *   The module in where to look for the template file (defaults to list).
    */
-  public function __construct(&$env, $path, $tpl, $attr_arr = array(), $module = NULL) {
+  public function __construct(&$env, $path, $tpl, $attr_arr = array(), $module = 'list') {
     if ($path == NULL) {
       $path = $env->getRequestedPath();
     }
-      if (!empty($module)) {
-        $this->module = $module;
-      }
+
+    // Check if the template is in a different module than the default.
+    if (!empty($module)) {
+      $this->module = $module;
+    }
     $this->env = $env;
     // TODO: no need to rebuild node when it's current page.
     $this->dir = $path;

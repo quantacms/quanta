@@ -38,15 +38,16 @@ class Doctor extends DataContainer {
 
     // Cycle all symlinks in the system.
     foreach ($results_arr as $k => $result_string) {
-      $link_exists = is_dir(readlink($result_string));
+      $link_target = readlink($result_string);
+      $link_exists = is_dir($link_target);
       $link_name = array_reverse(explode('/', $result_string))[0];
       // If a link is not corresponding to a dir, attempt to find the real dir.
 
       if (!$link_exists) {
         $wrong_links++;
         $realpath = $this->env->nodePath($link_name);
-
         Doctor::talk("Looking for " . $link_name . ' (' . $realpath . ')...<br>');
+
         if (is_dir($realpath)) {
           // Attempt to change the target dir of the link.
           unlink($result_string);
@@ -58,6 +59,9 @@ class Doctor extends DataContainer {
           $unfixable_links[] = $result_string;
         }
 
+      }
+      else {
+        Doctor::talk($result_string . ' -> ' . $link_target . '<br><br>');
       }
 
     }
