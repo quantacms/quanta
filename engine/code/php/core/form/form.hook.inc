@@ -33,8 +33,22 @@ function form_form_validate($vars) {
 function form_boot($vars) {
   // TODO: object oriented, using templates, etc. etc.
   if ($vars['env']->getRequestedPath() == 'autocomplete') {
+    $autocomplete_results = search($vars['env'], $_GET['search_string'], NodeFactory::load($vars['env'], $_GET['search_node']), array('title'), SEARCH_OUTPUT_MATCH);
+
     header("Content-type: application/json");
-    $results = array('test', 'aldo', 'alien', 'tette', 'ararara', 'seguito');
+    $user = UserFactory::current($vars['env']);
+    $results = array();
+    foreach ($autocomplete_results as $autocomplete_result) {
+$node = NodeFactory::loadFromRealPath($vars['env'], explode(':', $autocomplete_result)[0]);
+      // TODO: check user access with || $user->checkAccess($node).
+      if (TRUE) {
+        $results[] = array(
+          'name' => $node->getName(),
+          'title' => $node->getTitle(),
+        );
+      }
+    }
+
     print json_encode($results);
     die();
   }

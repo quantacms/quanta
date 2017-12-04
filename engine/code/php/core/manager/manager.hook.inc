@@ -41,22 +41,23 @@ function manager_action_node_add($vars) {
 
 /**
  * Implements hook_node_save().
+ * Update all the symlinks that the user selected as checkboxes
+ * in the manager tree.
+ *
  * @param $vars
+ *   All the needed data.
  */
 function manager_node_save($vars) {
   foreach($vars['data'] as $label => $val) {
+    // If the user has selected a checkbox in the manager, attempt to create a symlink.
     if (substr($label, 0, 8) == 'add-leaf') {
       $leaf = substr($label, 9);
-      $leafnode = NodeFactory::load($vars['env'], $leaf);
-      if (!is_link($leafnode->realpath . '/' . $vars['node']->name)) {
-        symlink($vars['node']->realpath, $leafnode->realpath . '/' . $vars['node']->name);
-      }
-    } elseif (substr($label, 0, 8) == 'rem-leaf') {
+      NodeFactory::linkNodes($vars['env'], $vars['node']->getName(), $leaf, array('if_exists' => 'ignore'));
+    }
+    // If the user has deselected a checkbox in the manager, attempt to remove the symlink.
+    elseif (substr($label, 0, 8) == 'rem-leaf') {
       $leaf = substr($label, 9);
-      $leafnode = NodeFactory::load($vars['env'], $leaf);
-      if (is_link($leafnode->realpath . '/' . $vars['node']->name)) {
-        unlink($leafnode->realpath . '/' . $vars['node']->name);
-      }
+      NodeFactory::unlinkNodes($vars['env'], $leaf, $vars['node']->getName());
     }
   }
 }

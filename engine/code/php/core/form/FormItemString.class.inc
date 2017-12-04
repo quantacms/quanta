@@ -13,6 +13,9 @@ class FormItemString extends FormItem {
    */
   function render() {
     $rendered = '';
+    // TODO: data items should go in an array and be rendered all together
+    // in order to be extendable by subclasses...
+
     $rendered .= '<input value="' . $this->getCurrentValue() . '" type="' . $this->getHTMLType() . '" ' .
       ($this->isDisabled() ? 'disabled ' : '') .
       ($this->isRequired() ? 'required ' : '') .
@@ -23,7 +26,7 @@ class FormItemString extends FormItem {
       ($this->isMultiple() ? 'data-multiple ' : ' ') .
       ($this->isDistinct() ? 'data-distinct ' : ' ') .
       ($this->isMultiple() ? 'data-limit="' . $this->getData('limit'). '" ' : ' ') .
-
+      (!empty($this->getInputAttr('node')) ? ('data-node="' . $this->getInputAttr('node')) . '" ' : ' ') .
       '/>';
 
     return $rendered;
