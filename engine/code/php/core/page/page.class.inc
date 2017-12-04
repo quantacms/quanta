@@ -23,14 +23,13 @@ class Page extends DataContainer {
    * Load all the includes (CSS JS etc.) of the page.
    */
   public function loadIncludes() {
-  // TODO: HYPER URGENT! Favicon request running the full stack!
-    if ($_SERVER['REQUEST_URI'] == '/favicon.ico') die();
     if (substr($_SERVER['REQUEST_URI'], 0, 7) == '/engine') die();
-
+    // TODO: better way to skip load includes.
     if (isset($_REQUEST['ajax'])) { return; }
     //TODO: enforcing aggregation now. Maybe optional non-aggregated loading?
     $css = array();
     $js = array();
+
     // Include JS / CSS files.
     foreach ($this->env->getIncludes() as $file) {
       if (substr($file['path'], 0, 6) == 'engine') {
@@ -60,6 +59,7 @@ class Page extends DataContainer {
     ', $js));
     fclose($fop);
 
+    // TODO: head variable not very nice.
     $this->addData('head', array('<link rel="stylesheet" type="text/css" href="/tmp/' . $temp_aggregate_path . '.css" />'));
     $this->addData('head', array('<script type="text/javascript" src="/tmp/' . $temp_aggregate_path . '.js"></script>'));
 
@@ -70,13 +70,18 @@ class Page extends DataContainer {
    * TODO: needs serious refactoring.
    */
   public function buildHTML() {
+
+    // This is an AJAX request. Skip loading index.html and just provide requested content.
     if (isset($_REQUEST['ajax'])) {
       $this->html = $this->getData('content');
+      return;
     }
+
     // This is an actual HTML page request. Commonly index.html.
     elseif ($this->file != NULL) {
       $this->html = file_get_contents($this->env->dir['docroot'] . '/' . $this->file);
     }
+
     // This is a special request, i.e. Shadow node edit.
     else {
       $this->html = $this->getData('content');
