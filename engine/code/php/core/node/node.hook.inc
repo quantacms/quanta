@@ -88,12 +88,6 @@ function node_init($vars) {
     }
   }
 
-  // TODO: move in locale?
-  else if (!$node->hasTranslation(Locale::getLanguage($vars['env']))) {
-    $node->setTitle('No translation available');
-    $node->setBody('We are sorry: no translation for this content is available in the current language (' . $vars['env']->getLanguage() . ').<br>Please select another language version.');
-  }
-
   else {
     // TODO: is this log really needed all the time?
     new Message($vars['env'], 'user is viewing this page: ' . $node->name . '.', MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
