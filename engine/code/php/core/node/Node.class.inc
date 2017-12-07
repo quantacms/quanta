@@ -318,19 +318,27 @@ class Node extends JSONDataContainer {
    * @return mixed
    */
   public function getTeaser($maxlength = 300) {
-
     if (strlen(trim($this->teaser)) > 0) {
       return preg_replace('/\[[^>]*\]/', '', strip_tags($this->teaser));
     }
-    else {
-      return preg_replace('/\[[^>]*\]/', '', (substr(strip_tags($this->getBody()), 0, $maxlength)));
-    }
   }
 
+  /**
+   * Return the node's title.
+   *
+   * @return string title
+   *   The Node's title.
+   */
   public function getTitle() {
     return $this->title;
   }
 
+  /**
+   * Set up the node's title.
+   *
+   * @param string $title
+   *   The Node's title.
+   */
   public function setTitle($title) {
     $this->title = htmlentities($title);
   }
@@ -400,11 +408,13 @@ class Node extends JSONDataContainer {
     }
 
     // TODO: dismiss fullpath.
+    // TODO: redo this.
     $bca = explode('/', $this->fullpath);
     foreach ($bca as $bread_node) {
       if ($bread_node == '') {
         continue;
       }
+      // TODO: use nodefactory without a loop.
       $n = new Node($this->env, $bread_node);
       if (!$n->exists) {
         break;
@@ -420,13 +430,15 @@ class Node extends JSONDataContainer {
   public function buildTemplate() {
     $user = UserFactory::current($this->env);
 
-
-    // Use another node as a base for the template.
+    // There is the possibility to use another node as a base for the template.
+    // TODO: maybe we are not using this anymore?
     if (isset($this->tpl_node)) {
       $tpl_node = new Node($this->env, $this->tpl_node);
       if ($user->checkAccess($tpl_node, NODE_ACTION_VIEW)) {
         $this->tpl = $tpl_node->getBody();
-      } else {
+      }
+      // TODO: should not be there, but in access check hooks.
+      else {
         print "Error loading template: access denied";
         die();
       }
@@ -439,7 +451,8 @@ class Node extends JSONDataContainer {
       // a template in the same directory has always priority.
       if (is_file($this->realpath . '/tpl.html')) {
         $this->tpl = file_get_contents($this->realpath . '/tpl.html');
-      } else {
+      }
+      else {
         foreach ($this->lineage as $lineage) {
 
           $tpl_level++;
@@ -464,16 +477,18 @@ class Node extends JSONDataContainer {
           } 
         }
 
-
         // check if there is a sub-level template.
         if (isset($tpl[$tpl_level])) {
           $this->tpl = file_get_contents($tpl[$tpl_level]);
-
         }
       }
     }
   }
 
+  /**
+   * Check if current node is the homepage node.
+   * @return bool
+   */
   public function isHome() {
     return $this->name == 'home';
   }
