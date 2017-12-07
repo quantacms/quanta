@@ -188,7 +188,10 @@ class NodeFactory {
           $node->json->{$field_name} = $field_value;
           break;
       }
-    }    
+    }
+    if (empty($node->getTimestamp())) {
+      $node->setTimestamp(time());
+    }
     $node->save();
 
     return $node;
