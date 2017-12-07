@@ -20,7 +20,7 @@ function search($env, $search_string = NULL, $search_in_node = NULL, $search_fie
 
   }
   // TODO: VERY insecure!
-  $search_cmd = "grep " . implode(' ', $grep_params) . "  --include \*.json  '" . implode('|', $search_arr) . "' " . $search_dir;
+  $search_cmd = "find " .$search_dir . " -type f | xargs grep " . implode(' ', $grep_params) . "  --include \*.json  '" . implode('|', $search_arr) . "' ";
   // $search_cmd = "find " . $page['dir']['docroot'] . " -iname=\"*.html\" -exec grep -r -i -o -m100 -P  '.{0,140}" . $_REQUEST['search'] . ".{0,140}' {} \; ";
   // Command with find: find "/Applications/MAMP/htdocs/websmenu"  -iname "*.html" -exec grep -r -i -o -m100  '.\{0,140\}mente.\{0,140\}' {} \;
 
