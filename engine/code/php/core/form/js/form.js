@@ -9,7 +9,7 @@ var refreshForms = function () {
         refreshMultiple(inputItem);
     });
     refreshAutocomplete();
-}
+};
 
 /**
  * Refresh autocomplete fields.
@@ -51,7 +51,7 @@ var refreshAutocomplete = function() {
 
     $(this).easyAutocomplete(options);
   });
-}
+};
 
 /**
  * Refresh multiple fields.
@@ -102,7 +102,7 @@ var refreshMultiple = function (inputItem) {
     });
     }
 
-}
+};
 
 $(document).bind('refresh', function () {
     refreshForms();

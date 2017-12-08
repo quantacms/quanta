@@ -19,7 +19,7 @@ var refreshLists = function () {
             });
         }
     });
-}
+};
 
 
 $(document).bind('refresh', function () {
