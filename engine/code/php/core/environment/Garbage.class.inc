@@ -25,7 +25,7 @@ class Garbage {
       $lastmod = filemtime($filepath);
       // The temp file is old? Delete it!
       if ((time() - $lastmod) > 20) {
-        unlink($filepath) or die("can not delete file: " . $filepath);
+        // unlink($filepath) or die("can not delete file: " . $filepath);
       }
     }
   }

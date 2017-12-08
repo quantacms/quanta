@@ -12,7 +12,14 @@
   $env->hook('init', array('page' => &$page));
   $page->loadIncludes();
   $page->buildHTML();
-  print $page->render();
-	$env->hook('complete');
+  // TODO: determine when to run doctor.
+  if (isset($_GET['doctor'])) {
+    $doctor = new Doctor($env);
+    $doctor->runAllTasks();
+  }
+  else {
+    print $page->render();
+  }
+  $env->hook('complete');
 	exit();
 ?>

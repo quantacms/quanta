@@ -35,6 +35,8 @@ class Environment extends DataContainer {
     $this->request_path = $this->request[count($this->request) - 2];
     $this->dir['docroot'] = $_SERVER['DOCUMENT_ROOT'] . '/sites/' . $this->host;
     $this->dir['tmp'] = $_SERVER['DOCUMENT_ROOT'] . '/engine/tmp/' . $this->host;
+    $this->dir['engine'] = $_SERVER['DOCUMENT_ROOT'] . '/engine';
+    $this->dir['vendor'] = $_SERVER['DOCUMENT_ROOT'] . '/vendor';
     $this->dir['modules_core'] = $_SERVER['DOCUMENT_ROOT'] . '/engine/code/php/core';
     $this->dir['modules_custom'] = $this->dir['docroot'] . '/_modules';
     // TODO: move to files module.
