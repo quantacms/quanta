@@ -11,7 +11,7 @@ var refreshJumpers = function() {
             }
         });
     });
-}
+};
 
 $(document).bind('refresh', function() {
     refreshJumpers();

@@ -21,17 +21,14 @@ var openAjax = function(name, destination, afterExec, tpl) {
             $('#' + destination).show();
 
             dest.html(data);
-
+            var scrollTop = ($("#" + destination).offset().top - 30);
             $(document).trigger('refresh');
             $('html, body').animate({
-                scrollTop: ($("#" + destination).offset().top - 30)
+                scrollTop: scrollTop
             }, 1000);
         }
     });
-
-
-
-}
+};
 
 var refreshButtons = function() {
     $( "input.hasDatepicker").each(function() {
@@ -40,7 +37,7 @@ var refreshButtons = function() {
             format: 'd-m-Y'
         });
     });
-}
+};
 
 var action = function(dataJson) {
 
@@ -52,7 +49,7 @@ var action = function(dataJson) {
         success: actionSuccess,
         error: actionError
     });
-}
+};
 
 /**
  * Successful action handler.
@@ -71,7 +68,7 @@ var actionSuccess = function(data) {
     } else {
         top.location.href = data.redirect;
     }
-}
+};
 
 /**
  * Wrong action handler.
@@ -81,7 +78,7 @@ var actionSuccess = function(data) {
 var actionError = function(err, exception) {
     console.log(err.responseText);
     alert(exception);
-}
+};
 
 // Inizializza.
 $(document).ready(function() {
@@ -91,4 +88,3 @@ $(document).ready(function() {
 $(document).bind('refresh', function(ev) {
     refreshButtons();
 });
-

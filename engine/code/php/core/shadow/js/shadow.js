@@ -9,7 +9,7 @@ $(document).bind('refresh', function () {
   // When some update is done inside the shadow, make shadow aware.
   var setShadowUpdated = function() {
     shadowUpdated = true;
-  }
+  };
 
   // If users have updated anything, make shadow aware, to prevent accidental
   // window closing, and losing of the work.
@@ -23,7 +23,7 @@ function closeShadow() {
   if (!shadowUpdated || confirm('You have unsaved changes. Are you sure you want to close the window?')) {
     $('#shadow-outside, .shadow-element').hide();
   }
-}
+};
 
 /**
  * Open a shadow (lightbox) with the specified parameters.
@@ -66,7 +66,7 @@ function openShadow(shadowData) {
     $(document).trigger('shadow_' + shadow.context);
   });
   $('#shadow-outside').fadeIn('slow');
-}
+};
 
 /**
  * Submit a shadow form.
@@ -88,6 +88,4 @@ function submitShadow() {
   var formData = JSON.stringify(form_items);
 
   action(formData);
-}
-
-
+};
