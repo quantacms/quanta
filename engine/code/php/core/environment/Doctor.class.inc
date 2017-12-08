@@ -50,9 +50,11 @@ class Doctor extends DataContainer {
 
         if (is_dir($realpath)) {
           // Attempt to change the target dir of the link.
-          unlink($result_string);
-          link($realpath, $result_string);
-          Doctor::ok("...fixed! :-) <br>");
+          // unlink($result_string);
+          // link($realpath, $result_string);
+          Doctor::ko("...this feature is not working at the moment<br>");
+
+          //Doctor::ok("...fixed! :-) <br>");
           $fixed_links++;
         } else {
           Doctor::ko("...none found :-( <br>");
