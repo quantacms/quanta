@@ -40,13 +40,6 @@ function environment_boot($vars) {
     if (isset($_GET['cron'])) {
       $vars['env']->hook('cron');
     }
-
-    // TODO: determine when to run cron.
-    if (isset($_GET['doctor'])) {
-
-      $doctor = new Doctor($vars['env']);
-      $doctor->runAllTasks();
-    }
   }
 }
 

@@ -29,7 +29,6 @@ function form_form_validate($vars) {
   }
 }
 
-
 function form_boot($vars) {
   // TODO: object oriented, using templates, etc. etc.
   if ($vars['env']->getRequestedPath() == 'autocomplete') {

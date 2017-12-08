@@ -147,3 +147,10 @@ function remove_accents($string) {
 
   return strtr( $string , $unwanted_array );
 }
+
+function minify($env, $file) {
+  $ext = explode('.', $file)[1];
+  $command = $env->dir['vendor'] . '/matthiasmullie/minify/bin/minify' . $ext . ' ' . $file;
+  exec($command, $arr);
+  return $arr;
+}
