@@ -56,7 +56,7 @@ var resizeBoxes = function() {
 
     });
 
-}
+};
 
 $(window).on('resize', function() {
     resizeBoxes();
