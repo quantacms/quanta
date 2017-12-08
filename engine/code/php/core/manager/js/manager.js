@@ -32,7 +32,7 @@ function refreshManagerLeaves() {
          }
        });
     });
-}
+};
 
 $(document).ready(function() {
     $('.open-manager').on('click', function() {

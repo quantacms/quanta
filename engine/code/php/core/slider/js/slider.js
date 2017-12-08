@@ -19,4 +19,4 @@ var checkSlider = function(slider) {
     setTimeout(function() {
         checkSlider(slider)
     }, 5000);
-}
+};

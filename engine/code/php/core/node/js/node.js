@@ -22,7 +22,7 @@ $(document).bind('refresh', function() {
           components: components,
           node: $(this).attr('data-rel'),
           redirect: $(this).attr('data-redirect')
-        }
+        };
 
         if ($(this).attr('data-language') != undefined) {
           shadow.language = $(this).attr('data-language');

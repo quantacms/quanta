@@ -5,11 +5,11 @@ function logIn() {
         widget: 'single',
         components: ['user_login_form']
     });
-}
+};
 
 function logOut() {
     action('{"action": "logout"}');
-}
+};
 
 function register() {
     openShadow({ 
@@ -18,7 +18,7 @@ function register() {
 						widget: 'single',
 						components: ['user_register_form']
 						});
-}
+};
 
 $(document).ready(function() {
     $('.register-link').click(function (e) {

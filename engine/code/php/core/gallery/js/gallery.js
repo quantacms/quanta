@@ -34,7 +34,7 @@ function thumbsRefresh() {
                 break;
         }
     });
-}
+};
 
 /**
  * Open a gallery thumbnail into the shadow.
@@ -52,4 +52,4 @@ function galleryOpen(thumb) {
     var fn = pt[pt.length-1].split('.');
     $('#shadow-item').html('<div id="shadow-image"><img src="' + thumb.attr('href') + '" /></div><div id="shadow-text">' + fn[0] + '</div>');
     return false;
-}
+};
