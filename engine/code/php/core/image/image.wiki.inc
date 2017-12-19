@@ -12,9 +12,11 @@ function wiki_IMG($attributes, $file, $string, $env) {
 // TODO: deprecate
 function wiki_THUMBNAIL($attributes, $name, $string, $env) {
   $node = empty($name) ? NodeFactory::current($env) : NodeFactory::load($env, $name);
-  $image = new Image($env, '/' . $node->getName() . '/' . $node->getThumbnail(), $node);
-  $image->loadAttributes($attributes);
-  return '<a class="thumbnail" href="/' . $name. '">' . $image->render() . '</a>';
+  $attributes['link'] = $node->getName();
+	$attributes['node'] = $node->getName();
+	if (isset($_GET['test'])) print_r($attributes); 
+		return wiki_IMGTHUMB($attributes, $node->getThumbnail(), $string, $env);
+
 }
 
 /**
@@ -46,7 +48,7 @@ function wiki_IMGTHUMB($attributes, $file, $string, $env) {
     $thumb = $src;
   }
   else {
-    $thumb = '<img alt="' . $filename . '" ' . $tooltip . 'src="' . $src . '" />';
+    $thumb = '<img class="' . (isset($attributes['class']) ? $attributes['class'] : '') .  '" ' . 'alt="' . $filename . '" ' . $tooltip . 'src="' . $src . '" />';
   }
 
   if (isset($attributes['link'])) {

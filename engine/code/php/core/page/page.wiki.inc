@@ -17,6 +17,26 @@ function wiki_HEAD($attributes, $var, $string, $env) {
   ', $head);
 }
 
+/**
+ * Wiki Hook for CSS.
+ * Automatically generated css data.
+ */
+function wiki_CSS($attributes, $var, $string, $env) {
+  $page = $env->getData('page');
+  $css = $page->getData('css');
+  return implode('
+  ', $css);
+}
+/**
+ * Wiki Hook for JS.
+ * Automatically generated js data.
+ */
+function wiki_JS($attributes, $var, $string, $env) {
+  $page = $env->getData('page');
+  $js = $page->getData('js');
+  return implode('
+  ', $js);
+}
 
 /**
  * Wiki Hook for METADATA.
