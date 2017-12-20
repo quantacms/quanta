@@ -110,9 +110,14 @@ class UserFactory {
    * Get the current navigating user.
    */
   static function current($env, $reload = FALSE) {
+    static $user;
+    if (!empty($user)) {
+      return $user;
+    }
     if (!isset($_SESSION['user'])) {
       $_SESSION['user'] = serialize(new User($env, USER_ANONYMOUS));
     }
+    else {
     $user = unserialize($_SESSION['user']);
 
     if ($reload) {
@@ -121,6 +126,7 @@ class UserFactory {
     $user->env = $env;
 
     return $user;
+  }
   }
 
 }

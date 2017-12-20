@@ -1,9 +1,13 @@
 <?php
 	include_once('core/environment/environment.module');
+  include_once('core/cache/cache.module');
 
   $env = new Environment(NULL);
-  $env->startSession();
+  $env->checkFile();
+  $env->load();
   $env->runModules();
+  $env->startSession();
+
   $env->hook('boot');
   $env->checkActions();
   // Start page's standard index.html.

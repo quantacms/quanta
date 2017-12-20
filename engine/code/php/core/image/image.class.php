@@ -44,6 +44,13 @@ class Image extends File {
         case 'title':
 					$this->setTitle($attribute);
 					break;
+        case 'w':
+          $this->width = $attribute;
+          break;
+        case 'h':
+          $this->height = $attribute;
+          break;
+
 				default:
           break;
       }
@@ -109,11 +116,18 @@ class Image extends File {
     $sImagePath = $this->getRealPath();
     $thumbImagePath =  $thumbRoot . '/' . $thumbfile;
 
+    // If thumbnail exists, use it.
     if (is_file($thumbImagePath)) {
       return;
     }
+    // If the image file is broken, use the default broken image.
+    if ($image_is_broken = !is_file($sImagePath)) {
+      $sImagePath = '/var/www/quanta/engine/code/php/core/image/assets/broken-img.jpg';
+    }
 
-    @mkdir($thumbRoot);
+    if (!is_dir($thumbRoot)) {
+      mkdir($thumbRoot);
+    }
 
     // If you want exact dimensions, you
     // will pass 'width' and 'height'
@@ -380,8 +394,6 @@ class Image extends File {
           imagesavealpha($img,true);
         }
       }
-
-
 
       // Display the image using the header function to specify
       // the type of output our page is giving
