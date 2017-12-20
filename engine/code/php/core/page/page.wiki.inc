@@ -27,6 +27,7 @@ function wiki_CSS($attributes, $var, $string, $env) {
   return implode('
   ', $css);
 }
+
 /**
  * Wiki Hook for JS.
  * Automatically generated js data.
