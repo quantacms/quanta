@@ -1,7 +1,11 @@
 <?php
+/**
+ * Implements hook_boot().
+ * @param $vars
+ */
 function cache_boot($vars) {
   if (!is_dir( $vars['env']->dir['tmp'] . '/cache')) {
-  mkdir ( $vars['env']->dir['tmp'] . '/cache');
+    mkdir ( $vars['env']->dir['tmp'] . '/cache');
   }
 }
 
