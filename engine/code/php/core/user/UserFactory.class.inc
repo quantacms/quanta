@@ -36,7 +36,7 @@ class UserFactory {
     $user = new User($env, NODE_NEW);
     $user->setName($name);
 
-    $uservars = array('first_name','last_name');
+    $uservars = array('first_name', 'last_name');
     foreach ($uservars as $k) {
       if (isset($vars[$k])) {
         $user->setData($k, $vars[$k]);
@@ -51,10 +51,10 @@ class UserFactory {
 
     // TODO: security issue when no pass set!
 
-    $pass =(isset($vars['password'])) ? pwd($vars['password']) : pwd($name . rand(1, 1000000));
+    $pass = (isset($vars['password'])) ? pwd($vars['password']) : pwd($name . rand(1, 1000000));
     $user->setPassword($pass);
     $user->roles = (isset($vars['roles'])) ? $vars['roles'] : array();
-    $user->realpath = $env->dir['users']. '/' . $name;
+    $user->realpath = $env->dir['users'] . '/' . $name;
 
     $user->save();
     return $user;
@@ -84,14 +84,12 @@ class UserFactory {
       ($action == USER_ACTION_EDIT && $edit_same_user && $curr_user->checkAccess(NULL, USER_ACTION_EDIT_OWN));
     if (!$can_edit) {
       new Message($env, 'Sorry, you don\'t have the permissions to perform this action.', MESSAGE_WARNING, MESSAGE_TYPE_SCREEN);
-    }
-    else {
+    } else {
       $user = new User($env, $form_data['edit-name'], array(ROLE_LOGGED => ROLE_LOGGED));
       $user->context = $action;
       if ($action == USER_ACTION_REGISTER) {
         $valid = $user->register($form_data);
-      }
-      elseif ($action == USER_ACTION_EDIT) {
+      } elseif ($action == USER_ACTION_EDIT) {
         $valid = $user->update($form_data);
       }
     }
@@ -111,22 +109,24 @@ class UserFactory {
    */
   static function current($env, $reload = FALSE) {
     static $user;
+    // If user has been created already, don't redo the logic.
     if (!empty($user)) {
       return $user;
     }
+
+    // Check if there is a logged in user in session.
     if (!isset($_SESSION['user'])) {
-      $_SESSION['user'] = serialize(new User($env, USER_ANONYMOUS));
+      $user = new User($env, USER_ANONYMOUS);
+      $_SESSION['user'] = serialize($user);
     }
     else {
-    $user = unserialize($_SESSION['user']);
-
-    if ($reload) {
-      $user = new User($env, $user->name);
+      $user = unserialize($_SESSION['user']);
+      // Sometimes there is a request to reload the user object.
+      if ($reload) {
+        $user = new User($env, $user->name);
+      }
+      $user->env = $env;
     }
-    $user->env = $env;
-
     return $user;
   }
-  }
-
 }
