@@ -102,7 +102,7 @@ class Image extends File {
    * @param null $maxh
    * @param string $sType
    */
-  public function generateThumbnail($env, $thumbfile, $maxw = NULL, $maxh = NULL, $sType = 'crop') {
+  public function generateThumbnail($env, $thumbfile, $maxw = NULL, $maxh = NULL, $sType = 'crop', $compression = 60) {
 
     if (!(intval($maxw) > 0)) {
       $maxw = 999999;
@@ -398,9 +398,9 @@ class Image extends File {
       // Display the image using the header function to specify
       // the type of output our page is giving
       if ($sExtension == 'jpg' || $sExtension == 'jpeg') {
-        imagejpeg($img, $thumbImagePath, 90);
+        imagejpeg($img, $thumbImagePath, $compression);
       } else if ($sExtension == 'png') {
-        imagepng($img, $thumbImagePath);
+        imagepng($img, $thumbImagePath, ($compression / 10));
       } else if ($sExtension == 'gif') {
         imagegif($img, $thumbImagePath);
       }
