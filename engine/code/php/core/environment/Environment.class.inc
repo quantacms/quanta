@@ -28,7 +28,9 @@ class Environment extends DataContainer {
       // Remove querystring to obtain request uri...
       $exp = explode('?', $_SERVER['REQUEST_URI']);
       $this->request_uri = (str_replace('/', '', $exp[0]) == '') ? 'home/' : $exp[0];
-    } else {
+
+    }
+    else {
       $this->request_uri = $request_uri;
     }
     $this->request = explode('/', $this->request_uri);
@@ -53,7 +55,6 @@ class Environment extends DataContainer {
     if (isset($_REQUEST['json'])) {
       $this->request_json = json_decode($_REQUEST['json']);
     }
-    $this->load();
   }
 
 
@@ -139,6 +140,7 @@ class Environment extends DataContainer {
 
   public function runModule($module) {
     $includes = array('api', 'hook', 'wiki');
+
     $module_path = $module['path'] . '/' . $module['name'] . '.module';
     if (is_file($module_path)) {
       require_once($module_path);
@@ -231,7 +233,7 @@ class Environment extends DataContainer {
   }
 
   // Load all system directories.
-  private function load() {
+  public function load() {
     $this->loadCoreModules();
     $this->loadContribModules();
   }
@@ -335,40 +337,54 @@ class Environment extends DataContainer {
   }
 
   /**
+   * Helper function to retrieve the system path of a node (folder).
+   * @param $folder
+   */
+  private function findNodePath($folder) {
+
+    $findcmd = 'find ' . $this->dir['docroot'] . '/ -name "' . $folder . '"';
+    // TODO: sometimes getting empty folder. Why? Temporary fix.
+    if (empty($folder)) {
+      return;
+    }
+    exec($findcmd, $results);
+    return $results;
+  }
+
+  /**
    * Returns the system path of a node (folder).
    * @param $folder
    * @param bool $link
    */
   public function nodePath($folder, $link = FALSE) {
+    if ($nodepath = Cache::getStoredNodePath($this, $folder)) {
+      return readlink($nodepath);
+    }
     // Use find to locate the node's directory in the file system.
     // TODO: run a sanity check that there is only one folder or throw error instead?
-    $findcmd = 'find ' . $this->dir['docroot'] . '/ -name "' . $folder . '"';
-
-    // TODO: sometimes getting empty folder. Why? Temporary fix.
-    if (empty($folder)) {
-      return;
-    }
-
-    exec($findcmd, $results);
+    $results = $this->findNodePath($folder, $link);
     $found_folders = array();
 
+    if (empty($results)) {
+      return FALSE;
+    }
     // Check that there are not duplicate folders. Don't count symlinks.
     foreach ($results as $i => $res) {
-
       if (is_dir($results[$i]) && ($link ? true : !is_link($results[$i]))) {
         $found_folders[] = $results[$i];
         $result = $results[$i];
-
       } else {
         unset($results[$i]);
       }
     }
-
     if (count($found_folders) > 1) {
       new Message($this, 'Warning: there is more than one folder named ' . $folder . ': <br/>' . var_export($found_folders, 1) . '<br>Check integrity!');
-    } elseif (empty($result)) {
+    }
+    elseif (empty($result)) {
       //new Message($this, 'Warning: there is no folder named ' . $folder . '<br>Check integrity!');
-    } else {
+    }
+    else {
+      Cache::storeNodePath($this, $result);
       return $result;
     }
   }
@@ -384,5 +400,34 @@ class Environment extends DataContainer {
     // Return the node name the last part of the path of the node.
     $node_name = array_slice(explode('/', $target), -1)[0];
     return $node_name;
+  }
+
+  /**
+   * Checks if currently loaded environment is for a file, and renders it if so.
+   *
+   */
+  public function checkFile() {
+    // TODO: redo the whole shit.
+    if (strpos($this->request[count($this->request) - 1], '.') > 0) {
+      $filename = $this->request[count($this->request) - 1];
+      $nodepath = $this->nodePath($this->request[1]);
+      $file = is_file($this->dir['docroot'] . $this->request_uri) ? ($this->dir['docroot'] . $this->request_uri) : $nodepath . '/' . urldecode($filename);
+      if (is_file($file)) {
+        header('Content-Type: ' . mime_content_type($file));
+        $mods = array_flip(apache_get_modules());
+        if (isset($mods['mod_xsendfile'])) {
+          // TODO: support for xsendfile.
+          readfile($file);
+        }
+        else {
+          //TODO : slow, insecure...
+          readfile($file);
+        }
+        die();
+      }
+      else {
+        die('404 - File not found');
+      }
+    }
   }
 }

@@ -55,10 +55,7 @@ function wiki_BLOCK($attributes, $node, $string, $env) {
  */
 function wiki_JSONATTRIBUTE($attributes, $node, $string, $env) {
   $attribute = wiki_ATTRIBUTE($attributes, $node, $string, $env);
-	$explode = explode(GLOBAL_SEPARATOR, $attribute);
-	if (count($explode) > 1) {
-		$attribute = $explode;
-	}
+
 	return json_encode($attribute);
 }
 

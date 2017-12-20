@@ -1,4 +1,30 @@
 <?php
+function cache_boot($vars) {
+  if (!is_dir( $vars['env']->dir['tmp'] . '/cache')) {
+  mkdir ( $vars['env']->dir['tmp'] . '/cache');
+  }
+}
+
+/**
+ * Main setup of languages.
+ * @param $vars
+ */
+function cache_setup($vars) {
+  $basic_languages = array(
+    'en' => 'English',
+  );
+
+  foreach ($basic_languages as $langcode => $lang) {
+    if (!is_dir($vars['env']->dir['languages'] . '/' . $langcode)) {
+      NodeFactory::buildNode($vars['env'], $langcode, DIR_LANGUAGES, array('title' => $lang, 'language' => LANGUAGE_NEUTRAL, 'status' => NODE_STATUS_PUBLISHED));
+    }
+  }
+
+  // TODO: select which language to use for fallback?
+  if (!file_exists($vars['env']->dir['languages'] . '/fallback')) {
+    NodeFactory::linkNodes($vars['env'], 'en', 'locale', 'fallback');
+  }
+}
 
 /**
  * TODO: all deprecated but maybe useful.
