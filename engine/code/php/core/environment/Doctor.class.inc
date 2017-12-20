@@ -37,10 +37,12 @@ class Doctor extends DataContainer {
     $unfixable_links = array();
 
     // Cycle all symlinks in the system.
-    foreach ($results_arr as $k => $result_string) {
-      $link_target = readlink($result_string);
+    foreach ($results_arr as $k => $link) {
+      $link_target = readlink($link);
       $link_exists = is_dir($link_target);
-      $link_name = array_reverse(explode('/', $result_string))[0];
+      $link_split = array_reverse(explode('/', $link));
+      $link_father = isset($link_split[1]) ? $link_split[1] : NULL;
+      $link_name = $link_split[0];
       // If a link is not corresponding to a dir, attempt to find the real dir.
 
       if (!$link_exists) {
@@ -52,18 +54,18 @@ class Doctor extends DataContainer {
           // Attempt to change the target dir of the link.
           // unlink($result_string);
           // link($realpath, $result_string);
-          Doctor::ko("...this feature is not working at the moment<br>");
-
-          //Doctor::ok("...fixed! :-) <br>");
+          NodeFactory::linkNodes($this->env, $link_name, $link_father, array('if_exists' => 'override'));
+          Doctor::ok("...fixed! :-) <br>");
           $fixed_links++;
-        } else {
+        }
+        else {
           Doctor::ko("...none found :-( <br>");
-          $unfixable_links[] = $result_string;
+          $unfixable_links[] = $link;
         }
 
       }
       else {
-        Doctor::talk($result_string . ' -> ' . $link_target . '<br><br>');
+        Doctor::talk($link . ' -> ' . $link_target . '<br><br>');
       }
 
     }
