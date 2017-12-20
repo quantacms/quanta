@@ -1,6 +1,7 @@
 <?php
   // Include the Environment module.
   include_once('core/environment/environment.module');
+  include_once('core/cache/cache.module');
 
   // Create a new Environment.
   $env = new Environment(NULL);
