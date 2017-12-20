@@ -27,9 +27,11 @@ class Page extends DataContainer {
     // TODO: better way to skip load includes.
     if (isset($_REQUEST['ajax'])) { return; }
 
-    // TODO: head variable not very nice.
+    // TODO: head variable not very nice. Discontinue in favor of js and css.
     $this->addData('head', array('<link rel="stylesheet" type="text/css" href="/tmp/css.min.css" />'));
     $this->addData('head', array('<script type="text/javascript" src="/tmp/js.min.js"></script>'));
+    $this->addData('css', array('<link rel="stylesheet" type="text/css" href="/tmp/css.min.css" />'));
+    $this->addData('js', array('<script type="text/javascript" src="/tmp/js.min.js"></script>'));
 
   }
 
