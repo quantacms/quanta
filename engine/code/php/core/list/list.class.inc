@@ -53,7 +53,7 @@ abstract class ListObject {
    * @param null $module
    *   The module in where to look for the template file (defaults to list).
    */
-  public function __construct(&$env, $path, $tpl, $attr_arr = array(), $module = 'list') {
+  public function __construct(&$env, $path, $tpl, $attr_arr = array(), $module = NULL) {
     if ($path == NULL) {
       $path = $env->getRequestedPath();
     }
@@ -62,7 +62,8 @@ abstract class ListObject {
     if (!empty($module)) {
       $this->module = $module;
     }
-    $this->env = $env;
+    
+		$this->env = $env;
     // TODO: no need to rebuild node when it's current page.
     $this->dir = $path;
     $this->tpl = strtolower($tpl);
