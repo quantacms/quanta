@@ -7,7 +7,6 @@
  * @param $vars
  */
 function locale_init($vars) {
-  $vars['env']->sysdir('languages', DIR_LANGUAGES);
   $vars['env']->addInclude('engine/code/php/core/locale/css/locale.css');
   $vars['env']->addInclude('engine/code/php/core/locale/js/locale.js');
 }
@@ -19,6 +18,7 @@ function locale_init($vars) {
  * @param $vars
  */
 function locale_boot($vars) {
+  $vars['env']->sysdir('languages', DIR_LANGUAGES);
   if (isset($_GET['lang'])) {
     Locale::switchLanguage($vars['env'], $_GET['lang']);
   }
@@ -29,19 +29,31 @@ function locale_boot($vars) {
  * @param $vars
  */
 function locale_setup($vars) {
+  Doctor::talk('Setting up basic languages...');
   $basic_languages = array(
     'en' => 'English',
   );
 
+  // TODO: select which language to use for fallback?
+  $fallback_language = 'en';
+
   foreach ($basic_languages as $langcode => $lang) {
     if (!is_dir($vars['env']->dir['languages'] . '/' . $langcode)) {
-      NodeFactory::buildNode($vars['env'], $langcode, DIR_LANGUAGES, array('title' => $lang, 'language' => LANGUAGE_NEUTRAL, 'status' => NODE_STATUS_PUBLISHED));
+      NodeFactory::buildNode( $vars['env'], $langcode, DIR_LANGUAGES, array(
+        'title' => $lang,
+        'language' => LANGUAGE_NEUTRAL,
+        'status' => NODE_STATUS_PUBLISHED,
+        )
+      );
+      Doctor::ok('...' . $lang . ' (' . $langcode . ')');
     }
   }
 
-  // TODO: select which language to use for fallback?
   if (!file_exists($vars['env']->dir['languages'] . '/fallback')) {
-    NodeFactory::linkNodes($vars['env'], 'en', 'locale', 'fallback');
+    Doctor::talk('No fallback language found.');
+    NodeFactory::linkNodes($vars['env'], $fallback_language, '_languages', array('symlink_name' => 'fallback'));
+    Doctor::talk('Fallback language set to ' . $fallback_language . '.');
+
   }
 }
 

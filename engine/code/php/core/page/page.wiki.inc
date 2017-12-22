@@ -1,20 +1,11 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: aldotripiciano
- * Date: 08/05/15
- * Time: 12:20
- */
-
-/**
  * Wiki Hook for HEAD DATA.
  * Automatically generated header data.
+ * TODO: discontinue. Use JS and CSS instead.
  */
 function wiki_HEAD($attributes, $var, $string, $env) {
-  $page = $env->getData('page');
-  $head = $page->getData('head');
-  return implode('
-  ', $head);
+  return wiki_CSS($attributes, $var, $string, $env) . wiki_JS($attributes, $var, $string, $env);
 }
 
 /**
@@ -44,7 +35,6 @@ function wiki_JS($attributes, $var, $string, $env) {
  * Automatically generated meta data.
  */
 function wiki_META_DATA($attributes, $var, $string, $env) {
-
   $page = $env->getData('page');
   $meta = $page->getData('metadata');
   return implode('
@@ -136,5 +126,4 @@ function wiki_BREADCRUMB($attributes, $var, $string, $env) {
  */
 function wiki_EMAIL($attributes, $var, $string, $env) {
   return '<a href="mailto:' . $var. '">' . $var . '</a>';
-
 }

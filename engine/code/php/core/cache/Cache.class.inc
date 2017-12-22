@@ -5,6 +5,7 @@
  * Date: 16/05/15
  * Time: 16:45
  */
+define('CACHE_FOLDER', 'cache');
 
 class Cache extends DataContainer {
   public function __construct(&$env) {
@@ -104,5 +105,15 @@ class Cache extends DataContainer {
         }
     }
     return $cache_folder;
+  }
+
+  public static function clear($env) {
+    $cache_dir = $env->dir['cache'];
+    // Security check. TODO: secure enough?
+    $exp = explode('/', $cache_dir);
+    if (array_pop($exp) == CACHE_FOLDER) {
+      print $cache_dir;
+      exec('rm -R ' . $cache_dir . '/*', $results_arr);
+    }
   }
 }

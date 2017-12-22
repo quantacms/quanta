@@ -81,7 +81,7 @@ class Box extends DataContainer {
 
     // Centered box.
     if (!($this->isFlat())) {
-      $this->addData('class', array('autoresize, float-box'));
+      $this->addData('class', array('autoresize', 'float-box'));
     }
   }
 

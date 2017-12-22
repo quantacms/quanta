@@ -2,7 +2,7 @@
 
 /**
  * Class NodeFactory
- * This factory class is used for loading nodes, etc.
+ * This factory class contains only static methods, and it's used for loading nodes, etc.
  */
 class NodeFactory {
 
@@ -11,12 +11,12 @@ class NodeFactory {
    * @param $env
    * @param $node
    */
-  public static function load(Environment $env, $node, $tpl = NULL, $language = NULL) {
+  public static function load(Environment $env, $node, $language = NULL) {
     if (empty($language)) {
       $language = Locale::getLanguage($env);
     }
-    $node = new Node($env, $node, NULL, $tpl, $language);
-    $env->hook('node_open', array('node' => &$node), NULL, $tpl);
+    $node = new Node($env, $node, NULL, $language);
+    $env->hook('node_open', array('node' => &$node), NULL);
     return $node;
   }
 
@@ -93,7 +93,8 @@ class NodeFactory {
   }
 
   /**
-   * Create a symlink to a node.
+   * Create a symlink to a node inside a specified folder.
+   *
    * @param Environment $env
    *   The Environment.
    * @param $from
@@ -113,7 +114,7 @@ class NodeFactory {
     // Set the behavior to adopt if the symlink already exists.
     $if_exists = isset($vars['if_exists']) ? $vars['if_exists'] : 'error';
 
-      $from_node = NodeFactory::load($env, $source_node);
+    $from_node = NodeFactory::load($env, $source_node);
     $symlink_folder_node = NodeFactory::load($env, $symlink_folder);
 
     $create_link = FALSE;
@@ -200,8 +201,8 @@ class NodeFactory {
     if (empty($node->getTimestamp())) {
       $node->setTimestamp(time());
     }
-    $node->save();
 
+    $node->save();
     return $node;
   }
 
@@ -210,13 +211,18 @@ class NodeFactory {
    * @return bool
    */
   public static function current(Environment $env) {
-    $tpl = isset($_REQUEST['tpl']) ? $_REQUEST['tpl'] : NULL;
+    static $current_node;
     if ($env->getContext() == NODE_ACTION_ADD) {
-      $node = NodeFactory::buildEmptyNode($env, $env->getRequestedPath());
-    } else {
-      $node = NodeFactory::load($env, $env->getRequestedPath(), $tpl);
+      $current_node = NodeFactory::buildEmptyNode($env, $env->getRequestedPath());
     }
-    return $node;
+    // We need to load the current node just once.
+    else if (!isset($current_node)) {
+      $tpl = isset($_REQUEST['tpl']) ? $_REQUEST['tpl'] : NULL;
+      // Special case when we are in a "new node" add context.
+      $current_node = NodeFactory::load($env, $env->getRequestedPath(), $tpl);
+    }
+
+    return $current_node;
   }
 
   /**
