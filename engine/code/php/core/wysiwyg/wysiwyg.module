@@ -1,3 +1,3 @@
 <?php
 
-  $this->dependsFrom('core', 'shadow');
+  $this->dependsFrom('shadow');

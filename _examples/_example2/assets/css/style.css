@@ -1,0 +1,38 @@
+body {
+    font-size: 18px;
+    line-height: 26px;
+}
+
+/* Main content */
+#content > .inner {
+    background: #ffffff;
+    border-width: 0;
+}
+
+/* H1 headers */
+h1 {
+    padding-top: 16px;
+    padding-bottom: 16px;
+}
+
+h2 {
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+a {
+    color: #3a6aff;
+    text-decoration: underline;
+}
+
+#sidebar-left .inner {
+    background: #dddddd;
+}
+
+#content-body .inner {
+    background: #eeeeee;
+}
+
+#logo .inner {
+    background: #ffe9b1;
+}

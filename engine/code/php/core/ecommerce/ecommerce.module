@@ -1,7 +1,0 @@
-<?php
-$this->dependsFrom('core', 'list');
-
-require_once('Product.class.inc');
-require_once('ProductList.class.inc');
-
-

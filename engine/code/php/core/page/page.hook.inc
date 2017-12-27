@@ -11,6 +11,8 @@ function page_body_classes($vars) {
  * @param $vars
  */
 function page_boot($vars) {
+  $vars['env']->sysdir('pages', '_pages');
+
   // Start robots.txt configuration.
   // TODO: object oriented, using templates, etc. etc.
   if ($vars['env']->request[count($vars['env']->request) - 1] == 'robots.txt') {
@@ -33,11 +35,10 @@ function page_boot($vars) {
  * Main setup of languages.
  * @param $vars
  */
-function page_setup($vars) {
+function page_doctor($vars) {
   $css = array();
   $js = array();
-
-  Doctor::talk('Generating minified CSS and JS files...');
+  Doctor::op('Generating minified CSS and JS files...');
   // Include JS / CSS files.
   foreach ($vars['env']->getIncludes() as $file) {
     if (substr($file['path'], 0, 6) == 'engine') {
@@ -45,6 +46,7 @@ function page_setup($vars) {
     }
 
     if ($file['type'] == 'css') {
+      Doctor::talk($file['path']);
       $css[] = file_get_contents($file['path']);
 
     } elseif ($file['type'] == 'js') {
@@ -67,10 +69,10 @@ function page_setup($vars) {
     ', $js));
   fclose($fop);
 
-  // MINIFY
-
+  // Minify the CSS and JS.
   $temp_css_path_mini = $vars['env']->dir['tmp_files'] . '/css.min.css';
   $temp_js_path_mini = $vars['env']->dir['tmp_files'] . '/js.min.js';
+
   // TODO: is double step necessary?
   $minify_css = minify($vars['env'], $temp_css_path);
   $fop_mini = fopen($temp_css_path_mini, 'w+');

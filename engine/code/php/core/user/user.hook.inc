@@ -1,11 +1,27 @@
 <?php
+
+/**
+ * Implements hook_boot();
+ * @param $vars
+ */
+function user_boot($vars) {
+  $vars['env']->sysdir('users', '_users');
+  $vars['env']->sysdir('roles', '_roles');
+}
+
 /**
  * Implements hook_init.
  */
 function user_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/user/js/user.js');
   $vars['env']->addInclude('engine/code/php/core/user/css/user.css');
+}
 
+/**
+ * Main setup of users.
+ * @param $vars
+ */
+function user_setup($vars) {
   $basic_roles = array(
     'anonymous' => array('title' => 'Anonymous'),
     'logged' => array('title' => 'Logged-in User'),
@@ -16,7 +32,6 @@ function user_init($vars) {
       NodeFactory::buildNode($vars['env'], $role, '_roles', $roledata);
     }
   }
-
 }
 
 /**
