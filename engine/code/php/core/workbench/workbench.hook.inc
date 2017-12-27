@@ -13,7 +13,7 @@ function workbench_shadow_node_form($vars) {
  * Create all default statuses if they don't exist yet.
  * @param $vars
  */
-function workbench_init($vars) {
+function workbench_setup($vars) {
 
   $basic_statuses = array(
     NODE_STATUS_DRAFT => array('title' => 'Draft'),

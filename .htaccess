@@ -14,9 +14,9 @@ RewriteRule ^favicon.ico sites/%{HTTP_HOST}/favicon.ico
 RewriteRule ^(css)/([0-9a-zA-Z-]+).css sites/%{HTTP_HOST}/files/css/$2.css
 RewriteRule ^(js)/([0-9a-zA-Z-]+).js sites/%{HTTP_HOST}/files/js/$2.js
 RewriteRule ^(files)/(.*) sites/%{HTTP_HOST}/files/$2
+RewriteRule ^(assets)/(.*) sites/%{HTTP_HOST}/assets/$2
 RewriteRule ^(tmp)/(.*) engine/tmp/%{HTTP_HOST}/files/$2 [NC]
 RewriteRule ^(thumbs)/(.*) engine/tmp/%{HTTP_HOST}/thumbs/$2 [NC]
-
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^(.*)(engine)/([\/0-9a-zA-Z-\.\_]+) engine/$3

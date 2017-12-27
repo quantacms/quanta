@@ -27,9 +27,6 @@ class Page extends DataContainer {
     // TODO: better way to skip load includes.
     if (isset($_REQUEST['ajax'])) { return; }
 
-    // TODO: head variable not very nice. Discontinue in favor of js and css.
-    $this->addData('head', array('<link rel="stylesheet" type="text/css" href="/tmp/css.min.css" />'));
-    $this->addData('head', array('<script type="text/javascript" src="/tmp/js.min.js"></script>'));
     $this->addData('css', array('<link rel="stylesheet" type="text/css" href="/tmp/css.min.css" />'));
     $this->addData('js', array('<script type="text/javascript" src="/tmp/js.min.js"></script>'));
 
@@ -49,7 +46,9 @@ class Page extends DataContainer {
 
     // This is an actual HTML page request. Commonly index.html.
     elseif ($this->file != NULL) {
-      $this->html = file_get_contents($this->env->dir['docroot'] . '/' . $this->file);
+      if (!($this->html = @file_get_contents($this->env->dir['docroot'] . '/' . $this->file))) {
+        print "Hello! Seems like your site is not installed yet.<br /><a href='?doctor=setup'>Click here</a> to start the installation.";
+      }
     }
 
     // This is a special request, i.e. Shadow node edit.
