@@ -1,5 +1,5 @@
 <?php
-$this->dependsFrom('core', 'node');
+$this->dependsFrom('node');
 
 require_once('list.class.inc');
 require_once('dirlist.class.inc');

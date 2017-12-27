@@ -8,15 +8,19 @@
 class DirList extends ListObject {
   protected $scantype = DIR_DIRS;
 
-	/**
+  /**
    * Generate the html of the list.
    */
   public function theme() {
     $i = 0;
     $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
-    $node_father = NodeFactory::current($this->env)->getFather();
+    /** @var Node $node_current */
+    /** @var Node $node_father */
+    $node_current = NodeFactory::current($this->env);
+    $node_father = $node_current->getFather();
 
     foreach ($this->dirs as $dir_url => $node) {
+      /** @var Node $node */
       // If user can't access a node, completely exclude it from the list.
       if ($node->isForbidden()) {
         continue;

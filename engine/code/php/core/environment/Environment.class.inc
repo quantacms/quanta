@@ -15,6 +15,7 @@ class Environment extends DataContainer {
   public $host = array();
   public $dir = array();
   public $request_uri;
+  public $request_path;
   public $request_json;
   public $request = array();
   private $modules = array();
@@ -28,9 +29,7 @@ class Environment extends DataContainer {
       // Remove querystring to obtain request uri...
       $exp = explode('?', $_SERVER['REQUEST_URI']);
       $this->request_uri = (str_replace('/', '', $exp[0]) == '') ? 'home/' : $exp[0];
-
-    }
-    else {
+    } else {
       $this->request_uri = $request_uri;
     }
     $this->request = explode('/', $this->request_uri);
@@ -46,11 +45,7 @@ class Environment extends DataContainer {
     $this->dir['log'] = $_SERVER['DOCUMENT_ROOT'] . '/engine/tmp/' . $this->host . '/log';
     // TODO: move to user module.
     // TODO: generation to be done in user and node modules.
-    $this->dir['users'] = $this->dir['docroot'] . '/_users';
-    $this->dir['roles'] = $this->dir['docroot'] . '/_roles';
     $this->dir['statuses'] = $this->dir['docroot'] . '/_statuses';
-    $this->dir['languages'] = $this->dir['docroot'] . '/_languages';
-    $this->dir['pages'] = $this->dir['docroot'] . '/_pages';
 
     if (isset($_REQUEST['json'])) {
       $this->request_json = json_decode($_REQUEST['json']);
@@ -88,7 +83,6 @@ class Environment extends DataContainer {
    */
   public function getRequestedPath() {
     return $this->request_path;
-    return normalizePath(urldecode($this->request_path));
   }
 
   /**
@@ -106,7 +100,9 @@ class Environment extends DataContainer {
   }
 
   /**
-   * Setup modules
+   * Setup modules.
+   *
+   * @param $mod_type
    * @param $modules
    */
   public function setModules($mod_type, $modules) {
@@ -120,24 +116,47 @@ class Environment extends DataContainer {
     }
   }
 
+  /**
+   * Get a loaded module.
+   *
+   * @param $module
+   * @return mixed
+   */
   public function getModule($module) {
     return $this->modules[$module];
   }
 
+  /**
+   * Get all loaded modules.
+   *
+   * @return array
+   */
   public function getModules() {
     return $this->modules;
   }
 
+  /**
+   * Run all loaded modules.
+   */
   public function runModules() {
     foreach ($this->modules as $module) {
       $this->runModule($module);
     }
   }
 
-  public function dependsFrom($mod_type, $module) {
+  /**
+   * Sets up a dependency between two modules.
+   * @param $module
+   *   The module to run before the depending one.
+   */
+  public function dependsFrom($module) {
     $this->runModule($this->getModule($module));
   }
 
+  /**
+   * Run (Load) a module.
+   * @param $module
+   */
   public function runModule($module) {
     $includes = array('api', 'hook', 'wiki');
 
@@ -146,6 +165,9 @@ class Environment extends DataContainer {
       require_once($module_path);
     }
 
+    /**
+     * Check all module's inclusions.
+     */
     foreach ($includes as $include_type) {
       $include_path = $module['path'] . '/' . $module['name'] . '.' . $include_type . '.inc';
       if (is_file($include_path)) {
@@ -196,9 +218,15 @@ class Environment extends DataContainer {
     return $dirs;
   }
 
-
   /**
    * Get all dirs inside a given dir, at a leaf level.
+   *
+   * @param $base_dir
+   * @param $dir
+   * @param array $dirs
+   * @param array $attributes
+   * @param int $depth
+   * @return array
    */
   public function scanDirectoryDeep($base_dir, $dir, $dirs = array(), $attributes = array('exclude_dirs' => DIR_INACTIVE, 'type' => DIR_ALL, 'level' => 'leaf'), $depth = 0) {
     $scan = ($this->scanDirectory($base_dir . '/' . $dir, $attributes));
@@ -314,16 +342,16 @@ class Environment extends DataContainer {
     $i = 0;
     while (TRUE) {
       $node = new Node($this, $candidate_path);
+      // If the candidate path already exists, add a progressive number
+      // to it until it's free.
       if (!$node->exists) {
-        $path = $candidate_path;
         break;
-      }
-      else {
+      } else {
         $i++;
         $candidate_path = $candidate_path . '-' . $i;
       }
     }
-    return $path;
+    return $candidate_path;
   }
 
   /**
@@ -331,21 +359,31 @@ class Environment extends DataContainer {
    * @param $folder
    * @return mixed
    */
-  public function sysdir($name, $folder) {
-    $this->dir[$name] = $this->dir['docroot'] . '/' . $folder;
+  public function sysdir($name, $folder, $system_dir = 'docroot') {
+    $this->dir[$name] = $this->dir[$system_dir] . '/' . $folder;
     return $folder;
+  }
+
+  /**
+   * Creates a temporary directory (if it doesn't exist yet).
+   * @param $folder
+   * @return mixed
+   */
+  public function tmpdir($name, $folder) {
+    return $this->sysdir($name, $folder, 'tmp');
   }
 
   /**
    * Helper function to retrieve the system path of a node (folder).
    * @param $folder
+   * @return $results
    */
   private function findNodePath($folder) {
 
     $findcmd = 'find ' . $this->dir['docroot'] . '/ -name "' . $folder . '"';
     // TODO: sometimes getting empty folder. Why? Temporary fix.
     if (empty($folder)) {
-      return;
+      return NULL;
     }
     exec($findcmd, $results);
     return $results;
@@ -362,7 +400,7 @@ class Environment extends DataContainer {
     }
     // Use find to locate the node's directory in the file system.
     // TODO: run a sanity check that there is only one folder or throw error instead?
-    $results = $this->findNodePath($folder, $link);
+    $results = $this->findNodePath($folder);
     $found_folders = array();
 
     if (empty($results)) {
@@ -379,19 +417,19 @@ class Environment extends DataContainer {
     }
     if (count($found_folders) > 1) {
       new Message($this, 'Warning: there is more than one folder named ' . $folder . ': <br/>' . var_export($found_folders, 1) . '<br>Check integrity!');
-    }
-    elseif (empty($result)) {
+    } elseif (empty($result)) {
       //new Message($this, 'Warning: there is no folder named ' . $folder . '<br>Check integrity!');
-    }
-    else {
+    } else {
       Cache::storeNodePath($this, $result);
       return $result;
     }
+
+    // TODO: possible?
+    return NULL;
   }
 
   /**
    * Given a link, returns the system path of the related node (folder).
-   * @param $folder
    * @param bool $link
    */
   public function linkToNode($link) {
@@ -418,14 +456,12 @@ class Environment extends DataContainer {
         if (isset($mods['mod_xsendfile'])) {
           // TODO: support for xsendfile.
           readfile($file);
-        }
-        else {
+        } else {
           //TODO : slow, insecure...
           readfile($file);
         }
         die();
-      }
-      else {
+      } else {
         die('404 - File not found');
       }
     }
