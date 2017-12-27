@@ -1,7 +1,6 @@
 <?php
   // Include the Environment module.
   include_once('core/environment/environment.module');
-  include_once('core/cache/cache.module');
 
   // Create a new Environment.
   $env = new Environment(NULL);
@@ -21,11 +20,22 @@
   // Run the boot hook.
   $env->hook('boot');
 
+  // Create the doctor.
+  $doctor = new Doctor($env);
+
+
+  // TODO: determine when to run doctor.
+  if (isset($_GET['doctor']) && $_GET['doctor'] == 'setup') {
+    $doctor->runSetup();
+    exit;
+  }
+
   // Check if there is any requested action.
   $env->checkActions();
 
   // Start page's standard index.html.
   $page = new Page($env, 'index.html');
+
   $env->setData('page', $page);
 
   // Run the init hook.
@@ -34,17 +44,17 @@
   // Load page's included files (CSS / JS etc.)
   $page->loadIncludes();
 
+  // TODO: determine when to run doctor.
+  if (isset($_GET['doctor'])) {
+    $doctor->runDoctor();
+    exit;
+  }
+
   // Build the page's HTML code.
   $page->buildHTML();
 
-  // TODO: determine when to run doctor.
-  if (isset($_GET['doctor'])) {
-    $doctor = new Doctor($env);
-    $doctor->runAllTasks();
-  }
-  else {
-    print $page->render();
-  }
+  // Render the page.
+  print $page->render();
 
   // Run the complete hook.
   $env->hook('complete');

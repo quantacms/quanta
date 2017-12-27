@@ -34,7 +34,7 @@ class Shadow extends Page {
     }
 
     // TODO: default to home is not making sense.
-    $this->node = (isset($data->node)) ? NodeFactory::load($env, $data->node, NULL, $this->getLanguage()) : new Node($env, NULL);
+    $this->node = (isset($data->node)) ? NodeFactory::load($env, $data->node, $this->getLanguage()) : new Node($env, NULL);
 
     foreach ($this->components as $component) {
       $this->env->hook('shadow_' . $component, array('shadow' => &$this));

@@ -26,7 +26,7 @@
         width: 100% !important;
     }
 
-    .w-25 {
+    .w-0-25 {
         width: 50% !important;
     }
 
@@ -39,7 +39,7 @@
 
 /* > 600px */
 @media all and (max-width:641px) {
-    .w-25 {
+    .w-0-25 {
         width: 100% !important;
     }
 
