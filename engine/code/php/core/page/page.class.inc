@@ -25,8 +25,6 @@ class Page extends DataContainer {
   public function loadIncludes() {
     if (substr($_SERVER['REQUEST_URI'], 0, 7) == '/engine') die();
     // TODO: better way to skip load includes.
-    if (isset($_REQUEST['ajax'])) { return; }
-
     $this->addData('css', array('<link rel="stylesheet" type="text/css" href="/tmp/css.min.css" />'));
     $this->addData('js', array('<script type="text/javascript" src="/tmp/js.min.js"></script>'));
 
@@ -40,15 +38,14 @@ class Page extends DataContainer {
 
     // This is an AJAX request. Skip loading index.html and just provide requested content.
     if (isset($_REQUEST['ajax'])) {
-      $this->html = $this->getData('content');
-      return;
+      $node = NodeFactory::current($this->env);
+      $node->buildTemplate();
+      $this->html = $node->render();
     }
 
     // This is an actual HTML page request. Commonly index.html.
     elseif ($this->file != NULL) {
-      if (!($this->html = @file_get_contents($this->env->dir['docroot'] . '/' . $this->file))) {
-        print "Hello! Seems like your site is not installed yet.<br /><a href='?doctor=setup'>Click here</a> to start the installation.";
-      }
+      $this->html = file_get_contents($this->env->dir['docroot'] . '/' . $this->file);
     }
 
     // This is a special request, i.e. Shadow node edit.

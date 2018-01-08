@@ -3,7 +3,8 @@ var refreshJumpers = function() {
         $(this).bind('change', function() {
             var rel = $(this).attr('rel');
             var tpl = $(this).attr('tpl');
-            if (rel == '_self') {
+
+          if (rel == '_self') {
                 top.location.href = '/' + $(this).val();
             }
             else if ($(this).val() != '_empty') {
@@ -16,4 +17,3 @@ var refreshJumpers = function() {
 $(document).bind('refresh', function() {
     refreshJumpers();
 });
-

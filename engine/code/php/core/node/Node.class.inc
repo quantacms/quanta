@@ -28,7 +28,7 @@ class Node extends JSONDataContainer {
   public $timestamp;
   public $father = NULL;
   public $thumbnail = NULL;
-  protected $lineage = array();
+  protected $lineage = array ();
   public $tpl = NULL;
   public $forbidden = FALSE;
 
@@ -40,12 +40,13 @@ class Node extends JSONDataContainer {
    * @param string $language
    */
   public function __construct(&$env, $name, $father = NULL, $language = NULL) {
+
     $this->env = $env;
     $this->json = new stdClass();
+
     // Load node's language.
-    if (!empty($language)) {
-      $this->setLanguage(!empty($language) ? $language : $this->env->getLanguage());
-    }
+    $this->setLanguage(!empty($language) ? $language : $this->env->getLanguage());
+
     // Load node's father (parent folder).
     if ($father != NULL) {
       $this->father = NodeFactory::load($env, $father);
@@ -54,12 +55,14 @@ class Node extends JSONDataContainer {
     // Checking if this is not a new node.
     if ($name != NODE_NEW) {
       $this->setName(strtolower($name));
+
       // Load node from cache (RAM) if it has been already loaded.
       if ($cached = Cache::get($this->env, 'node', $this->name)) {
         foreach (get_object_vars($cached) as $key => $value) {
           $this->$key = $value;
         }
-        $this->env->hook('node_load_cache', array(
+
+        $this->env->hook('node_load_cache', array (
           'node' => &$this,
         ));
         $this->exists = TRUE;
@@ -81,7 +84,6 @@ class Node extends JSONDataContainer {
     if ($this->exists || $father != NULL) {
       $this->load();
     }
-
   }
 
   /**
@@ -94,7 +96,7 @@ class Node extends JSONDataContainer {
       $json_path = ($this->path . '/data_' . $this->getLanguage() . '.json');
     } // Look for a language neutral version.
     elseif (is_file($this->path . '/data.json')) {
-      $json_path = ($this->path . '/data.json');
+        $json_path = ($this->path . '/data.json');
     } // Impossible to load json. Error or empty Node.
     else {
       $this->json = new StdClass;
@@ -102,6 +104,7 @@ class Node extends JSONDataContainer {
     }
 
     $this->json = (object)json_decode(file_get_contents($json_path));
+
 
     // Load the node teaser from JSON.
     if (isset($this->json->teaser)) {
@@ -149,6 +152,9 @@ class Node extends JSONDataContainer {
 
   /**
    * Update node's json values.
+   *
+   * @param array ignore
+   *   Which json attributes to ignore.
    */
   public function updateJSON($ignore = array()) {
     // Here we generate the json value, using the node object's values.
@@ -164,9 +170,7 @@ class Node extends JSONDataContainer {
 
   //*** TEMPORARY FIX ***
   public function getAttributeJSON($attr_name) {
-    if (isset($this->json->$attr_name)) {
-      return $this->json->$attr_name;
-    }
+    return (isset($this->json->$attr_name)) ? $this->json->$attr_name : NULL;
   }
 
   /**
@@ -174,12 +178,13 @@ class Node extends JSONDataContainer {
    */
   public function load() {
     $this->fullpath = str_replace($this->env->dir['docroot'], '', $this->realpath);
-    $this->env->hook('node_load', array(
+    $this->env->hook('node_load', array (
       'node' => &$this,
     ));
 
     //TODO: find a better way to check node existence
     if (!isset($this->json->timestamp) && $this->exists) {
+
       $this->buildContent();
     }
     if ($this->exists && ($this->getTimestamp() == NULL)) {
@@ -194,7 +199,8 @@ class Node extends JSONDataContainer {
   public function buildContent() {
     // Load data from JSON file if possible.
     $this->loadJSON();
-    $this->env->hook('node_build', array(
+
+    $this->env->hook('node_build', array (
       'node' => &$this,
     ));
     Cache::set($this->env, 'node', $this->name, $this);
@@ -253,7 +259,7 @@ class Node extends JSONDataContainer {
    * Validates this node before saving it.
    * TODO: put into a hook!
    */
-  public function validate($form_data = array()) {
+  public function validate($form_data = array ()) {
     $valid = TRUE;
     $author = new User($this->env, $this->getAuthor());
 
@@ -277,12 +283,12 @@ class Node extends JSONDataContainer {
     if (empty($this->realpath)) {
       $this->realpath = $this->getFather()->realpath . '/' . $this->getName();
     }
-    $this->env->hook('node_preinsert', array(
+    $this->env->hook('node_preinsert', array (
       'node' => &$this,
     ));
     $this->updateJSON();
-    $this->saveJSON(array('path', 'fullpath', 'exists', 'realpath', 'father', 'tmp_files_dir'));
-    $this->env->hook('node_insert', array(
+    $this->saveJSON(array ('path', 'fullpath', 'exists', 'realpath', 'father', 'tmp_files_dir'));
+    $this->env->hook('node_insert', array (
       'node' => &$this,
     ));
   }
@@ -447,12 +453,13 @@ class Node extends JSONDataContainer {
   public function buildTemplate() {
     // The node's default renderis is its content.
     $this->tpl = $this->getContent();
-    $tpl = array();
+    $tpl = array ();
     $tpl_level = 0;
     // a template in the same directory has always priority.
     if (is_file($this->realpath . '/tpl.html')) {
       $this->tpl = file_get_contents($this->realpath . '/tpl.html');
-    } else {
+    }
+    else {
       foreach ($this->lineage as $lineage) {
 
         $tpl_level++;
@@ -569,7 +576,8 @@ class Node extends JSONDataContainer {
     $permissions = $this->getPermissions();
     if (!empty($permissions[$perm])) {
       return $permissions[$perm];
-    } else {
+    }
+    else {
       return NULL;
     }
   }
@@ -579,7 +587,7 @@ class Node extends JSONDataContainer {
    * Load and construct permissions for this node.
    */
   private function loadPermissions() {
-    $grants = array();
+    $grants = array ();
     $this->buildLineage();
     // Navigate the whole tree gathering real permissions on the node.
     $lineage = $this->getLineage();
@@ -648,7 +656,7 @@ class Node extends JSONDataContainer {
 
   /**
    * Returns the father of a node (eventually after building it).
-   * @return null
+   * @return Node
    */
   public function getFather() {
     if (!isset($this->father) || $this->father == NULL) {
@@ -660,20 +668,23 @@ class Node extends JSONDataContainer {
   /**
    * Builds the father of a node.
    * Usually only done on-request when calling getFather.
+   *
+   * @return Node
+   *   The Father of the node.
    */
   public function buildFather() {
-    if (isset($this->father)) {
-      return $this->father;
-    } elseif ($this->exists) {
+    if (!isset($this->father) && $this->exists) {
       $rpath_arr = explode('/', $this->realpath);
       // Look for the node's father.
       if (count($rpath_arr) >= 2) {
         $fatherpath = ($rpath_arr[count($rpath_arr) - 2]);
         $this->father = ($fatherpath == $this->env->host) ? new Node($this->env, 'home') : new Node($this->env, $fatherpath);
-      } else {
+      }
+      else {
         $this->father = NodeFactory::current($this->env);
       }
     }
+    return $this->father;
   }
 
   /**
@@ -681,18 +692,19 @@ class Node extends JSONDataContainer {
    * aka all nodes where it has been included as a symlink (tagged).
    */
   public function getCategories($cat = NULL) {
-    $categories = array();
+    $categories = array ();
     if ($cat != NULL) {
-      $catnode = new Node($this->env, $cat);
+      $catnode = NodeFactory::load($this->env, $cat);
       $root = $catnode->realpath;
-    } else {
+    }
+    else {
       $root = $this->env->dir['docroot'];
     }
     $cmd = 'find -L ' . $root . ' -samefile ' . $this->realpath;
     exec($cmd, $categories_url);
     foreach ($categories_url as $cat_url) {
       $exp = explode('/', $cat_url);
-      $categories[] = new Node($this->env, $exp[count($exp) - 2]);
+      $categories[] = NodeFactory::load($this->env, $exp[count($exp) - 2]);
     }
     return $categories;
   }
@@ -705,7 +717,7 @@ class Node extends JSONDataContainer {
   public function wrap($html) {
 
     $user = UserFactory::current($this->env);
-    $actions = array();
+    $actions = array ();
 
     if ($user->checkAccess($this, NODE_ACTION_EDIT)) {
       $actions[] = '[EDIT:' . $this->getName() . ']';
