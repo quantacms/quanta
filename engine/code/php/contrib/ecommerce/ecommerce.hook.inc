@@ -15,8 +15,8 @@ function ecommerce_shadow_product_form($vars) {
 }
 
 function ecommerce_init($vars) {
-  $vars['env']->addInclude('engine/code/php/core/ecommerce/js/ecommerce.js');
-  $vars['env']->addInclude('engine/code/php/core/ecommerce/css/ecommerce.css');
+  $vars['env']->addInclude('engine/code/php/contrib/ecommerce/js/ecommerce.js');
+  $vars['env']->addInclude('engine/code/php/contrib/ecommerce/css/ecommerce.css');
 }
 
 /**
