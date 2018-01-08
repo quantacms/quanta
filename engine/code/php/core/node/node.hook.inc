@@ -64,33 +64,31 @@ function node_action_node_delete($vars) {
  * @param $vars
  */
 function node_init($vars) {
-  $vars['env']->addInclude('engine/code/php/core/node/js/node.js');
-  $vars['env']->addInclude('engine/code/php/core/node/css/node.css');
+
   $node = NodeFactory::current($vars['env']);
   // If the node does not exist, redirect to 404.
   if (!$node->exists && !isset($_REQUEST['shadow']) && $node->name != '404') {
     $node_404 = NodeFactory::load($vars['env'], '404');
     if ($node_404->exists) {
       redirect('/404');
-    } else {
+    }
+    else {
       die('404 - Page not found.');
     }
   }
   // If user can't access the node, redirect to 403.
-  else if ($vars['env']->request_path != '403' && $node->isForbidden() && !isset($_REQUEST['shadow']) ) {
+  else if ($vars['env']->request_path != '403' && $node->isForbidden() && !isset($_REQUEST['shadow'])) {
     $node_403 = NodeFactory::load($vars['env'], '403');
     if ($node_403->exists) {
       redirect('/403');
-    } else {
+    }
+    else {
       die('403 - Forbidden.');
     }
   }
 
-  else {
-    // TODO: is this log really needed all the time?
-    new Message($vars['env'], 'user is viewing this page: ' . $node->name . '.', MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
-  }
-
+  $vars['env']->addInclude('engine/code/php/core/node/js/node.js');
+  $vars['env']->addInclude('engine/code/php/core/node/css/node.css');
 }
 
 /**
@@ -130,7 +128,7 @@ function node_shadow_node_delete_form($vars) {
 function node_metadata($vars) {
   // Setup body classes per each item in the current node lineage.
   $node = NodeFactory::current($vars['env']);
-  $vars['page']->addData('metadata', array(
+  $vars['page']->addData('metadata', array (
     '<meta name="description" content="' . $node->getTeaser() . '" />',
     '<meta name="author" content="[ATTRIBUTE|name=title:' . $node->getAuthor() . ']" />',
     '<meta name="copyright" content="Aldo Tripiciano" />',
@@ -159,7 +157,7 @@ function node_body_classes($vars) {
   $node->buildLineage();
   $lineage = $node->getLineage();
   foreach ($lineage as $lineage_node) {
-    $vars['page']->addData('body_classes', array('section-' . $lineage_node->name));
+    $vars['page']->addData('body_classes', array ('section-' . $lineage_node->name));
   }
-  $vars['page']->addData('body_classes', array('page-' . $node->name));
+  $vars['page']->addData('body_classes', array ('page-' . $node->name));
 }

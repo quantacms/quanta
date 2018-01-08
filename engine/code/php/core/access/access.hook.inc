@@ -84,6 +84,10 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
     $one_match = FALSE;
 
     switch ($filter_type) {
+      case 'referer':
+        $explode = explode('/', $_SERVER['HTTP_REFERER']);
+        $filter_check = $explode;
+        break;
       // show the tag only on certaing path...
       case 'path':
         $filter_check = array($node->getName());
@@ -122,46 +126,52 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
         break;
     }
 
-    // Check if the filtered item corresponds to the user input.
-    foreach ($filter_check as $k => $check) {
+    if (!empty($filter_check)) {
+      // Check if the filtered item corresponds to the user input.
+      foreach ($filter_check as $k => $check) {
 
-      foreach ($filter_values as $filter_value) {
+        foreach ($filter_values as $filter_value) {
 
-        if (substr($filter_value, 0, 1) == '!') {
-          $negate = TRUE;
-          $filter_value = str_replace('!', '', $filter_value);
-        }
+          if (substr($filter_value, 0, 1) == '!') {
+            $negate = TRUE;
+            $filter_value = str_replace('!', '', $filter_value);
+          }
 
-        $filter_match = ($check == $filter_value);
+          $filter_match = ($check == $filter_value);
 
-        if ($filter_match && !isset($negate)) {
-          unset($one_match);
-          $break = TRUE;
-        }
-
-        if (isset($negate)) {
-          $filter_match = !$filter_match;
-          unset($negate);
-
-          if (!$filter_match) {
+          if ($filter_match && !isset($negate)) {
+            unset($one_match);
             $break = TRUE;
+          }
+
+          if (isset($negate)) {
+            $filter_match = !$filter_match;
+            unset($negate);
+
+            if (!$filter_match) {
+              $break = TRUE;
+            }
+          }
+
+          if ($break) {
+            break;
           }
         }
 
+        // For multiple fields such as lineage one match is enough to validate.
         if ($break) {
           break;
         }
       }
 
-      // For multiple fields such as lineage one match is enough to validate.
-      if ($break) {
+      //TODO: handle invalid / unknown filters.
+      //TODO: use hook for custom filters.
+
+      if (!$filter_match) {
         break;
       }
+    }
 
-    }
-    if (!$filter_match) {
-      break;
-    }
   }
   return $filter_match;
 }

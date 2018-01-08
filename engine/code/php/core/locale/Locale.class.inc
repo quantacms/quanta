@@ -13,6 +13,7 @@ class Locale {
    * @return mixed
    */
   public static function getLanguage($env) {
+
     // TODO: better handling of fallback.
     if (!empty($_SESSION['language'])) {
       $lang = $_SESSION['language'];
