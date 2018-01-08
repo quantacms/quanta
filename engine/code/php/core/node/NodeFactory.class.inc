@@ -11,11 +11,11 @@ class NodeFactory {
    * @param $env
    * @param $node
    */
-  public static function load(Environment $env, $node, $language = NULL) {
+  public static function load(Environment $env, $node_name, $language = NULL) {
     if (empty($language)) {
       $language = Locale::getLanguage($env);
     }
-    $node = new Node($env, $node, NULL, $language);
+    $node = new Node($env, $node_name, NULL, $language);
     $env->hook('node_open', array('node' => &$node), NULL);
     return $node;
   }

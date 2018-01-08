@@ -50,6 +50,7 @@ function page_doctor($vars) {
       $css[] = file_get_contents($file['path']);
 
     } elseif ($file['type'] == 'js') {
+      Doctor::talk($file['path']);
       $js[] = file_get_contents($file['path']);
     }
   }
