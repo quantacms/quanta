@@ -1,9 +1,17 @@
 <?php
   // Include the Environment module.
-  include_once('core/environment/environment.module');
+  require_once('core/environment/environment.module');
+
+  // Include the Cache module.
+  require_once('core/cache/cache.module');
 
   // Create a new Environment.
   $env = new Environment(NULL);
+
+  if (!isset($_GET['doctor']) || !($_GET['doctor'] == 'setup')) {
+    // Check if the current request is a file rendering request.
+    $env->checkInstalled();
+  }
 
   // Check if the current request is a file rendering request.
   $env->checkFile();
@@ -35,14 +43,15 @@
 
   // Start page's standard index.html.
   $page = new Page($env, 'index.html');
-
   $env->setData('page', $page);
 
   // Run the init hook.
   $env->hook('init', array('page' => &$page));
 
   // Load page's included files (CSS / JS etc.)
-  $page->loadIncludes();
+  if (!isset($_REQUEST['ajax'])) {
+    $page->loadIncludes();
+  }
 
   // TODO: determine when to run doctor.
   if (isset($_GET['doctor'])) {

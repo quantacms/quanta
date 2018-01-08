@@ -13,8 +13,8 @@ class Shadow extends Page {
   /**
    * Construct the Shadow.
    *
-   * @param $context String
-   * @param null $id
+   * @param Environment $env
+   * @param object $data
    */
   public function __construct($env, $data = NULL) {
     $this->env = $env;
@@ -88,6 +88,7 @@ class Shadow extends Page {
    * @param string $title
    * @param string $content
    * @param int $weight
+   * @param string $classes
    */
   public function addTab($title, $content, $weight = 1, $classes = NULL) {
     while (isset($this->tabs[$weight])) {
