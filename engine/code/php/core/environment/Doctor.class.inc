@@ -5,8 +5,13 @@
  * This class is used to perform .
  */
 class Doctor extends DataContainer {
+  // @var Environment env
   public $env;
 
+  /**
+   * Doctor constructor.
+   * @param Environment $env
+   */
   public function __construct($env) {
     $this->env = $env;
   }
@@ -48,13 +53,11 @@ class Doctor extends DataContainer {
 
       if (!$link_exists) {
         $wrong_links++;
-        $realpath = $this->env->nodePath($link_name);
-        Doctor::op("Looking for " . $link_name . ' (' . $realpath . ')...<br>');
+        $real_path = $this->env->nodePath($link_name);
+        Doctor::op("Looking for " . $link_name . ' (' . $real_path . ')...<br>');
 
-        if (is_dir($realpath)) {
+        if (is_dir($real_path)) {
           // Attempt to change the target dir of the link.
-          // unlink($result_string);
-          // link($realpath, $result_string);
           NodeFactory::linkNodes($this->env, $link_name, $link_father, array('if_exists' => 'override'));
           Doctor::ok("...fixed! :-) <br>");
           $fixed_links++;
@@ -157,6 +160,7 @@ class Doctor extends DataContainer {
     $this->checkExistingIndex();
     $this->checkExistingHome();
     $this->checkAdminUser();
+    $this->runDoctor();
   }
 
   /**
@@ -170,7 +174,7 @@ class Doctor extends DataContainer {
     // Run all doctor hooks.
     $this->env->hook('doctor', array('doctor' => &$this));
     Doctor::ok();
-    print "<b>Doctor has finished curing your environment!</b>";
+    Doctor::op('Doctor has finished curing your environment!');
     die();
   }
   /**

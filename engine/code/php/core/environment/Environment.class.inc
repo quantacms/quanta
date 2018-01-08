@@ -12,24 +12,29 @@ define("GLOBAL_SEPARATOR", '@\@/@\@/@\@/@');
  * This class represents an Environment with his directories etcetera.
  */
 class Environment extends DataContainer {
-  public $host = array();
-  public $dir = array();
+  public $host = array ();
+  public $dir = array ();
   public $request_uri;
   public $request_path;
   public $request_json;
-  public $request = array();
-  private $modules = array();
-  private $includes = array();
+  public $request = array ();
+  private $modules = array ();
+  private $includes = array ();
   private $context;
 
-  // Construct the Environment.
+  /**
+   * Environment constructor.
+   * @param string $host
+   * @param string $request_uri
+   */
   public function __construct($host = NULL, $request_uri = NULL) {
     $this->host = (($host == NULL) ? strtolower($_SERVER['HTTP_HOST']) : $host);
     if ($request_uri == NULL) {
       // Remove querystring to obtain request uri...
       $exp = explode('?', $_SERVER['REQUEST_URI']);
       $this->request_uri = (str_replace('/', '', $exp[0]) == '') ? 'home/' : $exp[0];
-    } else {
+    }
+    else {
       $this->request_uri = $request_uri;
     }
     $this->request = explode('/', $this->request_uri);
@@ -52,7 +57,6 @@ class Environment extends DataContainer {
     }
   }
 
-
   /**
    * Set the content for the shadow.
    * @param $context
@@ -74,7 +78,7 @@ class Environment extends DataContainer {
    * @return mixed
    */
   public function getBaseUrl() {
-    return (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] && !in_array(strtolower($_SERVER['HTTPS']), array('off', 'no')) ? 'https' : 'http') . '://' . $this->host;
+    return (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] && !in_array(strtolower($_SERVER['HTTPS']), array ('off', 'no')) ? 'https' : 'http') . '://' . $this->host;
   }
 
   /**
@@ -87,15 +91,17 @@ class Environment extends DataContainer {
 
   /**
    * Load core modules.
-   * TODO: right now loaded in alphabetical order. This is not correct.
    */
   private function loadCoreModules() {
-    $core_modules = $this->scanDirectory('core', array('type' => DIR_MODULES));
+    $core_modules = $this->scanDirectory('core', array ('type' => DIR_MODULES));
     $this->setModules('core', $core_modules);
   }
 
+  /**
+   * Load contributed modules.
+   */
   private function loadContribModules() {
-    $contrib_modules = $this->scanDirectory($this->dir['docroot'] . '/_modules', array('type' => DIR_MODULES));
+    $contrib_modules = $this->scanDirectory($this->dir['docroot'] . '/_modules', array ('type' => DIR_MODULES));
     $this->setModules('contrib', $contrib_modules);
   }
 
@@ -109,7 +115,7 @@ class Environment extends DataContainer {
     $module_path = $mod_type == 'core' ? $this->dir('modules_core') : $this->dir('modules_custom');
 
     foreach ($modules as $k => $module) {
-      $this->modules[$module] = array(
+      $this->modules[$module] = array (
         'name' => $module,
         'path' => $module_path . '/' . $module,
       );
@@ -158,15 +164,13 @@ class Environment extends DataContainer {
    * @param $module
    */
   public function runModule($module) {
-    $includes = array('api', 'hook', 'wiki');
-
+    $includes = array ('api', 'hook', 'wiki');
     $module_path = $module['path'] . '/' . $module['name'] . '.module';
-    if (is_file($module_path)) {
-      require_once($module_path);
-    }
+    require_once($module_path);
 
     /**
      * Check all module's inclusions.
+     * TODO: useless waste of resources - include files in .module.
      */
     foreach ($includes as $include_type) {
       $include_path = $module['path'] . '/' . $module['name'] . '.' . $include_type . '.inc';
@@ -178,10 +182,13 @@ class Environment extends DataContainer {
 
   /**
    * Get all dirs inside a given dir.
+   * @param string $base_dir
+   * @param array $attributes
+   * @return array
    */
-  public function scanDirectory($base_dir = '', $attributes = array()) {
+  public function scanDirectory($base_dir = '', $attributes = array ()) {
     if (!is_dir($base_dir)) {
-      return array();
+      return array ();
     }
     if (!isset($attributes['exclude_dirs'])) {
       $attributes['exclude_dirs'] = DIR_INACTIVE;
@@ -190,7 +197,7 @@ class Environment extends DataContainer {
       $attributes['type'] = DIR_ALL;
     }
 
-    $dirs = array_diff(scandir($base_dir), array('.', '..'));
+    $dirs = array_diff(scandir($base_dir), array ('.', '..'));
     foreach ($dirs as $k => $dir) {
       // Remove inactive if requested.
       if (substr($dir, 0, 1) == $attributes['exclude_dirs']) {
@@ -199,16 +206,19 @@ class Environment extends DataContainer {
 
       if (isset($attributes['symlinks']) && $attributes['symlinks'] == 'no' && is_link($base_dir . '/' . $dir)) {
         unset ($dirs[$k]);
-      } elseif (isset($attributes['symlinks']) && $attributes['symlinks'] == 'only' && !is_link($base_dir . '/' . $dir)) {
+      }
+      else if (isset($attributes['symlinks']) && $attributes['symlinks'] == 'only' && !is_link($base_dir . '/' . $dir)) {
         unset ($dirs[$k]);
       }
 
 
       if ($attributes['type'] == DIR_DIRS && !is_dir($base_dir . '/' . $dir)) {
         unset ($dirs[$k]);
-      } elseif ($attributes['type'] == DIR_FILES && !is_file($base_dir . '/' . $dir)) {
+      }
+      elseif ($attributes['type'] == DIR_FILES && !is_file($base_dir . '/' . $dir)) {
         unset ($dirs[$k]);
-      } elseif ($attributes['type'] == DIR_MODULES &&
+      }
+      elseif ($attributes['type'] == DIR_MODULES &&
         (!is_dir($base_dir . '/' . $dir) || !is_file($base_dir . '/' . $dir . '/' . $dir . '.module'))
       ) {
         unset ($dirs[$k]);
@@ -228,17 +238,18 @@ class Environment extends DataContainer {
    * @param int $depth
    * @return array
    */
-  public function scanDirectoryDeep($base_dir, $dir, $dirs = array(), $attributes = array('exclude_dirs' => DIR_INACTIVE, 'type' => DIR_ALL, 'level' => 'leaf'), $depth = 0) {
+  public function scanDirectoryDeep($base_dir, $dir, $dirs = array (), $attributes = array ('exclude_dirs' => DIR_INACTIVE, 'type' => DIR_ALL, 'level' => 'leaf'), $depth = 0) {
     $scan = ($this->scanDirectory($base_dir . '/' . $dir, $attributes));
 
-    $item = array(
+    $item = array (
       'path' => $base_dir . '/' . $dir,
       'name' => $dir,
       'depth' => $depth,
     );
     if (count($scan) == 0 || ($depth != 0 && is_link($base_dir))) {
       $dirs[] = $item;
-    } else {
+    }
+    else {
       $i = 0;
       if ($attributes['level'] == 'tree') {
         $dirs[] = $item;
@@ -278,7 +289,7 @@ class Environment extends DataContainer {
    * @param array $vars
    * @return bool
    */
-  public function hook($function, $vars = array()) {
+  public function hook($function, $vars = array ()) {
     $vars['env'] = &$this;
     foreach ($this->getModules() as $module) {
       $hook = $module['name'] . '_' . $function;
@@ -315,7 +326,7 @@ class Environment extends DataContainer {
       $ext = explode('.', $include);
       $type = $ext[count($ext) - 1];
     }
-    $this->includes[] = array('path' => $include, 'type' => $type);
+    $this->includes[] = array ('path' => $include, 'type' => $type);
   }
 
   /**
@@ -327,7 +338,7 @@ class Environment extends DataContainer {
       if (is_array($this->request_json->action)) {
         $this->request_json->action = array_pop($this->request_json->action);
       }
-      $this->hook('action_' . $this->request_json->action, array('data' => (array)$this->request_json));
+      $this->hook('action_' . $this->request_json->action, array ('data' => (array)$this->request_json));
     }
   }
 
@@ -346,7 +357,8 @@ class Environment extends DataContainer {
       // to it until it's free.
       if (!$node->exists) {
         break;
-      } else {
+      }
+      else {
         $i++;
         $candidate_path = $candidate_path . '-' . $i;
       }
@@ -355,8 +367,10 @@ class Environment extends DataContainer {
   }
 
   /**
-   * Creates a system directory (if it doesn't exist yet).
+   * Defines a system directory.
+   * @param $name
    * @param $folder
+   * @param string $system_dir
    * @return mixed
    */
   public function sysdir($name, $folder, $system_dir = 'docroot') {
@@ -391,8 +405,13 @@ class Environment extends DataContainer {
 
   /**
    * Returns the system path of a node (folder).
+   *
    * @param $folder
+   *   The folder (node) to search.
    * @param bool $link
+   *   Search also symlinks if true.
+   * @return mixed
+   *   The path of the node.
    */
   public function nodePath($folder, $link = FALSE) {
     if ($nodepath = Cache::getStoredNodePath($this, $folder)) {
@@ -401,7 +420,7 @@ class Environment extends DataContainer {
     // Use find to locate the node's directory in the file system.
     // TODO: run a sanity check that there is only one folder or throw error instead?
     $results = $this->findNodePath($folder);
-    $found_folders = array();
+    $found_folders = array ();
 
     if (empty($results)) {
       return FALSE;
@@ -411,15 +430,18 @@ class Environment extends DataContainer {
       if (is_dir($results[$i]) && ($link ? true : !is_link($results[$i]))) {
         $found_folders[] = $results[$i];
         $result = $results[$i];
-      } else {
+      }
+      else {
         unset($results[$i]);
       }
     }
     if (count($found_folders) > 1) {
       new Message($this, 'Warning: there is more than one folder named ' . $folder . ': <br/>' . var_export($found_folders, 1) . '<br>Check integrity!');
-    } elseif (empty($result)) {
-      //new Message($this, 'Warning: there is no folder named ' . $folder . '<br>Check integrity!');
-    } else {
+    }
+    elseif (empty($result)) {
+      new Message($this, 'Warning: there is no folder named ' . $folder . '<br>Check integrity!');
+    }
+    else {
       Cache::storeNodePath($this, $result);
       return $result;
     }
@@ -442,26 +464,39 @@ class Environment extends DataContainer {
 
   /**
    * Checks if currently loaded environment is for a file, and renders it if so.
-   *
+   * TODO: better define the criteria.
+   */
+  public function checkInstalled() {
+    if (!is_dir($this->dir['modules_custom'])) {
+      print "Hello! Seems like your site is not installed yet.<br /><a href='?doctor=setup'>Click here</a> to start the installation.";
+      die();
+    }
+  }
+
+  /**
+   * Checks if currently loaded environment is for a file, and renders it if so.
    */
   public function checkFile() {
+
     // TODO: redo the whole shit.
     if (strpos($this->request[count($this->request) - 1], '.') > 0) {
       $filename = $this->request[count($this->request) - 1];
-      $nodepath = $this->nodePath($this->request[1]);
-      $file = is_file($this->dir['docroot'] . $this->request_uri) ? ($this->dir['docroot'] . $this->request_uri) : $nodepath . '/' . urldecode($filename);
+      $nodepath = Cache::getStoredNodePath($this, $this->request[1]);
+      $file = $nodepath . '/' . urldecode($filename);
       if (is_file($file)) {
         header('Content-Type: ' . mime_content_type($file));
         $mods = array_flip(apache_get_modules());
         if (isset($mods['mod_xsendfile'])) {
           // TODO: support for xsendfile.
           readfile($file);
-        } else {
+        }
+        else {
           //TODO : slow, insecure...
           readfile($file);
         }
         die();
-      } else {
+      }
+      else {
         die('404 - File not found');
       }
     }

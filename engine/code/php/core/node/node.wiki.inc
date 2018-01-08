@@ -157,18 +157,18 @@ function wiki_LINK($attributes, $target, $string, $env) {
   $current = NodeFactory::current($env);
   $querystring = array();
   $link_title = '';
-
-
   if (((substr($target, 0, 4) == 'http') || (substr($target, 0, 4) == 'www.')) && !$node->exists) {
     $classes[] = 'link-ext';
     $title_default = $target;
     $attributes['rel'] = NULL;
-  } else {
+  }
+  else {
+
     // TODO: use something to get the real url...
 		$target = '/' . string_normalize($node->getName());
-    $title_default = $node->title;
+    $title_default = $node->getTitle();
     $classes[] = 'link-' . string_normalize($node->getName());
-    if ($current->name == $node->name) {
+    if ($current->getName() == $node->getName()) {
       $classes[] = 'link-active';
     }
     $attributes['rel'] = $node->getName();
@@ -196,7 +196,6 @@ function wiki_LINK($attributes, $target, $string, $env) {
   }
 
   $query = (!empty($querystring))  ? ('?' . implode('&', $querystring)) : '';
-
 
   $link = '<a ' . implode(' ', $link_data) . ' class="' . implode(' ', $classes). '" ' . $link_title . ' href="' . $target . $query . '">' . string_normalize((isset($attributes['title']) ? $attributes['title'] : $title_default)) .'</a>';
   return $link;
