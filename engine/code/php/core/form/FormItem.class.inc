@@ -183,26 +183,52 @@ abstract class FormItem extends DataContainer {
     return $this->getData('disabled');
   }
 
+  /**
+   * Set the multiple attribute for the form item.
+   *
+   * @param $multiple
+   */
   public function setMultiple($multiple) {
     $this->setData('multiple', (!empty($multiple)));
   }
 
+  /**
+   * Check if the form item is multiple.
+   *
+   * @return mixed|null
+   */
   public function isMultiple() {
     return $this->getData('multiple');
   }
 
+  /**
+   * Set the limit of values for the form item.
+   * @param $limit
+   */
   public function setLimit($limit) {
     $this->setData('limit', $limit);
   }
 
+  /**
+   * Get the limit of values for the form item.
+   * @return mixed|null
+   */
   public function getLimit() {
     return $this->getData('limit');
   }
 
+  /**
+   * Set the distinct attribute for the form item.
+   * @param $multiple
+   */
   public function setDistinct($multiple) {
     $this->setData('distinct', (!empty($multiple)));
   }
 
+  /**
+   * Check if the form item is distinct.
+   * @return mixed|null
+   */
   public function isDistinct() {
     return $this->getData('distinct');
   }
