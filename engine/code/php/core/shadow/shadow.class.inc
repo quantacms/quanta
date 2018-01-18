@@ -71,6 +71,8 @@ class Shadow extends Page {
 
   /**
    * Add a submit button to the shadow.
+   * @param $action
+   * @param $button
    */
   public function addButton($action, $button) {
     $this->buttons[$action] = $button;

@@ -2,12 +2,14 @@
 /**
  * Renders a form input.
  *
- * @param $replace string
- * @param $tagname string
  * @param $attributes string
+ * @param $form_id
  * @param $string string
- * @param $page Page
+ * @param $env
  * @return mixed
+ * @internal param string $replace
+ * @internal param string $tagname
+ * @internal param Page $page
  */
 function wiki_INPUT($attributes, $form_id, $string, $env) {
   $rendered = '';
@@ -41,11 +43,13 @@ function wiki_INPUT_RENDER($attributes, $form_id, $string, $env) {
 /**
  * Renders a form.
  *
- * @param $replace string
- * @param $tagname string
  * @param $attributes string
+ * @param $form_id
  * @param $string string
+ * @param $env
  * @return mixed
+ * @internal param string $replace
+ * @internal param string $tagname
  */
 function wiki_FORM($attributes, $form_id, $string, $env) {
   $form = FormFactory::getForm($env, $form_id);
@@ -58,6 +62,11 @@ function wiki_FORM($attributes, $form_id, $string, $env) {
 
 /**
  * Use subnodes of a node as possible values for a form item.
+ * @param $attributes
+ * @param $node
+ * @param $string
+ * @param $env
+ * @return bool|mixed|string
  */
 function wiki_LIST_VALUES($attributes, $node, $string, $env) {
   $attributes['nowrap'] = TRUE;

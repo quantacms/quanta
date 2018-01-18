@@ -1,11 +1,13 @@
 <?php
 /**
- * @param $replace string
  * @param $tagname string
- * @param $attributes string
+ * @param $attribute
  * @param $string string
- * @param $page Page
+ * @param $env
  * @return mixed
+ * @internal param string $replace
+ * @internal param string $attributes
+ * @internal param Page $page
  */
 function wiki_SHADOW($tagname, $attribute, $string, $env) {
   $shadow = $env->getData('shadow');

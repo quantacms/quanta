@@ -3,6 +3,11 @@ define("JUMPER_EMPTY", "_empty");
 
 /**
  * Detect content JUMPER and eventually create HTML.
+ * @param $attributes
+ * @param $value
+ * @param $string
+ * @param $env
+ * @return string
  */
 function wiki_JUMPER($attributes, $value, $string, $env) {
 

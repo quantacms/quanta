@@ -59,7 +59,8 @@ abstract class DataContainer {
 
   /**
    * Sets the name (equal to folder name) of the container.
-   * @param $name
+   * @param $language
+   * @internal param $name
    */
   public function setLanguage($language) {
     $this->language = $language;

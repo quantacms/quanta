@@ -101,6 +101,7 @@ class Image extends File {
    * @param null $maxw
    * @param null $maxh
    * @param string $sType
+   * @param int $compression
    */
   public function generateThumbnail($env, $thumbfile, $maxw = NULL, $maxh = NULL, $sType = 'crop', $compression = 60) {
 

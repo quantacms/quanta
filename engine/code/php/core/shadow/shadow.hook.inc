@@ -20,6 +20,7 @@ function shadow_init($vars) {
 
 /**
  * Implements hook_page_init().
+ * @param $vars
  */
 function shadow_page_init($vars) {
   $addcode = '<div id="shadow-outside"><div id="shadow-inside"></div><div id="shadow-item"></div></div>';

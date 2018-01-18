@@ -10,3 +10,5 @@ sites/*
 sites*
 _sites
 _sites/*
+vendor
+vendor/*

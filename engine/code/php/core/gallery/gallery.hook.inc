@@ -4,6 +4,7 @@
  * User: aldotripiciano
  * Date: 10/05/15
  * Time: 09:57
+ * @param $vars
  */
 
 function gallery_init($vars) {

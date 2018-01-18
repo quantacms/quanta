@@ -18,9 +18,11 @@ class Form extends DataContainer {
 
   /**
    * @param $env Environment
-   * @param $filename
-   * @param null $name
-   * @param null $content
+   * @param $form_id
+   * @param $attributes
+   * @internal param $filename
+   * @internal param null $name
+   * @internal param null $content
    */
   public function __construct(&$env, $form_id, $attributes) {
     $this->env = $env;
@@ -168,6 +170,7 @@ class Form extends DataContainer {
 
   /**
    * Load form attributes.
+   * @param $attributes
    */
   public function loadAttributes($attributes) {
     $this->setType((isset($attributes['type'])) ? $attributes['type'] : 'form');

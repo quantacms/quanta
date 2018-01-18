@@ -7,6 +7,9 @@
 
 /**
  * Return first occurrence of HTML / XML element in a string.
+ * @param $string
+ * @param $tag
+ * @return string
  */
 function parsetag($string, $tag) {
   $pattern = "/<" . $tag . ">(.*?)<\/" . $tag . ">/s";
@@ -16,6 +19,8 @@ function parsetag($string, $tag) {
 
 /**
  * Generate a password
+ * @param $pass
+ * @return bool|string
  */
 function pwd($pass) {
   return substr((md5(substr($pass, 0, 5) . 'ABC' . substr($pass, 5, 2) . 'nginE')) . md5($pass), 0, 50);

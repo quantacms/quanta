@@ -3,6 +3,11 @@
  * Wiki Hook for HEAD DATA.
  * Automatically generated header data.
  * TODO: discontinue. Use JS and CSS instead.
+ * @param $attributes
+ * @param $var
+ * @param $string
+ * @param $env
+ * @return string
  */
 function wiki_HEAD($attributes, $var, $string, $env) {
   return wiki_CSS($attributes, $var, $string, $env) . wiki_JS($attributes, $var, $string, $env);
@@ -11,6 +16,11 @@ function wiki_HEAD($attributes, $var, $string, $env) {
 /**
  * Wiki Hook for CSS.
  * Automatically generated css data.
+ * @param $attributes
+ * @param $var
+ * @param $string
+ * @param $env
+ * @return string
  */
 function wiki_CSS($attributes, $var, $string, $env) {
   $page = $env->getData('page');
@@ -22,6 +32,11 @@ function wiki_CSS($attributes, $var, $string, $env) {
 /**
  * Wiki Hook for JS.
  * Automatically generated js data.
+ * @param $attributes
+ * @param $var
+ * @param $string
+ * @param $env
+ * @return string
  */
 function wiki_JS($attributes, $var, $string, $env) {
   $page = $env->getData('page');
@@ -33,6 +48,11 @@ function wiki_JS($attributes, $var, $string, $env) {
 /**
  * Wiki Hook for METADATA.
  * Automatically generated meta data.
+ * @param $attributes
+ * @param $var
+ * @param $string
+ * @param $env
+ * @return string
  */
 function wiki_META_DATA($attributes, $var, $string, $env) {
   $page = $env->getData('page');
@@ -44,6 +64,11 @@ function wiki_META_DATA($attributes, $var, $string, $env) {
 /**
  * Wiki Hook for HEAD DATA.
  * Automatically generated header data.
+ * @param $attributes
+ * @param $var
+ * @param $string
+ * @param $env
+ * @return string
  */
 function wiki_BODYCLASSES($attributes, $var, $string, $env) {
   $page = $env->getData('page');
@@ -53,6 +78,11 @@ function wiki_BODYCLASSES($attributes, $var, $string, $env) {
 
 /**
  * Wiki Hook for URL.
+ * @param $attributes
+ * @param $var
+ * @param $string
+ * @param $env
+ * @return string
  */
 function wiki_URL($attributes, $var, $string, $env) {
 	return 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
@@ -60,6 +90,11 @@ function wiki_URL($attributes, $var, $string, $env) {
 
 /**
  * Wiki Hook for MAIL.
+ * @param $attributes
+ * @param $mail
+ * @param $string
+ * @param $env
+ * @return string
  */
 function wiki_MAIL($attributes, $mail, $string, $env) {
   return '<a class="mail" href="mailto:' . $mail . '">' . (isset($attributes['title']) ? $attributes['title'] : $mail)  . '</a>';
@@ -67,6 +102,11 @@ function wiki_MAIL($attributes, $mail, $string, $env) {
 
 /**
  * Wiki Hook for PHONE.
+ * @param $attributes
+ * @param $phone
+ * @param $string
+ * @param $env
+ * @return string
  */
 function wiki_PHONE($attributes, $phone, $string, $env) {
   if (isset($attributes['class'])){
@@ -80,6 +120,11 @@ function wiki_PHONE($attributes, $phone, $string, $env) {
 
 /**
  * Wiki Hook for CONTEXT.
+ * @param $attributes
+ * @param $var
+ * @param $string
+ * @param $env
+ * @return
  */
 function wiki_CONTEXT($attributes, $var, $string, $env) {
   return $_REQUEST['context'];
@@ -89,6 +134,11 @@ function wiki_CONTEXT($attributes, $var, $string, $env) {
 /**
  * Render an empty content (useful as ajax container).
  * Wiki Hook for EMPTY.
+ * @param $attributes
+ * @param $var
+ * @param $string
+ * @param $env
+ * @return string
  */
 function wiki_EMPTY($attributes, $var, $string, $env) {
   $text = isset($attributes['text']) ? $attributes['text'] : '&nbsp;';
@@ -97,6 +147,11 @@ function wiki_EMPTY($attributes, $var, $string, $env) {
 
 /**
  * Wiki Hook for BREADCRUMB.
+ * @param $attributes
+ * @param $var
+ * @param $string
+ * @param $env
+ * @return string
  */
 function wiki_BREADCRUMB($attributes, $var, $string, $env) {
   $node = NodeFactory::current($env);
@@ -112,9 +167,11 @@ function wiki_BREADCRUMB($attributes, $var, $string, $env) {
     $themed_bc = '<ul class="breadcrumb">';
     $themed_bc .= '<li>[LINK|title=Home:home]</li>';
       foreach ($breadcrumb as $path => $node) {
+
         if ($node->isPublished()) {
           $themed_bc .= '<li>[LINK:'. $path . ']</li>';
         }
+
       }
     $themed_bc .= '</ul>';
   }
@@ -123,6 +180,11 @@ function wiki_BREADCRUMB($attributes, $var, $string, $env) {
 
 /**
  * Wiki Hook for EMAIL.
+ * @param $attributes
+ * @param $var
+ * @param $string
+ * @param $env
+ * @return string
  */
 function wiki_EMAIL($attributes, $var, $string, $env) {
   return '<a href="mailto:' . $var. '">' . $var . '</a>';

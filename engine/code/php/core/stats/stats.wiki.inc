@@ -1,6 +1,11 @@
 <?php
 /**
  * Wiki Hook for STATS.
+ * @param $userfull
+ * @param $var
+ * @param $string
+ * @param $env
+ * @return string
  */
 function wiki_STATS($userfull, $var, $string, $env) {
   $stats = array();

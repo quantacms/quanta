@@ -2,7 +2,12 @@
 
 /**
  * Implements hook_cron().
- * @param $vars
+ * @param $attributes
+ * @param $form_id
+ * @param $string
+ * @param $env
+ * @return mixed
+ * @internal param $vars
  */
 function wiki_MAILFORM($attributes, $form_id, $string, $env) {
   if (!isset($attributes['ok_message'])) {

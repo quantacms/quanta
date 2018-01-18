@@ -11,6 +11,7 @@ function box_init($vars) {
 
 /**
  * Render a box.
+ * @param $vars
  */
 function box_wikitag($vars) {
   if (!empty($vars['attributes']['box'])) {

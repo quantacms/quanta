@@ -10,9 +10,11 @@ class Page extends DataContainer {
 
   /**
    * @param $env Environment
-   * @param $filename
-   * @param null $name
+   * @param $file
+   * @param null $title
    * @param null $content
+   * @internal param $filename
+   * @internal param null $name
    */
   public function __construct(&$env, $file, $title = NULL, $content = NULL) {
     $this->env = $env;

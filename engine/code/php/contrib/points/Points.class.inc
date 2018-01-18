@@ -12,9 +12,11 @@
  */
 class Points {
   /**
+   * @param $env
    * @param User $user
    * @param $type
    * @param $amount
+   * @return null
    */
   public static function add($env, $user, $type, $amount) {
     if (!$user->exists) {
@@ -28,9 +30,11 @@ class Points {
   }
 
   /**
+   * @param $env
    * @param User $user
    * @param $type
    * @param $amount
+   * @return bool|null
    */
   public static function remove($env, $user, $type, $amount) {
     if (!$user->exists) {
@@ -48,8 +52,10 @@ class Points {
   }
 
   /**
+   * @param $env
    * @param User $user
    * @param $type
+   * @param string $show
    * @return mixed
    */
   public static function get($env, $user, $type, $show = 'current') {

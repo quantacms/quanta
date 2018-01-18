@@ -2,6 +2,11 @@
 
 /**
  * Detect content PLAYLIST and eventually create HTML.
+ * @param $attributes
+ * @param $value
+ * @param $string
+ * @param $env
+ * @return bool|mixed|string
  */
 function wiki_PLAYLIST($attributes, $value, $string, $env) {
   $dirlist = new PlayList($env, $value, 'playlist', array('sortbytime' => 'desc') + $attributes);

@@ -45,7 +45,7 @@ class Node extends JSONDataContainer {
     $this->json = new stdClass();
 
     // Load node's language.
-    $this->setLanguage(!empty($language) ? $language : $this->env->getLanguage());
+    $this->setLanguage(!empty($language) ? $language : Locale::getLanguage($this->env));
 
     // Load node's father (parent folder).
     if ($father != NULL) {
@@ -96,7 +96,7 @@ class Node extends JSONDataContainer {
       $json_path = ($this->path . '/data_' . $this->getLanguage() . '.json');
     } // Look for a language neutral version.
     elseif (is_file($this->path . '/data.json')) {
-        $json_path = ($this->path . '/data.json');
+      $json_path = ($this->path . '/data.json');
     } // Impossible to load json. Error or empty Node.
     else {
       $this->json = new StdClass;
@@ -153,7 +153,7 @@ class Node extends JSONDataContainer {
   /**
    * Update node's json values.
    *
-   * @param array ignore
+   * @param $ignore array
    *   Which json attributes to ignore.
    */
   public function updateJSON($ignore = array()) {
@@ -258,6 +258,8 @@ class Node extends JSONDataContainer {
   /**
    * Validates this node before saving it.
    * TODO: put into a hook!
+   * @param array $form_data
+   * @return bool
    */
   public function validate($form_data = array ()) {
     $valid = TRUE;
@@ -327,8 +329,8 @@ class Node extends JSONDataContainer {
 
   /**
    * Returns the teaser of the node. Normalized and with tags excluded.
-   * @param int $maxlength
    * @return mixed
+   * @internal param int $maxlength
    */
   public function getTeaser() {
     $teaser = (strlen(trim($this->teaser)) > 0) ? preg_replace('/\[[^>]*\]/', '', strip_tags($this->teaser)) : NULL;
@@ -440,7 +442,7 @@ class Node extends JSONDataContainer {
       // TODO: use nodefactory without a loop.
       $n = new Node($this->env, $bread_node);
       if (!$n->exists) {
-        break;
+        continue;
       }
       $this->lineage[] = $n;
     }
@@ -570,6 +572,7 @@ class Node extends JSONDataContainer {
 
   /**
    * Get all the permissions for this node.
+   * @param $perm
    * @return mixed
    */
   public function getPermission($perm) {
@@ -690,6 +693,8 @@ class Node extends JSONDataContainer {
   /**
    * EXPERIMENTAL: find all categories for the node,
    * aka all nodes where it has been included as a symlink (tagged).
+   * @param null $cat
+   * @return array
    */
   public function getCategories($cat = NULL) {
     $categories = array ();

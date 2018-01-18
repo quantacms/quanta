@@ -10,6 +10,7 @@ function foundation_init($vars) {
 
 /**
  * Render a foundation box.
+ * @param $vars
  */
 function foundation_wikitag($vars) {
   $foundation_attributes = array('large', 'medium', 'small');
@@ -39,6 +40,7 @@ function foundation_wikitag($vars) {
 
 /**
  * Render a foundation box.
+ * @param $vars
  */
 function foundation_list_item($vars) {
   $foundation_children_attributes = array('child-large', 'child-medium', 'child-small');

@@ -7,10 +7,12 @@
 class Manager {
 
   public $node;
+
   /**
    * Constructs a manager object.
    * @param $env
-   * @param $name
+   * @param null $node
+   * @internal param $name
    */
   public function __construct(&$env, $node = NULL) {
     $this->env = $env;
