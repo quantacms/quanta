@@ -19,8 +19,9 @@ class Cache extends DataContainer {
    * @param $type
    *  The type of cached item.
    *
-   * @param $value
-   *   The value of the cached item.
+   * @param $item
+   * @return bool
+   * @internal param $value The value of the cached item.*   The value of the cached item.
    */
   public static function get($env, $type, $item) {
     $cache = $env->getData('cached', array());
@@ -39,6 +40,7 @@ class Cache extends DataContainer {
    *   The Environment.
    * @param string $type
    *   The type of cache.
+   * @param $item
    * @param string $value
    *   The value of the item.
    */

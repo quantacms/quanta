@@ -73,14 +73,15 @@ class PHPMailerOAuth extends PHPMailer
         return $this->oauth;
     }
 
-    /**
-     * Initiate a connection to an SMTP server.
-     * Overrides the original smtpConnect method to add support for OAuth.
-     * @param array $options An array of options compatible with stream_context_create()
-     * @uses SMTP
-     * @access public
-     * @return bool
-     */
+  /**
+   * Initiate a connection to an SMTP server.
+   * Overrides the original smtpConnect method to add support for OAuth.
+   * @param array $options An array of options compatible with stream_context_create()
+   * @return bool
+   * @throws phpmailerException
+   * @uses SMTP
+   * @access public
+   */
     public function smtpConnect($options = array())
     {
         if (is_null($this->smtp)) {

@@ -10,9 +10,9 @@ class Robots extends DataContainer {
 
   /**
    * @param $env Environment
-   * @param $filename
-   * @param null $name
-   * @param null $content
+   * @internal param $filename
+   * @internal param null $name
+   * @internal param null $content
    */
   public function __construct(&$env) {
 

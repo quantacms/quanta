@@ -109,6 +109,7 @@ class User extends Node {
   /**
    * Try to login.
    * @param $password
+   * @return string
    */
   public function logIn($password) {
     // If user dir doesn't exist.
@@ -274,10 +275,13 @@ class User extends Node {
   public function setPassword($password) {
     $this->password = $password;
   }
+
   /**
    *
    * Check if user can access a node
    * TODO: should really be in access module...
+   * @param null $node
+   * @param null $action
    * @return User
    */
   public function checkAccess($node = NULL, $action = NULL) {

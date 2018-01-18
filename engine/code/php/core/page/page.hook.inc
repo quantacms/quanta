@@ -1,6 +1,7 @@
 <?php
 /**
  * Implements hook_body_classes.
+ * @param $vars
  */
 function page_body_classes($vars) {
   $vars['page']->addData('body_classes', array('page'));

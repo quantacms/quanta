@@ -4,10 +4,11 @@
  * Renders the author of a node as an user link.
  *
  * @param $attributes
- * @param $node
+ * @param $var
  * @param $string
  * @param $env
  * @return string
+ * @internal param $node
  */
 function wiki_AUTHOR($attributes, $var, $string, $env) {
   $node = NodeFactory::current($env);
@@ -150,13 +151,27 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
   return $string;
 }
 
-
+/**
+ * Implementation of qtag LINK.
+ * This tag creates a link to another node in the system.
+ *
+ * @param $attributes
+ * @param $target
+ * @param $string
+ * @param $env
+ * @return string
+ */
 function wiki_LINK($attributes, $target, $string, $env) {
+  // Load the target node.
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
-  $classes = array('link');
+
+  // Retrieve main link attributes.
   $current = NodeFactory::current($env);
   $querystring = array();
   $link_title = '';
+  $classes = array('link');
+
+  // Check if the target is a node or an external link.
   if (((substr($target, 0, 4) == 'http') || (substr($target, 0, 4) == 'www.')) && !$node->exists) {
     $classes[] = 'link-ext';
     $title_default = $target;
@@ -167,6 +182,7 @@ function wiki_LINK($attributes, $target, $string, $env) {
     // TODO: use something to get the real url...
 		$target = '/' . string_normalize($node->getName());
     $title_default = $node->getTitle();
+    // Add classes...
     $classes[] = 'link-' . string_normalize($node->getName());
     if ($current->getName() == $node->getName()) {
       $classes[] = 'link-active';
@@ -174,20 +190,24 @@ function wiki_LINK($attributes, $target, $string, $env) {
     $attributes['rel'] = $node->getName();
   }
 
+  // Add custom classes to the link.
   if (isset($attributes['class'])) {
     $classes[] = $attributes['class'];
   }
 
+  // Check if there is a link title.
   if (isset($attributes['link_title'])) {
     $link_title = 'title="'.$attributes['link_title'].'"';
   }
 
+  // Check if there is a target language.
   if (isset($attributes['language'])) {
     $querystring[] = 'lang=' . $attributes['language'];
   }
 
   $link_data = array();
   // TODO: make just a big variable "data".
+  // Check Quanta data types.
   $data_types = array('rel', 'language', 'type', 'widget', 'components', 'tooltip', 'redirect');
   foreach ($data_types as $data_type) {
     if (isset($attributes[$data_type])) {
@@ -197,6 +217,7 @@ function wiki_LINK($attributes, $target, $string, $env) {
 
   $query = (!empty($querystring))  ? ('?' . implode('&', $querystring)) : '';
 
+  // Create the link HTML.
   $link = '<a ' . implode(' ', $link_data) . ' class="' . implode(' ', $classes). '" ' . $link_title . ' href="' . $target . $query . '">' . string_normalize((isset($attributes['title']) ? $attributes['title'] : $title_default)) .'</a>';
   return $link;
 }
@@ -302,11 +323,12 @@ function wiki_OPERATIONS($attributes, $node, $string, $env) {
 
 /**
  * TODO: what does this function do?
- * @param $tagname
+ * @param $attributes
  * @param $var
  * @param $string
  * @param $env
  * @return string
+ * @internal param $tagname
  */
 function wiki_CATEGORIES($attributes, $var, $string, $env) {
   $node = NodeFactory::current($env);
@@ -322,10 +344,11 @@ function wiki_CATEGORIES($attributes, $var, $string, $env) {
 /**
  * TODO: not good. It does not filter per access...
  * @param $attributes
- * @param $var
+ * @param $node
  * @param $string
  * @param $env
  * @return string
+ * @internal param $var
  */
 function wiki_COUNT($attributes, $node, $string, $env) {
   $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);

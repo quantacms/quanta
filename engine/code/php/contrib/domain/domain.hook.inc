@@ -90,6 +90,7 @@ function domain_init($vars) {
  * User: aldotripiciano
  * Date: 05/06/15
  * Time: 11:49
+ * @param $vars
  */
 
 /*

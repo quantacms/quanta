@@ -38,6 +38,7 @@ function file_init($vars) {
 
 /**
  * Saves all files uploaded on the node.
+ * @param $vars
  */
 function file_node_save($vars) {
   // TODO: move in File or create FileFactory module.

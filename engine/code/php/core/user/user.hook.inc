@@ -11,6 +11,7 @@ function user_boot($vars) {
 
 /**
  * Implements hook_init.
+ * @param $vars
  */
 function user_init($vars) {
   $vars['env']->addInclude('engine/code/php/core/user/js/user.js');
@@ -36,6 +37,7 @@ function user_setup($vars) {
 
 /**
  * Implements hook_body_classes.
+ * @param $vars
  */
 function user_body_classes($vars) {
   $user = UserFactory::current($vars['env']);

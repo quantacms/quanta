@@ -5,6 +5,10 @@
  * Will look for all wiki_TAG functions, in all modules, and apply them to the code
  * to convert tags.
  * TODO: convert to OO.
+ * @param $env
+ * @param $html
+ * @param string $options
+ * @return array
  */
 function checkCodeTags(&$env, $html, $options = 'U') {
   $replacing = array();

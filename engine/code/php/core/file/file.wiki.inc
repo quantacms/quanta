@@ -28,6 +28,11 @@ function wiki_FILEATTRIBUTE($attributes, $file, $string, $env) {
 
 /**
  * Wiki Hook for FILE.
+ * @param $attributes
+ * @param $file
+ * @param $string
+ * @param $env
+ * @return null|string
  */
 function wiki_FILE($attributes, $file, $string, $env) {
 

@@ -4,6 +4,7 @@
  * User: aldotripiciano
  * Date: 05/06/15
  * Time: 11:49
+ * @param $vars
  */
 function credits_user_load($vars) {
   $credits = $vars['user']->getData('credits');

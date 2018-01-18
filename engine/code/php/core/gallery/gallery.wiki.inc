@@ -1,6 +1,11 @@
 <?php
 /**
  * Detect images and eventually create HTML.
+ * @param $attributes
+ * @param $value
+ * @param $string
+ * @param $env
+ * @return bool|mixed|string
  */
 function wiki_GALLERY($attributes, $value, $string, $env) {
   $theme = 'gallery';

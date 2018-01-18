@@ -4,6 +4,11 @@
  * User: aldotripiciano
  * Date: 25/06/15
  * Time: 12:50
+ * @param $attributes
+ * @param $usr
+ * @param $string
+ * @param $env
+ * @return mixed
  */
 
 function wiki_POINTS($attributes, $usr, $string, $env) {

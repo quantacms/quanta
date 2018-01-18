@@ -8,18 +8,22 @@ class UserFactory {
 
   /**
    * Load a node, by checking access and running hooks.
-   * @param $env
-   * @param $node
+   * @param Environment $env
+   * @param $user
+   * @param null $tpl
+   * @return User
+   * @internal param $node
    */
   public static function load(Environment $env, $user, $tpl = NULL) {
     $user = new User($env, $user);
-    $env->hook('user_open', array('user' => &$user), NULL, $tpl);
+    $env->hook('user_open', array('user' => &$user));
     return $user;
   }
 
   /**
    * Create an empty user.
    * @param $env
+   * @return User
    */
   public static function buildEmptyUser($env) {
     $user = new User($env, USER_ANONYMOUS);
@@ -30,7 +34,10 @@ class UserFactory {
   /**
    * Create an user with basic values.
    * @param $env
-   * @param $node
+   * @param $name
+   * @param array $vars
+   * @return User
+   * @internal param $node
    */
   public static function buildUser($env, $name, $vars = array()) {
     $user = new User($env, NODE_NEW);
@@ -65,6 +72,7 @@ class UserFactory {
    * @param Environment $env
    * @param $action
    * @param $form_data
+   * @return string
    */
   public static function requestAction($env, $action, $form_data) {
     // TODO: this shit is needed with new approach.
@@ -106,6 +114,9 @@ class UserFactory {
 
   /**
    * Get the current navigating user.
+   * @param $env
+   * @param bool $reload
+   * @return mixed|User
    */
   static function current($env, $reload = FALSE) {
     static $user;

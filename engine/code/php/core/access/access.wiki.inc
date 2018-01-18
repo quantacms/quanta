@@ -1,5 +1,9 @@
 <?php
 /**
+ * @param $attributes
+ * @param $var
+ * @param $string
+ * @param $env
  * @return mixed
  */
 function wiki_PERMISSION($attributes, $var, $string, $env) {
@@ -9,6 +13,10 @@ function wiki_PERMISSION($attributes, $var, $string, $env) {
 }
 
 /**
+ * @param $attributes
+ * @param $var
+ * @param $string
+ * @param $env
  * @return mixed
  */
 function wiki_JSONPERMISSION($attributes, $var, $string, $env) {
