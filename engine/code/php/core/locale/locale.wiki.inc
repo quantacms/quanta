@@ -10,8 +10,7 @@
  * @param string $string
  *
  * @param Environment $env
- *
- * @return $language
+ * @return mixed $language
  *   The language.
  */
 function wiki_LANGUAGE($attributes, $target, $string, Environment $env) {
@@ -24,6 +23,11 @@ function wiki_FALLBACK_LANGUAGE($attributes, $target, $string, Environment $env)
 
 /**
  * Language switcher.
+ * @param $attributes
+ * @param $target
+ * @param $string
+ * @param Environment $env
+ * @return bool|mixed|string
  */
 function wiki_LANGUAGE_SWITCHER($attributes, $target, $string, Environment $env) {
 
@@ -54,6 +58,11 @@ function wiki_LANGUAGE_SWITCHER($attributes, $target, $string, Environment $env)
 
 /**
  * Translate links.
+ * @param $attributes
+ * @param $value
+ * @param $string
+ * @param $env
+ * @return bool|mixed|string
  */
 function wiki_TRANSLATE_LINKS($attributes, $value, $string, $env) {
   $attributes['active_items'] = Locale::getLanguage($env);
@@ -65,6 +74,11 @@ function wiki_TRANSLATE_LINKS($attributes, $value, $string, $env) {
 
 /**
  * Translate link.
+ * @param $attributes
+ * @param $node
+ * @param $string
+ * @param $env
+ * @return bool|string|void
  */
 function wiki_TRANSLATE($attributes, $node, $string, $env) {
   $node = NodeFactory::load($env, $node);

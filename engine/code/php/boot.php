@@ -68,6 +68,7 @@
   // Run the complete hook.
   $env->hook('complete');
 
+  $node = NodeFactory::load($env, 'corsi-e-didattica');
   // End the bootstrap.
   exit();
 ?>

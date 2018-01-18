@@ -12,7 +12,7 @@
     margin: auto;
 }
 
-.box .inner {
+.box > .inner {
     border-color: #aaa;
     border-style: solid;
     border-width: 1px;
@@ -22,15 +22,15 @@
 
 /* > 600px */
 @media all and (max-width:861px) {
-    .w-25-50, .w-50-75, .w-75-100, .w-50, .w-75 {
+    .w-50-75, .w-75-100, .w-50, .w-75 {
         width: 100% !important;
     }
 
-    .w-0-25 {
+    .w-0-25, .w-25-50 {
         width: 50% !important;
     }
 
-    .box, .box .inner {
+    .box, .box > .inner {
         min-height: 0 !important;
         height: auto !important;
         overflow-y: visible;
@@ -43,7 +43,7 @@
         width: 100% !important;
     }
 
-    .box .inner {
+    .box > .inner {
         height: auto !important;
         min-height: 0 !important;
     }

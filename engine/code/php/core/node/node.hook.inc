@@ -7,7 +7,7 @@
  * @param $vars
  */
 function node_shadow_node_add_access($vars) {
-  return node_shadow_node_edit_access($vars);
+  node_shadow_node_edit_access($vars);
 }
 
 /**
@@ -16,9 +16,12 @@ function node_shadow_node_add_access($vars) {
  * @param $vars
  */
 function node_shadow_node_delete_access($vars) {
-  return node_shadow_node_edit_access($vars);
+  node_shadow_node_edit_access($vars);
 }
 
+/**
+ * @param $vars
+ */
 function node_shadow_node_edit_access($vars) {
   $user = UserFactory::current($vars['env']);
   $has_access = $user->checkAccess($vars['shadow']->getNode(), $vars['env']->getContext());

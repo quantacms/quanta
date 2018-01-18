@@ -179,6 +179,7 @@ class File {
 
   /**
    * Check the uploads being made to a node.
+   * @param $node
    */
   public static function checkUploads($node) {
     $user = UserFactory::current($node->env);
@@ -235,9 +236,11 @@ class File {
   public function setFileName($filename) {
     $this->filename = $filename;
   }
+
   /**
    * Request the deletion of a file.
-   * @param $file File
+   * @param $node
+   * @param $file string
    */
   public static function deleteFile($node, $file) {
     $user = UserFactory::current($node->env);

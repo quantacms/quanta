@@ -11,18 +11,20 @@ class FileList extends ListObject {
   // TODO: implement.
   private $allowed_types;
   protected $scantype = DIR_FILES;
+
   /**
    * Construct a FileList object.
    *
-   * @param $dirname
-   * @param $type
-   * @param $page
+   * @internal param $dirname
+   * @internal param $type
+   * @internal param $page
    */
   public function theme() {
     $file_types = $this->getAttribute('file_types');
     $i = 0;
     $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
     foreach ($this->files as $file) {
+      /** @var File $file */
       $i++;
       if (!empty($this->exclude) && !isset($this->exclude[$i])) {
         continue;

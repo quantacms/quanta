@@ -2,6 +2,11 @@
 /**
  * Wiki hook for messages.
  * [MESSAGES] wiki tag was moved into hook.
+ * @param $tagname
+ * @param $attribute
+ * @param $string
+ * @param $env
+ * @return string
  */
 
 function wiki_MESSAGES($tagname, $attribute, $string, $env) {

@@ -380,6 +380,7 @@ class Environment extends DataContainer {
 
   /**
    * Creates a temporary directory (if it doesn't exist yet).
+   * @param $name
    * @param $folder
    * @return mixed
    */

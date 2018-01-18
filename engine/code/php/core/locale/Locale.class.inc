@@ -10,6 +10,7 @@ class Locale {
 
   /**
    * Environment's language is always current one.
+   * @param $env
    * @return mixed
    */
   public static function getLanguage($env) {
@@ -30,6 +31,7 @@ class Locale {
 
   /**
    * Environment's language is always current one.
+   * @param $env
    * @return mixed
    */
   public static function getFallbackLanguage($env) {
@@ -38,6 +40,7 @@ class Locale {
 
   /**
    * Switch the current language.
+   * @param $env
    * @param $lang
    */
   public static function switchLanguage($env, $lang) {
