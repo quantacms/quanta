@@ -2,6 +2,11 @@
 /**
  * A simple block, boxed and non editable by default.
  * Wiki Hook for BOX.
+ * @param $attributes
+ * @param $var
+ * @param $string
+ * @param $env
+ * @return string
  */
 function wiki_BOX($attributes, $var, $string, $env) {
   if (!isset($attributes['editable'])) {
@@ -19,6 +24,11 @@ function wiki_BOX($attributes, $var, $string, $env) {
 /**
  * Ajax-close a container.
  * Wiki Hook for CLOSE.
+ * @param $attributes
+ * @param $var
+ * @param $string
+ * @param $env
+ * @return string
  */
 function wiki_CLOSE($attributes, $var, $string, $env) {
   return '<a class="close-button" href="#">X Close</a>';

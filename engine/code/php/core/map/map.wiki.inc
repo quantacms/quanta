@@ -1,6 +1,11 @@
 <?php
 /**
  * Detect content MAP and eventually create HTML.
+ * @param $attributes
+ * @param $path
+ * @param $string
+ * @param $env
+ * @return string
  */
 function wiki_MAP($attributes, $path, $string, $env) {
   return '<iframe

@@ -12,12 +12,12 @@ class Mail extends Node {
    * @throws phpmailerException
    */
   public function send() {
-
-    require_once('mailer/PHPMailerAutoload.php');
+    $phpmailer_autoload = $this->env->dir['vendor'] . '/phpmailer/autoload.php';
+    require_once($phpmailer_autoload);
     // SMTPDebug information (for testing)
     // 1 = errors and messages
     // 2 = messages only
-    $mail = new PHPMailer();
+    $mail = new PHPMailer(true);
     $mail->isSMTP();
     $mail->Host = $this->getData('host');
     $mail->SMTPAuth = !empty($this->getData('SMTPAuth')) ? $this->getData('SMTPAuth') : true;

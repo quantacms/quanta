@@ -1,8 +1,13 @@
 <?php
 // TODO: redo the crap!
-  /**
-   * Wiki Hook for USER.
-   */
+/**
+ * Wiki Hook for USER.
+ * @param $attributes
+ * @param $uname
+ * @param $string
+ * @param $env
+ * @return mixed|string
+ */
   function wiki_USERATTRIBUTE($attributes, $uname, $string, $env) {
     $user = ($uname == NULL) ? UserFactory::current($env) : new User($env, $uname);
     switch($attributes['name']) {

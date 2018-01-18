@@ -15,9 +15,11 @@ abstract class FormItem extends DataContainer {
 
   /**
    * @param $env Environment
-   * @param $filename
-   * @param null $name
-   * @param null $content
+   * @param $input
+   * @param null $form
+   * @internal param $filename
+   * @internal param null $name
+   * @internal param null $content
    */
   public function __construct(&$env, $input, $form = NULL) {
     $this->input_arr = $input;

@@ -1,6 +1,11 @@
 <?php
 /**
  * Wiki Hook for SEARCH.
+ * @param $attributes
+ * @param $var
+ * @param $string
+ * @param $env
+ * @return string
  */
 function wiki_SEARCH($attributes, $var, $string, $env) {
   $search_form = '
@@ -14,6 +19,11 @@ function wiki_SEARCH($attributes, $var, $string, $env) {
  * Wiki Hook for SEARCHRESULTS.
  * Elaborate and display search results for current search.
  * TODO: move to OO approach.
+ * @param $attributes
+ * @param $var
+ * @param $string
+ * @param $env
+ * @return string
  */
 function wiki_SEARCHRESULTS($attributes, $var, $string, $env) {
   $output = '';

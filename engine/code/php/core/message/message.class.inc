@@ -25,10 +25,11 @@ class Message {
 
   /**
    * @param Environment $env
-   * @param string $text
-   * @param string $type
+   * @param $body
    * @param string $severity
+   * @param string $type
    * @param string $module
+   * @internal param string $text
    */
   public function __construct($env, $body, $severity = MESSAGE_GENERIC, $type = MESSAGE_TYPE_SCREEN, $module = MESSAGE_NOMODULE) {
     $this->env = $env;

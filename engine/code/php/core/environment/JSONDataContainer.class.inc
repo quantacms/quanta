@@ -17,11 +17,14 @@ abstract class JSONDataContainer extends DataContainer {
 
   /**
    *  This is meant only to be extended.
+   * @param array $ignore
+   * @return
    */
   abstract function updateJSON($ignore = array());
 
   /**
    * Save the JSON dump of the data container.
+   * @param array $ignore
    */
   protected function saveJSON($ignore = array()) {
     if (!is_dir($this->realpath)) {

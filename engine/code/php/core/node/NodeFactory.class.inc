@@ -8,22 +8,28 @@ class NodeFactory {
 
   /**
    * Load a node, by checking access and running hooks.
-   * @param $env
-   * @param $node
+   * @param Environment $env
+   * @param $node_name
+   * @param null $language
+   * @return Node
+   * @internal param $node
    */
   public static function load(Environment $env, $node_name, $language = NULL) {
     if (empty($language)) {
       $language = Locale::getLanguage($env);
     }
+
     $node = new Node($env, $node_name, NULL, $language);
-    $env->hook('node_open', array('node' => &$node), NULL);
+
+    $env->hook('node_open', array('node' => &$node));
     return $node;
   }
 
   /**
    * Create a "Forbidden" empty node.
    * @param $env
-   * @param $node
+   * @return Node
+   * @internal param $node
    */
   public static function buildForbiddenNode($env) {
     $node = new Node($env, NULL);
@@ -37,6 +43,7 @@ class NodeFactory {
    * Load a node from its realpath.
    * @param Environment $env
    * @param $realpath
+   * @return Node
    */
   public static function loadFromRealPath(Environment $env, $realpath) {
     $exp = explode('/', $realpath);
@@ -46,7 +53,9 @@ class NodeFactory {
   /**
    * Create an empty node.
    * @param $env
-   * @param $node
+   * @param $father
+   * @return Node
+   * @internal param $node
    */
   public static function buildEmptyNode($env, $father) {
     $node = new Node($env, NODE_NEW, $father);
@@ -97,15 +106,13 @@ class NodeFactory {
    *
    * @param Environment $env
    *   The Environment.
-   * @param $from
-   *   The Node to be linked
-   * @param $folder
-   *   The Folder where we place the symlink
-   * @param $to
-   *   The name of the symlink
-   * @param $vars
+   * @param $source_node
+   * @param $symlink_folder
+   * @param array $vars
    *   Mixed variables
-   *
+   * @internal param $from The Node to be linked*   The Node to be linked
+   * @internal param $folder The Folder where we place the symlink*   The Folder where we place the symlink
+   * @internal param $to The name of the symlink*   The name of the symlink
    */
   public static function linkNodes($env, $source_node, $symlink_folder, $vars = array()) {
     // If no name is set for the symlink, use the source node name as default.
@@ -161,7 +168,11 @@ class NodeFactory {
   /**
    * Create a node with basic values.
    * @param $env
-   * @param $node
+   * @param $name
+   * @param $father
+   * @param array $vars
+   * @return Node
+   * @internal param $node
    */
   public static function buildNode($env, $name, $father, $vars = array()) {
     $node = new Node($env, NODE_NEW, $father);
@@ -208,6 +219,7 @@ class NodeFactory {
 
   /**
    * Gets the current viewed node.
+   * @param Environment $env
    * @return bool
    */
   public static function current(Environment $env) {
@@ -230,6 +242,7 @@ class NodeFactory {
    * execute the action accordingly.
    * @param $env Environment
    * @param $action string
+   * @param $nodedata
    * @return string
    */
   public static function requestAction(Environment $env, $action, $nodedata) {

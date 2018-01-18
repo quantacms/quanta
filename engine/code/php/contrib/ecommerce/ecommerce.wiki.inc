@@ -2,6 +2,11 @@
 
 /**
  * Detect content JUMPER and eventually create HTML.
+ * @param $attributes
+ * @param $value
+ * @param $string
+ * @param $env
+ * @return bool|mixed|string
  */
 function wiki_PRODUCTS($attributes, $value, $string, $env) {
 
@@ -11,6 +16,11 @@ function wiki_PRODUCTS($attributes, $value, $string, $env) {
 
 /**
  * Detect content JUMPER and eventually create HTML.
+ * @param $attributes
+ * @param $value
+ * @param $string
+ * @param $env
+ * @return bool|mixed|string
  */
 function wiki_PRODUCTSLIST($attributes, $value, $string, $env) {
 

@@ -22,6 +22,7 @@ function cache_regenerate_json($vars) {
 
 /**
  * Cache wiki page. Implements hook_boot
+ * @param $vars
  */
 function cache_boot($vars) {
   $vars['env']->tmpdir('cache', CACHE_FOLDER);

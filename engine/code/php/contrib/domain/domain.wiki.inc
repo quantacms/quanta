@@ -4,6 +4,11 @@
  * User: aldotripiciano
  * Date: 05/06/15
  * Time: 10:44
+ * @param $attributes
+ * @param $value
+ * @param $string
+ * @param $page
+ * @return bool|string
  */
 function wiki_DOMAINSEARCH($attributes, $value, $string, $page) {
   $search_html = file_get_contents('contrib/domain/domain.html.inc');

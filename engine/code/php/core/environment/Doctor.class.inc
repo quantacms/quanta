@@ -177,9 +177,11 @@ class Doctor extends DataContainer {
     Doctor::op('Doctor has finished curing your environment!');
     die();
   }
+
   /**
    * When the doctor says something.
    * @param string $phrase
+   * @param string $style
    */
   public static function talk($phrase, $style = 'color:#fff') {
     print '<div class="doctor-line" style="background:#000"><div class="doctor-phrase" style="' . $style . '">' . $phrase . '</div></div>';

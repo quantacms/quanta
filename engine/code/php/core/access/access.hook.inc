@@ -5,10 +5,15 @@
  * @param $vars
  */
 function access_shadow_access_form($vars) {
-  $vars['shadow']->addTab('manage permissions', file_get_contents('core/access/tpl/permissions_form.inc'), 5);
+  /** @var Shadow $shadow */
+  $shadow = &$vars['shadow'];
+  $shadow->addTab('manage permissions', file_get_contents('core/access/tpl/permissions_form.inc'), 5);
 
 }
 
+/**
+ * @param $vars
+ */
 function access_node_presave($vars) {
 
   $node_permissions = array(
@@ -17,13 +22,15 @@ function access_node_presave($vars) {
     'node_delete',
     'node_view',
   );
+  /** @var Node $node */
+  $node = &$vars['node'];
   // TODO: review this process.
-  if (!isset($vars['node']->json->permissions)) {
-    $vars['node']->json->permissions = new StdClass();
+  if (!isset($node->json->permissions)) {
+    $node->json->permissions = new StdClass();
   }
   foreach ($node_permissions as $permission) {
     if (isset($vars['data'][$permission])) {
-      $vars['node']->json->permissions->{$permission} = $vars['data'][$permission];
+      $node->json->permissions->{$permission} = $vars['data'][$permission];
     }
   }
 }
@@ -34,19 +41,24 @@ function access_node_presave($vars) {
  * @param $vars
  */
 function access_node_open($vars) {
-  if (!empty($vars['node']) && $vars['node']->exists) {
-    $user = UserFactory::current($vars['env']);
-    $has_access = $user->checkAccess($vars['node'], NODE_ACTION_VIEW);
+  /** @var Node $node */
+  $node = &$vars['node'];
+  /** @var Environment $env */
+  $env = &$vars['env'];
+
+  if (!empty($node) && $node->exists) {
+    $user = UserFactory::current($env);
+    $has_access = $user->checkAccess($node, NODE_ACTION_VIEW);
     if (!$has_access) {
-      $vars['node'] = NodeFactory::buildForbiddenNode($vars['env']);
+      $node = NodeFactory::buildForbiddenNode($env);
     }
   }
 }
 
-
 /**
  * Render a box.
  * TODO: make it open for all node attributes
+ * @param $vars
  */
 function access_wikitag($vars) {
   $node = NodeFactory::current($vars['env']);
