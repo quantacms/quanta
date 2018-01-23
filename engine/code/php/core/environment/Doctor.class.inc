@@ -18,6 +18,19 @@ class Doctor extends DataContainer {
 
   public function checkSystemPaths() {
     Doctor::op("Checking system paths.");
+      
+      if (!is_dir($this->env->dir['sites'])) {
+        Doctor::op('Creating sites directory...');
+        mkdir($this->env->dir['sites']);
+        Doctor::ok();
+      }
+
+      if (!is_dir($this->env->dir['engine'] . '/tmp')) {
+        Doctor::op('Creating tmp directory...');
+        mkdir($this->env->dir['engine'] . '/tmp');
+        Doctor::ok();
+      }
+      
       foreach ($this->env->dir as $dirname => $folder) {
         Doctor::op('Checking ' . $dirname . '(<i>' . $folder. ')</i>');
         if (!is_dir($folder) && !is_link($folder)) {
