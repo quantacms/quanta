@@ -39,15 +39,16 @@ class Environment extends DataContainer {
     }
     $this->request = explode('/', $this->request_uri);
     $this->request_path = $this->request[count($this->request) - 2];
-    $this->dir['docroot'] = $_SERVER['DOCUMENT_ROOT'] . '/sites/' . $this->host;
-    $this->dir['tmp'] = $_SERVER['DOCUMENT_ROOT'] . '/engine/tmp/' . $this->host;
-    $this->dir['engine'] = $_SERVER['DOCUMENT_ROOT'] . '/engine';
+    $this->dir['sites'] = $_SERVER['DOCUMENT_ROOT'] . '/sites/';
+    $this->dir['engine'] = $_SERVER['DOCUMENT_ROOT'] . '/engine/';
+    $this->dir['docroot'] = $this->dir['sites'] . $this->host;
+    $this->dir['tmp'] = $this->dir['engine'] . '/tmp/' . $this->host;
     $this->dir['vendor'] = $_SERVER['DOCUMENT_ROOT'] . '/vendor';
-    $this->dir['modules_core'] = $_SERVER['DOCUMENT_ROOT'] . '/engine/code/php/core';
+    $this->dir['modules_core'] = $this->dir['engine'] . 'code/php/core';
     $this->dir['modules_custom'] = $this->dir['docroot'] . '/_modules';
     // TODO: move to files module.
     $this->dir['tmp_files'] = $this->dir['tmp'] . '/files';
-    $this->dir['log'] = $_SERVER['DOCUMENT_ROOT'] . '/engine/tmp/' . $this->host . '/log';
+    $this->dir['log'] = $this->dir['tmp'] . '/log';
     // TODO: move to user module.
     // TODO: generation to be done in user and node modules.
     $this->dir['statuses'] = $this->dir['docroot'] . '/_statuses';

@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Implementation of hook_shadow_node_delete_access.
- * Check if user can edit the node before showing the shadow.
- * TODO: sharing the edit function.
+ * Implements hook_shadow_node_add_access.
+ * Check if user can add a certain node.
+ * TODO: sharing permission with the edit function.
  * @param $vars
  */
 function node_shadow_node_add_access($vars) {
@@ -20,6 +20,9 @@ function node_shadow_node_delete_access($vars) {
 }
 
 /**
+ * Implements hook_shadow_node_edit_access.
+ * Check if user can edit a certain node.
+ *
  * @param $vars
  */
 function node_shadow_node_edit_access($vars) {
@@ -103,6 +106,8 @@ function node_shadow_node_form($vars) {
   $vars['shadow']->addTab($action_name, file_get_contents('core/node/tpl/node_edit.inc'), 1);
   $vars['shadow']->addTab('manage metadata', file_get_contents('core/node/tpl/metadata_form.inc'), 2);
   $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Save');
+
+  $vars['shadow']->addTab('manage templates', file_get_contents('core/node/tpl/tpl_edit.inc'), 2);
 
 }
 
