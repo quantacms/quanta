@@ -282,6 +282,7 @@ class Node extends JSONDataContainer {
    * Save this node on the file system.
    */
   public function save() {
+
     if (empty($this->realpath)) {
       $this->realpath = $this->getFather()->realpath . '/' . $this->getName();
     }
@@ -289,7 +290,7 @@ class Node extends JSONDataContainer {
       'node' => &$this,
     ));
     $this->updateJSON();
-    $this->saveJSON(array ('path', 'fullpath', 'exists', 'realpath', 'father', 'tmp_files_dir'));
+    $this->saveJSON(array ('path', 'fullpath', 'exists', 'realpath', 'father', 'data'));
     $this->env->hook('node_insert', array (
       'node' => &$this,
     ));
@@ -459,14 +460,14 @@ class Node extends JSONDataContainer {
     $tpl_level = 0;
     // a template in the same directory has always priority.
     if (is_file($this->realpath . '/tpl.html')) {
-      $this->tpl = file_get_contents($this->realpath . '/tpl.html');
+      $this->setData('tpl_file', $this->realpath . '/tpl.html');
     }
     else {
       foreach ($this->lineage as $lineage) {
 
         $tpl_level++;
         if (is_file($lineage->path . '/tpl.html')) {
-          $this->tpl = file_get_contents($lineage->path . '/tpl.html');
+          $this->setData('tpl_file', $lineage->path . '/tpl.html');
         }
 
         $min = '';
@@ -488,9 +489,11 @@ class Node extends JSONDataContainer {
 
       // check if there is a sub-level template.
       if (isset($tpl[$tpl_level])) {
-        $this->tpl = file_get_contents($tpl[$tpl_level]);
+        $this->setData('tpl_file', $tpl[$tpl_level]);
       }
-
+    }
+    if (!empty($this->getData('tpl_file'))) {
+      $this->tpl = file_get_contents($this->getData('tpl_file'));
     }
   }
 

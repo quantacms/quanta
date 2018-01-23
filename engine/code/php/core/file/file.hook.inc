@@ -43,7 +43,7 @@ function file_init($vars) {
 function file_node_save($vars) {
   // TODO: move in File or create FileFactory module.
 
-  $tmp_dir = $vars['node']->env->dir['tmp_files'] . '/' . $vars['node']->tmp_files_dir;
+  $tmp_dir = $vars['node']->env->dir['tmp_files'] . '/' . $vars['node']->getData('tmp_files_dir');
   if (is_dir($tmp_dir)) {
     $tmp_files = $vars['node']->env->scanDirectory($tmp_dir);
     foreach ($tmp_files as $file) {

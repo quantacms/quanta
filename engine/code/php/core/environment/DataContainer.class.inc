@@ -5,12 +5,7 @@ abstract class DataContainer {
    * @var Environment $env
    */
   public $env;
-  public $data = array();
-  public $path;
-  // TODO: dismiss fullpath.
-  public $fullpath;
-  public $realpath;
-  public $dir;
+  protected $data = array();
   public $language;
 
   public function setData($key, $value) {
