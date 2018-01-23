@@ -1,10 +1,11 @@
 <?php
-
 /**
- * Implements hook_init().
- * @param mixed $vars
+ * Implements hook_load_includes().
+ *
+ * @param $vars
+ *   Miscellaneous environment / page variables.
  */
-function form_init($vars) {
+function form_load_includes($vars) {
   $vars['env']->addInclude('engine/code/php/core/form/css/form.css');
   $vars['env']->addInclude('engine/code/php/core/form/js/form.js');
   $vars['env']->addInclude('engine/code/php/core/form/addons/autocomplete/easy-autocomplete.min.css');

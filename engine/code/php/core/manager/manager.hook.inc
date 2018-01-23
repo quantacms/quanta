@@ -1,4 +1,18 @@
 <?php
+
+/**
+ * Implements hook_load_includes().
+ *
+ * @param $vars
+ *   Miscellaneous environment / page variables.
+ */
+function manager_load_includes($vars) {
+  /** @var Environment $env */
+  $env = $vars['env'];
+  $env->addInclude('engine/code/php/core/manager/js/manager.js');
+  $env->addInclude('engine/code/php/core/manager/css/manager.css');
+}
+
 /**
  * Implements hook_init().
  * @param $vars
@@ -6,8 +20,6 @@
 function manager_init($vars) {
   /** @var Environment $env */
   $env = $vars['env'];
-  $env->addInclude('engine/code/php/core/manager/js/manager.js');
-  $env->addInclude('engine/code/php/core/manager/css/manager.css');
   if ($env->getRequestedPath() == 'expand') {
     $node = NodeFactory::load($env, $_GET['node']);
     $manager = new Manager($env, $node);

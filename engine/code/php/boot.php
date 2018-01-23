@@ -32,8 +32,10 @@
   $page = new Page($env, 'index.html');
   $env->setData('page', $page);
 
-  // Load page's included files (CSS / JS etc.)
+  // Run the init hook.
+
   if (!isset($_REQUEST['ajax'])) {
+    $env->hook('load_includes', array('page' => &$page));
     $page->loadIncludes();
   }
 

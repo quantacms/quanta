@@ -65,6 +65,17 @@ function node_action_node_delete($vars) {
 }
 
 /**
+ * Implements hook_load_includes().
+ *
+ * @param $vars
+ *   Miscellaneous environment / page variables.
+ */
+function node_load_includes($vars) {
+  $vars['env']->addInclude('engine/code/php/core/node/js/node.js');
+  $vars['env']->addInclude('engine/code/php/core/node/css/node.css');
+}
+
+/**
  * Implementation of hook_init.
  * Starts a node corresponding to the current page.
  * @param $vars
@@ -93,8 +104,6 @@ function node_init($vars) {
     }
   }
 
-  $vars['env']->addInclude('engine/code/php/core/node/js/node.js');
-  $vars['env']->addInclude('engine/code/php/core/node/css/node.css');
 }
 
 /**

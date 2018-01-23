@@ -1,10 +1,12 @@
 <?php
 
 /**
- * Implement hook_init().
+ * Implements hook_load_includes().
+ *
  * @param $vars
+ *   Miscellaneous environment / page variables.
  */
-function box_init($vars) {
+function box_load_includes($vars) {
   $vars['env']->addInclude('engine/code/php/core/box/js/box.js');
   $vars['env']->addInclude('engine/code/php/core/box/css/box.css');
 }
