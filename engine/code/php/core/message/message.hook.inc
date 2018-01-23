@@ -20,9 +20,11 @@ function message_page_after_build($vars) {
 }
 
 /**
- * Implements hook_init().
+ * Implements hook_load_includes().
+ *
  * @param $vars
+ *   Miscellaneous environment / page variables.
  */
-function message_init($vars) {
+function message_load_includes($vars) {
   $vars['env']->addInclude('engine/code/php/core/message/css/message.css');
 }

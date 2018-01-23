@@ -80,6 +80,15 @@ function access_wikitag($vars) {
 
 }
 
+/**
+ * Check access as defined by a qtag filter attribute.
+ *
+ * @param $env
+ * @param $criteria
+ * @param $node
+ * @param null $user
+ * @return bool
+ */
 function _access_filter($env, $criteria, $node, $user = NULL) {
 
   if ($user == NULL) {

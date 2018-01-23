@@ -10,10 +10,12 @@ function user_boot($vars) {
 }
 
 /**
- * Implements hook_init.
+ * Implements hook_load_includes().
+ *
  * @param $vars
+ *   Miscellaneous environment / page variables.
  */
-function user_init($vars) {
+function user_load_includes($vars) {
   $vars['env']->addInclude('engine/code/php/core/user/js/user.js');
   $vars['env']->addInclude('engine/code/php/core/user/css/user.css');
 }

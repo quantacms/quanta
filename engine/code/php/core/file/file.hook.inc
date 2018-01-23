@@ -15,11 +15,20 @@ function file_shadow_file_form($vars) {
 }
 
 /**
+ * Implements hook_load_includes().
+ *
+ * @param $vars
+ *   Miscellaneous environment / page variables.
+ */
+function file_load_includes($vars) {
+  $vars['env']->addInclude('engine/code/php/core/file/css/file.css');
+}
+
+/**
  * Implements hook_init().
  * @param $vars
  */
 function file_init($vars) {
-  $vars['env']->addInclude('engine/code/php/core/file/css/file.css');
 
   $node = NodeFactory::current($vars['env']);
 

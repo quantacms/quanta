@@ -1,12 +1,20 @@
 <?php
 
+/**
+ * Implements hook_load_includes().
+ *
+ * @param $vars
+ *   Miscellaneous environment / page variables.
+ */
+function shadow_load_includes($vars) {
+  $vars['env']->addInclude('engine/code/php/core/shadow/js/shadow.js');
+  $vars['env']->addInclude('engine/code/php/core/shadow/css/shadow.css');
+}
+
 /*
  * Implements hook_init().
  */
 function shadow_init($vars) {
-  $vars['env']->addInclude('engine/code/php/core/shadow/js/shadow.js');
-  $vars['env']->addInclude('engine/code/php/core/shadow/css/shadow.css');
-
   if (isset($_REQUEST['shadow'])) {
     $shadow_json = json_decode($_REQUEST['shadow']);
     $vars['env']->setContext($shadow_json->context);
