@@ -152,7 +152,6 @@ class NodeFactory {
     }
     else {
       $create_link = TRUE;
-      Doctor::talk('no override');
     }
 
     if ($create_link) {
