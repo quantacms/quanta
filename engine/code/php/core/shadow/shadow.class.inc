@@ -3,7 +3,6 @@ class Shadow extends Page {
   private $tabs = array();
   private $widget;
   private $buttons = array();
-  private $access = TRUE;
   private $components = array();
   /**
    * @var Node $node.
@@ -137,24 +136,6 @@ class Shadow extends Page {
    */
   public function getNode() {
     return $this->node;
-  }
-
-  /**
-   * Set the access of the shadow?
-   * TODO: what is this?
-   * @param $access
-   */
-  public function setAccess($access) {
-    $this->access = $access;
-  }
-
-  /**
-   * Get the access of the shadow?
-   * TODO: what is this?
-   * @return bool
-   */
-  public function getAccess() {
-    return $this->access;
   }
 
 }

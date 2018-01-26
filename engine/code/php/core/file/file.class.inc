@@ -7,22 +7,29 @@ define('FILE_RENDER_PATH', 'file_render_path');
  * Class File
  * This class represents a Page (corrisponding to a rendered html page).
  */
-class File {
+class File extends DataContainer {
+  /** @var Environment $env */
   public $env;
+  /** @var string $name */
   public $name;
+  /** @var string $filename */
   public $filename;
+  /** @var string $path */
   public $path;
+  /** @var string $extension */
   public $extension;
+  /** @var string $type */
   public $type;
+  /** @var boolean $exists */
   public $exists;
+  /** @var double $size */
   public $size;
-  /**
-   * @var Node
-   */
+  /** @var Node $node */
   public $node;
 
-  // Construct the Node.
+  // Construct the File object.
   public function __construct(&$env, $file_path, $node = NULL, $name = NULL) {
+    $this->env = $env;
     $split = explode('/', $file_path);
     if ($node == NULL) {
       $this->node = (count($split) > 1) ?  NodeFactory::load($env, $split[count($split) - 2]) : NodeFactory::current($env);
@@ -42,12 +49,12 @@ class File {
 
   /**
    * Check if the file is public (meaning it can be viewed / downloaded).
-   * System files such as .access .userdata and data.html should never be
-   * public.
    *
    * @return bool
+   *   Returns true if the file can be viewed / downloaded.
    */
   public function isPublic() {
+    // TODO: can be better.
     $is_public =
       ($this->getType() != 'swap') &&
       ($this->extension != 'html') &&
@@ -179,11 +186,12 @@ class File {
 
   /**
    * Check the uploads being made to a node.
+   * TODO: move access check in access hook.
+   *
    * @param $node
    */
   public static function checkUploads($node) {
-    $user = UserFactory::current($node->env);
-    if (!$user->checkAccess($node, NODE_ACTION_EDIT)) {
+    if (Access::check($node->env, NODE_ACTION_EDIT, array('node' => $node))) {
       new Message($node->env, 'Error: you have no permissions to upload files in this node', MESSAGE_ERROR);
     }
     $allowed = array(
@@ -207,12 +215,13 @@ class File {
       'xlsx'
     );
 
+    // Create a temporary upload directory.
     $upload_dir = ($node->env->dir['tmp_files'] . '/' . $_REQUEST['tmp_files_dir']);
-
     if (!is_dir($upload_dir)) {
       mkdir($upload_dir);
     }
 
+    // Check all the uploaded files.
     if (isset($_FILES['upl']) && $_FILES['upl']['error'] == 0) {
       $filename = pathinfo($_FILES['upl']['name'], PATHINFO_FILENAME);
       $extension = pathinfo($_FILES['upl']['name'], PATHINFO_EXTENSION);
@@ -220,6 +229,7 @@ class File {
         echo '{"status":"error"}';
         exit;
       }
+      // Move the uploaded file to the temporary directory..
       if (move_uploaded_file($_FILES['upl']['tmp_name'], $upload_dir . '/' . normalizePath($filename) . '.' . $extension)) {
         echo '{"status":"success"}';
         exit;
@@ -239,12 +249,13 @@ class File {
 
   /**
    * Request the deletion of a file.
+   * TODO: move access check.
+   *
    * @param $node
    * @param $file string
    */
   public static function deleteFile($node, $file) {
-    $user = UserFactory::current($node->env);
-    if (!$user->checkAccess($node, NODE_ACTION_EDIT)) {
+    if (Access::check($node->env,NODE_ACTION_EDIT, array('node' => $node))) {
       new Message($node->env, 'Error: you have no permissions to upload files in this node', MESSAGE_ERROR);
     }
     unlink($node->realpath . '/' . $file);

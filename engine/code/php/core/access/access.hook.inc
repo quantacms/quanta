@@ -46,9 +46,9 @@ function access_node_open($vars) {
   /** @var Environment $env */
   $env = &$vars['env'];
 
+  // Check if the user can access the node.
   if (!empty($node) && $node->exists) {
-    $user = UserFactory::current($env);
-    $has_access = $user->checkAccess($node, NODE_ACTION_VIEW);
+    $has_access = Access::check($env, NODE_ACTION_VIEW, array('node' => $node));
     if (!$has_access) {
       $node = NodeFactory::buildForbiddenNode($env);
     }
@@ -83,20 +83,33 @@ function access_wikitag($vars) {
 /**
  * Check access as defined by a qtag filter attribute.
  *
- * @param $env
- * @param $criteria
- * @param $node
- * @param null $user
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $criteria
+ *   The criteria to use for filtering check.
+ *
+ * @param Node $node
+ *   The node to use for filtering check.
+ *
+ * @param User $user
+ *   The user to use for filtering check.
+ *
  * @return bool
+ *   Returns true if the access check was positive.
  */
 function _access_filter($env, $criteria, $node, $user = NULL) {
 
   if ($user == NULL) {
     $user = new User($env, $node->getAuthor());
   }
+  // Explode the criteria values.
   $filter = explode(',', $criteria);
 
-  foreach ($filter as $k => $filter_item) {
+  // Make matching false by default.
+  $filter_match = FALSE;
+
+  foreach ($filter as $filter_item) {
     $exp = explode('@', $filter_item);
     $filter_type = $exp[0];
     $filter_values = explode(';', $exp[1]);
@@ -129,7 +142,7 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
         $one_match = TRUE;
         $filter_check = array();
         $lineage = $node->getLineage();
-        foreach ($lineage as $k => $lineage_node) {
+        foreach ($lineage as $lineage_node) {
           $filter_check[] = $lineage_node->getName();
         }
         break;
@@ -137,7 +150,7 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
       case 'category':
         $filter_check = array();
         $categories = $node->getCategories();
-        foreach ($categories as $k => $category_node) {
+        foreach ($categories as $category_node) {
           $filter_check[] = $category_node->getName();
         }
         break;
@@ -149,7 +162,7 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
 
     if (!empty($filter_check)) {
       // Check if the filtered item corresponds to the user input.
-      foreach ($filter_check as $k => $check) {
+      foreach ($filter_check as $check) {
 
         foreach ($filter_values as $filter_value) {
 

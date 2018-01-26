@@ -20,6 +20,10 @@ function register() {
 						});
 };
 
+$(document).bind('shadow_user_login', function() {
+  $('#username').focus();
+});
+
 $(document).ready(function() {
     $('.register-link').click(function (e) {
         register();

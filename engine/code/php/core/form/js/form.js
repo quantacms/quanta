@@ -108,5 +108,11 @@ $(document).bind('refresh', function () {
     refreshForms();
 });
 
-
+$(document).bind('shadow_open', function() {
+  $('input[type=text],input[type=password]').keyup(function (e) {
+    if (e.keyCode === 13) {
+      submitShadow();
+    }
+  });
+});
 

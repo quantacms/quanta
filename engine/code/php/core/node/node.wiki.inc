@@ -151,9 +151,16 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
 
     // Node's template file.
     case 'tpl_file':
+      $node->buildTemplate();
       $string = $node->getData('tpl_file');
       break;
 
+
+    // Node's template file.
+    case 'tpl':
+      $node->buildTemplate();
+      $string = file_get_contents($node->getData('tpl_file'));
+      break;
 
     // Default behavior: pick data from the json.
     // TODO: security issues?
@@ -258,8 +265,7 @@ function wiki_LINK($attributes, $target, $string, $env) {
 function wiki_ADD($attributes, $node, $string, $env) {
   $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
 
-  $user = UserFactory::current($env);
-  if (!$user->checkAccess($nodeobj, NODE_ACTION_ADD)) {
+  if (!Access::check($env, NODE_ACTION_ADD, array('node' => $nodeobj))) {
     return;
   }
 
@@ -275,22 +281,25 @@ function wiki_ADD($attributes, $node, $string, $env) {
  * Implementation of qtag EDIT.
  * Creates an edit node button.
  *
- * @param $attributes
- * @param $node the name of the node
- * @param $string
- * @param $env
- * @return string|void
+ * @param array $attributes
+ * @param Node $node the name of the node
+ * @param string $string
+ *
+ * @param Environment $env
+ *
+ * @return string
+ *   The content of the qtag.
  */
 function wiki_EDIT($attributes, $node, $string, $env) {
   $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
 
-  $user = UserFactory::current($env);
-  if (!$user->checkAccess($nodeobj, NODE_ACTION_EDIT)) {
+  if (!Access::check($env, NODE_ACTION_EDIT, array('node' => $nodeobj))) {
     return;
   }
   $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
   $attributes['class'] .= ' edit-link';
-  $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Edit <i>' . $nodeobj->getTitle() . '</i>...';
+  $title = empty($nodeobj->getTitle()) ? $nodeobj->getName() : $nodeobj->getTitle();
+  $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Edit <i>' . $title . '</i>...';
   //$attributes['language'] = isset($attributes['language']) ? $attributes['language'] : $env->getLanguage();
 
   $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&#9998;';
@@ -312,8 +321,7 @@ function wiki_EDIT($attributes, $node, $string, $env) {
 function wiki_DELETE($attributes, $node, $string, $env) {
   $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
 
-  $user = UserFactory::current($env);
-  if (!$user->checkAccess($nodeobj, NODE_ACTION_DELETE)) {
+  if (!Access::check($env, NODE_ACTION_DELETE, array('node' => $nodeobj))) {
     return;
   }
   $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
@@ -364,6 +372,7 @@ function wiki_CATEGORIES($attributes, $var, $string, $env) {
 
 /**
  * TODO: not good. It does not filter per access...
+ *
  * @param $attributes
  * @param $node
  * @param $string
@@ -393,7 +402,7 @@ function wiki_COUNT($attributes, $node, $string, $env) {
 
 
 /**
- * Implementation of qtag STATUS.
+ * Implements qtag STATUS.
  *
  * @param $attributes
  * @param $node

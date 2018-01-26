@@ -16,7 +16,7 @@ class UserFactory {
    */
   public static function load(Environment $env, $user, $tpl = NULL) {
     $user = new User($env, $user);
-    $env->hook('user_open', array('user' => &$user));
+    $env->hook('user_open', array ('user' => &$user));
     return $user;
   }
 
@@ -39,11 +39,11 @@ class UserFactory {
    * @return User
    * @internal param $node
    */
-  public static function buildUser($env, $name, $vars = array()) {
+  public static function buildUser($env, $name, $vars = array ()) {
     $user = new User($env, NODE_NEW);
     $user->setName($name);
 
-    $uservars = array('first_name', 'last_name');
+    $uservars = array ('first_name', 'last_name');
     foreach ($uservars as $k) {
       if (isset($vars[$k])) {
         $user->setData($k, $vars[$k]);
@@ -60,7 +60,7 @@ class UserFactory {
 
     $pass = (isset($vars['password'])) ? pwd($vars['password']) : pwd($name . rand(1, 1000000));
     $user->setPassword($pass);
-    $user->roles = (isset($vars['roles'])) ? $vars['roles'] : array();
+    $user->roles = (isset($vars['roles'])) ? $vars['roles'] : array ();
     $user->realpath = $env->dir['users'] . '/' . $name;
 
     $user->save();
@@ -84,28 +84,49 @@ class UserFactory {
     // This variable is used to check eventual errors in the user save process.
     $valid = FALSE;
     $curr_user = UserFactory::current($env);
-    $edit_same_user = $curr_user->name == $form_data['edit-name'];
     $response = new StdClass();
-    $can_edit =
-      ($action == USER_ACTION_REGISTER && $curr_user->checkAccess(NULL, USER_ACTION_REGISTER)) ||
-      ($action == USER_ACTION_EDIT && $curr_user->checkAccess(NULL, USER_ACTION_EDIT)) ||
-      ($action == USER_ACTION_EDIT && $edit_same_user && $curr_user->checkAccess(NULL, USER_ACTION_EDIT_OWN));
+
+    // Check if the current user is allowed to perform the action.
+    switch ($action) {
+      case USER_ACTION_REGISTER:
+        $can_edit = Access::check($env, USER_ACTION_REGISTER);
+        break;
+
+      case USER_ACTION_EDIT:
+        $can_edit = Access::check($env, ($curr_user->name == $form_data['edit-name']) ? USER_ACTION_EDIT_OWN : $action);
+        break;
+
+      default:
+        // Unknown requested action.
+        $can_edit = FALSE;
+        break;
+    }
+
+    // If user does not have the permission, show an error message.
     if (!$can_edit) {
-      new Message($env, 'Sorry, you don\'t have the permissions to perform this action.', MESSAGE_WARNING, MESSAGE_TYPE_SCREEN);
-    } else {
-      $user = new User($env, $form_data['edit-name'], array(ROLE_LOGGED => ROLE_LOGGED));
-      $user->context = $action;
+      new Message($env, 'Sorry, you don\'t have the permissions to perform this action: ' . $action, MESSAGE_WARNING, MESSAGE_TYPE_SCREEN);
+    }
+    // If user has the permission, perform the requested action.
+    else {
       if ($action == USER_ACTION_REGISTER) {
+        $user = new User($env, $form_data['edit-name'], '_users', LANGUAGE_NEUTRAL);
+        $env->hook('user_register', array('user' => $user, 'form_data' => $form_data));
         $valid = $user->register($form_data);
-      } elseif ($action == USER_ACTION_EDIT) {
+      }
+      elseif ($action == USER_ACTION_EDIT) {
+        $user = new User($env, $form_data['edit-name']);
+        $env->hook('user_update', array('user' => $user, 'form_data' => $form_data));
         $valid = $user->update($form_data);
       }
     }
 
+    // If the newly built user object is valid, rebuild the session to keep it updated.
     if ($valid) {
       $response->redirect = '/' . $env->getRequestedPath();
       $user->rebuildSession();
-    } else {
+    }
+    // If the newly built user object is not valid, show errors.
+    else {
       $response->errors = Message::burnMessages();
     }
     $response_json = json_encode($response);

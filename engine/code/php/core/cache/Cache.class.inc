@@ -15,13 +15,13 @@ class Cache extends DataContainer {
    *
    * @param Environment $env
    *   The environment.
-   *
    * @param $type
    *  The type of cached item.
-   *
    * @param $item
-   * @return bool
-   * @internal param $value The value of the cached item.*   The value of the cached item.
+   *  The name of the cached item.
+   *
+   * @return Node|bool
+   *
    */
   public static function get($env, $type, $item) {
     $cache = $env->getData('cached', array());

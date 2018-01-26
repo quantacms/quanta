@@ -1,12 +1,4 @@
 <?php
-
-/**
- * Created by PhpStorm.
- * User: aldotripiciano
- * Date: 08/05/15
- * Time: 12:18
- */
-
 /**
  * Class DirList
  * This class is providing "listing" features useful to scan a folder and
