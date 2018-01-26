@@ -18,6 +18,19 @@ class Doctor extends DataContainer {
 
   public function checkSystemPaths() {
     Doctor::op("Checking system paths.");
+      
+      if (!is_dir($this->env->dir['sites'])) {
+        Doctor::op('Creating sites directory...');
+        mkdir($this->env->dir['sites']);
+        Doctor::ok();
+      }
+
+      if (!is_dir($this->env->dir['engine'] . '/tmp')) {
+        Doctor::op('Creating tmp directory...');
+        mkdir($this->env->dir['engine'] . '/tmp');
+        Doctor::ok();
+      }
+      
       foreach ($this->env->dir as $dirname => $folder) {
         Doctor::op('Checking ' . $dirname . '(<i>' . $folder. ')</i>');
         if (!is_dir($folder) && !is_link($folder)) {
@@ -161,6 +174,7 @@ class Doctor extends DataContainer {
     $this->checkExistingHome();
     $this->checkAdminUser();
     $this->runDoctor();
+    Doctor::yahoo('<a href="/home">Check your new site now!</a>');
   }
 
   /**
@@ -174,8 +188,7 @@ class Doctor extends DataContainer {
     // Run all doctor hooks.
     $this->env->hook('doctor', array('doctor' => &$this));
     Doctor::ok();
-    Doctor::op('Doctor has finished curing your environment!');
-    die();
+    Doctor::yahoo('Doctor has finished curing your environment!');
   }
 
   /**
@@ -185,6 +198,7 @@ class Doctor extends DataContainer {
    */
   public static function talk($phrase, $style = 'color:#fff') {
     print '<div class="doctor-line" style="background:#000"><div class="doctor-phrase" style="' . $style . '">' . $phrase . '</div></div>';
+    print '<script>window.scrollTo(0,document.body.scrollHeight);</script>';
     flush();
   }
 
@@ -212,4 +226,21 @@ class Doctor extends DataContainer {
     Doctor::talk($phrase, 'color:#f00');
   }
 
+  /**
+   * When the doctor says "Yahoo!".
+   * @param string $phrase
+   */
+  public static function yahoo($phrase = 'OK') {
+    Doctor::talk($phrase, 'background:#333;padding:3px;text-transform:uppercase;font-weight:bold;font-size:1.3em;color:#ff3');
+  }
+
+  /**
+   * When the doctor says something is going wrong.
+   * @param string $phrase
+   */
+  public static function redirect($destination, $delay = 5) {
+    Doctor::talk('Redirecting you to ' . $destination . ' in ' . $delay . ' seconds...');
+    sleep($delay);
+    print '<script>window.location.href="' . $destination . '";</script>';
+  }
 }

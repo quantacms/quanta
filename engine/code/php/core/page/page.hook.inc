@@ -29,11 +29,7 @@ function page_boot($vars) {
 }
 
 /**
- * Refresh CSS JS and do other operations.
- * @param $vars
- */
-/**
- * Main setup of languages.
+ * Refresh minified CSS, JS, and and do other operations.
  * @param $vars
  */
 function page_doctor($vars) {

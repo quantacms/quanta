@@ -26,7 +26,8 @@ function closeShadow() {
 };
 
 /**
- * Open a shadow (lightbox) with the specified parameters.
+ * Open a shadow (overlay form) with the specified parameters.
+ *
  * @param shadow
  */
 function openShadow(shadowData) {
@@ -62,6 +63,7 @@ function openShadow(shadowData) {
       }
       return false;
     });
+
     $(document).trigger('shadow_open');
     $(document).trigger('shadow_' + shadow.context);
   });
@@ -86,6 +88,7 @@ function submitShadow() {
     }
   });
   var formData = JSON.stringify(form_items);
+  $(document).trigger('shadow_submit');
 
   action(formData);
 };

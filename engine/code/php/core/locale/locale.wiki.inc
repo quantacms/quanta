@@ -1,7 +1,8 @@
 <?php
 
 /**
- * Returns current language.
+ * Implements qtag LANGUAGE
+ * Returns language code of the current language.
  *
  * @param array $attributes
  *
@@ -10,24 +11,25 @@
  * @param string $string
  *
  * @param Environment $env
- * @return mixed $language
+ *
+ * @return string $language
  *   The language.
  */
 function wiki_LANGUAGE($attributes, $target, $string, Environment $env) {
   return Locale::getLanguage($env);
 }
 
+/**
+ * Implements qtag FALLBACK_LANGUAGE.
+ * Return the language code of the fallback language.
+
+ */
 function wiki_FALLBACK_LANGUAGE($attributes, $target, $string, Environment $env) {
   return Locale::getFallbackLanguage($env);
 }
 
 /**
- * Language switcher.
- * @param $attributes
- * @param $target
- * @param $string
- * @param Environment $env
- * @return bool|mixed|string
+ * Implements qtag LANGUAGE_SWITCHER
  */
 function wiki_LANGUAGE_SWITCHER($attributes, $target, $string, Environment $env) {
 
@@ -37,14 +39,14 @@ function wiki_LANGUAGE_SWITCHER($attributes, $target, $string, Environment $env)
   // We don't want translate links to be considered as editable nodes.
   $attributes['nowrap'] = TRUE;
   $attributes['active_items'] = Locale::getLanguage($env);
-
+  $attributes['symlinks'] = 'no';
 
   if (isset($attributes['compact'])){
     //uses name for label instead of title
     $language_switcher_tpl = 'language_switcher_compact';
   }
 
-  $dirlist = new DirList($env, DIR_LANGUAGES, $language_switcher_tpl, array('sortbytime' => 'asc') + $attributes, 'locale');
+  $dirlist = new DirList($env, DIR_LANGUAGES, $language_switcher_tpl, $attributes, 'locale');
 
   // Don't show language switch link, if node is not available in that language.
   foreach ($dirlist->getDirs() as $langcode => $lang) {
@@ -68,7 +70,8 @@ function wiki_TRANSLATE_LINKS($attributes, $value, $string, $env) {
   $attributes['active_items'] = Locale::getLanguage($env);
   // We don't want translate links to be considered as editable nodes.
   $attributes['nowrap'] = TRUE;
-  $dirlist = new DirList($env, DIR_LANGUAGES, 'translate_links', array('sortbytime' => 'asc') + $attributes, 'locale');
+  $attributes['symlinks'] = 'no';
+  $dirlist = new DirList($env, DIR_LANGUAGES, 'translate_links', $attributes, 'locale');
   return $dirlist->render();
 }
 

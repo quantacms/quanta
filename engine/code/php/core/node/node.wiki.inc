@@ -1,6 +1,6 @@
 <?php
 /**
- * Implementation of wiki tag Author
+ * Implementation of qtag Author
  * Renders the author of a node as an user link.
  *
  * @param $attributes
@@ -17,7 +17,7 @@ function wiki_AUTHOR($attributes, $var, $string, $env) {
 }
 
 /**
- * Implementation of wiki tag BLOCK
+ * Implementation of qtag BLOCK
  * Renders a node as a block that can be embedded elsewhere.
  *
  * @param $attributes
@@ -36,7 +36,7 @@ function wiki_BLOCK($attributes, $node, $string, $env) {
   else {
     $body = isset($attributes['with-title']) ? ('<h2 class="block-title">' . $node->getTitle() . '</h2>' . $node->getBody()) : $node->getBody();
   }
-  
+
   $editable = !empty($attributes['editable']) ? $attributes['editable'] : 'true';
   if ($editable == 'true') {
     $body = $node->wrap($body);
@@ -44,8 +44,9 @@ function wiki_BLOCK($attributes, $node, $string, $env) {
   // If user can't see the node, don't display it.
   return $node->isForbidden() ? '' : $body;
 }
+
 /**
- * Implementation of wiki tag JSONATTRIBUTE
+ * Implementation of qtag JSONATTRIBUTE
  * Very important tag that allows retrieving every attribute of a node.
  *
  * @param $attributes
@@ -57,11 +58,11 @@ function wiki_BLOCK($attributes, $node, $string, $env) {
 function wiki_JSONATTRIBUTE($attributes, $node, $string, $env) {
   $attribute = wiki_ATTRIBUTE($attributes, $node, $string, $env);
 
-	return json_encode($attribute);
+  return json_encode($attribute);
 }
 
 /**
- * Implementation of wiki tag ATTRIBUTE
+ * Implementation of qtag ATTRIBUTE.
  * Very important tag that allows retrieving every attribute of a node.
  *
  * @param $attributes
@@ -71,14 +72,19 @@ function wiki_JSONATTRIBUTE($attributes, $node, $string, $env) {
  * @return string
  */
 function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
-  
+
   $node = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
 
-  switch($attributes['name']) {
+  switch ($attributes['name']) {
+    // Node's name (aka name of the folder).
     case 'name':
       $string = $node->getName();
+      if ($string == NODE_NEW) {
+        $string = '';
+      }
       break;
 
+    // Author's name (aka name of the author's node)
     case 'author':
       $string = $node->getAuthor();
       // In case node has no author, return NULL string.
@@ -86,58 +92,80 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
         $string = '';
       }
       break;
-    // TODO: still looking for a better solution for new nodes.
-    case 'realname':
-      $string = $node->name == NODE_NEW ? '' : $node->name;
-      break;
 
+    // Node's path.
     case 'path':
       $string = $node->path;
-     break;
+      break;
 
+    // Node's title.
     case 'title':
       $string = $node->getTitle();
       break;
 
+    // Node's full rendered content.
     case 'content':
       $node->buildTemplate();
       $string = $node->render();
       break;
 
+    // Node's body.
     case 'body':
       $string = $node->getBody();
       break;
 
+    // Node's teaser.
     case 'teaser':
       $string = $node->getTeaser();
       break;
 
+    // Node's father node.
     case 'father':
       $string = $node->getFather()->getName();
       break;
 
+    // Node's creation time.
     case 'time':
       $string = $node->getTime();
       break;
 
+    // Node's creation date.
     case 'date':
       $string = $node->getDate();
       break;
 
+    // Node edit screen's temporary file upload directory.
     case 'tmp_files_dir':
-      $string = $node->tmp_files_dir;
+      $string = $node->getData('tmp_files_dir');
       break;
 
+    // Node's thumbnail file.
     case 'thumbnail':
       $string = $node->getThumbnail();
       break;
 
+    // Node's status.
     case 'status':
       $string = $node->getStatus();
       break;
 
+    // Node's template file.
+    case 'tpl_file':
+      $node->buildTemplate();
+      $string = $node->getData('tpl_file');
+      break;
+
+
+    // Node's template file.
+    case 'tpl':
+      $node->buildTemplate();
+      $string = file_get_contents($node->getData('tpl_file'));
+      break;
+
+    // Default behavior: pick data from the json.
+    // TODO: security issues?
+
     default:
-      // TODO: security issues.
       if (isset($node->json->{$attributes['name']})) {
         $string = string_normalize($node->json->{$attributes['name']});
       }
@@ -167,9 +195,9 @@ function wiki_LINK($attributes, $target, $string, $env) {
 
   // Retrieve main link attributes.
   $current = NodeFactory::current($env);
-  $querystring = array();
+  $querystring = array ();
   $link_title = '';
-  $classes = array('link');
+  $classes = array ('link');
 
   // Check if the target is a node or an external link.
   if (((substr($target, 0, 4) == 'http') || (substr($target, 0, 4) == 'www.')) && !$node->exists) {
@@ -180,7 +208,7 @@ function wiki_LINK($attributes, $target, $string, $env) {
   else {
 
     // TODO: use something to get the real url...
-		$target = '/' . string_normalize($node->getName());
+    $target = '/' . string_normalize($node->getName());
     $title_default = $node->getTitle();
     // Add classes...
     $classes[] = 'link-' . string_normalize($node->getName());
@@ -197,7 +225,7 @@ function wiki_LINK($attributes, $target, $string, $env) {
 
   // Check if there is a link title.
   if (isset($attributes['link_title'])) {
-    $link_title = 'title="'.$attributes['link_title'].'"';
+    $link_title = 'title="' . $attributes['link_title'] . '"';
   }
 
   // Check if there is a target language.
@@ -205,27 +233,27 @@ function wiki_LINK($attributes, $target, $string, $env) {
     $querystring[] = 'lang=' . $attributes['language'];
   }
 
-  $link_data = array();
+  $link_data = array ();
   // TODO: make just a big variable "data".
   // Check Quanta data types.
-  $data_types = array('rel', 'language', 'type', 'widget', 'components', 'tooltip', 'redirect');
+  $data_types = array ('rel', 'language', 'type', 'widget', 'components', 'tooltip', 'redirect');
   foreach ($data_types as $data_type) {
     if (isset($attributes[$data_type])) {
       $link_data[] = 'data-' . $data_type . '="' . $attributes[$data_type] . '"';
     }
   }
 
-  $query = (!empty($querystring))  ? ('?' . implode('&', $querystring)) : '';
+  $query = (!empty($querystring)) ? ('?' . implode('&', $querystring)) : '';
 
   // Create the link HTML.
-  $link = '<a ' . implode(' ', $link_data) . ' class="' . implode(' ', $classes). '" ' . $link_title . ' href="' . $target . $query . '">' . string_normalize((isset($attributes['title']) ? $attributes['title'] : $title_default)) .'</a>';
+  $link = '<a ' . implode(' ', $link_data) . ' class="' . implode(' ', $classes) . '" ' . $link_title . ' href="' . $target . $query . '">' . string_normalize((isset($attributes['title']) ? $attributes['title'] : $title_default)) . '</a>';
   return $link;
 }
 
 
 // TODO: very redundant functions!
 /**
- * Implementation of wiki tag ADD.
+ * Implementation of qtag ADD.
  * Creates an add node button.
  *
  * @param $attributes
@@ -237,8 +265,7 @@ function wiki_LINK($attributes, $target, $string, $env) {
 function wiki_ADD($attributes, $node, $string, $env) {
   $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
 
-  $user = UserFactory::current($env);
-  if (!$user->checkAccess($nodeobj, NODE_ACTION_ADD)) {
+  if (!Access::check($env, NODE_ACTION_ADD, array('node' => $nodeobj))) {
     return;
   }
 
@@ -251,25 +278,28 @@ function wiki_ADD($attributes, $node, $string, $env) {
 }
 
 /**
- * Implementation of wiki tag EDIT.
+ * Implementation of qtag EDIT.
  * Creates an edit node button.
  *
- * @param $attributes
- * @param $node the name of the node
- * @param $string
- * @param $env
- * @return string|void
+ * @param array $attributes
+ * @param Node $node the name of the node
+ * @param string $string
+ *
+ * @param Environment $env
+ *
+ * @return string
+ *   The content of the qtag.
  */
 function wiki_EDIT($attributes, $node, $string, $env) {
   $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
 
-  $user = UserFactory::current($env);
-  if (!$user->checkAccess($nodeobj, NODE_ACTION_EDIT)) {
+  if (!Access::check($env, NODE_ACTION_EDIT, array('node' => $nodeobj))) {
     return;
   }
   $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
   $attributes['class'] .= ' edit-link';
-  $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Edit <i>' . $nodeobj->getTitle() . '</i>...';
+  $title = empty($nodeobj->getTitle()) ? $nodeobj->getName() : $nodeobj->getTitle();
+  $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Edit <i>' . $title . '</i>...';
   //$attributes['language'] = isset($attributes['language']) ? $attributes['language'] : $env->getLanguage();
 
   $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&#9998;';
@@ -279,7 +309,7 @@ function wiki_EDIT($attributes, $node, $string, $env) {
 }
 
 /**
- * Implementation of wiki tag DELETE.
+ * Implementation of qtag DELETE.
  * Creates a delete node button.
  *
  * @param $attributes
@@ -291,8 +321,7 @@ function wiki_EDIT($attributes, $node, $string, $env) {
 function wiki_DELETE($attributes, $node, $string, $env) {
   $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
 
-  $user = UserFactory::current($env);
-  if (!$user->checkAccess($nodeobj, NODE_ACTION_DELETE)) {
+  if (!Access::check($env, NODE_ACTION_DELETE, array('node' => $nodeobj))) {
     return;
   }
   $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
@@ -303,7 +332,7 @@ function wiki_DELETE($attributes, $node, $string, $env) {
 }
 
 /**
- * Implementation of wiki tag OPERATIONS.
+ * Implementation of qtag OPERATIONS.
  * Simply renders ADD - EDIT - DELETE tags altogether.
  *
  * @param $attributes
@@ -315,9 +344,9 @@ function wiki_DELETE($attributes, $node, $string, $env) {
 function wiki_OPERATIONS($attributes, $node, $string, $env) {
   $operations = '';
   // Collect the three basic admin links.
-	$operations .= wiki_ADD($attributes, $node, $string, $env);
-	$operations .= wiki_EDIT($attributes, $node, $string, $env);
-	$operations .= wiki_DELETE($attributes, $node, $string, $env);
+  $operations .= wiki_ADD($attributes, $node, $string, $env);
+  $operations .= wiki_EDIT($attributes, $node, $string, $env);
+  $operations .= wiki_DELETE($attributes, $node, $string, $env);
   return $operations;
 }
 
@@ -343,6 +372,7 @@ function wiki_CATEGORIES($attributes, $var, $string, $env) {
 
 /**
  * TODO: not good. It does not filter per access...
+ *
  * @param $attributes
  * @param $node
  * @param $string
@@ -359,7 +389,8 @@ function wiki_COUNT($attributes, $node, $string, $env) {
   }
   if (isset($attributes['mindepth'])) {
     $depth .= ' -mindepth ' . $attributes['mindepth'];
-  } else {
+  }
+  else {
     $depth .= ' -mindepth 1';
   }
 
@@ -371,7 +402,7 @@ function wiki_COUNT($attributes, $node, $string, $env) {
 
 
 /**
- * Implementation of wiki tag STATUS.
+ * Implements qtag STATUS.
  *
  * @param $attributes
  * @param $node

@@ -7,8 +7,12 @@
  */
 abstract class JSONDataContainer extends DataContainer {
   public $name;
-  // public $context;
+  // TODO: dismiss fullpath.
+  public $fullpath;
+  public $realpath;
+  public $dir;
   public $json;
+  public $path;
 
   /**
    *  This is meant only to be extended.
@@ -28,7 +32,7 @@ abstract class JSONDataContainer extends DataContainer {
    */
   protected function saveJSON($ignore = array()) {
     if (!is_dir($this->realpath)) {
-      mkdir($this->realpath) or die('cannot create dir: ' . $this->realpath);
+      mkdir($this->realpath) or die('Error. Cannot create dir: ' . $this->realpath);
     }
 
     $language = empty($this->getLanguage()) ? Locale::getLanguage($this->env) : $this->getLanguage();

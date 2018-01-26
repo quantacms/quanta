@@ -9,7 +9,7 @@
   $env = new Environment(NULL);
 
   if (!isset($_GET['doctor']) || !($_GET['doctor'] == 'setup')) {
-    // Check if the current request is a file rendering request.
+    // Check if the site is installed.
     $env->checkInstalled();
   }
 
@@ -28,36 +28,38 @@
   // Run the boot hook.
   $env->hook('boot');
 
-  // Create the doctor.
-  $doctor = new Doctor($env);
+  // Start page's standard index.html.
+  $page = new Page($env, 'index.html');
+  $env->setData('page', $page);
 
+  // Run the init hook.
+
+  if (!isset($_REQUEST['ajax'])) {
+    $env->hook('load_includes', array('page' => &$page));
+    $page->loadIncludes();
+  }
+
+  // TODO: determine when to run setup.
+  if (isset($_GET['doctor']) && $_GET['doctor'] == 'setup') {
+    // Create the doctor.
+    $doctor = new Doctor($env);
+    // Run the setup.
+    $doctor->runSetup();
+    exit;
+  }
 
   // TODO: determine when to run doctor.
-  if (isset($_GET['doctor']) && $_GET['doctor'] == 'setup') {
-    $doctor->runSetup();
+  if (isset($_GET['doctor'])) {
+    $doctor = new Doctor($env);
+    $doctor->runDoctor();
     exit;
   }
 
   // Check if there is any requested action.
   $env->checkActions();
 
-  // Start page's standard index.html.
-  $page = new Page($env, 'index.html');
-  $env->setData('page', $page);
-
   // Run the init hook.
   $env->hook('init', array('page' => &$page));
-
-  // Load page's included files (CSS / JS etc.)
-  if (!isset($_REQUEST['ajax'])) {
-    $page->loadIncludes();
-  }
-
-  // TODO: determine when to run doctor.
-  if (isset($_GET['doctor'])) {
-    $doctor->runDoctor();
-    exit;
-  }
 
   // Build the page's HTML code.
   $page->buildHTML();
@@ -68,7 +70,6 @@
   // Run the complete hook.
   $env->hook('complete');
 
-  $node = NodeFactory::load($env, 'corsi-e-didattica');
   // End the bootstrap.
   exit();
 ?>

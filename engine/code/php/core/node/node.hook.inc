@@ -1,33 +1,4 @@
 <?php
-
-/**
- * Implementation of hook_shadow_node_delete_access.
- * Check if user can edit the node before showing the shadow.
- * TODO: sharing the edit function.
- * @param $vars
- */
-function node_shadow_node_add_access($vars) {
-  node_shadow_node_edit_access($vars);
-}
-
-/**
- * Implementation of hook_shadow_node_delete_access.
- * Check if user can delete the node before showing the shadow.
- * @param $vars
- */
-function node_shadow_node_delete_access($vars) {
-  node_shadow_node_edit_access($vars);
-}
-
-/**
- * @param $vars
- */
-function node_shadow_node_edit_access($vars) {
-  $user = UserFactory::current($vars['env']);
-  $has_access = $user->checkAccess($vars['shadow']->getNode(), $vars['env']->getContext());
-  $vars['shadow']->setAccess($has_access);
-}
-
 /**
  * Implementation of hook_action_node_add.
  * There is a node add request.
@@ -44,9 +15,7 @@ function node_action_node_add($vars) {
  * @param $vars
  */
 function node_action_node_edit($vars) {
-
   $response_json = NodeFactory::requestAction($vars['env'], $vars['data']['action'], $vars['data']);
-
   exit($response_json);
 }
 
@@ -59,6 +28,17 @@ function node_action_node_edit($vars) {
 function node_action_node_delete($vars) {
   $response_json = NodeFactory::requestAction($vars['env'], $vars['data']['action'], $vars['data']);
   exit($response_json);
+}
+
+/**
+ * Implements hook_load_includes().
+ *
+ * @param $vars
+ *   Miscellaneous environment / page variables.
+ */
+function node_load_includes($vars) {
+  $vars['env']->addInclude('engine/code/php/core/node/js/node.js');
+  $vars['env']->addInclude('engine/code/php/core/node/css/node.css');
 }
 
 /**
@@ -90,12 +70,10 @@ function node_init($vars) {
     }
   }
 
-  $vars['env']->addInclude('engine/code/php/core/node/js/node.js');
-  $vars['env']->addInclude('engine/code/php/core/node/css/node.css');
 }
 
 /**
- * Implements hook_shadow_node_edit.
+ * Implements hook_shadow_node_form.
  * @param $vars
  */
 function node_shadow_node_form($vars) {
@@ -104,18 +82,24 @@ function node_shadow_node_form($vars) {
   $vars['shadow']->addTab('manage metadata', file_get_contents('core/node/tpl/metadata_form.inc'), 2);
   $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Save');
 
+  // Edit the current template of the node.
+  // For now, we will only allow editing existing tpl.html files, NOT creating new ones.
+  $node = $vars['shadow']->getNode();
+  $node->buildTemplate();
+  if (is_file($node->getData('tpl_file'))) {
+    $vars['shadow']->addTab('manage templates', file_get_contents('core/node/tpl/tpl_edit.inc'), 2);
+  }
 }
 
 /**
- * Implements hook_shadow_node_edit.
- * @param $vars
+ * Implements hook_shadow_node_delete_form.
  */
 function node_shadow_node_delete_form($vars) {
-  $user = UserFactory::current($vars['env']);
   $node = $vars['shadow']->getNode();
-  $has_access = $user->checkAccess($node, $vars['env']->getContext());
+  $has_access = Access::check($vars['env'], $vars['env']->getContext(), array('node' => $node));
   if (!$has_access) {
-    new Message($vars['env'], 'User ' . $user->name . ' attempted to delete a node without access', MESSAGE_WARNING, MESSAGE_TYPE_LOG, 'node');
+    // TODO: move this in access check!
+    new Message($vars['env'], 'User attempted to delete a node without access', MESSAGE_WARNING, MESSAGE_TYPE_LOG, 'node');
   }
   else {
     $vars['shadow']->addTab('Delete', $node->renderDeleteForm($vars['env']->getContext()), 1);

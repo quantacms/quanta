@@ -1,12 +1,12 @@
 <?php
 
 /**
- * Implements hook_init().
+ * Implements hook_load_includes().
  *
- * Create all default statuses if they don't exist yet.
  * @param $vars
+ *   Miscellaneous environment / page variables.
  */
-function locale_init($vars) {
+function locale_load_includes($vars) {
   $vars['env']->addInclude('engine/code/php/core/locale/css/locale.css');
   $vars['env']->addInclude('engine/code/php/core/locale/js/locale.js');
 }
