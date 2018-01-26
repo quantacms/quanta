@@ -258,10 +258,10 @@ class Node extends JSONDataContainer {
   /**
    * Validates this node before saving it.
    * TODO: put into a hook!
-   * @param array $form_data
+   *
    * @return bool
    */
-  public function validate($form_data = array ()) {
+  public function validate() {
     $valid = TRUE;
     $author = new User($this->env, $this->getAuthor());
 
@@ -276,7 +276,6 @@ class Node extends JSONDataContainer {
 
     return $valid;
   }
-
 
   /**
    * Save this node on the file system.
@@ -507,6 +506,7 @@ class Node extends JSONDataContainer {
 
   /**
    * Get the lineage of a node.
+   *
    * @return array
    */
   public function getLineage() {
@@ -696,20 +696,27 @@ class Node extends JSONDataContainer {
   /**
    * EXPERIMENTAL: find all categories for the node,
    * aka all nodes where it has been included as a symlink (tagged).
-   * @param null $cat
+   *
+   * @param Node $node
+   *  The node.
+   *
    * @return array
+   *   All the Nodes containing a symlink to the node.
    */
-  public function getCategories($cat = NULL) {
+  public function getCategories($node = NULL) {
     $categories = array ();
-    if ($cat != NULL) {
-      $catnode = NodeFactory::load($this->env, $cat);
+    if ($node != NULL) {
+      $catnode = NodeFactory::load($this->env, $node);
       $root = $catnode->realpath;
     }
     else {
       $root = $this->env->dir['docroot'];
     }
+    // Run a find command to search for all symlinks refering to this node.
     $cmd = 'find -L ' . $root . ' -samefile ' . $this->realpath;
     exec($cmd, $categories_url);
+
+    // Build the nodes that contain the symlink.
     foreach ($categories_url as $cat_url) {
       $exp = explode('/', $cat_url);
       $categories[] = NodeFactory::load($this->env, $exp[count($exp) - 2]);
@@ -718,20 +725,23 @@ class Node extends JSONDataContainer {
   }
 
   /**
-   * "wrap" node item in html tags allowing inline editing, deleting etc.
-   * @param $html
+   * "wrap" a Node block in html tags allowing inline editing, deleting etc.
+   *
+   * @param string $html
+   *   The initial html.
+   *
    * @return string
+   *   The wrapped html.
    */
   public function wrap($html) {
 
-    $user = UserFactory::current($this->env);
     $actions = array ();
 
-    if ($user->checkAccess($this, NODE_ACTION_EDIT)) {
+    if (Access::check($this->env, NODE_ACTION_EDIT, array('node' => $this))) {
       $actions[] = '[EDIT:' . $this->getName() . ']';
     }
 
-    if ($user->checkAccess($this, NODE_ACTION_DELETE)) {
+    if (Access::check($this->env, NODE_ACTION_EDIT, array('node' => $this))) {
       $actions[] = '[DELETE:' . $this->getName() . ']';
     }
 

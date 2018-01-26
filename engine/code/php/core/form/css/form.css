@@ -61,3 +61,7 @@ div.has-validation-errors {
 .form-item-wrapper {
     position: relative;
 }
+
+.form-item {
+    font-size: 0.8em;
+}
