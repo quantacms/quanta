@@ -74,3 +74,7 @@
 .node-item-actions a:hover {
     background: transparent !important;
 }
+
+textarea#edit_tpl {
+    width: 100%;
+}

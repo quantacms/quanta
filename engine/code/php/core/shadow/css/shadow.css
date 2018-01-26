@@ -1,7 +1,7 @@
 #shadow-outside {
     position: absolute;
-position: fixed;
-left: 0;
+    position: fixed;
+    left: 0;
     top: 0;
     width: 100%;
     height: 100%;
@@ -20,7 +20,6 @@ left: 0;
     opacity: 0.8;
     z-index: 90;
 }
-
 
 #shadow-image {
     position: relative;
@@ -87,14 +86,6 @@ left: 0;
     margin-top: 80px;
     z-index: 200;
     width: auto;
-}
-
-#shadow-inner {
-    width: 73%;
-    position: absolute;
-    left: 22%;
-    top: 5%;
-    z-index: 500;
 }
 
 #shadow-titles {
@@ -167,8 +158,8 @@ left: 0;
 .shadow-hint {
     font-style: italic;
     display: block;
-    margin-top: 10px;
-    margin-bottom: 15px;
+    margin-top: 5px;
+    margin-bottom: 5px;
     font-size: 12px;
 }
 
@@ -179,17 +170,15 @@ left: 0;
 .shadow-contents label {
     display: inline-block;
     margin: 0;
-    margin-bottom: 2px;
-    margin-top: 20px;
+    margin-top: 10px;
     font-weight: bold;
     padding-right: 8px;
     border: none;
     padding-left: 0;
-    background: #fafafa;
-    color: black;
     text-transform: uppercase;
-    font-size: 12px;
-
+    letter-spacing: 1px;
+    font-size: 0.8em;
+    color: #444;
 }
 
 
@@ -296,8 +285,7 @@ left: 0;
 .shadow-content h2 {
     color: black;
     margin: 0;
-    margin-top: 10px;
-    padding-bottom: 10px;
+    padding-bottom: 2px;
     margin-bottom: 10px;
     border-bottom: 2px dotted #ccc;
 }

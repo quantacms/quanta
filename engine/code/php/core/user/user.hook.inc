@@ -10,10 +10,12 @@ function user_boot($vars) {
 }
 
 /**
- * Implements hook_init.
+ * Implements hook_load_includes().
+ *
  * @param $vars
+ *   Miscellaneous environment / page variables.
  */
-function user_init($vars) {
+function user_load_includes($vars) {
   $vars['env']->addInclude('engine/code/php/core/user/js/user.js');
   $vars['env']->addInclude('engine/code/php/core/user/css/user.css');
 }
@@ -23,6 +25,7 @@ function user_init($vars) {
  * @param $vars
  */
 function user_setup($vars) {
+  // Create the basic roles.
   $basic_roles = array(
     'anonymous' => array('title' => 'Anonymous'),
     'logged' => array('title' => 'Logged-in User'),
@@ -65,14 +68,14 @@ function user_action_login($vars) {
  */
 function user_shadow_user_register_form($vars) {
   $user = UserFactory::current($vars['env']);
-  $tab = $user->renderEditForm($vars['shadow']->getContext());
+  print "CONTEXT " . $vars['env']->getContext();
+  $tab = $user->renderEditForm($vars['env']->getContext());
   $vars['shadow']->addTab('Insert your data', $tab, 1);
   $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Sign Up!');
 }
 
 /**
  * Implements hook_shadow_user_edit_form.
- * @param $vars
  */
 function user_shadow_user_edit_form($vars) {
   $curr_user = UserFactory::current($vars['env']);
@@ -84,20 +87,17 @@ function user_shadow_user_edit_form($vars) {
 
 /**
  * Implements hook_shadow_user_login_form.
- * @param $vars
  */
 function user_shadow_user_login_form($vars) {
   $user = UserFactory::current($vars['env']);
   $tab = $user->renderLoginForm();
   $vars['shadow']->addTab('Your Login Data', $tab, 1);
   $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Login');
-
 }
 
 /**
  * Implements hook_action_user_edit.
  * There is an user edit request.
- * @param $vars
  */
 function user_action_user_edit($vars) {
   $response_json = UserFactory::requestAction($vars['env'], $vars['data']['action'], $vars['data']);

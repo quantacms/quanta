@@ -21,7 +21,7 @@ class NodeFactory {
 
     $node = new Node($env, $node_name, NULL, $language);
 
-    $env->hook('node_open', array('node' => &$node));
+    $env->hook('node_open', array ('node' => &$node));
     return $node;
   }
 
@@ -73,7 +73,7 @@ class NodeFactory {
    * @param $vars
    *  Mixed variables.
    */
-  public static function unlinkNodes($env, $symlink_name, $symlink_folder, $vars = array()) {
+  public static function unlinkNodes($env, $symlink_name, $symlink_folder, $vars = array ()) {
     $symlink_folder_node = NodeFactory::load($env, $symlink_folder);
     // Set the behavior to adopt if the symlink already exists.
     $if_not_exists = isset($vars['if_not_exists']) ? $vars['if_not_exists'] : 'error';
@@ -94,8 +94,7 @@ class NodeFactory {
     else {
       try {
         unlink($symlink_folder_node->realpath . '/' . $symlink_name);
-      }
-      catch (Exception $ex) {
+      } catch (Exception $ex) {
         new Message($vars['env'], 'Error: could not unlink ' . $symlink_name . ' from ' . $symlink_folder);
       }
     }
@@ -114,7 +113,7 @@ class NodeFactory {
    * @internal param $folder The Folder where we place the symlink*   The Folder where we place the symlink
    * @internal param $to The name of the symlink*   The name of the symlink
    */
-  public static function linkNodes($env, $source_node, $symlink_folder, $vars = array()) {
+  public static function linkNodes($env, $source_node, $symlink_folder, $vars = array ()) {
     // If no name is set for the symlink, use the source node name as default.
     $symlink_name = isset($vars['symlink_name']) ? $vars['symlink_name'] : $source_node;
 
@@ -139,7 +138,7 @@ class NodeFactory {
       switch ($if_exists) {
         case 'error':
           new Message($env, 'Error: could not link ' . $source_node . ' into ' . $symlink_folder . '. ' . $symlink_folder . '/' . $symlink_name . ' already exists.');
-        break;
+          break;
 
         case 'ignore':
           break;
@@ -157,10 +156,34 @@ class NodeFactory {
     if ($create_link) {
       try {
         symlink($from_node->realpath, $symlink_folder_node->realpath . '/' . $symlink_name);
-      }
-      catch (Exception $ex) {
+      } catch (Exception $ex) {
         new Message($vars['env'], 'Error: could not link ' . $source_node . ' to ' . $symlink_folder);
       }
+    }
+  }
+
+  /**
+   * Updates a tpl file.
+   *
+   * @param Environment $env
+   *   The environment.
+   *
+   * @param string $tpl_file
+   *   The path of the tpl.
+   *
+   * @param string $tpl_contents
+   *   The content of the tpl.
+   */
+  public static function updateTemplate($env, $tpl_file, $tpl_contents) {
+    // Check if the template file exists. Throw a message if it doesn't.
+    if (!is_file($tpl_file)) {
+      new Message($env, 'Warning: trying to update a non-existing template: ' . $tpl_file, MESSAGE_ERROR);
+    }
+    else {
+      // Write the tpl file.
+      $f = fopen($tpl_file, 'w');
+      fwrite($f, $tpl_contents);
+      fclose($f);
     }
   }
 
@@ -173,11 +196,11 @@ class NodeFactory {
    * @return Node
    * @internal param $node
    */
-  public static function buildNode($env, $name, $father, $vars = array()) {
+  public static function buildNode($env, $name, $father, $vars = array ()) {
     $node = new Node($env, NODE_NEW, $father);
     $node->setName($name);
 
-    foreach($vars as $field_name => $field_value) {
+    foreach ($vars as $field_name => $field_value) {
       switch ($field_name) {
         case 'title':
           $node->setTitle($field_value);
@@ -203,7 +226,7 @@ class NodeFactory {
           $node->setTimestamp($field_value);
           break;
 
-        default: 
+        default:
           $node->json->{$field_name} = $field_value;
           break;
       }
@@ -218,8 +241,10 @@ class NodeFactory {
 
   /**
    * Gets the current viewed node.
+   *
    * @param Environment $env
-   * @return bool
+   *
+   * @return Node bool
    */
   public static function current(Environment $env) {
     static $current_node;
@@ -237,8 +262,9 @@ class NodeFactory {
   }
 
   /**
-   * Request to perform an action on the node. Check permissions and
-   * execute the action accordingly.
+   * Request to perform an action on the node. Checks permissions, builds the node
+   * object and executes the action accordingly.
+   *
    * @param $env Environment
    * @param $action string
    * @param $nodedata
@@ -253,13 +279,15 @@ class NodeFactory {
       }
     }
 
+    // Prepare the response object.
     $response = new StdClass();
 
     // TODO: circular dependency to user.
     $user = UserFactory::current($env);
 
     // TODO: refactor this stuff.
-    // When user didn't enter a path...
+    // When user didn't enter a path for a new node, create a candidate
+    // path based on title.
     if (trim($nodedata['edit-path']) == '') {
       $path = $env->getCandidatePath($nodedata['edit-title']);
     }
@@ -267,14 +295,16 @@ class NodeFactory {
       $path = $nodedata['edit-path'];
     }
 
-		$father = ($action == NODE_ACTION_ADD) ? $nodedata['edit-father'] : NULL;
+    // Check the father of the node.
+    $father = ($action == NODE_ACTION_ADD) ? $nodedata['edit-father'] : NULL;
     $node = new Node($env, $path, $father);
 
     switch ($action) {
       case NODE_ACTION_ADD:
       case NODE_ACTION_EDIT:
         if ($action == NODE_ACTION_ADD) {
-					$node->realpath = $node->father->realpath . '/' . $path;
+          // Setup the path of the node to be created / updated.
+          $node->realpath = $node->father->realpath . '/' . $path;
           $node->setAuthor($user->getName());
         }
         // TODO complete validation code.
@@ -283,39 +313,47 @@ class NodeFactory {
         }
 
         $datetime = strtotime($nodedata['edit-date'] . ' ' . $nodedata['edit-time']);
-        // TODO: why $has_access is unused?
-        $has_access = ($user->checkAccess(($action == NODE_ACTION_ADD) ? $node->father : $node, $action));
-        if (TRUE) {
+        $has_access = (Access::check($env, $action, array('node' => ($action == NODE_ACTION_ADD) ? $node->father : $node)));
+        if ($has_access) {
+          // Setup all node data (title, Body, etc.)
           $node->setTitle($nodedata['edit-title']);
           $node->setBody($nodedata['edit-content']);
           $node->setAuthor($nodedata['edit-author']);
           $node->setTeaser($nodedata['edit-teaser']);
           $node->setContent('<h1>' . $node->getTitle() . '</h1>' . $node->getBody());
           $node->setTimestamp($datetime > 0 ? $datetime : time());
-          $node->tmp_files_dir = $nodedata['tmp_files_dir'];
-          if (isset($nodedata['redirect'])){
-            $node->setData('redirect',$nodedata['redirect']);
+          // Also setup the temporary file directory for the upload.
+          $node->setData('tmp_files_dir', $nodedata['tmp_files_dir']);
+          if (isset($nodedata['redirect'])) {
+            $node->setData('redirect', $nodedata['redirect']);
           }
 
-          $env->hook('node_presave', array(
+          // Run the node presave hook.
+          $env->hook('node_presave', array (
             'node' => &$node,
             'data' => $nodedata,
             'action' => $action,
           ));
 
+          // If the node is validated, proceed with saving it.
           if ($node->validate()) {
             $node->save();
 
-            $env->hook('node_save', array(
-              'node' => &$node,
-              'data' => $nodedata
-            ));
-            
-            $env->hook('node_post_save', array(
+            $env->hook('node_save', array (
               'node' => &$node,
               'data' => $nodedata
             ));
 
+            $env->hook('node_post_save', array (
+              'node' => &$node,
+              'data' => $nodedata
+            ));
+
+            // TODO: move elsewhere maybe?
+            if (isset($nodedata['edit-tpl-file'])) {
+              NodeFactory::updateTemplate($env, $nodedata['edit-tpl-file'], $nodedata['edit-tpl']);
+            }
+            // If the form has a redirect field, setup a redirect.
             $response->redirect = !empty($node->getData('redirect')) ? $node->getData('redirect') : ('/' . $node->getName() . '/');
           }
           else {
@@ -324,21 +362,27 @@ class NodeFactory {
           }
         }
         else {
+          // Page not found.
           $response->redirect = '/403';
         }
 
         break;
 
+      // User requested to delete a Node...
       case NODE_ACTION_DELETE:
-        $has_access = ($user->checkAccess($node, NODE_ACTION_DELETE));
+        // Check that the current user has the right to delete the node.
+        $has_access = (Access::check($env, NODE_ACTION_DELETE, array('node' => $node)));
         if ($has_access) {
+          // Delete the node...
           $node->delete();
+          // ...and display a confirmation message.
           new Message($node->env, $node->getName() . ' was deleted correctly');
-          $response->redirect = !empty($node->getData('redirect')) ? $node->getData('redirect') : ('/' . $node->getFather()->getName() . '/');          
+          $response->redirect = !empty($node->getData('redirect')) ? $node->getData('redirect') : ('/' . $node->getFather()->getName() . '/');
         }
         break;
     }
 
+    // Encode the response JSON code.
     $response_json = json_encode($response);
 
     return $response_json;

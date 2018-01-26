@@ -1,8 +1,11 @@
 <?php
 /**
+ * Implements hook_load_includes().
+ *
  * @param $vars
+ *   Miscellaneous environment / page variables.
  */
-function wysiwyg_init($vars) {
+function wysiwyg_load_includes($vars) {
   $vars['env']->addInclude('engine/code/php/core/wysiwyg/froala/css/froala_style.min.css');
   $vars['env']->addInclude('engine/code/php/core/wysiwyg/froala/css/froala_editor.min.css');
   $vars['env']->addInclude('engine/code/php/core/wysiwyg/froala/js/froala_editor.min.js');

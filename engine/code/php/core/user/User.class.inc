@@ -5,6 +5,7 @@ define("ROLE_ADMIN", "admin");
 define("ROLE_LOGGED", "logged");
 define("USER_PASSWORD_MIN_LENGTH", 8);
 define("USER_ACTION_EDIT", "user_edit");
+define("USER_ACTION_EDIT_OWN", "user_edit_own");
 define("USER_ACTION_REGISTER", "user_register");
 define("USER_VALIDATION_ERROR", "validation_error");
 define("USER_MIN_NAME_LENGTH", 4);
@@ -12,11 +13,10 @@ define("USER_MIN_NAME_LENGTH", 4);
 /**
  * This class represents an user in the system.
  * Users in Quanta CMS are just extensions of Node objects,
- * AKA folder + json file inside.
+ * AKA a folder + json file inside.
  */
 class User extends Node {
   public $email;
-  // Action being performed on the user
   public $roles = array();
   public $password;
 
@@ -66,8 +66,12 @@ class User extends Node {
 
   /**
    * Check if the user has a role.
+   *
    * @param $role
+   *   The role to check.
+   *
    * @return bool
+   *   Returns true, if the user has a certain role.
    */
   public function hasRole($role) {
     $has_role = FALSE;
@@ -82,7 +86,9 @@ class User extends Node {
 
   /**
    * Returns all the roles of the user.
+   *
    * @return array
+   *   All the User's roles.
    */
   public function getRoles() {
     if (empty($this->roles)) {
@@ -95,6 +101,9 @@ class User extends Node {
 
   /**
    * Log out the user.
+   *
+   * @return $response_json
+   *   The JSON-encoded response to the logout action.
    */
   public function logOut() {
     new Message($this->env, 'You logged out', MESSAGE_CONFIRM, MESSAGE_TYPE_SCREEN);
@@ -107,26 +116,35 @@ class User extends Node {
   }
 
   /**
-   * Try to login.
+   * Perform a login action on an user object.
+   *
    * @param $password
+   *   The password inserted by the user.
+   *
    * @return string
+   *   A JSON encrypted response to the login action.
    */
-  public function logIn($password) {
+  public function logIn($password, $success_message = NULL) {
+    // Create a default success message.
+    if (!isset($success_message)) {
+      $success_message = 'Welcome ' . $this->getName() . '! You logged in';
+    }
     // If user dir doesn't exist.
     if (!($this->exists)) {
-      new Message($this->env, 'This is not a valid username. Please try to [LOGIN] again', MESSAGE_WARNING, MESSAGE_TYPE_SCREEN);
+      new Message($this->env, $this->getName() . ' is not a valid username. Please try to [LOGIN] again', MESSAGE_WARNING, MESSAGE_TYPE_SCREEN);
       new Message($this->env, 'Someone tried to login with wrong username: ' . $this->name, MESSAGE_WARNING, MESSAGE_TYPE_LOG);
     }
     else {
       if ($this->checkPassword($password)) {
-        new Message($this->env, 'Welcome ' . $this->name . '! You logged in', MESSAGE_CONFIRM, MESSAGE_TYPE_SCREEN);
-        new Message($this->env, 'User ' . $this->name . ' logged in', MESSAGE_CONFIRM, MESSAGE_TYPE_LOG);
+        new Message($this->env, $success_message, MESSAGE_CONFIRM, MESSAGE_TYPE_SCREEN);
+        new Message($this->env, 'User ' . $this->getName(). ' logged in', MESSAGE_CONFIRM, MESSAGE_TYPE_LOG);
         $this->roles += array('logged' => 'logged');
         unset($this->password);
-        $_SESSION['user'] = serialize($this);
+        $_SESSION['user'] = $this->serializeForSession();
       }
       else {
         new Message($this->env, 'Wrong username or password. Please <a class="login-link" href="#">try again</a>', MESSAGE_WARNING, MESSAGE_TYPE_SCREEN);
+
         new Message($this->env, 'User ' . $this->name . ' tried to login with wrong username or password', MESSAGE_WARNING, MESSAGE_TYPE_LOG);
       }
     }
@@ -138,7 +156,9 @@ class User extends Node {
 
   /**
    * Checks if the user is the current user.
+   *
    * @return bool
+   *   Returns true if the user object is the same as the current user.
    */
   public function isCurrent() {
     $curr_user = UserFactory::current($this->env);
@@ -146,10 +166,16 @@ class User extends Node {
   }
 
   /**
-   * Save the user.
+   * Save the user object.
+   *
    * @return bool
+   *   Returns true if the save action was completed without errors.
    */
   public function save() {
+    if (empty($this->realpath)) {
+      $this->realpath = $this->env->dir['users'] . '/' . $this->getName();
+    }
+
     $this->env->hook('user_save', array('user' => $this));
     $this->updateJSON();
     $this->saveJSON();
@@ -157,27 +183,42 @@ class User extends Node {
     if ($this->isCurrent()) {
       $this->rebuildSession();
     }
+    // TODO: probably always true at this point, but are we sure?
     return TRUE;
   }
 
   /**
-   * User registration / signup.
+   * Perform an user registration / signup action.
+   *
    * @param $form_data
+   *   The data to use for building the user.
+   *
    * @return bool|void
+   *   Returns true if the user was registered correctly
    */
   public function register($form_data) {
-    $this->password = pwd($form_data['edit-password']);
+    $input_password = $form_data['edit-password'];
+    $this->password = pwd($input_password);
     $this->email = $form_data['edit-email'];
+    // TODO: what to do when registering the user with predefined roles?
+    $this->roles = array();
     $this->setData('first_name', $form_data['edit-first_name']);
     $this->setData('last_name', $form_data['edit-last_name']);
+    // Validate and save the user.
     if ($valid = $this->validate($form_data)) {
       $valid = $this->save();
-      //new Message($this->env, 'User ' . $this->name . ' was registered correctly!', MESSAGE_CONFIRM, MESSAGE_TYPE_SCREEN, 'user');
+    }
+
+    if ($valid) {
+      $message = 'Welcome ' . $this->getData('first_name') . '! You have successfully registered to the site.';
+      $this->exists = TRUE;
+      $this->logIn($input_password, $message);
     }
     return $valid;
   }
 
   // Todo:update() and register() look too much similar.
+  // TODO: maybe just rely on node for saving, no need for all this customization.
   public function update($form_data) {
     foreach ($form_data as $k => $value) {
       $field = str_replace('edit-', '', $k);
@@ -212,8 +253,12 @@ class User extends Node {
 
   /**
    * Validate the user as a valid user.
+   *
    * @param array $form_data
+   *   The data to use to build the user object.
+   *
    * @return bool
+   *   Returns true if the constructed user is valid.
    */
   public function validate($form_data = array()) {
     $valid = FALSE;
@@ -231,8 +276,8 @@ class User extends Node {
     elseif (!is_alphanumeric($this->name)) {
       new Message($this->env, 'Please use only letters and numbers for your username', MESSAGE_WARNING);
     }
-
-    elseif ($this->exists && $this->context == USER_ACTION_REGISTER) {
+    // For register, check that no user with the same username already exists.
+    elseif ($this->exists && $form_data['action'] == USER_ACTION_REGISTER) {
       new Message($this->env, 'Username ' . $this->name . ' already exists!', MESSAGE_WARNING);
     }
 
@@ -260,55 +305,44 @@ class User extends Node {
 
   }
 
+  /**
+   * Gets the email for this user
+   *
+   * @return string
+   *   The email of this user.
+   */
   public function getEmail() {
     return $this->email;
   }
 
+  /**
+   * Sets the email for this user.
+   *
+   * @param $email
+   *   The email to be set.
+   */
   public function setEmail($email) {
     $this->email = $email;
   }
 
+  /**
+   * Gets the password for this user
+   *
+   * @return string
+   *   The encrypted password of this user.
+   */
   public function getPassword() {
     return $this->password;
   }
 
+  /**
+   * Sets the password for this user.
+   *
+   * @param $password
+   *   The encrypted password to be set.
+   */
   public function setPassword($password) {
     $this->password = $password;
-  }
-
-  /**
-   *
-   * Check if user can access a node
-   * TODO: should really be in access module...
-   * @param null $node
-   * @param null $action
-   * @return User
-   */
-  public function checkAccess($node = NULL, $action = NULL) {
-    // If node doesn't exist, allow no permission to it.
-    if (!is_object($node) || !$node->exists) {
-      return FALSE;
-    }
-    $permissions = $node->getPermissions();
-    $action = trim(strtolower($action));
-
-    // Conversion to array as of new approach to values.
-    if (!is_array($permissions[$action])) {
-      $permissions[$action] = array($permissions[$action]);
-    }
-    $perm_array = array_flip($permissions[$action]);
-
-    if (isset($action) && isset($perm_array[ROLE_ANONYMOUS])) {
-      return TRUE;
-    } else {
-      foreach ($perm_array as $perm_role => $counter) {
-        if ($this->hasRole($perm_role)) {
-          return TRUE;
-        }
-      }
-    }
-    return FALSE;
-
   }
 
   // TODO: refactor.
@@ -329,17 +363,11 @@ class User extends Node {
 
   }
 
-
-  public function getTime() {
-    return 0;
-  }
-
-  public function getDate() {
-    return date('Y-m-d', $this->getTime());
-  }
-
+  /**
+   * Rebuild the User object in session, based on current user.
+   */
   public function rebuildSession() {
-    $_SESSION['user'] = serialize($this);
+    $_SESSION['user'] = $this->serializeForSession();
   }
 
   public function updateJSON($ignore = array()) {
@@ -352,13 +380,12 @@ class User extends Node {
     parent::updateJSON();
   }
 
-  /**
-   * @deprecated by UserFactory::current().
-   * @param $env
-   * @return mixed|User
-   */
-  public static function current($env) {
-    return UserFactory::current($env);
+  public function serializeForSession() {
+    $serialized = clone($this);
+    unset($serialized->father);
+    unset($serialized->env);
+    return serialize($serialized);
+
   }
 
 }
