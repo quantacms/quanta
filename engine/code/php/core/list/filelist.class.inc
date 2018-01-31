@@ -8,8 +8,6 @@
  *
  */
 class FileList extends ListObject {
-  // TODO: implement.
-  private $allowed_types;
   protected $scantype = DIR_FILES;
 
   /**

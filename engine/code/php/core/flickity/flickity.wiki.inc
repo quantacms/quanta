@@ -50,12 +50,7 @@ function wiki_CAROUSEL($attributes, $node, $string, $env) {
 
   $rand_class = rand(0, 99999999);
   $html = '<div class="flickity-carousel flickity-' . $rand_class . '">' . $list->render() . '</div>
-  <script>
-	  $(".flickity-' . $rand_class . '").flickity({
-  ' . implode(',
-			', $carousel_attributes_arr) . '
-	});
- </script>';
+  <script>$(".flickity-' . $rand_class . '").flickity({' . implode(',', $carousel_attributes_arr) . '	});</script>';
   return $html;
 
 }

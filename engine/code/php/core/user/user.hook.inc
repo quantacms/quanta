@@ -16,8 +16,10 @@ function user_boot($vars) {
  *   Miscellaneous environment / page variables.
  */
 function user_load_includes($vars) {
-  $vars['env']->addInclude('engine/code/php/core/user/js/user.js');
-  $vars['env']->addInclude('engine/code/php/core/user/css/user.css');
+  /** @var Environment $env */
+  $env = $vars['env'];
+  $env->addInclude('engine/code/php/core/user/js/user.js');
+  $env->addInclude('engine/code/php/core/user/css/user.css');
 }
 
 /**
@@ -78,36 +80,51 @@ function user_shadow_user_register_form($vars) {
  * Implements hook_shadow_user_edit_form.
  */
 function user_shadow_user_edit_form($vars) {
-  $curr_user = UserFactory::current($vars['env']);
-  $user = new User($vars['env'], $curr_user->name);
-  $tab = $user->renderEditForm($vars['shadow']->getContext());
-  $vars['shadow']->addTab('Your Profile', $tab, 1);
-  $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Update');
+  /** @var Shadow $shadow */
+  $shadow = $vars['shadow'];
+  /** @var Environment $env */
+  $env = $vars['env'];
+
+  $curr_user = UserFactory::current($env);
+  $user = new User($env, $curr_user->name);
+
+  $tab = $user->renderEditForm($shadow->getContext());
+  $shadow->addTab('Your Profile', $tab, 1);
+  $shadow->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Update');
 }
 
 /**
  * Implements hook_shadow_user_login_form.
  */
 function user_shadow_user_login_form($vars) {
-  $user = UserFactory::current($vars['env']);
+  /** @var Environment $env */
+  $env = $vars['env'];
+  $user = UserFactory::current($env);
   $tab = $user->renderLoginForm();
-  $vars['shadow']->addTab('Your Login Data', $tab, 1);
-  $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Login');
+  /** @var Shadow $shadow */
+  $shadow = $vars['shadow'];
+  $shadow->addTab('Your Login Data', $tab, 1);
+  $shadow->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Login');
 }
 
 /**
  * Implements hook_action_user_edit.
  * There is an user edit request.
+ *
+ * @param array $vars
  */
 function user_action_user_edit($vars) {
-  $response_json = UserFactory::requestAction($vars['env'], $vars['data']['action'], $vars['data']);
+  /** @var Environment $env */
+  $env = $vars['env'];
+  $response_json = UserFactory::requestAction($env, $vars['data']['action'], $vars['data']);
   exit($response_json);
 }
 
 /**
  * Implements hook_action_user_register.
  * There is an user registration request.
- * @param $vars
+ *
+ * @param array $vars
  */
 function user_action_user_register($vars) {
   $response_json = UserFactory::requestAction($vars['env'], $vars['data']['action'], $vars['data']);
