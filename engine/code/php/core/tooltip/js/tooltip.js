@@ -3,11 +3,11 @@ $(document).ready(function () {
 });
 
 $(document).bind('refresh', function () {
-  var dataTooltip = $(['data-tooltip']);
+  var dataTooltip = $("body").find("[data-tooltip]:not(empty)");
   // Create a mouseover effect to display tooltips.
-  dataTooltip.on('mouseover', function () {
-    var tooltip = $('#tooltip');
-    // Generate the tooltip's html.
+	dataTooltip.on('mouseover', function () {
+  var tooltip = $('#tooltip');
+		// Generate the tooltip's html.
     tooltip.html($(this).attr('data-tooltip')).show();
     tooltip.css('color', $(this).css('color'));
     $(document).off('mousemove').on('mousemove', function (e) {
@@ -20,6 +20,7 @@ $(document).bind('refresh', function () {
     });
   });
   dataTooltip.on('mouseout', function () {
+  var tooltip = $('#tooltip');
     tooltip.unbind();
     tooltip.hide();
   });
