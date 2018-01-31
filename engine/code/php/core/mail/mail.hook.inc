@@ -51,7 +51,6 @@ function mail_form_type_mailform_submit($vars) {
   
   $vars['env']->hook('mailform_' . $vars['form']->getId() . '_send', array('mail' => &$mail, 'form' => &$form));
   $mail->setBody($body);
-
   //$mail->save();
   $mail->send();
 }
