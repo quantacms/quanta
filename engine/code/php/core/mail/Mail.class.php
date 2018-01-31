@@ -1,4 +1,6 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 /**
  * Created by PhpStorm.
  * User: aldotripiciano
@@ -12,18 +14,27 @@ class Mail extends Node {
    * @throws phpmailerException
    */
   public function send() {
-    $phpmailer_autoload = $this->env->dir['vendor'] . '/phpmailer/autoload.php';
-    require_once($phpmailer_autoload);
+    // TODO: use composer autoload?
+		$phpmailer = $this->env->dir['vendor'] . '/phpmailer/phpmailer/src/PHPMailer.php';
+    $smtp = $this->env->dir['vendor'] . '/phpmailer/phpmailer/src/SMTP.php';
+    $exception = $this->env->dir['vendor'] . '/phpmailer/phpmailer/src/Exception.php';
+		
+		
+		require_once($exception);
+		require_once($phpmailer);
+		require_once($smtp);
     // SMTPDebug information (for testing)
     // 1 = errors and messages
     // 2 = messages only
+		
     $mail = new PHPMailer(true);
     $mail->isSMTP();
     $mail->Host = $this->getData('host');
     $mail->SMTPAuth = !empty($this->getData('SMTPAuth')) ? $this->getData('SMTPAuth') : true;
     $mail->SMTPSecure = !empty($this->getData('SMTPSecure')) ? $this->getData('SMTPSecure') : 'tls';
     $mail->SMTPDebug = !empty($this->getData('SMTPDebug')) ? $this->getData('SMTPDebug') : 0;
-    $mail->Username = $this->getData('username');
+		$mail->Username = $this->getData('username');
+
     $mail->Password = $this->getData('password');
     $mail->Port = $this->getData('port');
     $mail->setFrom($this->getData('from'), $this->getData('from_name'));
@@ -36,11 +47,13 @@ class Mail extends Node {
     if (!empty($this->getData('reply_to'))){
       $mail->AddReplyTo($this->getData('reply_to'), '');    
     }
-
-    if(!$mail->send()) {
+    try {
+    $mail->send();
+		$this->delete();
+		}
+		catch(Exception $ex) {
       new Message($this->env, 'Mailer Error: ' . $mail->ErrorInfo, MESSAGE_ERROR);
-    } else {
-      $this->delete();
-    }
+		
+		}
   }
 } 

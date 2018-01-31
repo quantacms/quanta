@@ -53,7 +53,8 @@
     height: 100%;
     top: 0;
     left: 0;
-    font-family: "Droid Sans", "Roboto", "Arial" !important;
+    color: black;
+		font-family: "Droid Sans", "Roboto", "Arial" !important;
     text-align: center;
 }
 

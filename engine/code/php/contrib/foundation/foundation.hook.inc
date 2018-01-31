@@ -1,8 +1,8 @@
 <?php
 /*
- * Implements hook_init().
+ * Implements hook_load_includes().
  */
-function foundation_init($vars) {
+function foundation_load_includes($vars) {
   $vars['env']->addInclude('engine/code/php/contrib/foundation/js/foundation.min.js');
   $vars['env']->addInclude('engine/code/php/contrib/foundation/css/foundation.min.css');
 }
