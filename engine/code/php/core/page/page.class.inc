@@ -27,7 +27,7 @@ class Page extends DataContainer {
   public function loadIncludes() {
     if (substr($_SERVER['REQUEST_URI'], 0, 7) == '/engine') die();
     // TODO: better way to skip load includes.
-    $this->addData('css', array('<link rel="stylesheet" type="text/css" href="/tmp/css.min.css?xxs" />'));
+    $this->addData('css', array('<link rel="stylesheet" type="text/css" href="/tmp/css.min.css" />'));
     $this->addData('js', array('<script type="text/javascript" src="/tmp/js.min.js"></script>'));
 
   }
