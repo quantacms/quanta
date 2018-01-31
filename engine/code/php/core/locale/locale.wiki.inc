@@ -22,7 +22,6 @@ function wiki_LANGUAGE($attributes, $target, $string, Environment $env) {
 /**
  * Implements qtag FALLBACK_LANGUAGE.
  * Return the language code of the fallback language.
-
  */
 function wiki_FALLBACK_LANGUAGE($attributes, $target, $string, Environment $env) {
   return Locale::getFallbackLanguage($env);
@@ -59,7 +58,9 @@ function wiki_LANGUAGE_SWITCHER($attributes, $target, $string, Environment $env)
 }
 
 /**
- * Translate links.
+ * Implements qtag TRANSLATE_LINKS
+ * Renders Translate links.
+ *
  * @param $attributes
  * @param $value
  * @param $string
@@ -76,18 +77,21 @@ function wiki_TRANSLATE_LINKS($attributes, $value, $string, $env) {
 }
 
 /**
- * Translate link.
+ * Implements qtag TRANSLATE.
+ * Renders a translate link.
+ *
  * @param $attributes
  * @param $node
  * @param $string
  * @param $env
- * @return bool|string|void
+ *
+ * @return string
  */
 function wiki_TRANSLATE($attributes, $node, $string, $env) {
   $node = NodeFactory::load($env, $node);
   $current = NodeFactory::current($env);
   if (!$node->exists) {
-    return FALSE;
+    return '';
   }
   $attributes['language'] = $node->getName();
   $attributes['title'] = $node->getTitle();

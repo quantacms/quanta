@@ -102,7 +102,7 @@ class User extends Node {
   /**
    * Log out the user.
    *
-   * @return $response_json
+   * @return mixed $response_json
    *   The JSON-encoded response to the logout action.
    */
   public function logOut() {
@@ -120,6 +120,9 @@ class User extends Node {
    *
    * @param $password
    *   The password inserted by the user.
+   *
+   * @param $success_message
+   *   A custom success message to show.
    *
    * @return string
    *   A JSON encrypted response to the login action.
@@ -193,7 +196,7 @@ class User extends Node {
    * @param $form_data
    *   The data to use for building the user.
    *
-   * @return bool|void
+   * @return bool
    *   Returns true if the user was registered correctly
    */
   public function register($form_data) {
@@ -262,9 +265,8 @@ class User extends Node {
    */
   public function validate($form_data = array()) {
     $valid = FALSE;
-    if ($this->exists) {
-      $existing_user = new User($this->env, $this->name);
-    }
+    $existing_user = UserFactory::load($this->env, $this->name);
+
     $check_password = !$this->exists || strlen($form_data['edit-password']) > 0;
 
     exec('grep -r -i -o --include \*.json "\"email\"\:\"' . $form_data['edit-email'] . '\"" ' . $this->env->dir['users'], $mail_exists);
@@ -347,20 +349,20 @@ class User extends Node {
 
   // TODO: refactor.
   public function renderEditForm($context) {
-    $this->context = $context;
     $user_edit_form = file_get_contents('core/user/tpl/' . $context . '.inc');
     return $user_edit_form;
   }
 
-  // TODO: refactor.
+
+  /**
+   * Renders a Login form.
+   * TODO: refactor and move elsewhere.
+   *
+   * @return string
+   */
   public function renderLoginForm() {
     $login_form = file_get_contents('core/user/tpl/user_login.inc');
     return $login_form;
-  }
-
-  // TODO
-  public function renderUploadAvatarForm($context) {
-
   }
 
   /**

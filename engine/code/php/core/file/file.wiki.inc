@@ -39,7 +39,6 @@ function wiki_FILE($attributes, $file, $string, $env) {
   $file = new File($env, $file, NULL, $attributes['title']);
   if ($file->exists) {
     return $file->render();
-
   }
   //$file->loadAttributes($attributes);
 }
