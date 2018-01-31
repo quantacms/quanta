@@ -37,9 +37,23 @@ class Message {
     $this->type = $type;
     $this->module = $module;
     $this->severity = $severity;
-    $this->env->addData('message', array($this));
-    if ($type == MESSAGE_TYPE_SCREEN) {
-      $_SESSION['messages'][] = serialize($this);
+    // If the Doctor is curing the environment, show messages in the blackboard.
+    if (Doctor::isCuring()) {
+      switch ($this->severity) {
+        case MESSAGE_WARNING:
+        case MESSAGE_ERROR:
+          Doctor::ko($this->body);
+          break;
+        default:
+          Doctor::talk($this->body);
+          break;
+      }
+    }
+    else {
+      $this->env->addData('message', array($this));
+      if ($type == MESSAGE_TYPE_SCREEN) {
+        $_SESSION['messages'][] = serialize($this);
+      }
     }
   }
 

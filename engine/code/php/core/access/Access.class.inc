@@ -9,9 +9,15 @@ class Access {
   /**
    *
    * Check if an user can perform a certain action.
-   * @param null $node
-   * @param null $action
+   *
+   * @param Environment $env
+   *   The Environment.
+   *
+   * @param string $action
+   *   The action for which we check access.
+   *
    * @return boolean
+   *   Returns true if access check was positive.
    */
   public static function check($env, $action, $vars = array ()) {
     /** @var User $user */
@@ -65,8 +71,6 @@ class Access {
         return TRUE;
         break;
     }
-
+    return FALSE;
   }
-
-
 }

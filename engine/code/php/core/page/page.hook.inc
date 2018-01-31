@@ -56,8 +56,6 @@ function page_doctor($vars) {
 
   $temp_css_path = $vars['env']->dir['tmp_files'] . '/' . $temp_aggregate_path . '.css';
   $temp_js_path = $vars['env']->dir['tmp_files'] . '/' . $temp_aggregate_path . '.js';
-  unlink($temp_css_path);
-  unlink($temp_js_path);
 
   $fop = fopen($temp_css_path, 'w+');
   fwrite($fop, implode('
@@ -68,6 +66,8 @@ function page_doctor($vars) {
   fwrite($fop, implode('
     ', $js));
   fclose($fop);
+  
+	Doctor::op('Writing minified files in directory: ' . $vars['env']->dir['tmp_files']);
 
   // Minify the CSS and JS.
   $temp_css_path_mini = $vars['env']->dir['tmp_files'] . '/css.min.css';
@@ -79,12 +79,15 @@ function page_doctor($vars) {
   fwrite($fop_mini, implode($minify_css));
   fclose($fop_mini);
 
+  
   // TODO: is double step necessary?
   $minify_js = minify($vars['env'], $temp_js_path);
   $fop_mini = fopen($temp_js_path_mini, 'w+');
   fwrite($fop_mini, implode($minify_js));
   fclose($fop_mini);
 
+  unlink($temp_css_path);
+  unlink($temp_js_path);
 
   Doctor::talk('...done!');
 
