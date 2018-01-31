@@ -224,7 +224,7 @@ a.file-link {
 }
 
 .file-audio {
-    background-image: url('../img/icons/audio.png')
+    background-image: url('/engine/code/php/core/file/img/icons/audio.png')
 }
 
 .file-archive {
