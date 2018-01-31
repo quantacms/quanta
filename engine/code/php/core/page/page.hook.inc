@@ -77,8 +77,6 @@ function page_doctor($vars) {
   fwrite($fop_mini, implode($minify_css));
   fclose($fop_mini);
 
-  unlink($temp_css_path);
-  unlink($temp_js_path);
   
   // TODO: is double step necessary?
   $minify_js = minify($vars['env'], $temp_js_path);
@@ -86,6 +84,8 @@ function page_doctor($vars) {
   fwrite($fop_mini, implode($minify_js));
   fclose($fop_mini);
 
+  unlink($temp_css_path);
+  unlink($temp_js_path);
 
   Doctor::talk('...done!');
 
