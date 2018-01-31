@@ -66,6 +66,8 @@ function page_doctor($vars) {
   fwrite($fop, implode('
     ', $js));
   fclose($fop);
+  
+	Doctor::op('Writing minified files in directory: ' . $vars['env']->dir['tmp_files']);
 
   // Minify the CSS and JS.
   $temp_css_path_mini = $vars['env']->dir['tmp_files'] . '/css.min.css';

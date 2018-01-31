@@ -56,6 +56,10 @@ function file_init($vars) {
 function file_node_save($vars) {
   // TODO: move in File or create FileFactory module.
 
+	if (empty($vars['node']->getData('tmp_files_dir'))) {
+        new Message($vars['node']->env, 'Warning: the temporary files dir ' . $vars['node']->getData('tmp_files_dir') . ' is empty.', MESSAGE_WARNING);
+
+	}
   $tmp_dir = $vars['node']->env->dir['tmp_files'] . '/' . $vars['node']->getData('tmp_files_dir');
   if (is_dir($tmp_dir)) {
     $tmp_files = $vars['node']->env->scanDirectory($tmp_dir);
@@ -80,9 +84,9 @@ function file_node_load($vars) {
 
   // When saving a node, select the pre-created temporary files dir.
   if (!empty($_REQUEST['json']) && ($json = json_decode($_REQUEST['json'])) && isset($json->tmp_files_dir)) {
-    $vars['node']->tmp_files_dir = $json->tmp_files_dir;
+    $vars['node']->setData('tmp_files_dir', $json->tmp_files_dir);
   }
   else {
-    $vars['node']->tmp_files_dir = $vars['node']->getName() . '-' . time() . '-' . rand(0, 1000);
+    $vars['node']->setData('tmp_files_dir', $vars['node']->getName() . '-' . time() . '-' . rand(0, 1000));
   }
 }
