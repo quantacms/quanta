@@ -171,3 +171,7 @@
 .flickity-link {
 	text-decoration: none;
 }
+
+.flickity-slider .node-item {
+				width: 100%;
+}
