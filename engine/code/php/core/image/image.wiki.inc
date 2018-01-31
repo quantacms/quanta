@@ -51,7 +51,7 @@ function wiki_IMGTHUMB($attributes, $file, $string, $env) {
 
 
   // Setup title for the image link (if present).
-  $alt = isset($attributes['link_title']) ? $attributes['link_title'] : NULL;
+  $link_title = isset($attributes['link_title']) ? $attributes['link_title'] : NULL;
 
   // Setup operations to run on the image.
   $op = isset($attributes['operation']) ? $attributes['operation'] : 'scale';
@@ -79,7 +79,7 @@ function wiki_IMGTHUMB($attributes, $file, $string, $env) {
   if (isset($attributes['link'])) {
     $link = empty($attributes['link']) ? ($node->name . '/' . $file) : $attributes['link'];
     $thumb = '<a ' .
-      (empty($title) ? '' : ('title="' . $title . '"')) .
+      (empty($link_title) ? '' : ('title="' . $link_title . '"')) .
       'class="linked-image ' . (isset($attributes['class']) ? ('linked-image-' . $attributes['class']) : '') .  '"' .
     ' href="/' . $link . '">' . $thumb . '</a>';
   }

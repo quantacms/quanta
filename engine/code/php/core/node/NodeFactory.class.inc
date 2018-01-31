@@ -127,6 +127,7 @@ class NodeFactory {
 
     // Check that source nodes and destination folder do actually exist.
     if (!$from_node->exists) {
+
       new Message($env, 'Error: could not link ' . $source_node . ' into ' . $symlink_folder . '. ' . $source_node . ' doesn\'t exist');
     }
     elseif (!$symlink_folder_node->exists) {
@@ -154,10 +155,13 @@ class NodeFactory {
       Doctor::talk('no override');
     }
 
+
     if ($create_link) {
+      Doctor::talk('attempt creating link...');
       try {
         symlink($from_node->realpath, $symlink_folder_node->realpath . '/' . $symlink_name);
-      } catch (Exception $ex) {
+      }
+      catch (Exception $ex) {
         new Message($vars['env'], 'Error: could not link ' . $source_node . ' to ' . $symlink_folder);
       }
     }
