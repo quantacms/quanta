@@ -1,9 +1,10 @@
 <?php
 
 /**
- * Implements hook_shadow_node_edit().
+ * Implements hook_shadow_file_form().
+ *
  * @param $vars
- * @return bool
+ * Miscellaneous environment / page variables.
  */
 function file_shadow_file_form($vars) {
   $node = $vars['shadow']->getNode();

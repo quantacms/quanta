@@ -255,7 +255,7 @@ class File extends DataContainer {
    * @param $file string
    */
   public static function deleteFile($node, $file) {
-    if (Access::check($node->env,NODE_ACTION_EDIT, array('node' => $node))) {
+    if (!Access::check($node->env, NODE_ACTION_EDIT, array('node' => $node))) {
       new Message($node->env, 'Error: you have no permissions to upload files in this node', MESSAGE_ERROR);
     }
     unlink($node->realpath . '/' . $file);

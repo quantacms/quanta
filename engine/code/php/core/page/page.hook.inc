@@ -56,8 +56,6 @@ function page_doctor($vars) {
 
   $temp_css_path = $vars['env']->dir['tmp_files'] . '/' . $temp_aggregate_path . '.css';
   $temp_js_path = $vars['env']->dir['tmp_files'] . '/' . $temp_aggregate_path . '.js';
-  unlink($temp_css_path);
-  unlink($temp_js_path);
 
   $fop = fopen($temp_css_path, 'w+');
   fwrite($fop, implode('
@@ -79,6 +77,9 @@ function page_doctor($vars) {
   fwrite($fop_mini, implode($minify_css));
   fclose($fop_mini);
 
+  unlink($temp_css_path);
+  unlink($temp_js_path);
+  
   // TODO: is double step necessary?
   $minify_js = minify($vars['env'], $temp_js_path);
   $fop_mini = fopen($temp_js_path_mini, 'w+');
