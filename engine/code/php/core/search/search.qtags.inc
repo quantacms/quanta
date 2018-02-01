@@ -1,31 +1,23 @@
 <?php
 /**
- * Wiki Hook for SEARCH.
- * @param $attributes
- * @param $var
- * @param $string
- * @param $env
- * @return string
+ * Implements qtag SEARCH.
+ *
+ * Creates a search form.
  */
-function wiki_SEARCH($attributes, $var, $string, $env) {
+function qtag_SEARCH($env, $target, $attributes) {
   $search_form = '
 		[INPUT|name=search|title=|type=string:search-form]
 		[INPUT|name=submit|type=submit|value=Search!:search-form]
-		[FORM|method=get|action=' . $var . ':search-form]';
+		[FORM|method=get|action=' . $target . ':search-form]';
   return $search_form;
 }
 
 /**
- * Wiki Hook for SEARCHRESULTS.
- * Elaborate and display search results for current search.
- * TODO: move to OO approach.
- * @param $attributes
- * @param $var
- * @param $string
- * @param $env
- * @return string
+ * Implements qtag SEARCHRESULTS.
+ *
+ * Renders the results of a search.
  */
-function wiki_SEARCHRESULTS($attributes, $var, $string, $env) {
+function qtag_SEARCHRESULTS($env, $target, $attributes) {
   $output = '';
   $results = array();
   $results_arr = search($env);
@@ -34,6 +26,8 @@ function wiki_SEARCHRESULTS($attributes, $var, $string, $env) {
   if (count($results_arr) == 0) {
     $output .= '<div class="search-no-results">No results found</div>';
   }
+  // TODO: move into a Search class.
+  // TODO: implement ElasticSearch.
   foreach ($results_arr as $k => $result_string) {
     $r = explode(':' , $result_string);
     $result = preg_replace('/(' . $_REQUEST['search'] . ')/is', '<b class="search-result-match">$1</b>', strip_tags(nl2br(str_replace($r[0], '', $r[1]))));

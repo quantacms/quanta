@@ -1,17 +1,21 @@
 <?php
-function wiki_FILEATTRIBUTE($attributes, $file, $string, $env) {
-
+/**
+ * Implements FILEATTRIBUTE qtag.
+ */
+function qtag_FILEATTRIBUTE($env, $target, $attributes) {
   $node = empty($attributes['node']) ? NodeFactory::current($env) : NodeFactory::load($env, $attributes['node']);
-  $file = new File($env, $file, $node);
+  $file = new File($env, $target, $node);
+  $string = NULL;
 
+  // Check which file attribute is requested, and provide it.
   switch($attributes['name']) {
+
     case 'name':
       $string = $file->getName();
       break;
 
     case 'path':
       $string = $file->getFullPath();
-
       break;
 
     case 'type':
@@ -27,18 +31,16 @@ function wiki_FILEATTRIBUTE($attributes, $file, $string, $env) {
 }
 
 /**
- * Wiki Hook for FILE.
- * @param $attributes
- * @param $file
- * @param $string
- * @param $env
- * @return null|string
+ * Implements FILE qtag.
  */
-function wiki_FILE($attributes, $file, $string, $env) {
+function qtag_FILE($attributes, $file, $string, $env) {
 
   $file = new File($env, $file, NULL, $attributes['title']);
+  // Return the rendered file.
   if ($file->exists) {
     return $file->render();
   }
-  //$file->loadAttributes($attributes);
+  else {
+    return NULL;
+  }
 }

@@ -1,14 +1,11 @@
 <?php
 /**
+ * Implements BOX qtag.
+ *
  * A simple block, boxed and non editable by default.
- * Wiki Hook for BOX.
- * @param $attributes
- * @param $var
- * @param $string
- * @param $env
- * @return string
  */
-function wiki_BOX($attributes, $var, $string, $env) {
+function qtag_BOX($env, $target, $attributes) {
+  // Check if the box is editable.
   if (!isset($attributes['editable'])) {
     $attributes['editable'] = BOX_NON_EDITABLE;
   }
@@ -17,19 +14,15 @@ function wiki_BOX($attributes, $var, $string, $env) {
   if (!empty($attributes['box'])) {
     unset($attributes['box']);
   }
-  $box->setHtml(wiki_BLOCK($attributes, $var, $string, $env));
+  $box->setHtml(qtag_BLOCK($env, $target, $attributes));
   return $box->render();
 }
 
 /**
+ * Implements qtag_CLOSE.
+ *
  * Ajax-close a container.
- * Wiki Hook for CLOSE.
- * @param $attributes
- * @param $var
- * @param $string
- * @param $env
- * @return string
  */
-function wiki_CLOSE($attributes, $var, $string, $env) {
+function qtag_CLOSE($env, $target, $attributes) {
   return '<a class="close-button" href="#">X Close</a>';
 }
