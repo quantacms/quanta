@@ -63,5 +63,5 @@ function locale_setup($vars) {
  * @param $vars
  */
 function locale_shadow_extra($vars) {
-  $vars['html'] .= wiki_TRANSLATE_LINKS(array(), NULL, NULL, $vars['env']);
+  $vars['html'] .= qtag_TRANSLATE_LINKS($vars['env'], NULL, array());
 }

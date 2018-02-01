@@ -2,7 +2,13 @@
 define('CAROUSEL_FILES', 'carousel_files');
 define('CAROUSEL_DIRS', 'carousel_dirs');
 
-function wiki_CAROUSEL($attributes, $node, $string, $env) {
+/**
+ * Implements CAROUSEL qtag.
+ *
+ * Create a visual carousel based on a node list.
+ */
+function qtag_CAROUSEL($env, $target, $attributes) {
+  // TODO: create a class for the carousel.
   $module = isset($attributes['module']) ? $attributes['module'] : 'flickity';
   if (empty($attributes['carousel-type'])) {
     $attributes['carousel-type'] = CAROUSEL_DIRS;
@@ -12,12 +18,12 @@ function wiki_CAROUSEL($attributes, $node, $string, $env) {
 
     case CAROUSEL_DIRS:
       $tpl = isset($attributes['tpl']) ? $attributes['tpl'] : 'flickity-carousel';
-      $list = new DirList($env, $node, $tpl, array('sortby' => 'title', 'clean' => true, 'class' => 'flickity-carousel') + $attributes, $module);
+      $list = new DirList($env, $target, $tpl, array('sortby' => 'title', 'clean' => true, 'class' => 'flickity-carousel') + $attributes, $module);
       break;
 
     case CAROUSEL_FILES:
       $tpl = isset($attributes['tpl']) ? $attributes['tpl'] : 'flickity-file-carousel';
-      $list = new FileList($env, $node, $tpl, array('sortby' => 'title', 'clean' => true, 'class' => 'flickity-carousel') + $attributes, $module);
+      $list = new FileList($env, $target, $tpl, array('sortby' => 'title', 'clean' => true, 'class' => 'flickity-carousel') + $attributes, $module);
       break;
 
     default:
@@ -55,7 +61,11 @@ function wiki_CAROUSEL($attributes, $node, $string, $env) {
 
 }
 
-function wiki_FILECAROUSEL($attributes, $node, $string, $env) {
+/**
+ * Implements FILECAROUSEL qtag.
+ * Create a visual carousel based on a file list.
+ */
+function qtag_FILECAROUSEL($env, $target, $attributes) {
   $attributes['carousel-type'] = CAROUSEL_FILES;
-  return wiki_CAROUSEL($attributes, $node, $string, $env);
+  return qtag_CAROUSEL($env, $target, $attributes);
 }

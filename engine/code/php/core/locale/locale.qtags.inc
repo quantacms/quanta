@@ -1,36 +1,27 @@
 <?php
 
 /**
- * Implements qtag LANGUAGE
+ * Implements qtag LANGUAGE.
+ *
  * Returns language code of the current language.
- *
- * @param array $attributes
- *
- * @param string $target
- *
- * @param string $string
- *
- * @param Environment $env
- *
- * @return string $language
- *   The language.
  */
-function wiki_LANGUAGE($attributes, $target, $string, Environment $env) {
+function qtag_LANGUAGE($env, $target, $attributes) {
   return Locale::getLanguage($env);
 }
 
 /**
  * Implements qtag FALLBACK_LANGUAGE.
+ *
  * Return the language code of the fallback language.
  */
-function wiki_FALLBACK_LANGUAGE($attributes, $target, $string, Environment $env) {
+function qtag_FALLBACK_LANGUAGE($env, $target, $attributes) {
   return Locale::getFallbackLanguage($env);
 }
 
 /**
- * Implements qtag LANGUAGE_SWITCHER
+ * Implements qtag LANGUAGE_SWITCHER.
  */
-function wiki_LANGUAGE_SWITCHER($attributes, $target, $string, Environment $env) {
+function qtag_LANGUAGE_SWITCHER($env, $target, $attributes) {
 
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $language_switcher_tpl = 'language_switcher';
@@ -58,16 +49,11 @@ function wiki_LANGUAGE_SWITCHER($attributes, $target, $string, Environment $env)
 }
 
 /**
- * Implements qtag TRANSLATE_LINKS
- * Renders Translate links.
+ * Implements qtag TRANSLATE_LINKS.
  *
- * @param $attributes
- * @param $value
- * @param $string
- * @param $env
- * @return bool|mixed|string
+ * Renders Translate links.
  */
-function wiki_TRANSLATE_LINKS($attributes, $value, $string, $env) {
+function qtag_TRANSLATE_LINKS($env, $target, $attributes) {
   $attributes['active_items'] = Locale::getLanguage($env);
   // We don't want translate links to be considered as editable nodes.
   $attributes['nowrap'] = TRUE;
@@ -78,22 +64,17 @@ function wiki_TRANSLATE_LINKS($attributes, $value, $string, $env) {
 
 /**
  * Implements qtag TRANSLATE.
+ *
  * Renders a translate link.
  *
- * @param $attributes
- * @param $node
- * @param $string
- * @param $env
- *
- * @return string
  */
-function wiki_TRANSLATE($attributes, $node, $string, $env) {
-  $node = NodeFactory::load($env, $node);
+function qtag_TRANSLATE($env, $target, $attributes) {
+  $node = NodeFactory::load($env, $target);
   $current = NodeFactory::current($env);
   if (!$node->exists) {
     return '';
   }
   $attributes['language'] = $node->getName();
   $attributes['title'] = $node->getTitle();
-  return wiki_EDIT($attributes, $current->getName(), $string, $env);
+  return qtag_EDIT($env, $current->getName(), $attributes);
 }

@@ -165,7 +165,7 @@ class Environment extends DataContainer {
    * @param $module
    */
   public function runModule($module) {
-    $includes = array ('api', 'hook', 'wiki');
+    $includes = array ('api', 'hook', 'wiki', 'qtags');
     $module_path = $module['path'] . '/' . $module['name'] . '.module';
     require_once($module_path);
 

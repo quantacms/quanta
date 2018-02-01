@@ -13,6 +13,8 @@ function box_load_includes($vars) {
 
 /**
  * Render a box.
+ * TODO: deprecate in favor of qtag.
+ *
  * @param $vars
  */
 function box_wikitag($vars) {
@@ -25,6 +27,25 @@ function box_wikitag($vars) {
     foreach ($vars['wikitag'] as $tag => $content) {
       $box->setHtml($content);
       $vars['wikitag'][$tag] = $box->render();
+    }
+  }
+}
+
+/**
+ * Render a Quanta box.
+ *
+ * @param $vars
+ */
+function box_qtag($vars) {
+  if (!empty($vars['attributes']['box'])) {
+    $boxsize = explode('x', $vars['attributes']['box']);
+    $w = empty($boxsize[1]) ? NULL : $boxsize[0];
+    $h = empty($boxsize[1]) ? NULL : $boxsize[1];
+    $box = new Box($vars['env'], $w, $h, $vars['attributes']);
+
+    foreach ($vars['qtag'] as $tag => $content) {
+      $box->setHtml($content);
+      $vars['qtag'][$tag] = $box->render();
     }
   }
 }
