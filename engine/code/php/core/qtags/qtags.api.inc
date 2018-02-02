@@ -70,7 +70,7 @@ function checkCodeTags(&$env, $html, $options = 'U') {
       else {
         // TODO: deprecate wiki soon in favor of qtag.
         // wiki_ will be unsupported and all this code removed in next version!
-        /*if ($tag_name == strtoupper($tag_name) && function_exists('wiki_' . $tag_name)) {
+        if ($tag_name == strtoupper($tag_name) && function_exists('wiki_' . $tag_name)) {
           $func = 'wiki_' . $tag_name;
           if (function_exists($func)) {
             $attr_arr['tag_full'] = $tag_full;
@@ -92,7 +92,7 @@ function checkCodeTags(&$env, $html, $options = 'U') {
             }
             $replacing[$tag_full] = $tag_content;
           }
-        }*/
+        }
 
         // New function using qtag.
         if ($tag_name == strtoupper($tag_name) && function_exists('qtag_' . $tag_name)) {
