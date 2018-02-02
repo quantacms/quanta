@@ -1,20 +1,30 @@
 <?php
 /**
- * Implements hook_shadow_node_edit.
- * @param $vars
+ * Implements hook_shadow_node_form().
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
  */
-function workflow_shadow_node_form($vars) {
+function workflow_shadow_node_form($env, $vars) {
   $vars['shadow']->addTab('manage status', file_get_contents('core/workflow/tpl/status_form.inc'), 2);
 }
 
 /**
- * Implements hook_init().
+ * Implements hook_setup().
  *
  * Create all default statuses if they don't exist yet.
- * @param $vars
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
  */
-function workflow_setup($vars) {
-
+function workflow_setup($env, $vars) {
+  // Initialize default statuses.
   $basic_statuses = array(
     NODE_STATUS_DRAFT => array('title' => 'Draft'),
     NODE_STATUS_UNPUBLISHED => array('title' => 'Unpublished'),
@@ -22,13 +32,22 @@ function workflow_setup($vars) {
   );
 
   foreach ($basic_statuses as $status => $statusdata) {
-    if (!is_dir($vars['env']->dir['statuses'] . '/' . $status)) {
-      NodeFactory::buildNode($vars['env'], $status, '_statuses', $statusdata);
+    if (!is_dir($env->dir['statuses'] . '/' . $status)) {
+      NodeFactory::buildNode($env, $status, '_statuses', $statusdata);
     }
   }
 
 }
 
-function workflow_node_presave($vars) {
+/**
+ * Implements hook_node_presave().
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
+ */
+function workflow_node_presave($env, $vars) {
   $vars['node']->setStatus($vars['data']['edit-status']);
 }

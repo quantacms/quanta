@@ -2,11 +2,14 @@
 /**
  * Implements hook_load_includes().
  *
+ * @param Environment $env
+ *   The Environment.
+ *
  * @param $vars
- *   Miscellaneous environment / page variables.
+ *   An array of variables.
  */
-function flickity_load_includes($vars) {
-  $vars['env']->addInclude('engine/code/php/core/flickity/js/flickity.pkgd.min.js');
-  $vars['env']->addInclude('engine/code/php/core/flickity/css/flickity.css');
+function flickity_load_includes($env, $vars) {
+  $env->addInclude('engine/code/php/core/flickity/js/flickity.pkgd.min.js');
+  $env->addInclude('engine/code/php/core/flickity/css/flickity.css');
 
 }

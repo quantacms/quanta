@@ -1,23 +1,35 @@
 <?php
 /**
  * Implements hook_body_classes.
- * @param $vars
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
  */
-function page_body_classes($vars) {
+function page_body_classes($env, $vars) {
   $vars['page']->addData('body_classes', array('page'));
 }
 
 /**
- * React to robots.txt request.
- * @param $vars
+ * Implements hook_boot().
+ *
+ * React to robots.txt requests.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
  */
-function page_boot($vars) {
-  $vars['env']->sysdir('pages', '_pages');
+function page_boot($env, $vars) {
+  $env->sysdir('pages', '_pages');
 
   // Start robots.txt configuration.
   // TODO: object oriented, using templates, etc. etc.
-  if ($vars['env']->request[count($vars['env']->request) - 1] == 'robots.txt') {
-    $robots = new Robots($vars['env']);
+  if ($env->request[count($env->request) - 1] == 'robots.txt') {
+    $robots = new Robots($env);
     $robots->disallow('*', '/search');
     // $robots->disallow('*', '/files*');
     // $robots->disallow('*', '/css*');
@@ -29,15 +41,21 @@ function page_boot($vars) {
 }
 
 /**
+ * Implements hook_doctor().
  * Refresh minified CSS, JS, and and do other operations.
- * @param $vars
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
  */
-function page_doctor($vars) {
+function page_doctor($env, $vars) {
   $css = array();
   $js = array();
   Doctor::op('Generating minified CSS and JS files...');
   // Include JS / CSS files.
-  foreach ($vars['env']->getIncludes() as $file) {
+  foreach ($env->getIncludes() as $file) {
     if (substr($file['path'], 0, 6) == 'engine') {
       $file['path'] = $_SERVER['DOCUMENT_ROOT'] .'/' . $file['path'];
     }
@@ -54,8 +72,8 @@ function page_doctor($vars) {
 
   $temp_aggregate_path = md5(time() + rand(1,10000000));
 
-  $temp_css_path = $vars['env']->dir['tmp_files'] . '/' . $temp_aggregate_path . '.css';
-  $temp_js_path = $vars['env']->dir['tmp_files'] . '/' . $temp_aggregate_path . '.js';
+  $temp_css_path = $env->dir['tmp_files'] . '/' . $temp_aggregate_path . '.css';
+  $temp_js_path = $env->dir['tmp_files'] . '/' . $temp_aggregate_path . '.js';
 
   $fop = fopen($temp_css_path, 'w+');
   fwrite($fop, implode('
@@ -67,21 +85,21 @@ function page_doctor($vars) {
     ', $js));
   fclose($fop);
   
-	Doctor::op('Writing minified files in directory: ' . $vars['env']->dir['tmp_files']);
+	Doctor::op('Writing minified files in directory: ' . $env->dir['tmp_files']);
 
   // Minify the CSS and JS.
-  $temp_css_path_mini = $vars['env']->dir['tmp_files'] . '/css.min.css';
-  $temp_js_path_mini = $vars['env']->dir['tmp_files'] . '/js.min.js';
+  $temp_css_path_mini = $env->dir['tmp_files'] . '/css.min.css';
+  $temp_js_path_mini = $env->dir['tmp_files'] . '/js.min.js';
 
   // TODO: is double step necessary?
-  $minify_css = minify($vars['env'], $temp_css_path);
+  $minify_css = minify($env, $temp_css_path);
   $fop_mini = fopen($temp_css_path_mini, 'w+');
   fwrite($fop_mini, implode($minify_css));
   fclose($fop_mini);
 
   
   // TODO: is double step necessary?
-  $minify_js = minify($vars['env'], $temp_js_path);
+  $minify_js = minify($env, $temp_js_path);
   $fop_mini = fopen($temp_js_path_mini, 'w+');
   fwrite($fop_mini, implode($minify_js));
   fclose($fop_mini);
