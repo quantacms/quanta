@@ -1,35 +1,45 @@
 <?php
-
 /**
- * Implements hook_cron().
- * @param $vars
+ * Implements hook_init().
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
  */
-function mail_init($vars) {
-  $vars['env']->sysdir('mailqueue', '_mailqueue');
+function mail_init($env, $vars) {
+  $env->sysdir('mailqueue', '_mailqueue');
   // Get the mails to queue.
   // TODO: don't check all emails at every page load. Use CRON instead?
-  $mail_nodes = ($vars['env']->scanDirectory($vars['env']->dir['mailqueue'], array(
+  $mail_nodes = ($env->scanDirectory($env->dir['mailqueue'], array(
     'exclude_dirs' => DIR_INACTIVE,
     'type' => DIR_DIRS,
     )));
 
   foreach ($mail_nodes as $k) {
-    $mail_node = new Mail($vars['env'], $k);
+    $mail_node = new Mail($env, $k);
     $mail_node->send();
   }
 }
 
 /**
+ * Implements hook_form_type_FORMID_submit().
  * Submitting a mail form.
- * @param $vars
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
  */
-function mail_form_type_mailform_submit($vars) {
-  $mail_tmp = $vars['env']->dir['docroot'] . '/_mailqueue';
-  $vars['env']->sysdir('mailqueue', $mail_tmp);
-  $queue = new Node($vars['env'], '_mailqueue');
+function mail_form_type_mailform_submit($env, $vars) {
+  $mail_tmp = $env->dir['docroot'] . '/_mailqueue';
+  $env->sysdir('mailqueue', $mail_tmp);
+  $queue = new Node($env, '_mailqueue');
 
   // TODO: better way to create unique id for mail.
-  $mail = new Mail($vars['env'], time() . '_' . rand(10000, 99999), $queue->getName());
+  $mail = new Mail($env, time() . '_' . rand(10000, 99999), $queue->getName());
   $body = '';
 
   $form = $vars['form'];
@@ -49,7 +59,7 @@ function mail_form_type_mailform_submit($vars) {
     }
   }
   
-  $vars['env']->hook('mailform_' . $vars['form']->getId() . '_send', array('mail' => &$mail, 'form' => &$form));
+  $env->hook('mailform_' . $vars['form']->getId() . '_send', array('mail' => &$mail, 'form' => &$form));
   $mail->setBody($body);
   //$mail->save();
   $mail->send();

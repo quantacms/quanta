@@ -1,15 +1,41 @@
 <?php
-
-function captcha_init($vars) {
+/**
+ * Implements hook_init().
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param $vars
+ *   An array of variables.
+ */
+function captcha_init($env, $vars) {
   $vars['env']->addInclude('engine/code/php/contrib/captcha/css/captcha.css');
 }
 
-function captcha_shadow_user_register($vars) {
+/**
+ * Implements hook_user_register().
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param $vars
+ *   An array of variables.
+ */
+function captcha_shadow_user_register($env, $vars) {
   $captcha = new Captcha($vars['env'], CAPTCHA_MATH);
   $vars['shadow']->prependToTab(USER_ACTION_REGISTER, $captcha->render());
 }
 
-function captcha_user_validate($vars) {
+/**
+ * Implements hook_user_validate().
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param $vars
+ *   An array of variables.
+ */
+function captcha_user_validate($env, $vars) {
   if ($vars['user']->context == USER_ACTION_REGISTER) {
     if (!Captcha::validate($vars['form_data']['edit-captcha'], $vars['form_data']['edit-captcha_math'])) {
       $vars['env']->setData(USER_VALIDATION_ERROR, TRUE, 'captcha');
