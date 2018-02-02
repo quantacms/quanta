@@ -19,18 +19,20 @@ class DirList extends ListObject {
     $node_current = NodeFactory::current($this->env);
     $node_father = $node_current->getFather();
 
+    // Cycle the subdirectories.
     foreach ($this->dirs as $dir_url => $node) {
+
       /** @var Node $node */
       // If user can't access a node, completely exclude it from the list.
       if ($node->isForbidden()) {
         continue;
       }
 
-      // TODO: discontinue in favor of filter!
+      // TODO: discontinue in favor of list_filter!
       if (!empty($this->exclude[$i])) {
         continue;
       }
-      // TODO: discontinue in favor of filter!
+      // TODO: discontinue in favor of list_filter!
       if (!empty($this->include) && empty($this->include[$i])) {
         continue;
       }
@@ -45,6 +47,7 @@ class DirList extends ListObject {
       if (!empty($this->limit) && $i > $this->limit) {
         break;
       }
+      // Setup standard classes.
       $classes = array('dir-list-item', 'list-' . $this->getTpl() . '-item', 'list-item-' . $i);
 
       // Check if the list item is the current / active one.
@@ -76,6 +79,7 @@ class DirList extends ListObject {
 
       $this->list_items[] = $list_item;
     }
+
   }
 
   /**

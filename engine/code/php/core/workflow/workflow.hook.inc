@@ -3,8 +3,8 @@
  * Implements hook_shadow_node_edit.
  * @param $vars
  */
-function workbench_shadow_node_form($vars) {
-  $vars['shadow']->addTab('manage status', file_get_contents('core/workbench/tpl/status_form.inc'), 2);
+function workflow_shadow_node_form($vars) {
+  $vars['shadow']->addTab('manage status', file_get_contents('core/workflow/tpl/status_form.inc'), 2);
 }
 
 /**
@@ -13,7 +13,7 @@ function workbench_shadow_node_form($vars) {
  * Create all default statuses if they don't exist yet.
  * @param $vars
  */
-function workbench_setup($vars) {
+function workflow_setup($vars) {
 
   $basic_statuses = array(
     NODE_STATUS_DRAFT => array('title' => 'Draft'),
@@ -29,7 +29,6 @@ function workbench_setup($vars) {
 
 }
 
-function workbench_node_presave($vars) {
+function workflow_node_presave($vars) {
   $vars['node']->setStatus($vars['data']['edit-status']);
-
 }

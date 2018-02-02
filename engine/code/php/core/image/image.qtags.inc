@@ -1,43 +1,38 @@
 <?php
 /**
- * Wiki Hook for IMG.
- * @param $attributes
- * @param $file
- * @param $string
- * @param $env
- * @return string
+ * Implements IMG qtag.
+ *
+ * Renders an image.
  */
-function wiki_IMG($attributes, $file, $string, $env) {
+function qtag_IMG($env, $target, $attributes) {
   $node =  NodeFactory::current($env);
-  $image = new Image($env, $file, $node);
+  $image = new Image($env, $target, $node);
   $image->loadAttributes($attributes);
   return $image->render();
 }
 
-// TODO: deprecate
-function wiki_THUMBNAIL($attributes, $name, $string, $env) {
+/**
+ * Implements THUMBNAIL qtag.
+ *
+ * Renders the thumbnail image of a node.
+ */
+function qtag_THUMBNAIL($env, $target, $attributes) {
   $node = empty($name) ? NodeFactory::current($env) : NodeFactory::load($env, $name);
   $attributes['link'] = $node->getName();
 	$attributes['node'] = $node->getName();
-	if (isset($_GET['test'])) print_r($attributes); 
-		return wiki_IMGTHUMB($attributes, $node->getThumbnail(), $string, $env);
-
+	return wiki_IMGTHUMB($env, $node->getThumbnail(), $attributes);
 }
 
 /**
- * Create a thumbnail / edited version of an image on the fly.
+ * Implements IMGTHUMB qtag.
  *
- * @param $attributes
- * @param $file
- * @param $string
- * @param $env
- * @return string
+ * Create a thumbnail / edited version of an image on the fly.
  */
-function wiki_IMGTHUMB($attributes, $file, $string, $env) {
+function qtag_IMGTHUMB($env, $target, $attributes) {
   $node = isset($attributes['node']) ? NodeFactory::load($env, $attributes['node']) : NodeFactory::current($env);
 
   // Load the image.
-  $image = new Image($env, $file, $node);
+  $image = new Image($env, $target, $node);
   $image->loadAttributes($attributes);
 
   // Setup tooltip.
@@ -47,7 +42,7 @@ function wiki_IMGTHUMB($attributes, $file, $string, $env) {
   $compression = isset($attributes['compression']) ? $attributes['compression'] : 60;
 
   // Setup alt for the image.
-  $alt = isset($attributes['alt']) ? $attributes['alt'] : $file;
+  $alt = isset($attributes['alt']) ? $attributes['alt'] : $target;
 
 
   // Setup title for the image link (if present).
@@ -56,9 +51,9 @@ function wiki_IMGTHUMB($attributes, $file, $string, $env) {
   // Setup operations to run on the image.
   $op = isset($attributes['operation']) ? $attributes['operation'] : 'scale';
 
-  $thumbfile = 'thumb-' . str_replace(' ', '-', str_replace('/', '-', $node->getName() . '-' . $image->width . 'x' . $image->height . '-'. $file));
+  $thumbfile = 'thumb-' . str_replace(' ', '-', str_replace('/', '-', $node->getName() . '-' . $image->width . 'x' . $image->height . '-' . $target));
   preg_replace("/[^A-Za-z0-9 ]/", '', $thumbfile);
-	$filearr = explode('/', $file);
+	$filearr = explode('/', $target);
 	$filename = $filearr[count($filearr) - 1];
 
 	// Generate the thumbnail of the requested image.
@@ -72,6 +67,7 @@ function wiki_IMGTHUMB($attributes, $file, $string, $env) {
     $thumb = $src;
   }
   else {
+    // Generate the HTML of the thumbnail.
     $thumb = '<img alt="' . $alt . '" class="image ' . (isset($attributes['class']) ? $attributes['class'] : '') .  '" ' . 'alt="' . $filename . '" ' . $tooltip . 'src="' . $src . '" />';
   }
 
@@ -88,14 +84,11 @@ function wiki_IMGTHUMB($attributes, $file, $string, $env) {
 }
 
 /**
- * Returns the of an IMGTHUMB.
- * @param $attributes
- * @param $file
- * @param $string
- * @param $env
- * @return string
+ * Implements IMGTHUMBURL qtag.
+ *
+ * Returns the url of an IMGTHUMB.
  */
-function wiki_IMGTHUMBURL($attributes, $file, $string, $env) {
+function qtag_IMGTHUMBURL($env, $target, $attributes) {
   $attributes['url'] = TRUE;
-  return wiki_IMGTHUMB($attributes, $file, $string, $env);
+  return qtag_IMGTHUMB($env, $target, $attributes);
 }
