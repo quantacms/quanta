@@ -2,10 +2,13 @@
 /**
  * Implements hook_load_includes().
  *
- * @param $vars
- *   Miscellaneous environment / page variables.
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
  */
-function tooltip_load_includes($vars) {
-  $vars['env']->addInclude('engine/code/php/core/tooltip/js/tooltip.js');
-  $vars['env']->addInclude('engine/code/php/core/tooltip/css/tooltip.css');
+function tooltip_load_includes($env, $vars) {
+  $env->addInclude('engine/code/php/core/tooltip/js/tooltip.js');
+  $env->addInclude('engine/code/php/core/tooltip/css/tooltip.css');
 }

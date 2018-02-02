@@ -2,9 +2,14 @@
 
 /**
  * Implements hook_shadow_node_edit.
+ *
+ * @param Environment $env
+ *   The current Environment.
+ *
  * @param $vars
+ *   An array of variables.
  */
-function access_shadow_access_form($vars) {
+function access_shadow_access_form($env, $vars) {
   /** @var Shadow $shadow */
   $shadow = &$vars['shadow'];
   $shadow->addTab('manage permissions', file_get_contents('core/access/tpl/permissions_form.inc'), 5);
@@ -12,9 +17,15 @@ function access_shadow_access_form($vars) {
 }
 
 /**
+ * Implements hook_node_presave().
+ *
+ * @param Environment $env
+ *   The current Environment.
+ *
  * @param $vars
+ *   An array of variables.
  */
-function access_node_presave($vars) {
+function access_node_presave($env, $vars) {
 
   $node_permissions = array(
     'node_add',
@@ -38,13 +49,15 @@ function access_node_presave($vars) {
 /**
  * Implements hook_node_load().
  *
+ * @param Environment $env
+ *   The Environment.
+ *
  * @param $vars
+ *   An array of variables.
  */
-function access_node_open($vars) {
+function access_node_open($env, $vars) {
   /** @var Node $node */
   $node = &$vars['node'];
-  /** @var Environment $env */
-  $env = &$vars['env'];
 
   // Check if the user can access the node.
   if (!empty($node) && $node->exists) {
@@ -57,18 +70,24 @@ function access_node_open($vars) {
 
 /**
  * Render a box.
+ *
  * TODO: make it open for all node attributes
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
  * @param $vars
+ *   An array of variables.
  */
-function access_wikitag($vars) {
-  $node = NodeFactory::current($vars['env']);
-  $user = UserFactory::current($vars['env']);
+function access_wikitag($env, $vars) {
+  $node = NodeFactory::current($env);
+  $user = UserFactory::current($env);
 
   // The user has selected to show the tag only on certain paths / lineage.
   if (!empty($vars['attributes']['filter'])) {
 
 // [ADD|filter=path@aldo;dario,
-      $filter_match = _access_filter($vars['env'], $vars['attributes']['filter'], $node, $user);
+      $filter_match = _access_filter($env, $vars['attributes']['filter'], $node, $user);
       // If there is an active tag filter, and it doesn't match, empty the tag.
       foreach ($vars['wikitag'] as $tag => $content) {
         if (!$filter_match) {

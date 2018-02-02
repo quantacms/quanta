@@ -10,61 +10,104 @@ define("STATS_QTAG_LOADED", 'stats_qtag_loaded');
 
 /**
  * Implements hook_boot().
- * @param $vars
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
  */
-function stats_boot($vars) {
-  $vars['env']->setData(STATS_PAGE_BOOT_TIME, round(microtime(TRUE) * 1000));
+function stats_boot($env, $vars) {
+  // Mark page start loading time.
+  $env->setData(STATS_PAGE_BOOT_TIME, round(microtime(TRUE) * 1000));
 }
 
 /**
- * Implements hook_complete().
- * @param $vars
+ * Implements hook_page_init().
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
  */
-function stats_page_init($vars) {
-  $vars['env']->setData(STATS_PAGE_COMPLETE_TIME, round(microtime(TRUE) * 1000));
+function stats_page_init($env, $vars) {
+  // Mark page end loading time.
+  $env->setData(STATS_PAGE_COMPLETE_TIME, round(microtime(TRUE) * 1000));
 }
 
 
 /**
  * Implements hook_node_build().
- * @param $vars
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
  */
-function stats_node_build($vars) {
-  $vars['env']->setData(STATS_NODE_BUILT, ($vars['env']->getData(STATS_NODE_BUILT, 0) + 1));
-  $list = $vars['env']->getData(STATS_NODE_LIST, array());
+function stats_node_build($env, $vars) {
+  // Mark node building time.
+  $env->setData(STATS_NODE_BUILT, ($env->getData(STATS_NODE_BUILT, 0) + 1));
+  $list = $env->getData(STATS_NODE_LIST, array());
   $list[] = $vars['node']->name;
-  $vars['env']->setData(STATS_NODE_LIST, $list);
+  $env->setData(STATS_NODE_LIST, $list);
 
 }
 
 /**
- * Implements hook_node_build().
- * @param $vars
+ * Implements hook_node_load().
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
  */
-function stats_node_load($vars) {
-  $vars['env']->setData(STATS_NODE_LOADED, ($vars['env']->getData(STATS_NODE_LOADED, 0) + 1));
+function stats_node_load($env, $vars) {
+  // Count loaded nodes.
+  $env->setData(STATS_NODE_LOADED, ($env->getData(STATS_NODE_LOADED, 0) + 1));
 }
 
 /**
- * Implements hook_node_build().
- * @param $vars
+ * Implements hook_node_load_cache().
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
  */
-function stats_node_load_cache($vars) {
-  $vars['env']->setData(STATS_NODE_LOADED_CACHE, ($vars['env']->getData(STATS_NODE_LOADED_CACHE, 0) + 1));
+function stats_node_load_cache($env, $vars) {
+  // Count nodes loaded from cache.
+  $env->setData(STATS_NODE_LOADED_CACHE, ($env->getData(STATS_NODE_LOADED_CACHE, 0) + 1));
 }
 
 /**
  * Implements hook_wikitag().
- * @param $vars
+ *
+ * TODO: deprecate in favor of qtag only.
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
  */
-function stats_wikitag($vars) {
-  $vars['env']->setData(STATS_QTAG_LOADED, ($vars['env']->getData(STATS_QTAG_LOADED, 0) + 1));
+function stats_wikitag($env, $vars) {
+  // Counted loaded qtags.
+  $env->setData(STATS_QTAG_LOADED, ($env->getData(STATS_QTAG_LOADED, 0) + 1));
 }
 
 /**
  * Implements hook_qtag().
- * @param $vars
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
  */
-function stats_qtag($vars) {
-  $vars['env']->setData(STATS_QTAG_LOADED, ($vars['env']->getData(STATS_QTAG_LOADED, 0) + 1));
+function stats_qtag($env, $vars) {
+  // Count loaded qtags.
+  $env->setData(STATS_QTAG_LOADED, ($env->getData(STATS_QTAG_LOADED, 0) + 1));
 }

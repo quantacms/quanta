@@ -6,9 +6,9 @@
  * @param $vars
  * Miscellaneous environment / page variables.
  */
-function file_shadow_file_form($vars) {
+function file_shadow_file_form($env, $vars) {
   $node = $vars['shadow']->getNode();
-  if (!Access::check($vars['env'], $vars['env']->getContext(), array('node' => $node))) {
+  if (!Access::check($env, $env->getContext(), array('node' => $node))) {
     return FALSE;
   }
   $vars['shadow']->addTab('manage files', file_get_contents('core/file/tpl/upload_form.inc'), 2);
@@ -20,17 +20,22 @@ function file_shadow_file_form($vars) {
  * @param $vars
  *   Miscellaneous environment / page variables.
  */
-function file_load_includes($vars) {
-  $vars['env']->addInclude('engine/code/php/core/file/css/file.css');
+function file_load_includes($env, $vars) {
+  $env->addInclude('engine/code/php/core/file/css/file.css');
 }
 
 /**
  * Implements hook_init().
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
  * @param $vars
+ *   An array of variables.
  */
-function file_init($vars) {
+function file_init($env, $vars) {
 
-  $node = NodeFactory::current($vars['env']);
+  $node = NodeFactory::current($env);
 
   // There is a request to upload a file.
   // TODO: move in actions / factory?
@@ -50,10 +55,17 @@ function file_init($vars) {
 }
 
 /**
+ * Implements hook_node_save().
+ *
  * Saves all files uploaded on the node.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
  * @param $vars
+ *   An array of variables.
  */
-function file_node_save($vars) {
+function file_node_save($env, $vars) {
   // TODO: move in File or create FileFactory module.
 
 	if (empty($vars['node']->getData('tmp_files_dir'))) {
@@ -78,10 +90,15 @@ function file_node_save($vars) {
 }
 
 /**
+ * Implements hook_node_load().
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
  * @param $vars
+ *   An array of variables.
  */
-function file_node_load($vars) {
-
+function file_node_load($env, $vars) {
   // When saving a node, select the pre-created temporary files dir.
   if (!empty($_REQUEST['json']) && ($json = json_decode($_REQUEST['json'])) && isset($json->tmp_files_dir)) {
     $vars['node']->setData('tmp_files_dir', $json->tmp_files_dir);
