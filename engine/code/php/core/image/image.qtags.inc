@@ -17,7 +17,7 @@ function qtag_IMG($env, $target, $attributes) {
  * Renders the thumbnail image of a node.
  */
 function qtag_THUMBNAIL($env, $target, $attributes) {
-  $node = empty($name) ? NodeFactory::current($env) : NodeFactory::load($env, $name);
+  $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $attributes['link'] = $node->getName();
 	$attributes['node'] = $node->getName();
 	return qtag_IMGTHUMB($env, $node->getThumbnail(), $attributes);
