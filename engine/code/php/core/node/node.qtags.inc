@@ -1,33 +1,22 @@
 <?php
 /**
- * Implementation of qtag Author
+ * Implements qtag AUTHOR.
+ * 
  * Renders the author of a node as an user link.
- *
- * @param $attributes
- * @param $var
- * @param $string
- * @param $env
- * @return string
- * @internal param $node
  */
-function wiki_AUTHOR($attributes, $var, $string, $env) {
+function qtag_AUTHOR($env, $target, $attributes) {
   $node = NodeFactory::current($env);
   $author = $node->getAuthor();
-  return wiki_LINK($attributes, $author, $string, $env);
+  return qtag_LINK($env, $author, $attributes);
 }
 
 /**
- * Implementation of qtag BLOCK
- * Renders a node as a block that can be embedded elsewhere.
+ * Implements qtag BLOCK.
  *
- * @param $attributes
- * @param $node
- * @param $string
- * @param $env
- * @return string
+ * Renders a node as a block that can be embedded elsewhere.
  */
-function wiki_BLOCK($attributes, $node, $string, $env) {
-  $node = NodeFactory::load($env, $node);
+function qtag_BLOCK($env, $target, $attributes) {
+  $node = NodeFactory::load($env, $target);
 
   if (isset($attributes['rendered'])) {
     $node->buildTemplate();
@@ -46,34 +35,25 @@ function wiki_BLOCK($attributes, $node, $string, $env) {
 }
 
 /**
- * Implementation of qtag JSONATTRIBUTE
- * Very important tag that allows retrieving every attribute of a node.
+ * Implements qtag JSONATTRIBUTE.
  *
- * @param $attributes
- * @param $node
- * @param $string
- * @param $env
- * @return string
+ * A Json version of an attribute.
  */
-function wiki_JSONATTRIBUTE($attributes, $node, $string, $env) {
-  $attribute = wiki_ATTRIBUTE($attributes, $node, $string, $env);
+function qtag_JSONATTRIBUTE($env, $target, $attributes) {
+  $attribute = qtag_ATTRIBUTE($env, $target, $attributes);
 
   return json_encode($attribute);
 }
 
 /**
- * Implementation of qtag ATTRIBUTE.
+ * Implements of qtag ATTRIBUTE.
+ *
  * Very important tag that allows retrieving every attribute of a node.
  *
- * @param $attributes
- * @param $node
- * @param $string
- * @param $env
- * @return string
  */
-function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
+function qtag_ATTRIBUTE($env, $target, $attributes) {
 
-  $node = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
+  $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
 
   switch ($attributes['name']) {
     // Node's name (aka name of the folder).
@@ -164,7 +144,6 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
 
     // Default behavior: pick data from the json.
     // TODO: security issues?
-
     default:
       if (isset($node->json->{$attributes['name']})) {
         $string = string_normalize($node->json->{$attributes['name']});
@@ -172,7 +151,6 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
       else {
         $string = '';
       }
-
       break;
   }
 
@@ -180,16 +158,11 @@ function wiki_ATTRIBUTE($attributes, $node, $string, $env) {
 }
 
 /**
- * Implementation of qtag LINK.
- * This tag creates a link to another node in the system.
+ * Implements qtag LINK.
  *
- * @param $attributes
- * @param $target
- * @param $string
- * @param $env
- * @return string
+ * This tag creates a link to another node in the system.
  */
-function wiki_LINK($attributes, $target, $string, $env) {
+function qtag_LINK($env, $target, $attributes) {
   // Load the target node.
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
 
@@ -256,13 +229,8 @@ function wiki_LINK($attributes, $target, $string, $env) {
  * Implementation of qtag ADD.
  * Creates an add node button.
  *
- * @param $attributes
- * @param $node the father of the node
- * @param $string
- * @param $env
- * @return string|void
  */
-function wiki_ADD($attributes, $node, $string, $env) {
+function qtag_ADD($env, $target, $attributes) {
   $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
 
   if (!Access::check($env, NODE_ACTION_ADD, array('node' => $nodeobj))) {
@@ -274,23 +242,17 @@ function wiki_ADD($attributes, $node, $string, $env) {
   $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Add to <i>' . $nodeobj->getTitle() . '</i>...';
   $attributes['language'] = isset($attributes['language']) ? $attributes['language'] : Locale::getLanguage($env);
   $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&oplus;';
-  return wiki_LINK($attributes, $node, $string, $env);
+
+  return qtag_LINK($env, $target, $attributes);
 }
 
 /**
- * Implementation of qtag EDIT.
+ * Implementats qtag EDIT.
+ *
  * Creates an edit node button.
  *
- * @param array $attributes
- * @param Node $node the name of the node
- * @param string $string
- *
- * @param Environment $env
- *
- * @return string
- *   The content of the qtag.
  */
-function wiki_EDIT($attributes, $node, $string, $env) {
+function qtag_EDIT($env, $target, $attributes) {
   $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
 
   if (!Access::check($env, NODE_ACTION_EDIT, array('node' => $nodeobj))) {
@@ -305,20 +267,16 @@ function wiki_EDIT($attributes, $node, $string, $env) {
   $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&#9998;';
   $attributes['redirect'] = isset($attributes['redirect']) ? $attributes['redirect'] : '';
 
-  return wiki_LINK($attributes, $node, $string, $env);
+  return qtag_LINK($env, $target, $attributes);
 }
 
 /**
- * Implementation of qtag DELETE.
+ * Implements qtag DELETE.
  * Creates a delete node button.
+ * @see qtag()
  *
- * @param $attributes
- * @param $node the name of the node
- * @param $string
- * @param $env
- * @return string|void
  */
-function wiki_DELETE($attributes, $node, $string, $env) {
+function qtag_DELETE($env, $target, $attributes) {
   $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
 
   if (!Access::check($env, NODE_ACTION_DELETE, array('node' => $nodeobj))) {
@@ -328,41 +286,34 @@ function wiki_DELETE($attributes, $node, $string, $env) {
   $attributes['class'] .= 'delete-link';
   $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&ominus;';
   $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Delete <i>' . $nodeobj->getTitle() . '</i>...';
-  return wiki_LINK($attributes, $node, $string, $env);
+  return qtag_LINK($env, $target, $attributes);
 }
 
 /**
- * Implementation of qtag OPERATIONS.
+ * Implements qtag OPERATIONS.
+ *
  * Simply renders ADD - EDIT - DELETE tags altogether.
  *
- * @param $attributes
- * @param $node
- * @param $string
- * @param $env
- * @return string
  */
-function wiki_OPERATIONS($attributes, $node, $string, $env) {
+function qtag_OPERATIONS($env, $target, $attributes) {
   $operations = '';
   // Collect the three basic admin links.
-  $operations .= wiki_ADD($attributes, $node, $string, $env);
-  $operations .= wiki_EDIT($attributes, $node, $string, $env);
-  $operations .= wiki_DELETE($attributes, $node, $string, $env);
+  $operations .= qtag_ADD($env, $target, $attributes);
+  $operations .= qtag_EDIT($env, $target, $attributes);
+  $operations .= qtag_DELETE($env, $target, $attributes);
   return $operations;
 }
 
 /**
- * TODO: what does this function do?
- * @param $attributes
- * @param $var
- * @param $string
- * @param $env
- * @return string
- * @internal param $tagname
+ * Implements qtag CATEGORIES.
+ *
+ *
+ * Returns links to all nodes that contain a symlink to this node.
  */
-function wiki_CATEGORIES($attributes, $var, $string, $env) {
+function qtag_CATEGORIES($env, $target, $attributes) {
   $node = NodeFactory::current($env);
   $html = '';
-  $cats = $node->getCategories($var);
+  $cats = $node->getCategories($target);
   foreach ($cats as $cat) {
     $html .= '[LINK:' . $cat->name . ']';
   }
@@ -371,16 +322,12 @@ function wiki_CATEGORIES($attributes, $var, $string, $env) {
 
 
 /**
- * TODO: not good. It does not filter per access...
+ * Implements qtag COUNT.
  *
- * @param $attributes
- * @param $node
- * @param $string
- * @param $env
- * @return string
- * @internal param $var
+ * Count the number of (what?)
+ * TODO recheck.
  */
-function wiki_COUNT($attributes, $node, $string, $env) {
+function qtag_COUNT($env, $target, $attributes) {
   $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
 
   $depth = '';
@@ -404,14 +351,10 @@ function wiki_COUNT($attributes, $node, $string, $env) {
 /**
  * Implements qtag STATUS.
  *
- * @param $attributes
- * @param $node
- * @param $string
- * @param $env
- * @return string
+ * Returns the status of a node.
  */
-function wiki_STATUS($attributes, $node, $string, $env) {
-  $node = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
+function qtag_STATUS($env, $target, $attributes) {
+  $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
 
   $status = $node->getStatus();
   $status_node = NodeFactory::load($env, $status);

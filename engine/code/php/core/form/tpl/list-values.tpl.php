@@ -1,1 +1,1 @@
-[ATTRIBUTE|name=name:[LISTITEM]]---[ATTRIBUTE|name=title:[LISTITEM]]
+{ATTRIBUTE|name=name:[LISTITEM]}---{ATTRIBUTE|name=title:[LISTITEM]}

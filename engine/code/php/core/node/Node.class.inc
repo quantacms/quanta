@@ -697,6 +697,8 @@ class Node extends JSONDataContainer {
    * EXPERIMENTAL: find all categories for the node,
    * aka all nodes where it has been included as a symlink (tagged).
    *
+   * TODO: this function should be static and not be placed here.
+   *
    * @param Node $node
    *  The node.
    *
