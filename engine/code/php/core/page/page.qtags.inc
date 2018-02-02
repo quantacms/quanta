@@ -88,7 +88,7 @@ function qtag_PHONE($env, $target, $attributes) {
     $attributes['class'] = ' tel';
   }
   
-	return '<a ' . html_standard_attributes($attributes) . ' href="tel:' . $phone . '">' . $phone . '</a>';
+	return '<a ' . html_standard_attributes($attributes) . ' href="tel:' . $target . '">' . $phone . '</a>';
 }
 
 /**
@@ -126,6 +126,8 @@ function qtag_BREADCRUMB($env, $target, $attributes) {
   foreach ($node->getLineage() as $n) {
     $breadcrumb[$n->getName()] = $n;
   }
+
+  // TODO: breadcrumb generation must be done in page.
 
   $env->setData('breadcrumb', $breadcrumb);
   $themed_bc = '';

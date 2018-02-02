@@ -17,10 +17,10 @@ function qtag_IMG($env, $target, $attributes) {
  * Renders the thumbnail image of a node.
  */
 function qtag_THUMBNAIL($env, $target, $attributes) {
-  $node = empty($name) ? NodeFactory::current($env) : NodeFactory::load($env, $name);
+  $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $attributes['link'] = $node->getName();
 	$attributes['node'] = $node->getName();
-	return wiki_IMGTHUMB($env, $node->getThumbnail(), $attributes);
+	return qtag_IMGTHUMB($env, $node->getThumbnail(), $attributes);
 }
 
 /**
@@ -73,7 +73,7 @@ function qtag_IMGTHUMB($env, $target, $attributes) {
 
   // If a link is set, wrap the image in the link.
   if (isset($attributes['link'])) {
-    $link = empty($attributes['link']) ? ($node->name . '/' . $file) : $attributes['link'];
+    $link = empty($attributes['link']) ? ($node->name . '/' . $target) : $attributes['link'];
     $thumb = '<a ' .
       (empty($link_title) ? '' : ('title="' . $link_title . '"')) .
       'class="linked-image ' . (isset($attributes['class']) ? ('linked-image-' . $attributes['class']) : '') .  '"' .

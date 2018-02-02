@@ -2,10 +2,13 @@
 /**
  * Implements hook_load_includes().
  *
+ * @param Environment $env
+ *   The Environment.
+ *
  * @param $vars
- *   Miscellaneous environment / page variables.
+ *   An array of variables.
  */
-function gallery_load_includes($vars) {
-  $vars['env']->addInclude('engine/code/php/core/gallery/js/gallery.js');
-  $vars['env']->addInclude('engine/code/php/core/gallery/css/gallery.css');
+function gallery_load_includes($env, $vars) {
+  $env->addInclude('engine/code/php/core/gallery/js/gallery.js');
+  $env->addInclude('engine/code/php/core/gallery/css/gallery.css');
 }

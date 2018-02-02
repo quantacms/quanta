@@ -3,32 +3,46 @@
 /**
  * Implements hook_load_includes().
  *
- * @param $vars
- *   Miscellaneous environment / page variables.
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
+ *
  */
-function locale_load_includes($vars) {
-  $vars['env']->addInclude('engine/code/php/core/locale/css/locale.css');
-  $vars['env']->addInclude('engine/code/php/core/locale/js/locale.js');
+function locale_load_includes($env, $vars) {
+  $env->addInclude('engine/code/php/core/locale/css/locale.css');
+  $env->addInclude('engine/code/php/core/locale/js/locale.js');
 }
 
 /**
- * Implements hook_boot.
- * Checks language switch request.
+ * Implements hook_boot().
+ * Checks if there is a language switch request.
  *
- * @param $vars
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
  */
-function locale_boot($vars) {
-  $vars['env']->sysdir('languages', DIR_LANGUAGES);
+function locale_boot($env, $vars) {
+  $env->sysdir('languages', DIR_LANGUAGES);
   if (isset($_GET['lang'])) {
-    Locale::switchLanguage($vars['env'], $_GET['lang']);
+    Locale::switchLanguage($env, $_GET['lang']);
   }
 }
 
 /**
+ * Implements hook_setup().
  * Main setup of languages.
- * @param $vars
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
  */
-function locale_setup($vars) {
+function locale_setup($env, $vars) {
   Doctor::talk('Setting up basic languages...');
   $basic_languages = array(
     'en' => 'English',
@@ -36,13 +50,13 @@ function locale_setup($vars) {
 
   // If a fallback language has not been set already, we assume languages are not
   // set as well (i.e. it's a new installation).
-  if (!file_exists($vars['env']->dir['languages'] . '/fallback')) {
+  if (!file_exists($env->dir['languages'] . '/fallback')) {
     Doctor::talk('No fallback language found.');
     $fallback_language = 'en';
     // Create basic languages.
     foreach ($basic_languages as $langcode => $lang) {
-      if (!is_dir($vars['env']->dir['languages'] . '/' . $langcode)) {
-        NodeFactory::buildNode( $vars['env'], $langcode, DIR_LANGUAGES, array(
+      if (!is_dir($env->dir['languages'] . '/' . $langcode)) {
+        NodeFactory::buildNode( $env, $langcode, DIR_LANGUAGES, array(
             'title' => $lang,
             'language' => LANGUAGE_NEUTRAL,
             'status' => NODE_STATUS_PUBLISHED,
@@ -52,16 +66,23 @@ function locale_setup($vars) {
       }
     }
 
-    NodeFactory::linkNodes($vars['env'], $fallback_language, '_languages', array('symlink_name' => 'fallback'));
+    NodeFactory::linkNodes($env, $fallback_language, '_languages', array('symlink_name' => 'fallback'));
     Doctor::talk('Fallback language set to ' . $fallback_language . '.');
 
   }
 }
 
 /**
+ * Implements hook_shadow_extra().
+ *
  * Add translation links to node edit shadow form.
- * @param $vars
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
  */
-function locale_shadow_extra($vars) {
-  $vars['html'] .= qtag_TRANSLATE_LINKS($vars['env'], NULL, array());
+function locale_shadow_extra($env, $vars) {
+  $vars['html'] .= qtag_TRANSLATE_LINKS($env, NULL, array());
 }
