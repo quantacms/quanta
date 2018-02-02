@@ -1,4 +1,0 @@
-<?php
-require_once('wiki.api.inc');
-require_once('wiki.hook.inc');
-
