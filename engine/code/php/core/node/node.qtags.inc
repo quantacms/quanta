@@ -53,7 +53,7 @@ function qtag_JSONATTRIBUTE($env, $target, $attributes) {
  */
 function qtag_ATTRIBUTE($env, $target, $attributes) {
 
-  $node = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
+  $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
 
   switch ($attributes['name']) {
     // Node's name (aka name of the folder).
@@ -272,8 +272,9 @@ function qtag_EDIT($env, $target, $attributes) {
 
 /**
  * Implements qtag DELETE.
- *
  * Creates a delete node button.
+ * @see qtag()
+ *
  */
 function qtag_DELETE($env, $target, $attributes) {
   $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
@@ -305,6 +306,7 @@ function qtag_OPERATIONS($env, $target, $attributes) {
 
 /**
  * Implements qtag CATEGORIES.
+ *
  *
  * Returns links to all nodes that contain a symlink to this node.
  */
