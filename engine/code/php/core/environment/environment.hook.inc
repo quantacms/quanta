@@ -10,21 +10,18 @@
  *   An array of variables.
  */
 function environment_boot($env, $vars) {
-
     $env->addInclude('engine/code/css/engine.css');
-    $env->addInclude('engine/code/js/lib/jquery.js');
-    $env->addInclude('engine/code/js/engine.js');
+    $env->addInclude('engine/code/js/lib/jquery.min.js');
     $env->addInclude('engine/code/js/lib/jquery.knob.js');
     $env->addInclude('engine/code/js/lib/jquery.ui.widget.js');
     $env->addInclude('engine/code/js/lib/jquery.iframe-transport.js');
     $env->addInclude('engine/code/js/lib/zebra.js');
     $env->addInclude('engine/code/css/zebra.css');
-
+    $env->addInclude('engine/code/js/engine.js');
     // TODO: determine when to run cron.
     if (isset($_GET['cron'])) {
       $env->hook('cron');
     }
-
 }
 
 /**

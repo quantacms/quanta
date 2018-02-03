@@ -79,19 +79,16 @@ function access_node_open($env, $vars) {
  * @param $vars
  *   An array of variables.
  */
-function access_wikitag($env, $vars) {
+function access_qtag($env, $vars) {
   $node = NodeFactory::current($env);
   $user = UserFactory::current($env);
-
   // The user has selected to show the tag only on certain paths / lineage.
   if (!empty($vars['attributes']['filter'])) {
-
-// [ADD|filter=path@aldo;dario,
-      $filter_match = _access_filter($env, $vars['attributes']['filter'], $node, $user);
+     $filter_match = _access_filter($env, $vars['attributes']['filter'], $node, $user);
       // If there is an active tag filter, and it doesn't match, empty the tag.
-      foreach ($vars['wikitag'] as $tag => $content) {
+      foreach ($vars['qtag'] as $tag => $content) {
         if (!$filter_match) {
-          $vars['wikitag'][$tag] = '';
+          $vars['qtag'][$tag] = '';
         }
       }
     }
