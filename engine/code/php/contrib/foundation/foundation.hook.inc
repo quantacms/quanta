@@ -9,8 +9,8 @@
  *   An array of variables.
  */
 function foundation_load_includes($env, $vars) {
-  $vars['env']->addInclude('engine/code/php/contrib/foundation/js/foundation.min.js');
-  $vars['env']->addInclude('engine/code/php/contrib/foundation/css/foundation.min.css');
+  $env->addInclude('engine/code/php/contrib/foundation/js/foundation.min.js');
+  $env->addInclude('engine/code/php/contrib/foundation/css/foundation.min.css');
 }
 
 /**
@@ -58,7 +58,7 @@ function foundation_wikitag($env, $vars) {
  * @param $vars
  *   An array of variables.
  */
-function foundation_list_item($vars) {
+function foundation_list_item($env, $vars) {
   $foundation_children_attributes = array('child-large', 'child-medium', 'child-small');
   $classes = array();
   foreach ($foundation_children_attributes as $cattr) {
