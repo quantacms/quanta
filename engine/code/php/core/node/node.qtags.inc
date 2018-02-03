@@ -232,18 +232,17 @@ function qtag_LINK($env, $target, $attributes) {
  */
 function qtag_ADD($env, $target, $attributes) {
   $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
+  $link = '';
+  if (Access::check($env, NODE_ACTION_ADD, array('node' => $nodeobj))) {
 
-  if (!Access::check($env, NODE_ACTION_ADD, array('node' => $nodeobj))) {
-    return;
+    $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
+    $attributes['class'] .= 'add-link';
+    $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Add to <i>' . $nodeobj->getTitle() . '</i>...';
+    $attributes['language'] = isset($attributes['language']) ? $attributes['language'] : Locale::getLanguage($env);
+    $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&oplus;';
+    $link = qtag_LINK($env, $target, $attributes);
   }
-
-  $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
-  $attributes['class'] .= 'add-link';
-  $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Add to <i>' . $nodeobj->getTitle() . '</i>...';
-  $attributes['language'] = isset($attributes['language']) ? $attributes['language'] : Locale::getLanguage($env);
-  $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&oplus;';
-
-  return qtag_LINK($env, $target, $attributes);
+  return $link;
 }
 
 /**
@@ -255,7 +254,7 @@ function qtag_ADD($env, $target, $attributes) {
 function qtag_EDIT($env, $target, $attributes) {
   $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
 
-  if (!Access::check($env, NODE_ACTION_EDIT, array('node' => $nodeobj))) {
+  if (Access::check($env, NODE_ACTION_EDIT, array('node' => $nodeobj))) {
     return;
   }
   $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';

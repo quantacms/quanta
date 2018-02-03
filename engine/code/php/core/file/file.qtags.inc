@@ -33,9 +33,9 @@ function qtag_FILEATTRIBUTE($env, $target, $attributes) {
 /**
  * Implements FILE qtag.
  */
-function qtag_FILE($attributes, $file, $string, $env) {
+function qtag_FILE($env, $target, $attributes) {
 
-  $file = new File($env, $file, NULL, $attributes['title']);
+  $file = new File($env, $target, NULL, $attributes['title']);
   // Return the rendered file.
   if ($file->exists) {
     return $file->render();

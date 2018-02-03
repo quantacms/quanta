@@ -9,7 +9,7 @@
  *   An array of variables.
  */
 function captcha_init($env, $vars) {
-  $vars['env']->addInclude('engine/code/php/contrib/captcha/css/captcha.css');
+  $env->addInclude('engine/code/php/contrib/captcha/css/captcha.css');
 }
 
 /**
@@ -22,7 +22,7 @@ function captcha_init($env, $vars) {
  *   An array of variables.
  */
 function captcha_shadow_user_register($env, $vars) {
-  $captcha = new Captcha($vars['env'], CAPTCHA_MATH);
+  $captcha = new Captcha($env, CAPTCHA_MATH);
   $vars['shadow']->prependToTab(USER_ACTION_REGISTER, $captcha->render());
 }
 
@@ -38,8 +38,8 @@ function captcha_shadow_user_register($env, $vars) {
 function captcha_user_validate($env, $vars) {
   if ($vars['user']->context == USER_ACTION_REGISTER) {
     if (!Captcha::validate($vars['form_data']['edit-captcha'], $vars['form_data']['edit-captcha_math'])) {
-      $vars['env']->setData(USER_VALIDATION_ERROR, TRUE, 'captcha');
-      new Message($vars['env'], 'The math answer is not valid. Please retry', MESSAGE_WARNING);
+      $env->setData(USER_VALIDATION_ERROR, TRUE, 'captcha');
+      new Message($env, 'The math answer is not valid. Please retry', MESSAGE_WARNING);
     }
   }
 }

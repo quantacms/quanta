@@ -84,11 +84,12 @@ function qtag_EMAIL($env, $target, $attributes) {
 function qtag_PHONE($env, $target, $attributes) {
   if (isset($attributes['class'])){
     $attributes['class'] .= ' tel';
-  } else {
+  }
+  else {
     $attributes['class'] = ' tel';
   }
   
-	return '<a ' . html_standard_attributes($attributes) . ' href="tel:' . $target . '">' . $phone . '</a>';
+	return '<a ' . html_standard_attributes($attributes) . ' href="tel:' . $target . '">' . $target . '</a>';
 }
 
 /**

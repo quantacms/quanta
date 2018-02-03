@@ -382,6 +382,3 @@ else if ($split[$i]=="se") {
 
 return $domain;
  }
-
-
-?>

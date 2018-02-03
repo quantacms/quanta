@@ -31,6 +31,7 @@ abstract class ListObject {
   protected $status = array();
   // Filter
   protected $list_filter;
+  protected $sort;
 
   /**
    * ListObject constructor.

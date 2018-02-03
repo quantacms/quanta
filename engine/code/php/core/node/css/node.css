@@ -8,8 +8,8 @@
 .node-item .node-item-actions {
     display: none;
     position: absolute;
-    top: 0px;
-    right: 0px;
+    top: 0;
+    right: 0;
 
     text-align: right;
     background: #ffffff !important;

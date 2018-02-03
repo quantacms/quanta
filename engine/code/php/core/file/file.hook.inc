@@ -3,22 +3,29 @@
 /**
  * Implements hook_shadow_file_form().
  *
- * @param $vars
- * Miscellaneous environment / page variables.
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
  */
 function file_shadow_file_form($env, $vars) {
-  $node = $vars['shadow']->getNode();
-  if (!Access::check($env, $env->getContext(), array('node' => $node))) {
-    return FALSE;
+  /** @var Shadow $shadow */
+  $shadow = $vars['shadow'];
+  $node = $shadow->getNode();
+  if (Access::check($env, $env->getContext(), array('node' => $node))) {
+    $vars['shadow']->addTab('manage files', file_get_contents('core/file/tpl/upload_form.inc'), 2);
   }
-  $vars['shadow']->addTab('manage files', file_get_contents('core/file/tpl/upload_form.inc'), 2);
 }
 
 /**
  * Implements hook_load_includes().
  *
- * @param $vars
- *   Miscellaneous environment / page variables.
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
  */
 function file_load_includes($env, $vars) {
   $env->addInclude('engine/code/php/core/file/css/file.css');
@@ -30,7 +37,7 @@ function file_load_includes($env, $vars) {
  * @param Environment $env
  *   The Environment.
  *
- * @param $vars
+ * @param array $vars
  *   An array of variables.
  */
 function file_init($env, $vars) {
