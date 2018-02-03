@@ -2,7 +2,12 @@
 
 /**
  * Implements hook_boot();
- * @param $vars
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   Miscellaneous environment / page variables.
  */
 function user_boot($env, $vars) {
   $env->sysdir('users', '_users');
@@ -12,7 +17,10 @@ function user_boot($env, $vars) {
 /**
  * Implements hook_load_includes().
  *
- * @param $vars
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
  *   Miscellaneous environment / page variables.
  */
 function user_load_includes($env, $vars) {
@@ -21,8 +29,14 @@ function user_load_includes($env, $vars) {
 }
 
 /**
+ * Implements hook_setup.
  * Main setup of users.
- * @param $vars
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   Miscellaneous environment / page variables.
  */
 function user_setup($env, $vars) {
   // Create the basic roles.
@@ -105,13 +119,19 @@ function user_shadow_user_edit_form($env, $vars) {
   $curr_user = UserFactory::current($env);
   $user = new User($env, $curr_user->name);
 
-  $tab = $user->renderEditForm($shadow->getContext());
+  $tab = $user->renderEditForm($env->getContext());
   $shadow->addTab('Your Profile', $tab, 1);
   $shadow->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Update');
 }
 
 /**
  * Implements hook_shadow_user_login_form.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param array $vars
+ *   An array of variables.
  */
 function user_shadow_user_login_form($env, $vars) {
   $user = UserFactory::current($env);

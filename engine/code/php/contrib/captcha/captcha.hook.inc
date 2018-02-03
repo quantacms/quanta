@@ -38,7 +38,7 @@ function captcha_shadow_user_register($env, $vars) {
 function captcha_user_validate($env, $vars) {
   if ($vars['user']->context == USER_ACTION_REGISTER) {
     if (!Captcha::validate($vars['form_data']['edit-captcha'], $vars['form_data']['edit-captcha_math'])) {
-      $env->setData(USER_VALIDATION_ERROR, TRUE, 'captcha');
+      $env->setData(USER_VALIDATION_ERROR, TRUE);
       new Message($env, 'The math answer is not valid. Please retry', MESSAGE_WARNING);
     }
   }

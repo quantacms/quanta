@@ -74,21 +74,22 @@ function file_init($env, $vars) {
  */
 function file_node_save($env, $vars) {
   // TODO: move in File or create FileFactory module.
-
-	if (empty($vars['node']->getData('tmp_files_dir'))) {
-        new Message($vars['node']->env, 'Warning: the temporary files dir ' . $vars['node']->getData('tmp_files_dir') . ' is empty.', MESSAGE_WARNING);
+  /** @var Node $node */
+  $node = $vars['node'];
+	if (empty($node->getData('tmp_files_dir'))) {
+        new Message($node->env, 'Warning: the temporary files dir ' . $node->getData('tmp_files_dir') . ' is empty.', MESSAGE_WARNING);
 
 	}
-  $tmp_dir = $vars['node']->env->dir['tmp_files'] . '/' . $vars['node']->getData('tmp_files_dir');
+  $tmp_dir = $node->env->dir['tmp_files'] . '/' . $node->getData('tmp_files_dir');
   if (is_dir($tmp_dir)) {
-    $tmp_files = $vars['node']->env->scanDirectory($tmp_dir);
+    $tmp_files = $node->env->scanDirectory($tmp_dir);
     foreach ($tmp_files as $file) {
       $fpath = $tmp_dir . '/' . $file;
-      $fileobj = new File($vars['node']->env, $fpath, $vars['node']);
+      $fileobj = new File($node->env, $fpath, $node);
       if (!$fileobj->isPublic()) {
-        new Message($vars['node']->env, 'The file <b>' . $file . '</b> has an invalid name. Please use a different name.', MESSAGE_WARNING);
+        new Message($node->env, 'The file <b>' . $file . '</b> has an invalid name. Please use a different name.', MESSAGE_WARNING);
       } elseif (is_file($fpath)) {
-        copy($fpath, $vars['node']->realpath . '/' . $file);
+        copy($fpath, $node->realpath . '/' . $file);
         unlink($fpath);
       }
     }
@@ -106,11 +107,13 @@ function file_node_save($env, $vars) {
  *   An array of variables.
  */
 function file_node_load($env, $vars) {
+  /** @var Node $node */
+  $node = $vars['node'];
   // When saving a node, select the pre-created temporary files dir.
   if (!empty($_REQUEST['json']) && ($json = json_decode($_REQUEST['json'])) && isset($json->tmp_files_dir)) {
-    $vars['node']->setData('tmp_files_dir', $json->tmp_files_dir);
+    $node->setData('tmp_files_dir', $json->tmp_files_dir);
   }
   else {
-    $vars['node']->setData('tmp_files_dir', $vars['node']->getName() . '-' . time() . '-' . rand(0, 1000));
+    $node->setData('tmp_files_dir', $node->getName() . '-' . time() . '-' . rand(0, 1000));
   }
 }

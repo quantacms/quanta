@@ -10,7 +10,7 @@
  *   An array of variables.
  *
  */
-function locale_load_includes($env, $vars) {
+function localization_load_includes($env, $vars) {
   $env->addInclude('engine/code/php/core/locale/css/locale.css');
   $env->addInclude('engine/code/php/core/locale/js/locale.js');
 }
@@ -25,10 +25,10 @@ function locale_load_includes($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function locale_boot($env, $vars) {
+function localization_boot($env, $vars) {
   $env->sysdir('languages', DIR_LANGUAGES);
   if (isset($_GET['lang'])) {
-    Locale::switchLanguage($env, $_GET['lang']);
+    Localization::switchLanguage($env, $_GET['lang']);
   }
 }
 
@@ -42,7 +42,7 @@ function locale_boot($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function locale_setup($env, $vars) {
+function localization_setup($env, $vars) {
   Doctor::talk('Setting up basic languages...');
   $basic_languages = array(
     'en' => 'English',
@@ -83,6 +83,6 @@ function locale_setup($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function locale_shadow_extra($env, $vars) {
+function localization_shadow_extra($env, $vars) {
   $vars['html'] .= qtag_TRANSLATE_LINKS($env, NULL, array());
 }

@@ -3,10 +3,10 @@ define("LANGUAGE_NEUTRAL", 'und');
 define("DIR_LANGUAGES", "_languages");
 
 /**
- * Class Locale
+ * Class Localization
  * This class manages languages in the system.
  */
-class Locale {
+class Localization {
 
   /**
    * Environment's language is always current one.
@@ -22,7 +22,7 @@ class Locale {
     else {
       // TODO: we have to check that the fallback language is OK
       // without creating a loop in loading the language node...
-      $lang = Locale::getFallbackLanguage($env);
+      $lang = Localization::getFallbackLanguage($env);
       // No language set. Set the current language as the fallback language.
       $_SESSION['language'] = $lang;
     }
@@ -31,8 +31,12 @@ class Locale {
 
   /**
    * Environment's language is always current one.
-   * @param $env
-   * @return mixed
+   *
+   * @param Environment $env
+   *   The Environment.
+   *
+   * @return string
+   *   A node url.
    */
   public static function getFallbackLanguage($env) {
     return $env->linkToNode('fallback');
@@ -40,8 +44,12 @@ class Locale {
 
   /**
    * Switch the current language.
-   * @param $env
-   * @param $lang
+   *
+   * @param Environment $env
+   *   The Environment.
+   *
+   * @param string $lang
+   *   A language code to switch into.
    */
   public static function switchLanguage($env, $lang) {
     $language = NodeFactory::load($env, $lang);

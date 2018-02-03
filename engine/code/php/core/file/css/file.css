@@ -46,8 +46,8 @@
     font-weight: bold;
     color: #7f858a;
     position: absolute;
-    right: 0px;
-    top: 0px;
+    right: 0;
+    top: 0;
     z-index: 500;
 }
 

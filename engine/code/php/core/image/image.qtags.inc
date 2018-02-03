@@ -3,6 +3,18 @@
  * Implements IMG qtag.
  *
  * Renders an image.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_IMG($env, $target, $attributes) {
   $node =  NodeFactory::current($env);
@@ -15,6 +27,18 @@ function qtag_IMG($env, $target, $attributes) {
  * Implements THUMBNAIL qtag.
  *
  * Renders the thumbnail image of a node.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_THUMBNAIL($env, $target, $attributes) {
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
@@ -27,6 +51,18 @@ function qtag_THUMBNAIL($env, $target, $attributes) {
  * Implements IMGTHUMB qtag.
  *
  * Create a thumbnail / edited version of an image on the fly.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_IMGTHUMB($env, $target, $attributes) {
   $node = isset($attributes['node']) ? NodeFactory::load($env, $attributes['node']) : NodeFactory::current($env);
@@ -87,6 +123,18 @@ function qtag_IMGTHUMB($env, $target, $attributes) {
  * Implements IMGTHUMBURL qtag.
  *
  * Returns the url of an IMGTHUMB.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_IMGTHUMBURL($env, $target, $attributes) {
   $attributes['url'] = TRUE;

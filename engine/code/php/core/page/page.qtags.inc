@@ -4,6 +4,18 @@
  *
  * Automatically generated header data.
  * TODO: discontinue. Use JS and CSS instead.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_HEAD($env, $target, $attributes) {
   return qtag_CSS($env, $target, $attributes) . qtag_JS($env, $target, $attributes);
@@ -13,6 +25,18 @@ function qtag_HEAD($env, $target, $attributes) {
  * Implements qtag CSS.
  *
  * Automatically generated css data.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_CSS($env, $target, $attributes) {
   $page = $env->getData('page');
@@ -25,6 +49,18 @@ function qtag_CSS($env, $target, $attributes) {
  * Implements qtag JS.
  *
  * Automatically generated js data.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_JS($env, $target, $attributes) {
   $page = $env->getData('page');
@@ -37,6 +73,18 @@ function qtag_JS($env, $target, $attributes) {
  * Implements qtag META_DATA.
  *
  * Automatically generated page meta data.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_META_DATA($env, $target, $attributes) {
   $page = $env->getData('page');
@@ -49,6 +97,18 @@ function qtag_META_DATA($env, $target, $attributes) {
  * Implements qtag BODYCLASSES.
  *
  * Automatically generated header data.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_BODYCLASSES($env, $target, $attributes) {
   $page = $env->getData('page');
@@ -60,6 +120,18 @@ function qtag_BODYCLASSES($env, $target, $attributes) {
  * Implements qtag URL.
  *
  * Renders the current site URL.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_URL($env, $target, $attributes) {
 	return 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
@@ -69,17 +141,43 @@ function qtag_URL($env, $target, $attributes) {
  * Implements qtag EMAIL.
  *
  * Renders a clickable email address.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_EMAIL($env, $target, $attributes) {
+  $string = '';
   if (valid_email($target)) {
-    return '<a class="mail" href="mailto:' . $target . '">' . (isset($attributes['title']) ? $attributes['title'] : $target)  . '</a>';
+    $string = '<a class="mail" href="mailto:' . $target . '">' . (isset($attributes['title']) ? $attributes['title'] : $target)  . '</a>';
   }
+  return $string;
 }
 
 /**
  * Implements qtag PHONE.
  *
  * Renders a phone number.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_PHONE($env, $target, $attributes) {
   if (isset($attributes['class'])){
@@ -97,6 +195,17 @@ function qtag_PHONE($env, $target, $attributes) {
  *
  * Renders the current context.
  *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_CONTEXT($env, $target, $attributes) {
   return $_REQUEST['context'];
@@ -108,6 +217,17 @@ function qtag_CONTEXT($env, $target, $attributes) {
  *
  * Render an empty content (useful as ajax container).
  *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_EMPTY($env, $target, $attributes) {
   $text = isset($attributes['text']) ? $attributes['text'] : '&nbsp;';
@@ -118,6 +238,18 @@ function qtag_EMPTY($env, $target, $attributes) {
  * Implements qtag Breadcrumb.
  *
  * Renders the full breadcrumb / lineage of the current node.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_BREADCRUMB($env, $target, $attributes) {
   $node = NodeFactory::current($env);
@@ -128,7 +260,7 @@ function qtag_BREADCRUMB($env, $target, $attributes) {
     $breadcrumb[$n->getName()] = $n;
   }
 
-  // TODO: breadcrumb generation must be done in page.
+  // TODO: breadcrumb generation must be done in page.class.
 
   $env->setData('breadcrumb', $breadcrumb);
   $themed_bc = '';

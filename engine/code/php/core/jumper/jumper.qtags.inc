@@ -2,8 +2,21 @@
 define("JUMPER_EMPTY", "_empty");
 
 /**
+ * Implements qtag JUMPER.
  *
  * Create a jumper to quick access nodes.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_JUMPER($env, $target, $attributes) {
   // Which folder to use.

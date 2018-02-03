@@ -2,9 +2,19 @@
 /**
  * Implements qtag STATS.
  *
- * @provides \qtag
- *
  * Statistics (only for admin) of the current page load.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_STATS($env, $target, $attributes) {
   $stats = array();
@@ -26,7 +36,17 @@ function qtag_STATS($env, $target, $attributes) {
 /**
  * Implements qtag GOOGLE_ANALYTICS.
  *
- * @provides \qtag
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  *
  * TODO: maybe too ambitious for a core module... move away?
  */

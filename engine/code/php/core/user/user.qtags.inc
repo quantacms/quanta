@@ -5,6 +5,17 @@
  *
  * Returns an user attribute of a given user.
  *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_USERATTRIBUTE($env, $target, $attributes) {
   $user = ($target == NULL) ? UserFactory::current($env) : new User($env, $target);
@@ -26,6 +37,17 @@ function qtag_USERATTRIBUTE($env, $target, $attributes) {
  *
  * Renders an user login link.
  *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_LOGIN($env, $target, $attributes) {
   $user = UserFactory::current($env);
@@ -37,6 +59,17 @@ function qtag_LOGIN($env, $target, $attributes) {
  *
  * Renders an user sign up / registration link.
  *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_REGISTER($env, $target, $attributes) {
   $user = UserFactory::current($env);

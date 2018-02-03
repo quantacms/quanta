@@ -3,6 +3,18 @@
  * Implements qtag SEARCH.
  *
  * Creates a search form.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_SEARCH($env, $target, $attributes) {
   $search_form = '
@@ -16,6 +28,18 @@ function qtag_SEARCH($env, $target, $attributes) {
  * Implements qtag SEARCHRESULTS.
  *
  * Renders the results of a search.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_SEARCHRESULTS($env, $target, $attributes) {
   $output = '';

@@ -6,6 +6,18 @@ define('CAROUSEL_DIRS', 'carousel_dirs');
  * Implements CAROUSEL qtag.
  *
  * Create a visual carousel based on a node list.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_CAROUSEL($env, $target, $attributes) {
   // TODO: create a class for the carousel.
@@ -14,6 +26,7 @@ function qtag_CAROUSEL($env, $target, $attributes) {
     $attributes['carousel-type'] = CAROUSEL_DIRS;
   }
 
+  /** @var ListObject $list */
   switch ($attributes['carousel-type']) {
 
     case CAROUSEL_DIRS:
@@ -56,14 +69,27 @@ function qtag_CAROUSEL($env, $target, $attributes) {
 
   $rand_class = rand(0, 99999999);
   $html = '<div class="flickity-carousel flickity-' . $rand_class . '">' . $list->render() . '</div>
-  <script>$(".flickity-' . $rand_class . '").flickity({' . implode(',', $carousel_attributes_arr) . '	});</script>';
+  <script>$(".flickity-' . $rand_class . '").flickity({' . implode(',', $carousel_attributes_arr) . '});</script>';
   return $html;
 
 }
 
 /**
  * Implements FILECAROUSEL qtag.
+ *
  * Create a visual carousel based on a file list.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_FILECAROUSEL($env, $target, $attributes) {
   $attributes['carousel-type'] = CAROUSEL_FILES;

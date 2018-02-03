@@ -24,7 +24,7 @@
     opacity:0.8;
     z-index: 8;
     position: absolute;
-    right: 0px;
+    right: 0;
     top: 60px;
 		width: 100%;
 }

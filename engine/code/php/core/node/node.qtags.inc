@@ -3,6 +3,18 @@
  * Implements qtag AUTHOR.
  * 
  * Renders the author of a node as an user link.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_AUTHOR($env, $target, $attributes) {
   $node = NodeFactory::current($env);
@@ -14,6 +26,18 @@ function qtag_AUTHOR($env, $target, $attributes) {
  * Implements qtag BLOCK.
  *
  * Renders a node as a block that can be embedded elsewhere.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_BLOCK($env, $target, $attributes) {
   $node = NodeFactory::load($env, $target);
@@ -38,6 +62,18 @@ function qtag_BLOCK($env, $target, $attributes) {
  * Implements qtag JSONATTRIBUTE.
  *
  * A Json version of an attribute.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_JSONATTRIBUTE($env, $target, $attributes) {
   $attribute = qtag_ATTRIBUTE($env, $target, $attributes);
@@ -50,6 +86,17 @@ function qtag_JSONATTRIBUTE($env, $target, $attributes) {
  *
  * Very important tag that allows retrieving every attribute of a node.
  *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_ATTRIBUTE($env, $target, $attributes) {
 
@@ -161,6 +208,18 @@ function qtag_ATTRIBUTE($env, $target, $attributes) {
  * Implements qtag LINK.
  *
  * This tag creates a link to another node in the system.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_LINK($env, $target, $attributes) {
   // Load the target node.
@@ -179,7 +238,6 @@ function qtag_LINK($env, $target, $attributes) {
     $attributes['rel'] = NULL;
   }
   else {
-
     // TODO: use something to get the real url...
     $target = '/' . string_normalize($node->getName());
     $title_default = $node->getTitle();
@@ -227,8 +285,20 @@ function qtag_LINK($env, $target, $attributes) {
 // TODO: very redundant functions!
 /**
  * Implementation of qtag ADD.
- * Creates an add node button.
  *
+ * Creates an "add node" button.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_ADD($env, $target, $attributes) {
   $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
@@ -238,7 +308,7 @@ function qtag_ADD($env, $target, $attributes) {
     $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
     $attributes['class'] .= 'add-link';
     $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Add to <i>' . $nodeobj->getTitle() . '</i>...';
-    $attributes['language'] = isset($attributes['language']) ? $attributes['language'] : Locale::getLanguage($env);
+    $attributes['language'] = isset($attributes['language']) ? $attributes['language'] : Localization::getLanguage($env);
     $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&oplus;';
     $link = qtag_LINK($env, $target, $attributes);
   }
@@ -250,13 +320,23 @@ function qtag_ADD($env, $target, $attributes) {
  *
  * Creates an edit node button.
  *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_EDIT($env, $target, $attributes) {
   $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
-
+  $string = '';
   if (Access::check($env, NODE_ACTION_EDIT, array('node' => $nodeobj))) {
-    return;
-  }
+
   $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
   $attributes['class'] .= ' edit-link';
   $title = empty($nodeobj->getTitle()) ? $nodeobj->getName() : $nodeobj->getTitle();
@@ -266,7 +346,9 @@ function qtag_EDIT($env, $target, $attributes) {
   $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&#9998;';
   $attributes['redirect'] = isset($attributes['redirect']) ? $attributes['redirect'] : '';
 
-  return qtag_LINK($env, $target, $attributes);
+  $string = qtag_LINK($env, $target, $attributes);
+  }
+  return $string;
 }
 
 /**
@@ -274,18 +356,31 @@ function qtag_EDIT($env, $target, $attributes) {
  * Creates a delete node button.
  * @see qtag()
  *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_DELETE($env, $target, $attributes) {
   $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
+  $string = '';
+  if (Access::check($env, NODE_ACTION_DELETE, array('node' => $nodeobj))) {
 
-  if (!Access::check($env, NODE_ACTION_DELETE, array('node' => $nodeobj))) {
-    return;
+    $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
+    $attributes['class'] .= 'delete-link';
+    $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&ominus;';
+    $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Delete <i>' . $nodeobj->getTitle() . '</i>...';
+
+    $string = qtag_LINK($env, $target, $attributes);
   }
-  $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
-  $attributes['class'] .= 'delete-link';
-  $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&ominus;';
-  $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Delete <i>' . $nodeobj->getTitle() . '</i>...';
-  return qtag_LINK($env, $target, $attributes);
+  return $string;
 }
 
 /**
@@ -293,6 +388,17 @@ function qtag_DELETE($env, $target, $attributes) {
  *
  * Simply renders ADD - EDIT - DELETE tags altogether.
  *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_OPERATIONS($env, $target, $attributes) {
   $operations = '';
@@ -306,8 +412,19 @@ function qtag_OPERATIONS($env, $target, $attributes) {
 /**
  * Implements qtag CATEGORIES.
  *
- *
  * Returns links to all nodes that contain a symlink to this node.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_CATEGORIES($env, $target, $attributes) {
   $node = NodeFactory::current($env);
@@ -319,12 +436,23 @@ function qtag_CATEGORIES($env, $target, $attributes) {
   return $html;
 }
 
-
 /**
  * Implements qtag COUNT.
  *
  * Count the number of (what?)
  * TODO recheck.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_COUNT($env, $target, $attributes) {
   $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
@@ -339,11 +467,9 @@ function qtag_COUNT($env, $target, $attributes) {
   else {
     $depth .= ' -mindepth 1';
   }
-
   $count_cmd = 'find ' . $nodeobj->realpath . ' ' . $depth . ' -type d | wc -l';
   exec($count_cmd, $results_arr);
   return array_pop($results_arr);
-
 }
 
 
@@ -351,12 +477,22 @@ function qtag_COUNT($env, $target, $attributes) {
  * Implements qtag STATUS.
  *
  * Returns the status of a node.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_STATUS($env, $target, $attributes) {
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
-
   $status = $node->getStatus();
   $status_node = NodeFactory::load($env, $status);
-
   return $status_node->getTitle();
 }
