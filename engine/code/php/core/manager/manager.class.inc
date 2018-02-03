@@ -5,7 +5,7 @@
  * This class represents a Manager for categorizing nodes.
  */
 class Manager {
-
+  /** @var Node $node */
   public $node;
 
   /**
@@ -34,8 +34,12 @@ class Manager {
 
   /**
    * Renders a leaf of the tree.
-   * @param $leaf
+   *
+   * @param Node $leaf
+   *   The leaf node to render.
+   *
    * @return string
+   *   The rendered leaf.
    */
   public function renderLeaf($leaf) {
     $selected = !empty($this->node->name) ? $leaf->hasChild($this->node->name) : FALSE;

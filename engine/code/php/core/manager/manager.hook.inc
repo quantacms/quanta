@@ -10,8 +10,6 @@
  *   An array of variables.
  */
 function manager_load_includes($env, $vars) {
-  /** @var Environment $env */
-  $env = $env;
   $env->addInclude('engine/code/php/core/manager/js/manager.js');
   $env->addInclude('engine/code/php/core/manager/css/manager.css');
 }
@@ -26,8 +24,6 @@ function manager_load_includes($env, $vars) {
  *   An array of variables.
  */
 function manager_init($env, $vars) {
-  /** @var Environment $env */
-  $env = $env;
   if ($env->getRequestedPath() == 'expand') {
     $node = NodeFactory::load($env, $_GET['node']);
     $manager = new Manager($env, $node);
@@ -49,9 +45,6 @@ function manager_init($env, $vars) {
 function manager_shadow_manager_form($env, $vars) {
   /** @var Shadow $shadow */
   $shadow = $vars['shadow'];
-  /** @var Environment $env */
-  $env = $env;
-
   $node = $shadow->getNode();
   $manager = new Manager($env, $node);
   $shadow->addTab('manage categories', '<h2>Manage Categories</h2>' . '<div class="shadow-hint">In this screen you can select the categories in which you want to include the node.</div>' . $manager->renderTree(), 4, 'manager-tree');

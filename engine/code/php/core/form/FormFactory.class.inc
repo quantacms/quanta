@@ -5,11 +5,34 @@
  */
 class FormFactory {
 
+  /**
+   * Create an empty form.
+   *
+   * @param Environment $env
+   *   The Environment.
+   * @param string $form_id
+   *   The form ID.
+   *
+   * @return Form
+   *   The created form.
+   */
   public static function createForm($env, $form_id) {
     $form = new Form($env, $form_id, array());
     return $form;
   }
 
+  /**
+   * Retrieves a form.
+   *
+   * @param Environment $env
+   *   The Environment.
+   *
+   * @param string $form_id
+   *   The id of the form.
+   *
+   * @return Form
+   *   The retrieved form.
+   */
   public static function getForm($env, $form_id = FORM_PAGE_FORM) {
     $form = $env->getData('form_' . $form_id);
     if (empty($form)) {
@@ -20,6 +43,21 @@ class FormFactory {
     return $form;
   }
 
+  /**
+   * Create an input item and add it into a form.
+   *
+   * @param Environment $env
+   *   The environment.
+   *
+   * @param array $input
+   *   The input item as it comes from the qtag.
+   *
+   * @param Form $form
+   *   The form.
+   *
+   * @return FormItem
+   *   The constructed form item.
+   */
   public static function createInputItem($env, $input, $form) {
     if (empty($input['type'])) {
       $input['type'] = 'string';

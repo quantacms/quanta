@@ -162,6 +162,7 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
         $filter_check = array();
         $lineage = $node->getLineage();
         foreach ($lineage as $lineage_node) {
+          /** @var Node $lineage_node */
           $filter_check[] = $lineage_node->getName();
         }
         break;
@@ -170,6 +171,7 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
         $filter_check = array();
         $categories = $node->getCategories();
         foreach ($categories as $category_node) {
+          /** @var Node $category_node */
           $filter_check[] = $category_node->getName();
         }
         break;

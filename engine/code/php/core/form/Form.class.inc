@@ -1,28 +1,63 @@
 <?php
+/**
+ *
+ */
 define("FORM_METHOD_POST", 'post');
+/**
+ *
+ */
 define("FORM_METHOD_GET", 'get');
+/**
+ *
+ */
 define("FORM_PAGE_FORM", '___page_form___');
 /**
  * Class Form
- * This class represents a Page (corrisponding to a rendered html page).
+ * This class represents a HTML Form, that's a container of form items.
+ * @see FormItem
  */
 class Form extends DataContainer {
-  public $html;
-  public $includes;
-  public $file;
+  /**
+   * @var string $method
+   */
+  public $method;
+  /**
+   * @var string $action
+   */
+  public $action;
+  /**
+   * @var array $items
+   */
   public $items = array();
+  /**
+   * @var string $id
+   */
   public $id;
+  /**
+   * @var bool $validated
+   */
   public $validated = FALSE;
+  /**
+   * @var string $ok_message
+   */
   public $ok_message;
+  /**
+   * @var string $type
+   */
   public $type;
 
   /**
-   * @param $env Environment
-   * @param $form_id
-   * @param $attributes
-   * @internal param $filename
-   * @internal param null $name
-   * @internal param null $content
+   *
+   * Constructs a form.
+   *
+   * @param Environment $env
+   *   The Environment.
+   *
+   * @param string $form_id
+   *   The form ID.
+   *
+   * @param array $attributes
+   *   The form attributes.
    */
   public function __construct(&$env, $form_id, $attributes) {
     $this->env = $env;
@@ -31,15 +66,22 @@ class Form extends DataContainer {
     $this->loadAttributes($attributes);
   }
 
+  /**
+   * Check if the form is valid.
+   *
+   * @return bool
+   *   True if the form items in the form contain valid values.
+   */
   public function checkValidate() {
     // FORM submission handler.
     if ($this->isSubmitted()) {
       $this->setData('validation_errors', array());
-
+      // Run validation hooks for the form.
       $this->env->hook('form_validate', array('form' => $this));
       $this->env->hook('form_type_' . $this->getType() . '_validate', array('form' => $this));
       $this->env->hook($this->getId() . '_form_validate', array('form' => $this));
 
+      // Check if any form item has thrown validation errors...
       if (empty($this->getData('validation_errors'))) {
         $this->validated = TRUE;
         $this->env->hook('form_submit', array('form' => $this));
@@ -47,76 +89,147 @@ class Form extends DataContainer {
         $this->env->hook($this->getId() . '_form_submit', array('form' => $this));
         return $this->getOkMessage();
       }
-    } else {
-      return FALSE;
     }
+    // If the form has not been submitted, it can not been validated.
+    return FALSE;
+
   }
 
+  /**
+   * Add a Form Item to the form.
+   *
+   * @param string $form_item_name
+   *   The name of the form item.
+   *
+   * @param FormItem $form_item
+   *   The form item.
+   */
   public function addItem($form_item_name, $form_item) {
     $form_item->setForm($this);
     $this->items[$form_item_name] = $form_item;
   }
 
+  /**
+   * Gets all the form items of the form.
+   *
+   * @return array
+   *   All the form items that have been added to the Form.
+   */
   public function getItems() {
     return $this->items;
   }
 
+  /**
+   * Get a specific form item of the form.
+   *
+   * @param string $name
+   *   The name of the form item to retrieve.
+   *
+   * @return FormItem|null
+   *   The form item, if it's contained in the form, null otherwise.
+   */
   public function getItem($name) {
     return (isset($this->items[$name]) ? $this->items[$name] : NULL);
   }
 
+  /**
+   * @return mixed
+   */
   public function getMethod() {
     return $this->method;
   }
 
+  /**
+   * @param $method
+   */
   public function setMethod($method) {
     $this->method = $method;
   }
 
+  /**
+   * @return mixed
+   */
   public function getId() {
     return $this->id;
   }
 
+  /**
+   * @param $id
+   */
   public function setId($id) {
     $this->id = $id;
   }
 
+  /**
+   * @return mixed|null
+   */
   public function getAnchor() {
     return $this->getData('anchor');
   }
 
+  /**
+   * @param $anchor
+   */
   public function setAnchor($anchor) {
     $this->setData('anchor', $anchor);
   }
 
+  /**
+   * @return mixed|null
+   */
   public function getRedirect() {
     return $this->getData('redirect');
   }
 
+  /**
+   * @param $redirect
+   */
   public function setRedirect($redirect) {
     $this->setData('redirect', $redirect);
   }
 
+  /**
+   * Gets the form action (page).
+   *
+   * @return mixed
+   */
   public function getAction() {
     return $this->action;
   }
 
+  /**
+   * Sets the form action (page).
+   *
+   * @param $action
+   */
   public function setAction($action) {
     $this->action = $action;
   }
 
+  /**
+   * @return mixed
+   */
   public function getType() {
     return $this->type;
   }
 
+  /**
+   * @param $type
+   */
   public function setType($type) {
     $this->type = $type;
   }
 
+  /**
+   * @return mixed
+   */
   public function getOkMessage() {
     return $this->ok_message;
   }
 
+  /**
+   * @param $ok_message
+   */
   public function setOkMessage($ok_message) {
     $this->ok_message = $ok_message;
   }
@@ -163,6 +276,9 @@ class Form extends DataContainer {
   }
 
 
+  /**
+   * @return string
+   */
   public function renderFormClose() {
     $rendered = '</form>';
     return $rendered;

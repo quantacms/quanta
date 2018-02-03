@@ -16,8 +16,6 @@ function user_boot($env, $vars) {
  *   Miscellaneous environment / page variables.
  */
 function user_load_includes($env, $vars) {
-  /** @var Environment $env */
-  $env = $env;
   $env->addInclude('engine/code/php/core/user/js/user.js');
   $env->addInclude('engine/code/php/core/user/css/user.css');
 }

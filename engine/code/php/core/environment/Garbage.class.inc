@@ -6,9 +6,10 @@
  */
 class Garbage {
 
+  /** @var Environment $env */
   private $env;
 
-  // Construct the Environment.
+  // Construct the Garbage collector item.
   public function __construct($env) {
     $this->env = $env;
   }
@@ -26,6 +27,7 @@ class Garbage {
       // The temp file is old? Delete it!
       if ((time() - $lastmod) > 20) {
         // unlink($filepath) or die("can not delete file: " . $filepath);
+        // TODO: all commented. What to do?
       }
     }
   }
