@@ -1,14 +1,24 @@
 <?php
 
 /**
- * Transform wiki tags in html.
- * Will look for all wiki_TAG functions, in all modules, and apply them to the code
+ * Transform qtags in html.
+ * Will look for all qtag_TAG functions, in all modules, and apply them to the code
  * to convert tags.
- * TODO: convert to OO.
- * @param $env
- * @param $html
+ *
+ * TODO: convert to OO approach.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $html
+ *   The html to analyze.
+ *
  * @param string $options
+ *   Options for qtags.
+ *
  * @return array
+ *   All the qtags in the html.
+ *
  */
 function checkCodeTags(&$env, $html, $options = 'U') {
   $replacing = array();

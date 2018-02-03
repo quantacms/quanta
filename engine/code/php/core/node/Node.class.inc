@@ -45,7 +45,7 @@ class Node extends JSONDataContainer {
     $this->json = new stdClass();
 
     // Load node's language.
-    $this->setLanguage(!empty($language) ? $language : Locale::getLanguage($this->env));
+    $this->setLanguage(!empty($language) ? $language : Localization::getLanguage($this->env));
 
     // Load node's father (parent folder).
     if ($father != NULL) {

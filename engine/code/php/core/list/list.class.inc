@@ -35,15 +35,15 @@ abstract class ListObject {
 
   /**
    * ListObject constructor.
-   * @param $env
+   * @param Environment $env
    *   The environment.
-   * @param $path
+   * @param string $path
    *   The path (node) to use as a base for listing.
-   * @param $tpl
+   * @param string $tpl
    *   The template file to use. I.e. dir for using dir.tpl.php.
    * @param array $attr_arr
    *   The attributes.
-   * @param null $module
+   * @param string $module
    *   The module in where to look for the template file (defaults to list).
    */
   public function __construct(&$env, $path, $tpl, $attr_arr = array(), $module = NULL) {
@@ -188,11 +188,21 @@ abstract class ListObject {
 
   }
 
-  // Check if a node has a status that can be displayed in the list.
+
+  /**
+   * Check if a node has a status that can be displayed in the list.
+   *
+   * @param Node $node
+   *   The node for which to validate the status.
+   *
+   * @return bool
+   *   Returns true if the node status is the one for which the list is filtered.
+   */
   public function validateStatus($node) {
     if (!empty($this->status)) {
       return (isset($this->status['all'])) || (isset ($this->status[$node->getStatus()]));
-    } else {
+    }
+    else {
       return $node->isPublished();
     }
   }
@@ -260,8 +270,10 @@ abstract class ListObject {
   abstract public function theme();
 
   /**
-   * Return the theme of this list.
+   * Return the template of this list.
+   *
    * @return string
+   *   The template of the list.
    */
   public function getTpl() {
     return $this->tpl;

@@ -105,24 +105,26 @@ function node_init($env, $vars) {
  *   An array of variables.
  */
 function node_shadow_node_form($env, $vars) {
+  /** @var Shadow $shadow */
+  $shadow = $vars['shadow'];
   $action_name = ($env->getContext() == NODE_ACTION_ADD ? 'create' : 'edit') . ' content';
-  $vars['shadow']->addTab($action_name, file_get_contents('core/node/tpl/node_edit.inc'), 1);
-  $vars['shadow']->addTab('manage metadata', file_get_contents('core/node/tpl/metadata_form.inc'), 2);
-  $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Save');
+  $shadow->addTab($action_name, file_get_contents('core/node/tpl/node_edit.inc'), 1);
+  $shadow->addTab('manage metadata', file_get_contents('core/node/tpl/metadata_form.inc'), 2);
+  $shadow->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Save');
 
   // Edit the current template of the node.
   // For now, we will only allow editing existing tpl.html files, NOT creating new ones.
-  $node = $vars['shadow']->getNode();
+  $node = $shadow->getNode();
   $node->buildTemplate();
   if (is_file($node->getData('tpl_file'))) {
-    $vars['shadow']->addTab('manage templates', file_get_contents('core/node/tpl/tpl_edit.inc'), 2);
+    $shadow->addTab('manage templates', file_get_contents('core/node/tpl/tpl_edit.inc'), 2);
   }
 }
 
 /**
  * Implements hook_shadow_node_delete_form().
  *
- *  @param Environment $env
+ * @param Environment $env
  *   The Environment.
  *
  * @param array $vars
@@ -154,7 +156,7 @@ function node_shadow_node_delete_form($env, $vars) {
 function node_metadata($env, $vars) {
   // Setup body classes per each item in the current node lineage.
   $node = NodeFactory::current($env);
-  $vars['page']->addData('metadata', array (
+  $vars['page']->addData('metadata', array(
     '<meta name="description" content="' . $node->getTeaser() . '" />',
     '<meta name="author" content="[ATTRIBUTE|name=title:' . $node->getAuthor() . ']" />',
     '<meta name="copyright" content="Aldo Tripiciano" />',
@@ -188,7 +190,7 @@ function node_body_classes($env, $vars) {
   $node->buildLineage();
   $lineage = $node->getLineage();
   foreach ($lineage as $lineage_node) {
-    $vars['page']->addData('body_classes', array ('section-' . $lineage_node->name));
+    $vars['page']->addData('body_classes', array('section-' . $lineage_node->name));
   }
-  $vars['page']->addData('body_classes', array ('page-' . $node->name));
+  $vars['page']->addData('body_classes', array('page-' . $node->name));
 }

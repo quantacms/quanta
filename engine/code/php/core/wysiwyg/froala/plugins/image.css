@@ -138,12 +138,12 @@
 .fr-image-upload-layer .fr-form input {
   cursor: pointer;
   position: absolute;
-  right: 0px;
-  top: 0px;
-  bottom: 0px;
+  right: 0;
+  top: 0;
+  bottom: 0;
   width: 500%;
   height: 100%;
-  margin: 0px;
+  margin: 0;
   font-size: 400px;
 }
 .fr-image-progress-bar-layer > h3 {

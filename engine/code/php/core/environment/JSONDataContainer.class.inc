@@ -35,7 +35,7 @@ abstract class JSONDataContainer extends DataContainer {
       mkdir($this->realpath) or die('Error. Cannot create dir: ' . $this->realpath);
     }
 
-    $language = empty($this->getLanguage()) ? Locale::getLanguage($this->env) : $this->getLanguage();
+    $language = empty($this->getLanguage()) ? Localization::getLanguage($this->env) : $this->getLanguage();
 
     $suffix = ($language == LANGUAGE_NEUTRAL) ? '' : ('_' . $language);
     $jsonpath = $this->realpath . '/data' . $suffix . '.json';

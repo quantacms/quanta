@@ -21,7 +21,7 @@ textarea.fr-code {
   box-sizing: border-box;
   border: none;
   padding: 10px;
-  margin: 0px;
+  margin: 0;
   font-family: "Courier New", monospace;
   font-size: 14px;
   background: #ffffff;

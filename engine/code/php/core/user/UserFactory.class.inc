@@ -121,7 +121,7 @@ class UserFactory {
     }
 
     // If the newly built user object is valid, rebuild the session to keep it updated.
-    if ($valid) {
+    if ($valid && isset($user)) {
       $response->redirect = '/' . $env->getRequestedPath();
       $user->rebuildSession();
     }

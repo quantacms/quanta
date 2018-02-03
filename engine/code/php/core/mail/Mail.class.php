@@ -11,7 +11,6 @@ use PHPMailer\PHPMailer\Exception;
 class Mail extends Node {
   /**
    * Send an email using phpmailer.
-   * @throws phpmailerException
    */
   public function send() {
     // TODO: use composer autoload?
@@ -34,7 +33,6 @@ class Mail extends Node {
     $mail->SMTPSecure = !empty($this->getData('SMTPSecure')) ? $this->getData('SMTPSecure') : 'tls';
     $mail->SMTPDebug = !empty($this->getData('SMTPDebug')) ? $this->getData('SMTPDebug') : 0;
 		$mail->Username = $this->getData('username');
-
     $mail->Password = $this->getData('password');
     $mail->Port = $this->getData('port');
     $mail->setFrom($this->getData('from'), $this->getData('from_name'));

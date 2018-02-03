@@ -4,22 +4,58 @@
  * Implements qtag LANGUAGE.
  *
  * Returns language code of the current language.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_LANGUAGE($env, $target, $attributes) {
-  return Locale::getLanguage($env);
+  return Localization::getLanguage($env);
 }
 
 /**
  * Implements qtag FALLBACK_LANGUAGE.
  *
  * Return the language code of the fallback language.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_FALLBACK_LANGUAGE($env, $target, $attributes) {
-  return Locale::getFallbackLanguage($env);
+  return Localization::getFallbackLanguage($env);
 }
 
 /**
  * Implements qtag LANGUAGE_SWITCHER.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_LANGUAGE_SWITCHER($env, $target, $attributes) {
 
@@ -28,7 +64,7 @@ function qtag_LANGUAGE_SWITCHER($env, $target, $attributes) {
 
   // We don't want translate links to be considered as editable nodes.
   $attributes['nowrap'] = TRUE;
-  $attributes['active_items'] = Locale::getLanguage($env);
+  $attributes['active_items'] = Localization::getLanguage($env);
   $attributes['symlinks'] = 'no';
 
   if (isset($attributes['compact'])){
@@ -52,9 +88,21 @@ function qtag_LANGUAGE_SWITCHER($env, $target, $attributes) {
  * Implements qtag TRANSLATE_LINKS.
  *
  * Renders Translate links.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_TRANSLATE_LINKS($env, $target, $attributes) {
-  $attributes['active_items'] = Locale::getLanguage($env);
+  $attributes['active_items'] = Localization::getLanguage($env);
   // We don't want translate links to be considered as editable nodes.
   $attributes['nowrap'] = TRUE;
   $attributes['symlinks'] = 'no';
@@ -67,6 +115,17 @@ function qtag_TRANSLATE_LINKS($env, $target, $attributes) {
  *
  * Renders a translate link.
  *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_TRANSLATE($env, $target, $attributes) {
   $node = NodeFactory::load($env, $target);

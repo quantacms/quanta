@@ -16,10 +16,13 @@ class Access {
    * @param string $action
    *   The action for which we check access.
    *
+   * @param array $vars
+   *   Miscellaneous variables.
+   *
    * @return boolean
    *   Returns true if access check was positive.
    */
-  public static function check($env, $action, $vars = array ()) {
+  public static function check($env, $action, $vars = array()) {
     /** @var User $user */
     $user = isset($vars['user']) ? $vars['user'] : UserFactory::current($env);
 

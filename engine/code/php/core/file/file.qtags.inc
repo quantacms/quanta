@@ -1,6 +1,20 @@
 <?php
 /**
  * Implements FILEATTRIBUTE qtag.
+ *
+ * Renders an attribute of a file.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_FILEATTRIBUTE($env, $target, $attributes) {
   $node = empty($attributes['node']) ? NodeFactory::current($env) : NodeFactory::load($env, $attributes['node']);
@@ -32,11 +46,24 @@ function qtag_FILEATTRIBUTE($env, $target, $attributes) {
 
 /**
  * Implements FILE qtag.
+ *
+ * Render a file.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_FILE($env, $target, $attributes) {
-
   $file = new File($env, $target, NULL, $attributes['title']);
-  // Return the rendered file.
+  // Return the rendered file, if exists.
   if ($file->exists) {
     return $file->render();
   }

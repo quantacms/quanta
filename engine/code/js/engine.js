@@ -15,13 +15,14 @@ var openAjax = function(name, destination, afterExec, tpl) {
         dataType: "html",
         data: 'ajax=1' + ((tpl != undefined) ? ('&tpl=' + tpl) : ''),
         success: function(data) {
+            var destination_obj = $('#' + destination);
             var fn = window[afterExec];
             if (typeof fn === "function") fn.apply(null);
-            $('#' + destination).parents('.box').show();
-            $('#' + destination).show();
+            destination_obj.parents('.box').show();
+            destination_obj.show();
 
             dest.html(data);
-            var scrollTop = ($("#" + destination).offset().top - 30);
+            var scrollTop = (destination_obj.offset().top - 30);
             $(document).trigger('refresh');
             $('html, body').animate({
                 scrollTop: scrollTop

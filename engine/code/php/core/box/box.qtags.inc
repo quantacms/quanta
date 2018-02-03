@@ -3,6 +3,18 @@
  * Implements BOX qtag.
  *
  * A simple block, boxed and non editable by default.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_BOX($env, $target, $attributes) {
   // Check if the box is editable.
@@ -21,7 +33,19 @@ function qtag_BOX($env, $target, $attributes) {
 /**
  * Implements qtag_CLOSE.
  *
- * Ajax-close a container.
+ * Renders a button to Ajax-close a container.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
  */
 function qtag_CLOSE($env, $target, $attributes) {
   return '<a class="close-button" href="#">X Close</a>';

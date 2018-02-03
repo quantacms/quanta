@@ -26,7 +26,6 @@ function access_shadow_access_form($env, $vars) {
  *   An array of variables.
  */
 function access_node_presave($env, $vars) {
-
   $node_permissions = array(
     'node_add',
     'node_edit',
@@ -39,6 +38,7 @@ function access_node_presave($env, $vars) {
   if (!isset($node->json->permissions)) {
     $node->json->permissions = new StdClass();
   }
+  // Set all the node's permissions.
   foreach ($node_permissions as $permission) {
     if (isset($vars['data'][$permission])) {
       $node->json->permissions->{$permission} = $vars['data'][$permission];
@@ -69,7 +69,7 @@ function access_node_open($env, $vars) {
 }
 
 /**
- * Render a box.
+ * Check if a qtag is filtered via the filter attribute.
  *
  * TODO: make it open for all node attributes
  *
@@ -82,18 +82,16 @@ function access_node_open($env, $vars) {
 function access_qtag($env, $vars) {
   $node = NodeFactory::current($env);
   $user = UserFactory::current($env);
-  // The user has selected to show the tag only on certain paths / lineage.
+  // The user has selected to show the tag only if a certain criteria is matched.
   if (!empty($vars['attributes']['filter'])) {
-     $filter_match = _access_filter($env, $vars['attributes']['filter'], $node, $user);
-      // If there is an active tag filter, and it doesn't match, empty the tag.
-      foreach ($vars['qtag'] as $tag => $content) {
-        if (!$filter_match) {
-          $vars['qtag'][$tag] = '';
-        }
+    $filter_match = _access_filter($env, $vars['attributes']['filter'], $node, $user);
+    // If there is an active tag filter, and it doesn't match, empty the tag.
+    foreach ($vars['qtag'] as $tag => $content) {
+      if (!$filter_match) {
+        $vars['qtag'][$tag] = '';
       }
     }
-
-
+  }
 }
 
 /**
@@ -125,6 +123,7 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
   // Make matching false by default.
   $filter_match = FALSE;
 
+  // Check all filters.
   foreach ($filter as $filter_item) {
     $exp = explode('@', $filter_item);
     $filter_type = $exp[0];
@@ -134,26 +133,28 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
     $one_match = FALSE;
 
     switch ($filter_type) {
+      // Filter by HTTP referer.
       case 'referer':
         $explode = explode('/', $_SERVER['HTTP_REFERER']);
         $filter_check = $explode;
         break;
-      // show the tag only on certaing path...
+      // Filter by current node path.
       case 'path':
         $filter_check = array($node->getName());
         break;
-      // show the tag only on certaing path...
+      // Filter by current node's father node.
       case 'father':
         $filter_check = array($node->getFather()->getName());
         break;
+      // Filter by current user's name.
       case 'user':
         $filter_check = array($user->getName());
         break;
-
+      // Filter by current user's role.
       case 'role':
         $filter_check = $user->getRoles();
         break;
-
+      // Filter by node's lineage (father, grandfather, and all ancestors!).
       case 'lineage':
         $one_match = TRUE;
         $filter_check = array();
