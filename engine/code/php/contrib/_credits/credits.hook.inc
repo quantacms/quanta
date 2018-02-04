@@ -6,14 +6,20 @@
  * Time: 11:49
  * @param $vars
  */
-function credits_user_load($vars) {
-  $credits = $vars['user']->getData('credits');
+function credits_user_load($env, $vars) {
+  /** @var User $user */
+  $user = $vars['user'];
+  $credits = $user->getData('credits');
   if (!$credits) {
-      $vars['user']->setData("credits", 10000);
-    }
+    $user->setData("credits", 10000);
+  }
 }
 
-function credits_user_save($vars) {
+/**
+ * @param $env
+ * @param $vars
+ */
+function credits_user_save($env, $vars) {
   $credits = $vars['user']->getData('credits');
   if (!$credits) {
     $vars['user']->setData('credits', 0);

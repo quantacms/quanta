@@ -14,7 +14,7 @@ class UserFactory {
    * @return User
    * @internal param $node
    */
-  public static function load(Environment $env, $user, $tpl = NULL) {
+  public static function load(Environment $env, $user) {
     $user = new User($env, $user);
     $env->hook('user_open', array ('user' => &$user));
     return $user;

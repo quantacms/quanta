@@ -279,8 +279,19 @@ abstract class ListObject {
     return $this->tpl;
   }
 
+  /**
+   * Check sorting in the list: compare two nodes during the cycle.
+   *
+   * @param Node $x
+   *   The first node.
+   *
+   * @param Node $y
+   *   The second node.
+   *
+   * @return int
+   */
   private function sortBy($x, $y) {
-
+    // Which field to use for sorting.
     switch ($this->sort) {
       case 'name':
         $check = strcasecmp($x->getName(), $y->getName()) > 0;
@@ -298,7 +309,6 @@ abstract class ListObject {
         //Sort by Number DESC
         $check = ($x->getAttributeJSON($this->sort) < $y->getAttributeJSON($this->sort));
         break;
-
     }
 
     return ($check) ? 1 : -1;

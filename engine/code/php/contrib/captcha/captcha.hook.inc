@@ -22,8 +22,10 @@ function captcha_init($env, $vars) {
  *   An array of variables.
  */
 function captcha_shadow_user_register($env, $vars) {
+  /** @var Shadow $shadow */
+  $shadow = $vars['shadow'];
   $captcha = new Captcha($env, CAPTCHA_MATH);
-  $vars['shadow']->prependToTab(USER_ACTION_REGISTER, $captcha->render());
+  $shadow->prependToTab(USER_ACTION_REGISTER, $captcha->render());
 }
 
 /**

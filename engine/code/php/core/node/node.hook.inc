@@ -131,16 +131,19 @@ function node_shadow_node_form($env, $vars) {
  *   An array of variables.
  */
 function node_shadow_node_delete_form($env, $vars) {
-  $node = $vars['shadow']->getNode();
+  /** @var Shadow $shadow */
+  $shadow = $vars['shadow'];
+  $node = $shadow->getNode();
+
   $has_access = Access::check($env, $env->getContext(), array('node' => $node));
   if (!$has_access) {
     // TODO: move this in access check!
     new Message($env, 'User attempted to delete a node without access', MESSAGE_WARNING, MESSAGE_TYPE_LOG, 'node');
   }
   else {
-    $vars['shadow']->addTab('Delete', $node->renderDeleteForm($env->getContext()), 1);
+    $shadow->addTab('Delete', $node->renderDeleteForm(), 1);
   }
-  $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Delete');
+  $shadow->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Delete');
 
 }
 

@@ -256,7 +256,9 @@ function qtag_BREADCRUMB($env, $target, $attributes) {
   $breadcrumb = array();
   // Builds the lineage of the node.
   $node->buildLineage();
+  // Add all nodes in the lineage to the breadcrumb.
   foreach ($node->getLineage() as $n) {
+    /** @var Node $n */
     $breadcrumb[$n->getName()] = $n;
   }
 

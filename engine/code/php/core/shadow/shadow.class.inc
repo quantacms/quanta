@@ -55,7 +55,7 @@ class Shadow extends Page {
         $i++;
         // A tab can be null in case of single-page Shadows.
         if ($tab['title'] != NULL) {
-          $tab_titles .= '<li class="shadow-title ' . (($i == 1) ? 'enabled' : '') . '" ><a href="#tab' . $i . '" data-rel="' . $i . '" id="shadow-title-' . $i . '">' . $tab['title'] . '</a></li>';
+          $tab_titles .= '<li class="shadow-title ' . (($i == 1) ? 'enabled' : '') . '" ><a href="#" data-rel="' . $i . '" id="shadow-title-' . $i . '">' . $tab['title'] . '</a></li>';
         }
         $tab_contents .= '<div class="shadow-content shadow-content-' . $this->env->getContext() . ' ' . $tab['classes'] . ' ' . (($i == 1) ? 'enabled' : '') . '" id="shadow-content-' . $i . '">' . $tab['content'] . '</div>';
       }

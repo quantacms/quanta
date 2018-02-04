@@ -46,19 +46,19 @@ function mail_form_type_mailform_submit($env, $vars) {
   $items = $form->getItems();
 
   foreach ($items as $item) {
-
+    /** @var FormItem $item */
     $value = $item->getValue()[0];
 
     // Non-html email: convert newlines.
     if (($item->getType() == 'text') && empty($item->getInputAttr('wysiwyg')))  {
       $value = nl2br($value);
     }
-
+    // Submit all the values except the submit button.
     if ($item->getType() != 'submit') {
       $body .= '<b>' . $item->getLabel() . '</b>: <br>' . $value . '<br><br>';
     }
   }
-  
+  // Run all mailform hooks to elaborate the form.
   $env->hook('mailform_' . $vars['form']->getId() . '_send', array('mail' => &$mail, 'form' => &$form));
   $mail->setBody($body);
   //$mail->save();

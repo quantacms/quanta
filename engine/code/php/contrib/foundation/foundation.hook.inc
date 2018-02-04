@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  * Implements hook_load_includes().
  *
  * @param Environment $env
