@@ -22,7 +22,7 @@ class Access
      * @return boolean
      *   Returns true if access check was positive.
      */
-    public static function check($env, $action, $vars = array()) 
+    public static function check($env, $action, $vars = array())
     {
         /**
  * @var User $user 

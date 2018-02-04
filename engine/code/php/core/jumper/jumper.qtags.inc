@@ -1,4 +1,15 @@
 <?php
+/**
+ *
+ * @category Qtags
+ * @file jumper.qtags.inc
+ * @package Quanta
+ * @author Aldo Tripiciano <aldo.tripiciano@gmail.com>
+ * @license http://www.quantacms.com Open
+ * @link http://www.quantacms.com
+ *
+ * All qtags implemented by the jumper module.
+ */
 define("JUMPER_EMPTY", "_empty");
 
 /**
@@ -8,10 +19,8 @@ define("JUMPER_EMPTY", "_empty");
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param string $target
  *   The qtag's target.
- *
  * @param array $attributes
  *   The qtag's attributes.
  *

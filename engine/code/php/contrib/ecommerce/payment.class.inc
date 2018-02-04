@@ -11,10 +11,16 @@ class Payment extends DataContainer {
     parent::loadJSON();
   }
 
+  /**
+   * @param array $ignore
+   */
   function saveJSON($ignore = array()) {
     parent::saveJSON($ignore);
   }
 
+  /**
+   * @param array $ignore
+   */
   function updateJSON($ignore = array()) {
     parent::updateJSON($ignore);
   }

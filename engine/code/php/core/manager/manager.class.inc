@@ -19,6 +19,10 @@ class Manager {
     $this->node = $node;
   }
 
+  /**
+   * @param string $path
+   * @return string
+   */
   public function renderTree($path = 'root') {
     $list = new DirList($this->env, $path, 'simple', array('symlinks' => 'no'));
     $leaves = $list->getDirs();

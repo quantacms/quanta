@@ -1,4 +1,8 @@
 <?php
+
+/**
+ * Class Shadow
+ */
 class Shadow extends Page {
   private $tabs = array();
   private $widget;

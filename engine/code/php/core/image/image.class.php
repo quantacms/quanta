@@ -6,6 +6,10 @@
  * Time: 16:45
  */
 define('IMAGE_RENDER_FULL', 'image_full');
+
+/**
+ * Class Image
+ */
 class Image extends File {
 
   public $width = 'auto';

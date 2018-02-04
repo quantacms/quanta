@@ -19,6 +19,13 @@ class Box extends DataContainer {
   private $border;
   private $name;
 
+  /**
+   * Box constructor.
+   * @param $env
+   * @param null $w
+   * @param null $h
+   * @param null $attributes
+   */
   public function __construct(&$env, $w = NULL, $h = NULL, $attributes = NULL) {
     // Class for the div
     $this->setData('class', array('box'));
@@ -85,47 +92,77 @@ class Box extends DataContainer {
     }
   }
 
+  /**
+   * @param $html
+   */
   public function setHtml($html) {
     $this->html = $html;
   }
 
+  /**
+   * @return mixed
+   */
   public function getHtml() {
     return $this->html;
   }
 
+  /**
+   * @return mixed|null
+   */
   public function getTitle() {
     return $this->getData('title');
   }
 
+  /**
+   * @param $margin
+   */
   public function setMargin($margin) {
     $this->margin = $margin;
     $this->addData('inner_style', array('margin:' . $margin . 'px'));
 
   }
 
+  /**
+   * @return mixed
+   */
   public function getMargin() {
     return $this->margin;
   }
 
+  /**
+   * @param $padding
+   */
   public function setPadding($padding) {
     $this->padding = $padding;
     $this->addData('inner_style', array('padding:' . $padding . 'px'));
   }
 
+  /**
+   * @return mixed
+   */
   public function getPadding() {
     return $this->padding;
   }
 
+  /**
+   * @param $border
+   */
   public function setBorder($border) {
     $this->border = $border;
     $this->addData('inner_style', array('border:' . $border . 'px solid'));
 
   }
 
+  /**
+   * @return mixed
+   */
   public function getBorder() {
     return $this->border;
   }
 
+  /**
+   * @param $h
+   */
   public function setHeight($h) {
     $this->h = $h;
     if ($h != NULL) {
@@ -133,10 +170,16 @@ class Box extends DataContainer {
     }
   }
 
+  /**
+   * @return mixed
+   */
   public function getHeight() {
     return $this->h;
   }
 
+  /**
+   * @param $w
+   */
   public function setWidth($w) {
     $this->w = $w;
     if ($w != NULL) {
@@ -147,23 +190,38 @@ class Box extends DataContainer {
     }
   }
 
+  /**
+   * @return mixed
+   */
   public function getWidth() {
     return $this->w;
   }
 
+  /**
+   * @param $name
+   */
   public function setName($name) {
     $this->name = $name;
   }
 
+  /**
+   * @return mixed
+   */
   public function getName() {
     return $this->name;
   }
 
 
+  /**
+   * @return bool
+   */
   public function isFlat() {
     return (($this->getWidth() == NULL) && ($this->getHeight() == NULL));
   }
 
+  /**
+   * @return string
+   */
   public function render() {
 
     // Don't wrap empty content.

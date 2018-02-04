@@ -2,6 +2,9 @@
 
 define("CAPTCHA_MATH", 'math');
 
+/**
+ * Class Captcha
+ */
 class Captcha {
   private $env;
   public $challenge_type;
@@ -15,6 +18,11 @@ class Captcha {
    */
   public $otherext = array();
 
+  /**
+   * Captcha constructor.
+   * @param $env
+   * @param $challenge_type
+   */
   function __construct($env, $challenge_type) {
     $this->env = $env;
     $this->challenge_type = $challenge_type;
@@ -47,6 +55,10 @@ class Captcha {
     <div class="description">Used to prove you are human</div>';
   }
 
+  /**
+   * @param $number
+   * @return bool|mixed
+   */
   public static function shuffle_convert($number) {
     $captcha = array(1 => 'q', 2 => 'r', 3 => '9', 4 => 'y', 5 => '6', 6 => 'i', 7 => '?', 8 => '1', 9 => 't', 0 => '$');
     return isset($captcha[$number]) ? $captcha[$number] : FALSE;
