@@ -198,7 +198,7 @@ class Doctor extends DataContainer {
     $this->checkExistingHome();
     $this->checkAdminUser();
     $this->runDoctor();
-    Doctor::yahoo('<a href="/home">Check your new site now!</a>');
+    Doctor::yahoo(qtag_LINK($this->env, 'home', array('title' => 'Check your new site now!')));
   }
 
   /**

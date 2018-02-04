@@ -361,18 +361,18 @@ class Image extends File {
           // ( 50px ) - ( 25px )
           // = 25px
 
-          if ($iNewWidth == $iThumbnailWidth) {
+          $xAxis = 0;
+          $yAxis = 0;
 
+          if ($iNewWidth == $iThumbnailWidth) {
             $yAxis = ($iNewHeight/2)-
               ($iThumbnailHeight/2);
             $xAxis = 0;
-
-          } else if ($iNewHeight == $iThumbnailHeight)  {
-
+          }
+          else if ($iNewHeight == $iThumbnailHeight)  {
             $yAxis = 0;
             $xAxis = ($iNewWidth/2)-
               ($iThumbnailWidth/2);
-
           }
 
           // We now have to resample the new image using the
@@ -389,7 +389,8 @@ class Image extends File {
           imagedestroy($tmpimg);
           $img = $tmp2img;
 
-        } else if ($sExtension == 'png') {
+        }
+        else if ($sExtension == 'png') {
           //Preserve transparency for non cropped PNG
           imagealphablending($img, true);
           imagesavealpha($img,true);

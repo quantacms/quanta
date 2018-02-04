@@ -302,8 +302,11 @@ class Form extends DataContainer {
 
   /**
    * Check the form for validation errors.
-   * @param $form_item
+   *
+   * @param FormItem $form_item
+   *   The Form item for which to check validation errors.
    * @return bool
+   *   Returns true if the value of the form item is valid.
    */
   public function checkValidationErrors($form_item) {
     $validation_errors = $this->getData('validation_errors');
