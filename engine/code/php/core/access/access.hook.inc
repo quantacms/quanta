@@ -5,14 +5,13 @@
  *
  * @param Environment $env
  *   The current Environment.
- *
  * @param $vars
  *   An array of variables.
  */
 function access_shadow_access_form($env, $vars) {
   /** @var Shadow $shadow */
   $shadow = &$vars['shadow'];
-  $shadow->addTab('manage permissions', file_get_contents('core/access/tpl/permissions_form.inc'), 5);
+  $shadow->addTab('manage permissions', file_get_contents('core/access/tpl/permissions_form.html'), 5);
 
 }
 
@@ -21,7 +20,6 @@ function access_shadow_access_form($env, $vars) {
  *
  * @param Environment $env
  *   The current Environment.
- *
  * @param $vars
  *   An array of variables.
  */
@@ -51,7 +49,6 @@ function access_node_presave($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param $vars
  *   An array of variables.
  */
@@ -75,7 +72,6 @@ function access_node_open($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param $vars
  *   An array of variables.
  */
@@ -99,16 +95,12 @@ function access_qtag($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param string $criteria
  *   The criteria to use for filtering check.
- *
  * @param Node $node
  *   The node to use for filtering check.
- *
  * @param User $user
  *   The user to use for filtering check.
- *
  * @return bool
  *   Returns true if the access check was positive.
  */

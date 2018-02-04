@@ -5,7 +5,6 @@
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  *
@@ -21,7 +20,6 @@ function localization_load_includes($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -38,7 +36,6 @@ function localization_boot($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -79,7 +76,6 @@ function localization_setup($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */

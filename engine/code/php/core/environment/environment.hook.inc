@@ -5,7 +5,6 @@
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param $vars
  *   An array of variables.
  */
@@ -30,7 +29,6 @@ function environment_boot($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param $vars
  *   An array of variables.
  */

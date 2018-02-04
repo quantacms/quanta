@@ -25,7 +25,6 @@ function cache_regenerate_json($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param $vars
  *   An array of variables.
  */

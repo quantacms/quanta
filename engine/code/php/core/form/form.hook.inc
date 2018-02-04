@@ -4,7 +4,6 @@
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param $vars
  *   An array of variables.
  */
@@ -22,7 +21,6 @@ function form_load_includes($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param $vars
  *   An array of variables.
  */
@@ -46,7 +44,6 @@ function form_form_validate($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param $vars
  *   An array of variables.
  */
@@ -72,4 +69,3 @@ $node = NodeFactory::loadFromRealPath($env, explode(':', $autocomplete_result)[0
     die();
   }
 }
-

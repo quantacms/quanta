@@ -1,11 +1,9 @@
 <?php
 /**
- *
  * Implements hook_boot().
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -47,4 +45,3 @@ function sitemap_boot($env, $vars) {
     exit();
   }
 }
-

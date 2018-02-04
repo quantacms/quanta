@@ -27,7 +27,6 @@ function stats_boot($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -42,7 +41,6 @@ function stats_page_init($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -60,7 +58,6 @@ function stats_node_build($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -74,7 +71,6 @@ function stats_node_load($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -89,7 +85,6 @@ function stats_node_load_cache($env, $vars) {
  * TODO: deprecate in favor of qtag only.
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -103,7 +98,6 @@ function stats_wikitag($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */

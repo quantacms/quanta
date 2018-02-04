@@ -5,7 +5,6 @@
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -14,7 +13,7 @@ function file_shadow_file_form($env, $vars) {
   $shadow = $vars['shadow'];
   $node = $shadow->getNode();
   if (Access::check($env, $env->getContext(), array('node' => $node))) {
-    $vars['shadow']->addTab('manage files', file_get_contents('core/file/tpl/upload_form.inc'), 2);
+    $vars['shadow']->addTab('manage files', file_get_contents('core/file/tpl/upload_form.html'), 2);
   }
 }
 
@@ -23,7 +22,6 @@ function file_shadow_file_form($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -36,14 +34,11 @@ function file_load_includes($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
 function file_init($env, $vars) {
-
   $node = NodeFactory::current($env);
-
   // There is a request to upload a file.
   // TODO: move in actions / factory?
   if (isset($_FILES['upl'])) {
@@ -68,7 +63,6 @@ function file_init($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param $vars
  *   An array of variables.
  */
@@ -102,7 +96,6 @@ function file_node_save($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param $vars
  *   An array of variables.
  */

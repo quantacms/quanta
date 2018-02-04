@@ -4,7 +4,6 @@
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -31,7 +30,6 @@ function wysiwyg_load_includes($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */

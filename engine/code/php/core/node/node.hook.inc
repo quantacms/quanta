@@ -5,7 +5,6 @@
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -20,7 +19,6 @@ function node_action_node_add($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -36,7 +34,6 @@ function node_action_node_edit($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -50,7 +47,6 @@ function node_action_node_delete($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -65,7 +61,6 @@ function node_load_includes($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -100,7 +95,6 @@ function node_init($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -126,7 +120,6 @@ function node_shadow_node_form($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -152,7 +145,6 @@ function node_shadow_node_delete_form($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -182,7 +174,6 @@ function node_metadata($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
