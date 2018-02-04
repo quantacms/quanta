@@ -4,7 +4,6 @@
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -19,7 +18,6 @@ function page_body_classes($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -46,7 +44,6 @@ function page_boot($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -72,6 +69,7 @@ function page_doctor($env, $vars) {
 
   $temp_aggregate_path = md5(time() + rand(1,10000000));
 
+  // Create a temporary aggregated css / js file.
   $temp_css_path = $env->dir['tmp_files'] . '/' . $temp_aggregate_path . '.css';
   $temp_js_path = $env->dir['tmp_files'] . '/' . $temp_aggregate_path . '.js';
 
@@ -96,7 +94,6 @@ function page_doctor($env, $vars) {
   $fop_mini = fopen($temp_css_path_mini, 'w+');
   fwrite($fop_mini, implode($minify_css));
   fclose($fop_mini);
-
   
   // TODO: is double step necessary?
   $minify_js = minify($env, $temp_js_path);

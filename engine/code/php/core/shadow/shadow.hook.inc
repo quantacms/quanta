@@ -5,7 +5,6 @@
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   Miscellaneous environment / page variables.
  */
@@ -14,12 +13,11 @@ function shadow_load_includes($env, $vars) {
   $env->addInclude('engine/code/php/core/shadow/css/shadow.css');
 }
 
-/*
+/**
  * Implements hook_init().
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -46,7 +44,6 @@ function shadow_init(Environment $env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */

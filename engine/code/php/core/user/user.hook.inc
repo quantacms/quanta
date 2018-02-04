@@ -5,7 +5,6 @@
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   Miscellaneous environment / page variables.
  */
@@ -19,7 +18,6 @@ function user_boot($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   Miscellaneous environment / page variables.
  */
@@ -34,7 +32,6 @@ function user_load_includes($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   Miscellaneous environment / page variables.
  */
@@ -57,7 +54,6 @@ function user_setup($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -75,7 +71,6 @@ function user_body_classes($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -92,7 +87,6 @@ function user_action_login($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -108,17 +102,14 @@ function user_shadow_user_register_form($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
 function user_shadow_user_edit_form($env, $vars) {
   /** @var Shadow $shadow */
   $shadow = $vars['shadow'];
-
   $curr_user = UserFactory::current($env);
   $user = new User($env, $curr_user->name);
-
   $tab = $user->renderEditForm($env->getContext());
   $shadow->addTab('Your Profile', $tab, 1);
   $shadow->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Update');
@@ -129,7 +120,6 @@ function user_shadow_user_edit_form($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -148,7 +138,6 @@ function user_shadow_user_login_form($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -163,7 +152,6 @@ function user_action_user_edit($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -179,7 +167,6 @@ function user_action_user_register($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */

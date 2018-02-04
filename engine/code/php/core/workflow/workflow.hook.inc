@@ -4,12 +4,11 @@
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
 function workflow_shadow_node_form($env, $vars) {
-  $vars['shadow']->addTab('manage status', file_get_contents('core/workflow/tpl/status_form.inc'), 2);
+  $vars['shadow']->addTab('manage status', file_get_contents('core/workflow/tpl/status_form.html'), 2);
 }
 
 /**
@@ -19,7 +18,6 @@ function workflow_shadow_node_form($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */
@@ -44,7 +42,6 @@ function workflow_setup($env, $vars) {
  *
  * @param Environment $env
  *   The Environment.
- *
  * @param array $vars
  *   An array of variables.
  */

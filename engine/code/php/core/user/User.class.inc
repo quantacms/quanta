@@ -1,4 +1,7 @@
 <?php
+/**
+ *
+ */
 define("USER_ANONYMOUS", "guest");
 define("ROLE_ANONYMOUS", "anonymous");
 define("ROLE_ADMIN", "admin");
@@ -16,25 +19,35 @@ define("USER_MIN_NAME_LENGTH", 4);
  * AKA a folder + json file inside.
  */
 class User extends Node {
+  /** @var string $email */
   public $email;
+  /** @var array $roles */
   public $roles = array();
+  /** @var string $password */
   public $password;
 
   /**
    * Check if the user entered a correct password.
-   * @param $password
+   *
+   * @param string $password
+   *   The entered password.
+   *
    * @return bool
+   *   Return true if the user/pass combination matches.
    */
   private function checkPassword($password) {
     if (!isset($this->json->password)) {
       return FALSE;
     }
+    // We compare with the encrypted password.
     return ($this->json->password == pwd($password));
   }
 
   /**
    * Check if the user is anonymous / guest user.
+   *
    * @return bool
+   *   Returns true if the current user is Anonymous.
    */
   public function isAnonymous() {
     return $this->name == USER_ANONYMOUS;
@@ -44,10 +57,10 @@ class User extends Node {
    * Load the user object.
    */
   public function load() {
-    if ( strlen($this->name) > 0 && $this->exists) {
+    if (strlen($this->name) > 0 && $this->exists) {
       $this->loadJSON();
       if (isset($this->json->roles)) {
-        $this->roles = (array) $this->json->roles;
+        $this->roles = (array)$this->json->roles;
       }
 
       if (isset($this->json->password)) {
@@ -57,7 +70,7 @@ class User extends Node {
         $this->email = $this->json->email;
       }
       if (isset($this->json->data)) {
-        $this->data = (array) $this->json->data;
+        $this->data = (array)$this->json->data;
       }
     }
 
@@ -140,14 +153,16 @@ class User extends Node {
     else {
       if ($this->checkPassword($password)) {
         new Message($this->env, $success_message, MESSAGE_CONFIRM, MESSAGE_TYPE_SCREEN);
-        new Message($this->env, 'User ' . $this->getName(). ' logged in', MESSAGE_CONFIRM, MESSAGE_TYPE_LOG);
+        new Message($this->env, 'User ' . $this->getName() . ' logged in', MESSAGE_CONFIRM, MESSAGE_TYPE_LOG);
         $this->roles += array('logged' => 'logged');
         unset($this->password);
         $_SESSION['user'] = $this->serializeForSession();
       }
       else {
+        // Show an error message for wrong password.
         new Message($this->env, 'Wrong username or password. Please <a class="login-link" href="#">try again</a>', MESSAGE_WARNING, MESSAGE_TYPE_SCREEN);
 
+        // Create a log entry.
         new Message($this->env, 'User ' . $this->name . ' tried to login with wrong username or password', MESSAGE_WARNING, MESSAGE_TYPE_LOG);
       }
     }
@@ -286,7 +301,7 @@ class User extends Node {
     elseif ($mail_exists && (!$this->exists || ($this->email != $existing_user->email))) {
       new Message($this->env, 'Email ' . $this->email . ' already exists!', MESSAGE_WARNING);
     }
-    elseif(!valid_email($this->email)) {
+    elseif (!valid_email($this->email)) {
       new Message($this->env, 'Please enter a valid E-mail address!', MESSAGE_WARNING);
     }
     elseif ($check_password && $this->exists && ($this->password != pwd($form_data['edit-old_password']))) {
