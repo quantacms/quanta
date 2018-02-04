@@ -10,6 +10,11 @@ class Garbage {
   private $env;
 
   // Construct the Garbage collector item.
+
+  /**
+   * Garbage constructor.
+   * @param $env
+   */
   public function __construct($env) {
     $this->env = $env;
   }

@@ -1,5 +1,8 @@
 <?php
 
-  class Post extends Node {
+/**
+ * Class Post
+ */
+class Post extends Node {
 
   }

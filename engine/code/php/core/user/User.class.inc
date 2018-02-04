@@ -237,6 +237,10 @@ class User extends Node {
 
   // Todo:update() and register() look too much similar.
   // TODO: maybe just rely on node for saving, no need for all this customization.
+  /**
+   * @param $form_data
+   * @return bool
+   */
   public function update($form_data) {
     foreach ($form_data as $k => $value) {
       $field = str_replace('edit-', '', $k);
@@ -363,6 +367,11 @@ class User extends Node {
   }
 
   // TODO: refactor.
+
+  /**
+   * @param $context
+   * @return bool|string
+   */
   public function renderEditForm($context) {
     $user_edit_form = file_get_contents('core/user/tpl/' . $context . '.inc');
     return $user_edit_form;
@@ -387,6 +396,9 @@ class User extends Node {
     $_SESSION['user'] = $this->serializeForSession();
   }
 
+  /**
+   * @param array $ignore
+   */
   public function updateJSON($ignore = array()) {
     $this->json->email = $this->getEmail();
     $this->json->first_name = $this->getData('first_name');
@@ -397,6 +409,9 @@ class User extends Node {
     parent::updateJSON();
   }
 
+  /**
+   * @return string
+   */
   public function serializeForSession() {
     $serialized = clone($this);
     unset($serialized->father);

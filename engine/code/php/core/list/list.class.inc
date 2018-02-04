@@ -80,6 +80,9 @@ abstract class ListObject {
     $this->load();
   }
 
+  /**
+   * @return mixed
+   */
   public function getModulePath() {
     $module = $this->env->getModule($this->module);
     return $module['path'];
@@ -249,10 +252,17 @@ abstract class ListObject {
     }
 	}
 
+  /**
+   * @return array
+   */
   public function getAttributes() {
     return $this->attributes;
   }
 
+  /**
+   * @param $attr_name
+   * @return bool|mixed
+   */
   public function getAttribute($attr_name) {
 
     if (isset($this->attributes[$attr_name])) {

@@ -187,7 +187,7 @@ function qtag_PHONE($env, $target, $attributes) {
     $attributes['class'] = ' tel';
   }
   
-	return '<a ' . html_standard_attributes($attributes) . ' href="tel:' . $target . '">' . $target . '</a>';
+	return '<a href="tel:' . $target . '">' . $target . '</a>';
 }
 
 /**

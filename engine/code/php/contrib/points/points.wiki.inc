@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * @param $attributes
+ * @param $usr
+ * @param $string
+ * @param $env
+ * @return mixed
+ */
 function wiki_POINTS($attributes, $usr, $string, $env) {
   if ($usr == NULL) {
     $user = UserFactory::current($env, TRUE);

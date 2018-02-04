@@ -28,12 +28,24 @@ function qtag_PRODUCTSLIST($attributes, $value, $string, $env) {
   return $dirlist->render();
 }
 
+/**
+ * @param $env
+ * @param $target
+ * @param $attributes
+ * @return string
+ */
 function qtag_PRODUCTADD($env, $target, $attributes) {
   $attributes['class'] = 'product-add-link';
   $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Add product...';
   return qtag_ADD($env, $target, $attributes);
 }
 
+/**
+ * @param $env
+ * @param $target
+ * @param $attributes
+ * @return string
+ */
 function qtag_PRODUCTEDIT($env, $target, $attributes) {
   $attributes['class'] = 'product-edit-link';
   $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Edit product...';

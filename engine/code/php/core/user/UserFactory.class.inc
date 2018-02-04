@@ -10,9 +10,8 @@ class UserFactory {
    * Load a node, by checking access and running hooks.
    * @param Environment $env
    * @param $user
-   * @param null $tpl
+   *
    * @return User
-   * @internal param $node
    */
   public static function load(Environment $env, $user) {
     $user = new User($env, $user);

@@ -279,6 +279,11 @@ class Environment extends DataContainer {
   }
 
   // Return a system directory.
+
+  /**
+   * @param $variable
+   * @return mixed
+   */
   public function dir($variable) {
     return $this->dir[$variable];
   }

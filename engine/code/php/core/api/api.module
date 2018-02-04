@@ -27,25 +27,66 @@ function pwd($pass) {
   
 }
 
-// TODO: make this stuff better.
+/**
+ * Redirect the current user to another page.
+ * // TODO: make this stuff better.
+ *
+ * @param string $where
+ *   Where to redirect the user.
+ */
 function redirect($where) {
   print '<script>top.location.href="' . $where . '";</script>';
 }
 
+/**
+ * Check if a string is alphanumeric.
+ *
+ * @param $string
+ *   The string.
+ *
+ * @return boolean
+ *   TRUE if the string is alphanumeric.
+ */
 function is_alphanumeric($string) {
   return preg_match('/^[A-Za-z0-9_]+$/', $string);
 }
 
-function valid_email($string) {
-  return (!filter_var($string, FILTER_VALIDATE_EMAIL) === FALSE);
+/**
+ * Check if a string represents a valid email address.
+ *
+ * @param $email
+ *   The email address to check.
+ *
+ * @return bool
+ *   TRUE if the argument is a valid email address.
+ */
+function valid_email($email) {
+  return (!filter_var($email, FILTER_VALIDATE_EMAIL) === FALSE);
+  }
+
+/**
+ * Check if a string represents a valid URL.
+ *
+ * @param $url
+ *   The URL to check.
+ *
+ * @return bool
+ *   Returns True if the URL is valid.
+ */
+function valid_url($url) {
+  return (!filter_var($url, FILTER_VALIDATE_URL) === FALSE);
 
   }
 
-function valid_url($string) {
-  return (!filter_var($string, FILTER_VALIDATE_URL) === FALSE);
-
-  }
-
+/**
+ * Normalize a string by removing all quanta-related characters.
+ *
+ * @param string $string
+ *   The string to normalize.
+ *
+ * @return string
+ *   The normalized string.
+ */
 function string_normalize($string) {
   $string = str_replace('[', '&lbrack;', $string);
   $string = str_replace(']', '&rbrack;', $string);
@@ -53,27 +94,20 @@ function string_normalize($string) {
   $string = str_replace('}', '&rbrace;', $string);
   $string = str_replace(':', '&colon;', $string);
   $string = str_replace('|', '&verbar;', $string);
-  // $string = str_replace('=', '&equals;', $string);
   // Remove tabs and newlines.
   // TODO: was necessary as it broke INPUT tags by weirdly printing the value...
   return preg_replace('~[\r\n\t]+~', '', $string);
 }
 
-function html_standard_attributes($attributes) {
-  $standards = array(
-    'id' => TRUE,
-    'class' => TRUE,
-    'rel' => TRUE,
-    );
-  $string = '';
-  foreach ($attributes as $k => $attr) {
-    if (isset($standards[$k])) {
-      $string .= $k . ' = "' . $attr . '"';
-    }
-  }
-  return $string;
-}
-
+/**
+ * Normalize a path by replacing all special characters.
+ *
+ * @param string $s
+ *   The string to normalize.
+ *
+ * @return string
+ *   The normalized string.
+ */
 function normalizePath($s) {
   $s = trim($s);
   $s = remove_accents($s);
@@ -85,14 +119,16 @@ function normalizePath($s) {
 }
 
 
-
 /**
  * Converts all accent characters to ASCII characters.
  *
  * If there are no accent characters, then the string given is just returned.
  *
- * @param string $string Text that might have accent characters
- * @return string Filtered string with replaced "nice" characters.
+ * @param string $string
+ *   Text that might have accent characters
+ *
+ * @return string
+ *   Filtered string with replaced "nice" characters.
  */
 function remove_accents($string) {
   $unwanted_array = array(    '&amp;' => 'and', '&' => 'and', '@' => 'at', '©' => 'c', '®' => 'r',
@@ -153,11 +189,23 @@ function remove_accents($string) {
   return strtr( $string , $unwanted_array );
 }
 
+/**
+ * Minify a JS / CSS file.
+ * //TODO: move elsewhere.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $file
+ *   The JS / CSS file.
+ *
+ * @return string
+ *   The minified JS / CSS file.
+ */
 function minify($env, $file) {
   $exp = explode('.', $file);
   $ext = $exp[count($exp) - 1];
   $command = $env->dir['vendor'] . '/matthiasmullie/minify/bin/minify' . $ext . ' ' . $file;
 	exec($command, $arr);
-
   return $arr;
 }

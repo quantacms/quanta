@@ -59,7 +59,7 @@ class Node extends JSONDataContainer {
       // Load node from cache (RAM) if it has been already loaded.
       if ($cached = Cache::get($this->env, 'node', $this->name)) {
         foreach (get_object_vars($cached) as $key => $value) {
-          $this->$key = $value;
+          $this->{$key} = $value;
         }
 
         $this->env->hook('node_load_cache', array (
@@ -169,8 +169,13 @@ class Node extends JSONDataContainer {
   }
 
   //*** TEMPORARY FIX ***
+
+  /**
+   * @param $attr_name
+   * @return null
+   */
   public function getAttributeJSON($attr_name) {
-    return (isset($this->json->$attr_name)) ? $this->json->$attr_name : NULL;
+    return (isset($this->json->{$attr_name})) ? $this->json->{$attr_name} : NULL;
   }
 
   /**

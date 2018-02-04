@@ -18,10 +18,17 @@ class Robots extends DataContainer {
 
   }
 
+  /**
+   * @param $user_agent
+   * @param $path
+   */
   public function disallow($user_agent, $path) {
     $this->disallow[$user_agent][] = $path;
   }
 
+  /**
+   * @return string
+   */
   public function render() {
     $render = '';
     foreach ($this->disallow as $user_agent => $paths) {

@@ -51,6 +51,10 @@ class FileList extends ListObject {
       }
     }
   }
+
+  /**
+   * @return array
+   */
   public function getFiles() {
     return $this->files;
   }
