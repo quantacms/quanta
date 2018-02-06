@@ -39,7 +39,7 @@ function manager_init($env, $vars) {
  * @param array $vars
  *   An array of variables..
  */
-function manager_shadow_manager_form($env, $vars) {
+function manager_shadow_node_form($env, $vars) {
   /** @var Shadow $shadow */
   $shadow = $vars['shadow'];
   $node = $shadow->getNode();

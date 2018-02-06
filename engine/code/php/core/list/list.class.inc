@@ -4,14 +4,13 @@
  * This class is providing "listing" features useful to scan a folder and
  * render the files and folders contained into it.
  */
-abstract class ListObject {
+abstract class ListObject extends DataContainer {
   public $loaded = FALSE;
   protected $path;
   protected $realpath;
   /**
    * @var Environment $env
    */
-  protected $env;
   protected $node;
   protected $dir;
   protected $tpl;
@@ -23,10 +22,6 @@ abstract class ListObject {
   private $attributes = array();
   protected $scantype = DIR_ALL;
   protected $module = 'list';
-  // Exclude some nodes from listing. TODO: discontinue.
-  protected $exclude = array();
-  // Include only some nodes in listing. TODO: discontinue.
-  protected $include = array();
   // Filter by status. TODO: discontinue.
   protected $status = array();
   // Filter
@@ -109,6 +104,8 @@ abstract class ListObject {
     $output = implode($separator, $this->list_items);
 
     $ajax = (!empty($this->getAttribute('ajax'))) ? ' rel= ' . $this->getAttribute('ajax') : '';
+    $this->setData('list_html_tag', !empty($this->getAttribute('ordered')) ? 'ol' : 'ul');
+
     $tpl = (!empty($this->getAttribute('tpl'))) ? ' tpl= ' . $this->getAttribute('tpl') : '';
 
     if (!empty($this->getAttribute('empty_message')) && (count($this->list_items) == 0)) {
@@ -117,7 +114,7 @@ abstract class ListObject {
 
     // If the "clean" attribute is not present, add some wrapping html.
     if (empty($this->getAttribute('clean')))  {
-      $output = '<ul ' . $ajax . $tpl . ' class="list ' . $this->getTpl() . ' list-' . $this->getTpl() . ' list-' . $this->node->getName() . '" data-node="' . $this->node->getName() . '">' . $output . '</ul>';
+      $output = '<' . $this->getData('list_html_tag') . ' '  . $ajax . $tpl . ' class="list ' . $this->getTpl() . ' list-' . $this->getTpl() . ' list-' . $this->node->getName() . '" data-node="' . $this->node->getName() . '">' . $output . '</' . $this->getData('list_html_tag') . '>';
     }
 
     // If the "nolinks" attribute is present, remove links from output.
@@ -234,14 +231,6 @@ abstract class ListObject {
 
         case 'limit':
           $this->limit = $attr;
-          break;
-
-        case 'exclude':
-          $this->exclude = array_flip(explode(',', $attr));
-          break;
-
-        case 'include':
-          $this->include = array_flip(explode(',', $attr));
           break;
 
         default:

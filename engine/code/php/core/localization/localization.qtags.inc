@@ -106,7 +106,7 @@ function qtag_TRANSLATE_LINKS($env, $target, $attributes) {
   // We don't want translate links to be considered as editable nodes.
   $attributes['nowrap'] = TRUE;
   $attributes['symlinks'] = 'no';
-  $dirlist = new DirList($env, DIR_LANGUAGES, 'translate_links', $attributes, 'locale');
+  $dirlist = new DirList($env, DIR_LANGUAGES, 'translate_links', $attributes, 'localization');
   return $dirlist->render();
 }
 

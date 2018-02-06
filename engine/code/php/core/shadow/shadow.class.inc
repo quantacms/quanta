@@ -7,7 +7,7 @@ class Shadow extends Page {
   private $tabs = array();
   private $widget;
   private $buttons = array();
-  private $components = array();
+  public $components = array();
   /**
    * @var Node $node.
    */
@@ -39,6 +39,12 @@ class Shadow extends Page {
     // TODO: default to home is not making sense.
     $this->node = (isset($data->node)) ? NodeFactory::load($env, $data->node, $this->getLanguage()) : new Node($env, NULL);
 
+  }
+
+  /**
+   * Load all the components via hook.
+   */
+  public function loadComponents() {
     foreach ($this->components as $component) {
       $this->env->hook('shadow_' . $component, array('shadow' => &$this));
     }
@@ -54,6 +60,8 @@ class Shadow extends Page {
     $i = 0;
     ksort($tabs);
 
+    // Cycle through all the tabs of the overlay form (Shadow)
+    // and render them.
     foreach ($tabs as $wtabs) {
       foreach ($wtabs as $tab) {
         $i++;
@@ -90,10 +98,16 @@ class Shadow extends Page {
   }
 
   /**
+   * Add a tab to the Shadow form.
+   *
    * @param string $title
+   *   The tab title.
    * @param string $content
+   *   The tab content.
    * @param int $weight
+   *   The tab weight.
    * @param string $classes
+   *   Classes of the tabbed item.
    */
   public function addTab($title, $content, $weight = 1, $classes = NULL) {
     while (isset($this->tabs[$weight])) {
@@ -104,26 +118,12 @@ class Shadow extends Page {
 
   /**
    * Get the tabs of the shadow.
+   *
    * @return array
+   *   Al the tabs of the shadow.
    */
   public function getTabs() {
     return $this->tabs;
-  }
-
-  /**
-   * Get a tab of the shadow.
-   * @param $context
-   * @return bool
-   */
-  public function getTab($context) {
-    foreach ($this->tabs as $weight => $tab) {
-      foreach ($tab as $tab_context => $content) {
-        if ($context == $tab_context) {
-          return $this->tabs[$weight][$tab_context];
-        }
-      }
-    }
-    return FALSE;
   }
 
   /**
