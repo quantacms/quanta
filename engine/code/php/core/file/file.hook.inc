@@ -1,14 +1,14 @@
 <?php
 
 /**
- * Implements hook_shadow_file_form().
+ * Implements hook_shadow_FORMID_form().
  *
  * @param Environment $env
  *   The Environment.
  * @param array $vars
  *   An array of variables.
  */
-function file_shadow_file_form($env, $vars) {
+function file_shadow_node_form($env, $vars) {
   /** @var Shadow $shadow */
   $shadow = $vars['shadow'];
   $node = $shadow->getNode();

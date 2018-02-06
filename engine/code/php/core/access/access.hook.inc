@@ -8,7 +8,7 @@
  * @param $vars
  *   An array of variables.
  */
-function access_shadow_access_form($env, $vars) {
+function access_shadow_node_form($env, $vars) {
   /** @var Shadow $shadow */
   $shadow = &$vars['shadow'];
   $shadow->addTab('manage permissions', file_get_contents('core/access/tpl/permissions_form.html'), 5);

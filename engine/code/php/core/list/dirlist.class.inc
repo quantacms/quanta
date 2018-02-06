@@ -28,15 +28,6 @@ class DirList extends ListObject {
         continue;
       }
 
-      // TODO: discontinue in favor of list_filter!
-      if (!empty($this->exclude[$i])) {
-        continue;
-      }
-      // TODO: discontinue in favor of list_filter!
-      if (!empty($this->include) && empty($this->include[$i])) {
-        continue;
-      }
-
       // Check if there is a filter set, and if it allows the item.
       if (!empty($this->list_filter) && !_access_filter($this->env, $this->list_filter, $node)) {
         continue;

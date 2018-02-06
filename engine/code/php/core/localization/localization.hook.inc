@@ -10,8 +10,7 @@
  *
  */
 function localization_load_includes($env, $vars) {
-  $env->addInclude('engine/code/php/core/locale/css/locale.css');
-  $env->addInclude('engine/code/php/core/locale/js/locale.js');
+  $env->addInclude('engine/code/php/core/localization/css/localization.css');
 }
 
 /**
