@@ -28,11 +28,12 @@ function closeShadow() {
 /**
  * Open a shadow (overlay form) with the specified parameters.
  *
- * @param shadow
+ * @param stdClass shadowData
  */
 function openShadow(shadowData) {
   shadow = shadowData;
   shadowUpdated = false;
+
   if (shadow.widget == undefined) {
     shadow.widget = 'tabs';
   }

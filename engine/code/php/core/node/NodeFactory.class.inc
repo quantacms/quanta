@@ -16,7 +16,7 @@ class NodeFactory {
    */
   public static function load(Environment $env, $node_name, $language = NULL) {
     if (empty($language)) {
-      $language = Locale::getLanguage($env);
+      $language = Localization::getLanguage($env);
     }
 
     $node = new Node($env, $node_name, NULL, $language);

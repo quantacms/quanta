@@ -23,6 +23,9 @@ class FormItemHidden extends FormItem {
     $this->setData('label', NULL);
   }
 
+  /**
+   * @return null
+   */
   function getLabel() {
     return NULL;
   }

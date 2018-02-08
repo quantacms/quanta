@@ -6,6 +6,9 @@
 class FormItemPassword extends FormItemString {
   public $type = 'password';
 
+  /**
+   * @return string
+   */
   public function getHTMLType() {
     return 'password';
   }

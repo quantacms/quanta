@@ -198,7 +198,7 @@ class Doctor extends DataContainer {
     $this->checkExistingHome();
     $this->checkAdminUser();
     $this->runDoctor();
-    Doctor::yahoo('<a href="/home">Check your new site now!</a>');
+    Doctor::yahoo(qtag_LINK($this->env, 'home', array('title' => 'Check your new site now!')));
   }
 
   /**
@@ -276,10 +276,19 @@ class Doctor extends DataContainer {
   /**
    * Check if the doctor is curing (if we are in a Doctor page).
    *
-   * @return boolean $delay
-   *   Some seconds of delay, just in case...
+   * @return boolean
+   *   True if the doctor task is running.
+   *
    */
   public static function isCuring() {
     return isset($_GET['doctor']);
+  }
+
+  /**
+   * After curing, the doctor gives hints to the user on those things
+   * that could not be instantly cured.
+   */
+  public static function recipe() {
+
   }
 }

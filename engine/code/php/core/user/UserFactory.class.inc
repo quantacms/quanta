@@ -10,11 +10,10 @@ class UserFactory {
    * Load a node, by checking access and running hooks.
    * @param Environment $env
    * @param $user
-   * @param null $tpl
+   *
    * @return User
-   * @internal param $node
    */
-  public static function load(Environment $env, $user, $tpl = NULL) {
+  public static function load(Environment $env, $user) {
     $user = new User($env, $user);
     $env->hook('user_open', array ('user' => &$user));
     return $user;
@@ -121,7 +120,7 @@ class UserFactory {
     }
 
     // If the newly built user object is valid, rebuild the session to keep it updated.
-    if ($valid) {
+    if ($valid && isset($user)) {
       $response->redirect = '/' . $env->getRequestedPath();
       $user->rebuildSession();
     }

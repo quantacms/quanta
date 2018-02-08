@@ -4,14 +4,13 @@
  * This class is providing "listing" features useful to scan a folder and
  * render the files and folders contained into it.
  */
-abstract class ListObject {
+abstract class ListObject extends DataContainer {
   public $loaded = FALSE;
   protected $path;
   protected $realpath;
   /**
    * @var Environment $env
    */
-  protected $env;
   protected $node;
   protected $dir;
   protected $tpl;
@@ -23,26 +22,23 @@ abstract class ListObject {
   private $attributes = array();
   protected $scantype = DIR_ALL;
   protected $module = 'list';
-  // Exclude some nodes from listing. TODO: discontinue.
-  protected $exclude = array();
-  // Include only some nodes in listing. TODO: discontinue.
-  protected $include = array();
   // Filter by status. TODO: discontinue.
   protected $status = array();
   // Filter
   protected $list_filter;
+  protected $sort;
 
   /**
    * ListObject constructor.
-   * @param $env
+   * @param Environment $env
    *   The environment.
-   * @param $path
+   * @param string $path
    *   The path (node) to use as a base for listing.
-   * @param $tpl
+   * @param string $tpl
    *   The template file to use. I.e. dir for using dir.tpl.php.
    * @param array $attr_arr
    *   The attributes.
-   * @param null $module
+   * @param string $module
    *   The module in where to look for the template file (defaults to list).
    */
   public function __construct(&$env, $path, $tpl, $attr_arr = array(), $module = NULL) {
@@ -79,6 +75,9 @@ abstract class ListObject {
     $this->load();
   }
 
+  /**
+   * @return mixed
+   */
   public function getModulePath() {
     $module = $this->env->getModule($this->module);
     return $module['path'];
@@ -105,6 +104,8 @@ abstract class ListObject {
     $output = implode($separator, $this->list_items);
 
     $ajax = (!empty($this->getAttribute('ajax'))) ? ' rel= ' . $this->getAttribute('ajax') : '';
+    $this->setData('list_html_tag', !empty($this->getAttribute('ordered')) ? 'ol' : 'ul');
+
     $tpl = (!empty($this->getAttribute('tpl'))) ? ' tpl= ' . $this->getAttribute('tpl') : '';
 
     if (!empty($this->getAttribute('empty_message')) && (count($this->list_items) == 0)) {
@@ -113,7 +114,7 @@ abstract class ListObject {
 
     // If the "clean" attribute is not present, add some wrapping html.
     if (empty($this->getAttribute('clean')))  {
-      $output = '<ul ' . $ajax . $tpl . ' class="list ' . $this->getTpl() . ' list-' . $this->getTpl() . ' list-' . $this->node->getName() . '" data-node="' . $this->node->getName() . '">' . $output . '</ul>';
+      $output = '<' . $this->getData('list_html_tag') . ' '  . $ajax . $tpl . ' class="list ' . $this->getTpl() . ' list-' . $this->getTpl() . ' list-' . $this->node->getName() . '" data-node="' . $this->node->getName() . '">' . $output . '</' . $this->getData('list_html_tag') . '>';
     }
 
     // If the "nolinks" attribute is present, remove links from output.
@@ -187,11 +188,21 @@ abstract class ListObject {
 
   }
 
-  // Check if a node has a status that can be displayed in the list.
+
+  /**
+   * Check if a node has a status that can be displayed in the list.
+   *
+   * @param Node $node
+   *   The node for which to validate the status.
+   *
+   * @return bool
+   *   Returns true if the node status is the one for which the list is filtered.
+   */
   public function validateStatus($node) {
     if (!empty($this->status)) {
       return (isset($this->status['all'])) || (isset ($this->status[$node->getStatus()]));
-    } else {
+    }
+    else {
       return $node->isPublished();
     }
   }
@@ -222,14 +233,6 @@ abstract class ListObject {
           $this->limit = $attr;
           break;
 
-        case 'exclude':
-          $this->exclude = array_flip(explode(',', $attr));
-          break;
-
-        case 'include':
-          $this->include = array_flip(explode(',', $attr));
-          break;
-
         default:
           // Unkown attribute for generic list - do nothing.
           // @TODO: maybe add a message?
@@ -238,10 +241,17 @@ abstract class ListObject {
     }
 	}
 
+  /**
+   * @return array
+   */
   public function getAttributes() {
     return $this->attributes;
   }
 
+  /**
+   * @param $attr_name
+   * @return bool|mixed
+   */
   public function getAttribute($attr_name) {
 
     if (isset($this->attributes[$attr_name])) {
@@ -259,15 +269,28 @@ abstract class ListObject {
   abstract public function theme();
 
   /**
-   * Return the theme of this list.
+   * Return the template of this list.
+   *
    * @return string
+   *   The template of the list.
    */
   public function getTpl() {
     return $this->tpl;
   }
 
+  /**
+   * Check sorting in the list: compare two nodes during the cycle.
+   *
+   * @param Node $x
+   *   The first node.
+   *
+   * @param Node $y
+   *   The second node.
+   *
+   * @return int
+   */
   private function sortBy($x, $y) {
-
+    // Which field to use for sorting.
     switch ($this->sort) {
       case 'name':
         $check = strcasecmp($x->getName(), $y->getName()) > 0;
@@ -285,7 +308,6 @@ abstract class ListObject {
         //Sort by Number DESC
         $check = ($x->getAttributeJSON($this->sort) < $y->getAttributeJSON($this->sort));
         break;
-
     }
 
     return ($check) ? 1 : -1;

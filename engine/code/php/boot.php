@@ -72,4 +72,3 @@
 
   // End the bootstrap.
   exit();
-?>

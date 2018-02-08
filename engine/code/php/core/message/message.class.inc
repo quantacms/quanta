@@ -57,6 +57,10 @@ class Message {
     }
   }
 
+  /**
+   * @param string $type
+   * @return string
+   */
   public static function burnMessages($type = MESSAGE_TYPE_SCREEN) {
     $output = '';
     if (isset($_SESSION['messages'])) {

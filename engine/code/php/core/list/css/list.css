@@ -3,14 +3,12 @@
 	display: none;
 }
 
-.list {
-	margin: 0;
-	padding: 0;
-}
-
 .dir-list-item {
 	margin:0;
   padding: 0;
 	display: block;
 }
 
+.list-tree .dir-list-item {
+	display: list-item;
+}
