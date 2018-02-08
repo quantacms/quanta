@@ -363,14 +363,6 @@ class Node extends JSONDataContainer {
   }
 
   /**
-   * Gets the content of a node.
-   * @return string
-   */
-  public function getContent() {
-    return '<h1>' . $this->getTitle() . '</h1>' . $this->getBody();
-  }
-
-  /**
    * Sets the author of a node.
    * @param $author
    */
@@ -458,10 +450,12 @@ class Node extends JSONDataContainer {
    * Eventually node will use tpl.html files (with dashed depth).
    */
   public function buildTemplate() {
+
     // The node's default renderis is its content.
-    $this->tpl = $this->getContent();
+    $this->tpl = $this->getBody();
     $tpl = array ();
     $tpl_level = 0;
+
     // a template in the same directory has always priority.
     if (is_file($this->realpath . '/tpl.html')) {
       $this->setData('tpl_file', $this->realpath . '/tpl.html');
@@ -496,9 +490,11 @@ class Node extends JSONDataContainer {
         $this->setData('tpl_file', $tpl[$tpl_level]);
       }
     }
+
     if (!empty($this->getData('tpl_file'))) {
       $this->tpl = file_get_contents($this->getData('tpl_file'));
     }
+
   }
 
   /**
@@ -562,16 +558,20 @@ class Node extends JSONDataContainer {
   }
 
   /**
-   * Temporary.
+   * Render the node.
+   *
+   * @return
+   *   The rendered node.
    */
   public function render() {
-    $content = str_replace(chr(13), '', $this->getBody());
-    return str_replace('[CONTENT]', $content, $this->tpl);
+    return $this->tpl;
   }
 
   /**
    * Get all the permissions for this node.
-   * @return mixed
+   *
+   * @return array
+   *   The permissions of the node.
    */
   public function getPermissions() {
     $this->loadPermissions();
@@ -579,9 +579,12 @@ class Node extends JSONDataContainer {
   }
 
   /**
-   * Get all the permissions for this node.
+   * Get a specific permission for this node.
+   *
    * @param $perm
-   * @return mixed
+   *   The permission.
+   *
+   * @return array
    */
   public function getPermission($perm) {
     $permissions = $this->getPermissions();

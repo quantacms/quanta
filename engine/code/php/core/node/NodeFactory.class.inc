@@ -5,14 +5,18 @@
  * This factory class contains only static methods, and it's used for loading nodes, etc.
  */
 class NodeFactory {
-
   /**
    * Load a node, by checking access and running hooks.
+   *
    * @param Environment $env
+   *   The Environment.
    * @param $node_name
-   * @param null $language
+   *   The name of the node to be loaded.
+   * @param string $language
+   *   The language in which to load the node.
+   *
    * @return Node
-   * @internal param $node
+   *   The built node object.
    */
   public static function load(Environment $env, $node_name, $language = NULL) {
     if (empty($language)) {
@@ -27,9 +31,12 @@ class NodeFactory {
 
   /**
    * Create a "Forbidden" empty node.
+   *
    * @param $env
+   *   The Environment.
+   *
    * @return Node
-   * @internal param $node
+   *   A "forbidden" Node.
    */
   public static function buildForbiddenNode($env) {
     $node = new Node($env, NULL);
@@ -41,9 +48,14 @@ class NodeFactory {
 
   /**
    * Load a node from its realpath.
+   *
    * @param Environment $env
+   *   The Environment.
    * @param $realpath
+   *   The real system path of the node.
+   *
    * @return Node
+   *   The built node object.
    */
   public static function loadFromRealPath(Environment $env, $realpath) {
     $exp = explode('/', $realpath);
@@ -52,10 +64,14 @@ class NodeFactory {
 
   /**
    * Create an empty node.
+   *
    * @param $env
+   *   The Environment.
    * @param $father
+   *   The node father (where the new empty node will be created).
+   *
    * @return Node
-   * @internal param $node
+   *   The node object.
    */
   public static function buildEmptyNode($env, $father) {
     $node = new Node($env, NODE_NEW, $father);
@@ -64,6 +80,7 @@ class NodeFactory {
 
   /**
    * Remove an existing symlink between nodes.
+   *
    * @param Environment $env
    *   The Environment.
    * @param $symlink_name
