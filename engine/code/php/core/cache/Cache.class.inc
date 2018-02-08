@@ -5,7 +5,14 @@
  */
 define('CACHE_FOLDER', 'cache');
 
+/**
+ * Class Cache
+ */
 class Cache extends DataContainer {
+  /**
+   * Cache constructor.
+   * @param $env
+   */
   public function __construct(&$env) {
     $this->env = $env;
   }

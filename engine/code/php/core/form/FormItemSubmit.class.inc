@@ -26,6 +26,10 @@ class FormItemSubmit extends FormItem {
   }
 
   // For checkboxes we don't want to default title as label.
+
+  /**
+   * @return null
+   */
   public function getLabel() {
     if (empty($this->getInputAttr('label'))) {
       return NULL;

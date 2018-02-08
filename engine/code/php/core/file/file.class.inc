@@ -28,6 +28,14 @@ class File extends DataContainer {
   public $node;
 
   // Construct the File object.
+
+  /**
+   * File constructor.
+   * @param $env
+   * @param $file_path
+   * @param null $node
+   * @param null $name
+   */
   public function __construct(&$env, $file_path, $node = NULL, $name = NULL) {
     $this->env = $env;
     $split = explode('/', $file_path);
@@ -64,25 +72,44 @@ class File extends DataContainer {
   }
 
 
+  /**
+   * @return float
+   */
   public function getFileSize() {
     return $this->size;
   }
 
+  /**
+   * @return string
+   */
   public function getType() {
     return $this->type;
   }
 
+  /**
+   * @return string
+   */
   public function getPath() {
     return $this->path;
   }
 
+  /**
+   * @return string
+   */
   public function getRealPath() {
     return $this->node->realpath . '/' . $this->getPath();
   }
-	public function getFullPath() {
+
+  /**
+   * @return string
+   */
+  public function getFullPath() {
 	  return '/' . $this->node->name . '/' . $this->getPath();
 	}
 
+  /**
+   * @return string
+   */
   public function getExtension() {
     return $this->extension;
   }
@@ -161,6 +188,10 @@ class File extends DataContainer {
     return $type;
   }
 
+  /**
+   * @param string $mode
+   * @return null|string
+   */
   public function render($mode = FILE_RENDER_LINK) {
     switch ($mode) {
 
@@ -180,6 +211,9 @@ class File extends DataContainer {
     return $render;
   }
 
+  /**
+   * @return null|string
+   */
   public function getName() {
     return $this->name;
   }
@@ -240,10 +274,16 @@ class File extends DataContainer {
     exit;
   }
 
+  /**
+   * @return string
+   */
   public function getFileName() {
     return $this->filename;
   }
 
+  /**
+   * @param $filename
+   */
   public function setFileName($filename) {
     $this->filename = $filename;
   }

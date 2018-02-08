@@ -127,12 +127,12 @@ var refreshFileActions = function() {
         $(this).toggleClass('selected-thumbnail');
         $('.show-thumbnail').html('<img src="' + filepath + '" />');
         return false;
-    })
+    });
     var thumb_href = $('#edit_thumbnail').val();
     $('a[href="' + thumb_href + '"]').addClass('selected-thumbnail');
 
 
-}
+};
 
 $(document).bind('refresh', function() {
     var thumb_href = $('#edit_thumbnail').val();

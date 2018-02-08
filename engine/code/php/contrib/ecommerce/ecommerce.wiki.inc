@@ -8,7 +8,7 @@
  * @param $env
  * @return bool|mixed|string
  */
-function wiki_PRODUCTS($attributes, $value, $string, $env) {
+function qtag_PRODUCTS($attributes, $value, $string, $env) {
 
   $dirlist = new ProductList($env, $value, 'products', array('sortbytime' => 'asc') + $attributes);
   return $dirlist->render();
@@ -22,20 +22,32 @@ function wiki_PRODUCTS($attributes, $value, $string, $env) {
  * @param $env
  * @return bool|mixed|string
  */
-function wiki_PRODUCTSLIST($attributes, $value, $string, $env) {
+function qtag_PRODUCTSLIST($attributes, $value, $string, $env) {
 
   $dirlist = new ProductList($env, $value, 'products_list', array('sortbytime' => 'asc') + $attributes);
   return $dirlist->render();
 }
 
-function wiki_PRODUCTADD($attributes, $node, $string, $env) {
+/**
+ * @param $env
+ * @param $target
+ * @param $attributes
+ * @return string
+ */
+function qtag_PRODUCTADD($env, $target, $attributes) {
   $attributes['class'] = 'product-add-link';
   $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Add product...';
-  return wiki_ADD($attributes, $node, $string, $env);
+  return qtag_ADD($env, $target, $attributes);
 }
 
-function wiki_PRODUCTEDIT($attributes, $node, $string, $env) {
+/**
+ * @param $env
+ * @param $target
+ * @param $attributes
+ * @return string
+ */
+function qtag_PRODUCTEDIT($env, $target, $attributes) {
   $attributes['class'] = 'product-edit-link';
   $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Edit product...';
-  return wiki_EDIT($attributes, $node, $string, $env);
+  return qtag_EDIT($env, $target, $attributes);
 }

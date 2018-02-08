@@ -1,18 +1,18 @@
 <?php
 
 /**
- * TODO: all deprecated but maybe useful.
+ * TODO: deprecated but maybe still useful.
  * Temporary function to regenerate all json files in the system. Handle with care!
  * @param $vars
 
-function cache_regenerate_json($vars) {
-  $wikiroot = $vars['env']->dir['wiki'];
-  $scan = $vars['env']->scanDirectory($wikiroot, array(
+function cache_regenerate_json($env, $vars) {
+  $wikiroot = $env->dir['wiki'];
+  $scan = $env->scanDirectory($wikiroot, array(
     'exclude_dirs' => DIR_ALL,
     'type' => DIR_DIRS,
   ));
   foreach ($scan as $k => $scanned) {
-    $node = new Node($vars['env'], $scanned);
+    $node = new Node($env, $scanned);
     if (!$node->isEmpty()) {
       $node->save();
     }
@@ -22,13 +22,12 @@ function cache_regenerate_json($vars) {
 
 /**
  * Cache wiki page. Implements hook_boot
+ *
+ * @param Environment $env
+ *   The Environment.
  * @param $vars
+ *   An array of variables.
  */
-function cache_boot($vars) {
-  $vars['env']->tmpdir('cache', CACHE_FOLDER);
-
-  //$vars['env']->setData('cache', new Cache($vars['env']));
-  //if (isset($_GET['cleanupjson'])) {
-  //  cache_regenerate_json($vars);
-  //}
+function cache_boot($env, $vars) {
+  $env->tmpdir('cache', CACHE_FOLDER);
 }

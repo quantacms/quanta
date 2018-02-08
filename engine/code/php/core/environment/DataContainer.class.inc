@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Class DataContainer
+ */
 abstract class DataContainer {
   /**
    * @var Environment $env
@@ -8,14 +11,28 @@ abstract class DataContainer {
   protected $data = array();
   public $language;
 
+  /**
+   * @param $key
+   * @param $value
+   */
   public function setData($key, $value) {
     $this->data[$key] = $value;
   }
 
+  /**
+   * @param $key
+   * @param null $default
+   * @return mixed|null
+   */
   public function getData($key, $default = NULL) {
     return (isset($this->data[$key]) ? $this->data[$key] : $default);
   }
 
+  /**
+   * @param $key
+   * @param $value
+   * @param bool $before
+   */
   public function addData($key, $value, $before = FALSE) {
     $curr = $this->getData($key);
 

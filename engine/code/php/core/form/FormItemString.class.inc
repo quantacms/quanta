@@ -32,6 +32,9 @@ class FormItemString extends FormItem {
     return $rendered;
   }
 
+  /**
+   * @return string
+   */
   public function getHTMLType() {
     return 'text';
   }

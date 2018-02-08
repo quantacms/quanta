@@ -1,12 +1,25 @@
 <?php
 
-function post_init($vars) {
+/**
+ * @param Environment $env
+ *   The environment.
+ *
+ * @param array $vars
+ *   Miscellaneous variables.
+ */
+function post_init($env, $vars) {
   $vars['env']->addInclude('engine/code/php/core/post/js/post.js');
   $vars['env']->addInclude('engine/code/php/core/post/css/post.css');
 }
 
-function post_shadow_post_add($vars) {
-
+/**
+ * @param Environment $env
+ *   The environment.
+ *
+ * @param array $vars
+ *   Miscellaneous variables.
+ */
+function post_shadow_post_add($env, $vars) {
     $user = UserFactory::current($vars['env']);
     // ADD a post.
     if ($vars['shadow']->getContext() == NODE_ACTION_ADD) {

@@ -44,7 +44,7 @@ body.prevent-scroll.fr-mobile {
   -webkit-box-shadow: 0 5px 8px rgba(0, 0, 0, 0.19), 0 4px 6px rgba(0, 0, 0, 0.23);
   -moz-box-shadow: 0 5px 8px rgba(0, 0, 0, 0.19), 0 4px 6px rgba(0, 0, 0, 0.23);
   box-shadow: 0 5px 8px rgba(0, 0, 0, 0.19), 0 4px 6px rgba(0, 0, 0, 0.23);
-  border: 0px;
+  border: 0;
   border-top: 5px solid #222222;
   overflow: hidden;
   width: 90%;
@@ -72,7 +72,7 @@ body.prevent-scroll.fr-mobile {
   -webkit-box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 2px 4px rgba(0, 0, 0, 0.23);
   -moz-box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 2px 4px rgba(0, 0, 0, 0.23);
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 2px 4px rgba(0, 0, 0, 0.23);
-  border-bottom: 0px;
+  border-bottom: 0p;
   overflow: hidden;
   position: absolute;
   width: 100%;

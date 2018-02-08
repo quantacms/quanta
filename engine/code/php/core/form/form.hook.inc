@@ -2,12 +2,12 @@
 /**
  * Implements hook_load_includes().
  *
+ * @param Environment $env
+ *   The Environment.
  * @param $vars
- *   Miscellaneous environment / page variables.
+ *   An array of variables.
  */
-function form_load_includes($vars) {
-  /** @var Environment $env */
-  $env = $vars['env'];
+function form_load_includes($env, $vars) {
   $env->addInclude('engine/code/php/core/form/css/form.css');
   $env->addInclude('engine/code/php/core/form/js/form.js');
   $env->addInclude('engine/code/php/core/form/addons/autocomplete/easy-autocomplete.min.css');
@@ -16,11 +16,15 @@ function form_load_includes($vars) {
 }
 
 /**
- * Check out that required fields are met, and other stuff.
  * Implements hook_form_validate();
+ * Check that required fields are met, and other stuff.
+ *
+ * @param Environment $env
+ *   The Environment.
  * @param $vars
+ *   An array of variables.
  */
-function form_form_validate($vars) {
+function form_form_validate($env, $vars) {
   /** @var Form $form */
   $form = &$vars['form'];
 
@@ -35,14 +39,15 @@ function form_form_validate($vars) {
 }
 
 /**
- * Implements hook_boot.
+ * Implements hook_boot().
  * TODO: refactor the whole.
  *
+ * @param Environment $env
+ *   The Environment.
  * @param $vars
+ *   An array of variables.
  */
-function form_boot($vars) {
-  /** @var Environment $env */
-  $env = $vars['env'];
+function form_boot($env, $vars) {
   // TODO: object oriented, using templates, etc. etc.
   if ($env->getRequestedPath() == 'autocomplete') {
     $autocomplete_results = search($env, $_GET['search_string'], NodeFactory::load($env, $_GET['search_node']), array('title'), SEARCH_OUTPUT_MATCH);
@@ -50,7 +55,7 @@ function form_boot($vars) {
     header("Content-type: application/json");
     $results = array();
     foreach ($autocomplete_results as $autocomplete_result) {
-$node = NodeFactory::loadFromRealPath($vars['env'], explode(':', $autocomplete_result)[0]);
+$node = NodeFactory::loadFromRealPath($env, explode(':', $autocomplete_result)[0]);
       // TODO: check user access.
       if (TRUE) {
         $results[] = array(
@@ -64,4 +69,3 @@ $node = NodeFactory::loadFromRealPath($vars['env'], explode(':', $autocomplete_r
     die();
   }
 }
-

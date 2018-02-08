@@ -3,6 +3,22 @@ define("SEARCH_OUTPUT_MATCH", 'match');
 define("SEARCH_OUTPUT_FILENAME", 'filename');
 define("SEARCH_OUTPUT_MATCH_FILENAME", 'match_filename');
 
+/**
+ * Search functionality (experimental).
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $search_string
+ *
+ * @param Node $search_in_node
+ *
+ * @param array $search_fields
+ *
+ * @param string $search_output
+ *
+ * @return array
+ */
 function search($env, $search_string = NULL, $search_in_node = NULL, $search_fields = array('body'), $search_output = SEARCH_OUTPUT_MATCH_FILENAME) {
   $search_dir = ($search_in_node == NULL) ? $env->dir['docroot'] : $search_in_node->realpath;
   $results_arr = array();

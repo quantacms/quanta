@@ -44,13 +44,17 @@ class FileList extends ListObject {
         // If "clean" mode is set don't add wrapping li tags.
         if (empty($this->getAttribute('clean'))) {
           $classes = array('file-list-item', 'list-item-' . $this->getTpl(), 'list-item-' . $i);
-          $list_item = '<li class="' . implode(' ', $classes) . '" index="' . $i . '">' . $list_item . '</li>';
+          $list_item = '<li class="' . implode(' ', $classes) . '" data-index="' . $i . '">' . $list_item . '</li>';
         }
 
         $this->list_items[] = $list_item;
       }
     }
   }
+
+  /**
+   * @return array
+   */
   public function getFiles() {
     return $this->files;
   }
