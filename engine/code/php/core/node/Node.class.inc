@@ -52,10 +52,12 @@ class Node extends JSONDataContainer {
       $this->father = NodeFactory::load($env, $father);
     }
 
+    // TODO: move to nodefactory.
     // Checking if this is not a new node.
     if ($name != NODE_NEW) {
       $this->setName(strtolower($name));
 
+      // TODO: language!
       // Load node from cache (RAM) if it has been already loaded.
       if ($cached = Cache::get($this->env, 'node', $this->name)) {
         foreach (get_object_vars($cached) as $key => $value) {
@@ -607,7 +609,7 @@ class Node extends JSONDataContainer {
     $lineage = $this->getLineage();
     foreach ($lineage as $lineage_node) {
       if (!empty($lineage_node->json->permissions)) {
-        $lineage_node_perm = (array)$lineage_node->json->permissions;
+        $lineage_node_perm = (array) $lineage_node->json->permissions;
         foreach ($lineage_node_perm as $perm_name => $perm) {
           if (!empty($perm)) {
             $grants[$perm_name] = $perm;
