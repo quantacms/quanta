@@ -52,10 +52,12 @@ class Node extends JSONDataContainer {
       $this->father = NodeFactory::load($env, $father);
     }
 
+    // TODO: move to nodefactory.
     // Checking if this is not a new node.
     if ($name != NODE_NEW) {
       $this->setName(strtolower($name));
 
+      // TODO: language!
       // Load node from cache (RAM) if it has been already loaded.
       if ($cached = Cache::get($this->env, 'node', $this->name)) {
         foreach (get_object_vars($cached) as $key => $value) {
@@ -363,14 +365,6 @@ class Node extends JSONDataContainer {
   }
 
   /**
-   * Gets the content of a node.
-   * @return string
-   */
-  public function getContent() {
-    return '<h1>' . $this->getTitle() . '</h1>' . $this->getBody();
-  }
-
-  /**
    * Sets the author of a node.
    * @param $author
    */
@@ -458,10 +452,12 @@ class Node extends JSONDataContainer {
    * Eventually node will use tpl.html files (with dashed depth).
    */
   public function buildTemplate() {
+
     // The node's default renderis is its content.
-    $this->tpl = $this->getContent();
+    $this->tpl = $this->getBody();
     $tpl = array ();
     $tpl_level = 0;
+
     // a template in the same directory has always priority.
     if (is_file($this->realpath . '/tpl.html')) {
       $this->setData('tpl_file', $this->realpath . '/tpl.html');
@@ -496,9 +492,11 @@ class Node extends JSONDataContainer {
         $this->setData('tpl_file', $tpl[$tpl_level]);
       }
     }
+
     if (!empty($this->getData('tpl_file'))) {
       $this->tpl = file_get_contents($this->getData('tpl_file'));
     }
+
   }
 
   /**
@@ -562,16 +560,20 @@ class Node extends JSONDataContainer {
   }
 
   /**
-   * Temporary.
+   * Render the node.
+   *
+   * @return
+   *   The rendered node.
    */
   public function render() {
-    $content = str_replace(chr(13), '', $this->getBody());
-    return str_replace('[CONTENT]', $content, $this->tpl);
+    return $this->tpl;
   }
 
   /**
    * Get all the permissions for this node.
-   * @return mixed
+   *
+   * @return array
+   *   The permissions of the node.
    */
   public function getPermissions() {
     $this->loadPermissions();
@@ -579,9 +581,12 @@ class Node extends JSONDataContainer {
   }
 
   /**
-   * Get all the permissions for this node.
+   * Get a specific permission for this node.
+   *
    * @param $perm
-   * @return mixed
+   *   The permission.
+   *
+   * @return array
    */
   public function getPermission($perm) {
     $permissions = $this->getPermissions();
@@ -604,7 +609,7 @@ class Node extends JSONDataContainer {
     $lineage = $this->getLineage();
     foreach ($lineage as $lineage_node) {
       if (!empty($lineage_node->json->permissions)) {
-        $lineage_node_perm = (array)$lineage_node->json->permissions;
+        $lineage_node_perm = (array) $lineage_node->json->permissions;
         foreach ($lineage_node_perm as $perm_name => $perm) {
           if (!empty($perm)) {
             $grants[$perm_name] = $perm;
