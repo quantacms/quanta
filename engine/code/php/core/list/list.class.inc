@@ -223,19 +223,22 @@ abstract class ListObject extends DataContainer {
           $this->sort = 'time';
           uasort($this->dirs, array($this, 'sortBy'));
           break;
-
+        // Check list sorting.
         case 'sort':
           $this->sort = $attr;
           uasort($this->dirs, array($this, 'sortBy'));
+          if (!empty($this->getAttribute('asc'))) {
+            $this->dirs = array_reverse($this->dirs);
+          }
           break;
-
+        // Set a limit for items to display.
         case 'limit':
           $this->limit = $attr;
           break;
 
         default:
           // Unkown attribute for generic list - do nothing.
-          // @TODO: maybe add a message?
+          // TODO: maybe add an error message?
           break;
       }
     }

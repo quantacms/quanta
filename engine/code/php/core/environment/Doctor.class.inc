@@ -187,8 +187,12 @@ class Doctor extends DataContainer {
   public function runSetup() {
     // Check that all system paths do exist.
     $this->checkSystemPaths();
+
     // Clear all cache (for existing applications).
+    Doctor::op('Clearing cache...');
     $this->clearCache();
+    Doctor::ok('Done!');
+
     Doctor::op('Running setup hooks...');
     // Run all setup hooks.
     $this->env->hook('setup', array ('doctor' => &$this));

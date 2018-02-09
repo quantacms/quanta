@@ -62,6 +62,10 @@ class Box extends DataContainer {
     if (!empty($attributes['clear'])) {
       $this->addData('class', array('clear-box'));
     }
+
+    // Set floating direction. Defaults to left.
+    $this->setData('float', empty($attributes['float']) ? 'left' : $attributes['float']);
+
     // Centered box.
     if (!empty($attributes['centered'])) {
       $this->addData('class', array('centered-box'));
@@ -88,7 +92,7 @@ class Box extends DataContainer {
 
     // Centered box.
     if (!($this->isFlat())) {
-      $this->addData('class', array('autoresize', 'float-box'));
+      $this->addData('class', array('autoresize', 'float-' . $this->getFloatDirection()));
     }
   }
 
@@ -104,6 +108,13 @@ class Box extends DataContainer {
    */
   public function getHtml() {
     return $this->html;
+  }
+
+  /**
+   * @return mixed
+   */
+  public function getFloatDirection() {
+    return $this->getData('float');
   }
 
   /**
