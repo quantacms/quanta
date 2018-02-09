@@ -77,7 +77,6 @@ function qtag_BLOCK($env, $target, $attributes) {
  */
 function qtag_JSONATTRIBUTE($env, $target, $attributes) {
   $attribute = qtag_ATTRIBUTE($env, $target, $attributes);
-
   return json_encode($attribute);
 }
 
@@ -101,6 +100,11 @@ function qtag_JSONATTRIBUTE($env, $target, $attributes) {
 function qtag_ATTRIBUTE($env, $target, $attributes) {
 
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
+
+  // Check if the node shall be rendered before gathering attributes.
+  if (isset($attributes['rendered'])) {
+    $node->buildTemplate();
+  }
 
   switch ($attributes['name']) {
     // Node's name (aka name of the folder).
@@ -181,7 +185,6 @@ function qtag_ATTRIBUTE($env, $target, $attributes) {
       $node->buildTemplate();
       $string = $node->getData('tpl_file');
       break;
-
 
     // Node's template file.
     case 'tpl':
