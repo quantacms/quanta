@@ -304,7 +304,7 @@ function qtag_LINK($env, $target, $attributes) {
  *   The rendered qtag.
  */
 function qtag_ADD($env, $target, $attributes) {
-  $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
+  $nodeobj = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $link = '';
   if (Access::check($env, NODE_ACTION_ADD, array('node' => $nodeobj))) {
 
@@ -336,7 +336,7 @@ function qtag_ADD($env, $target, $attributes) {
  *   The rendered qtag.
  */
 function qtag_EDIT($env, $target, $attributes) {
-  $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
+  $nodeobj = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $string = '';
   if (Access::check($env, NODE_ACTION_EDIT, array('node' => $nodeobj))) {
 
@@ -372,7 +372,7 @@ function qtag_EDIT($env, $target, $attributes) {
  *   The rendered qtag.
  */
 function qtag_DELETE($env, $target, $attributes) {
-  $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
+  $nodeobj = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $string = '';
   if (Access::check($env, NODE_ACTION_DELETE, array('node' => $nodeobj))) {
 
@@ -458,7 +458,7 @@ function qtag_CATEGORIES($env, $target, $attributes) {
  *   The rendered qtag.
  */
 function qtag_COUNT($env, $target, $attributes) {
-  $nodeobj = empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node);
+  $nodeobj = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
 
   $depth = '';
   if (isset($attributes['maxdepth'])) {
