@@ -1,6 +1,7 @@
 <?php
 /**
  * Implements hook_load_includes().
+ * Adds all the necessary files for the wysiwyg plugin (currently, Froala).
  *
  * @param Environment $env
  *   The Environment.
