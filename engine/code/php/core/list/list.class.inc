@@ -16,12 +16,20 @@ abstract class ListObject extends DataContainer {
   protected $tpl;
   protected $contents;
   protected $limit;
+  /** @var array */
   protected $dirs = array();
+  /** @var array */
   protected $files = array();
+  /** @var array */
   protected $list_items = array();
+  /** @var array */
   private $attributes = array();
+  /** @var array */
+  protected $replacements = array();
+
   protected $scantype = DIR_ALL;
   protected $module = 'list';
+  protected $themed = FALSE;
   // Filter by status. TODO: discontinue.
   protected $status = array();
   // Filter
@@ -98,7 +106,12 @@ abstract class ListObject extends DataContainer {
    * Must be extended.
    */
   public function render() {
-    $this->theme();
+    // Check if the list was already generated. If not, generate it.
+    // TODO: change function name from theme() to generate().
+    if (!($this->themed)) {
+      $this->theme();
+      $this->themed = TRUE;
+    }
 
     $separator = empty($this->getAttribute('separator')) ? '' : $this->getAttribute('separator');
     $output = implode($separator, $this->list_items);
@@ -245,6 +258,13 @@ abstract class ListObject extends DataContainer {
 	}
 
   /**
+   * Replace a function.
+   */
+	public function replace($string, $replacement) {
+	  $this->replacements[$string] = $replacement;
+  }
+
+  /**
    * @return array
    */
   public function getAttributes() {
@@ -323,7 +343,10 @@ abstract class ListObject extends DataContainer {
    */
   public function countItems() {
     //TODO: theme() should not be invoked here but list_items is not valorized otherwise
-    $this->theme();
+    if (!($this->themed)) {
+      $this->theme();
+      $this->themed = TRUE;
+    }
     return count($this->list_items);
   }
 
