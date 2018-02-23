@@ -45,6 +45,8 @@ function qtag_FALLBACK_LANGUAGE($env, $target, $attributes) {
 /**
  * Implements qtag LANGUAGE_SWITCHER.
  *
+ * Renders a language switcher, allowing to switch between active languages.
+ *
  * @param Environment $env
  *   The Environment.
  *

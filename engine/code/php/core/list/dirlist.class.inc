@@ -48,9 +48,13 @@ class DirList extends ListObject {
       if ($node_father->exists && ($node_father->getName() == $node->getName())) {
         $classes[] = 'list-selected-father';
       }
-
+      foreach($this->replacements as $string => $replace) {
+        $tpl = preg_replace("/" . str_replace('[', '\[', str_replace(']', '\]', $string)) . "/is", string_normalize($replace), $tpl);
+      }
       $list_item = transformCodeTags($this->env, preg_replace("/\[LISTITEM\]/is", string_normalize($dir_url), $tpl));
       $list_item = transformCodeTags($this->env, preg_replace("/\[LISTNODE\]/is", string_normalize($this->dir), $list_item));
+
+
 
       // If the "clean" attribute is not present, add some wrapping html.
       $this->env->hook('list_item', array(

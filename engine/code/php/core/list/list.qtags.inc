@@ -3,6 +3,8 @@
 /**
  * Implements LIST qtag.
  *
+ * Renders a list of nodes (children of a given node).
+ *
  * @param Environment $env
  *   The Environment.
  *

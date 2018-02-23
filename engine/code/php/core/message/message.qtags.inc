@@ -2,6 +2,8 @@
 /**
  * Implements qtag MESSAGES.
  *
+ * Renders active system messages (errors, warnings, etc.).
+ *
  * @param Environment $env
  *   The Environment.
  *
