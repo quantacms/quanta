@@ -321,7 +321,7 @@ function qtag_ADD($env, $target, $attributes) {
 /**
  * Implementats qtag EDIT.
  *
- * Creates an edit node button.
+ * Creates an "edit node" button.
  *
  * @param Environment $env
  *   The Environment.
@@ -356,7 +356,9 @@ function qtag_EDIT($env, $target, $attributes) {
 
 /**
  * Implements qtag DELETE.
- * Creates a delete node button.
+ *
+ * Creates a "delete node" button.
+ *
  * @see qtag()
  *
  * @param Environment $env
@@ -442,7 +444,7 @@ function qtag_CATEGORIES($env, $target, $attributes) {
 /**
  * Implements qtag COUNT.
  *
- * Count the number of (what?)
+ * @deprecated Count the number of subdirectories of a node.
  * TODO recheck.
  *
  * @param Environment $env
