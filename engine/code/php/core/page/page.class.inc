@@ -55,12 +55,19 @@ class Page extends DataContainer {
       $this->html = $this->getData('content');
     }
 
-    $this->env->hook('page_init', array("page" => &$this));
-    $this->env->hook('metadata', array("page" => &$this));
-    $this->env->hook('body_classes', array("page" => &$this));
-    $this->env->hook('page_after_build', array("page" => &$this));
-    $this->env->hook('page_complete', array("page" => &$this));
+    $vars = array('page' => &$this);
 
+    // Trigger various page hooks.
+    // Page init.
+    $this->env->hook('page_init', $vars);
+    // Page metadata.
+    $this->env->hook('metadata', $vars);
+    // Page body classes (TODO: not that beautiful?).
+    $this->env->hook('body_classes', $vars);
+    // Page after build.
+    $this->env->hook('page_after_build', $vars);
+    // Page complete.
+    $this->env->hook('page_complete', $vars);
   }
 
   /**

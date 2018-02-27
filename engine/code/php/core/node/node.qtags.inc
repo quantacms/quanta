@@ -189,7 +189,7 @@ function qtag_ATTRIBUTE($env, $target, $attributes) {
     // Node's template file.
     case 'tpl':
       $node->buildTemplate();
-      $string = file_get_contents($node->getData('tpl_file'));
+      $string = (!empty($node->getData('tpl_file'))) ? file_get_contents($node->getData('tpl_file')) : '';
       break;
 
     // Default behavior: pick data from the json.

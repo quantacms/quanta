@@ -39,20 +39,20 @@ function localization_boot($env, $vars) {
  *   An array of variables.
  */
 function localization_setup($env, $vars) {
-  Doctor::talk('Setting up basic languages...');
-  $basic_languages = array(
-    'en' => 'English',
-  );
+  $enabled_languages = Localization::getEnabledLanguages($env);
+  Doctor::talk('Looking for enabled languages...');
 
-  // If a fallback language has not been set already, we assume languages are not
-  // set as well (i.e. it's a new installation).
-  if (!file_exists($env->dir['languages'] . '/fallback')) {
-    Doctor::talk('No fallback language found.');
-    $fallback_language = 'en';
+  // Check if there are enabled languages already. If not, setup basic languages.
+  if (empty($enabled_languages)) {
+    Doctor::op('None Found. Setting up basic languages...');
+    // We only use english as a basic language. TODO: could be better with a custom folder.
+    $basic_languages = array(
+      'en' => 'English',
+    );
     // Create basic languages.
     foreach ($basic_languages as $langcode => $lang) {
       if (!is_dir($env->dir['languages'] . '/' . $langcode)) {
-        NodeFactory::buildNode( $env, $langcode, DIR_LANGUAGES, array(
+        NodeFactory::buildNode($env, $langcode, DIR_LANGUAGES, array(
             'title' => $lang,
             'language' => LANGUAGE_NEUTRAL,
             'status' => NODE_STATUS_PUBLISHED,
@@ -61,10 +61,6 @@ function localization_setup($env, $vars) {
         Doctor::ok('...' . $lang . ' (' . $langcode . ')');
       }
     }
-
-    NodeFactory::linkNodes($env, $fallback_language, '_languages', array('symlink_name' => 'fallback'));
-    Doctor::talk('Fallback language set to ' . $fallback_language . '.');
-
   }
 }
 

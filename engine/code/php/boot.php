@@ -30,12 +30,14 @@
 
   // Start page's standard index.html.
   $page = new Page($env, 'index.html');
+  $vars = array('page' => &$page);
+
   $env->setData('page', $page);
 
   // Run the init hook.
 
   if (!isset($_REQUEST['ajax'])) {
-    $env->hook('load_includes', array('page' => &$page));
+    $env->hook('load_includes', $vars);
     $page->loadIncludes();
   }
 
@@ -59,7 +61,7 @@
   $env->checkActions();
 
   // Run the init hook.
-  $env->hook('init', array('page' => &$page));
+  $env->hook('init', $vars);
 
   // Build the page's HTML code.
   $page->buildHTML();

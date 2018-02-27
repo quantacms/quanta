@@ -14,8 +14,6 @@ class Localization {
    * @return mixed
    */
   public static function getLanguage($env) {
-
-    // TODO: better handling of fallback.
     if (!empty($_SESSION['language'])) {
       $lang = $_SESSION['language'];
     }
@@ -30,16 +28,41 @@ class Localization {
   }
 
   /**
-   * Environment's language is always current one.
+   * Get all enabled languages.
+   *
+   * @param Environment $env
+   *   The Environment.
+   *
+   * @return array
+   *   The languages.
+   */
+  public static function getEnabledLanguages($env) {
+    // TODO: allow also symlinked language. We need to remove all fallback symlinks (old approach).
+    $language_list = $env->scanDirectory($env->dir['languages'], array('symlinks' => 'no'));
+    return $language_list;
+  }
+    /**
+   * Get the fallback language.
    *
    * @param Environment $env
    *   The Environment.
    *
    * @return string
-   *   A node url.
+   *   The fallback language.
    */
   public static function getFallbackLanguage($env) {
-    return $env->linkToNode('fallback');
+    $vars = array('fallback_language' => NULL);
+    // Let modules set a default fallback language.
+    //$env->hook('fallback_language', $vars);
+
+    if (empty($vars['fallback_language'])) {
+      $language_list = Localization::getEnabledLanguages($env);
+      $fallback = array_pop($language_list);
+    }
+    else {
+      $fallback = $vars['fallback_language'];
+    }
+    return $fallback;
   }
 
   /**

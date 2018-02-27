@@ -64,9 +64,8 @@ class Node extends JSONDataContainer {
           $this->{$key} = $value;
         }
 
-        $this->env->hook('node_load_cache', array (
-          'node' => &$this,
-        ));
+        $vars = array('node' => &$this);
+        $this->env->hook('node_load_cache', $vars);
         $this->exists = TRUE;
       } // If node is not in cache, load it from file system.
       else {
@@ -185,9 +184,8 @@ class Node extends JSONDataContainer {
    */
   public function load() {
     $this->fullpath = str_replace($this->env->dir['docroot'], '', $this->realpath);
-    $this->env->hook('node_load', array (
-      'node' => &$this,
-    ));
+    $vars = array('node' => &$this);
+    $this->env->hook('node_load', $vars);
 
     //TODO: find a better way to check node existence
     if (!isset($this->json->timestamp) && $this->exists) {
@@ -206,10 +204,9 @@ class Node extends JSONDataContainer {
   public function buildContent() {
     // Load data from JSON file if possible.
     $this->loadJSON();
+    $vars = array('node' => &$this);
 
-    $this->env->hook('node_build', array (
-      'node' => &$this,
-    ));
+    $this->env->hook('node_build', $vars);
     Cache::set($this->env, 'node', $this->name, $this);
   }
 
@@ -748,12 +745,12 @@ class Node extends JSONDataContainer {
   public function wrap($html) {
 
     $actions = array ();
-
+    // If user can edit the node, add an edit button.
     if (Access::check($this->env, NODE_ACTION_EDIT, array('node' => $this))) {
       $actions[] = '[EDIT:' . $this->getName() . ']';
     }
-
-    if (Access::check($this->env, NODE_ACTION_EDIT, array('node' => $this))) {
+    // If user can delete the node, add a delete button.
+    if (Access::check($this->env, NODE_ACTION_DELETE, array('node' => $this))) {
       $actions[] = '[DELETE:' . $this->getName() . ']';
     }
 
@@ -769,16 +766,32 @@ class Node extends JSONDataContainer {
 
   /**
    * Check if the Node is forbidden (aka access denied).
+   *
    * @return bool
+   *   True if this is a forbidden Node that can't be accessed.
    */
   public function isForbidden() {
     return $this->forbidden;
   }
 
   /**
-   * Check if the Node is available in a certain language.
-   * @param $language
+   * Check if the Node is new (yet to be created).
+   *
    * @return bool
+   *   True if this is a new node being created.
+   */
+  public function isNew() {
+    return $this->name == NODE_NEW;
+  }
+
+  /**
+   * Check if the Node is available in a certain language.
+   *
+   * @param $language
+   *   The language for which to check existing translation.
+   *
+   * @return bool
+   *   True if the translation exists in that language.
    */
   public function hasTranslation($language) {
     return is_file($this->realpath . '/data_' . $language . '.json');

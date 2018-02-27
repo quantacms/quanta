@@ -24,8 +24,9 @@ class NodeFactory {
     }
 
     $node = new Node($env, $node_name, NULL, $language);
+    $vars = array('node' => &$node);
 
-    $env->hook('node_open', array ('node' => &$node));
+    $env->hook('node_open', $vars);
     return $node;
   }
 
