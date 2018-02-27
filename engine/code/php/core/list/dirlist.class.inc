@@ -54,19 +54,17 @@ class DirList extends ListObject {
       $list_item = transformCodeTags($this->env, preg_replace("/\[LISTITEM\]/is", string_normalize($dir_url), $tpl));
       $list_item = transformCodeTags($this->env, preg_replace("/\[LISTNODE\]/is", string_normalize($this->dir), $list_item));
 
-
-
-      // If the "clean" attribute is not present, add some wrapping html.
-      $this->env->hook('list_item', array(
+      $vars = array(
         'list' => &$this,
         'list_item' => &$list_item,
-      ));
+      );
+      $this->env->hook('list_item', $vars);
 
       // Wrap in the inline editor.
       if (empty($this->getAttribute('nowrap'))) {
         $list_item = $node->wrap($list_item);
       }
-
+      // If the "clean" attribute is not present, add some wrapping html.
       // Check if output should be list item or plain.
       if (empty($this->getAttribute('clean'))) {
         $list_item = '<li class="' . implode(' ', $classes) . '">' . $list_item . '</li>';

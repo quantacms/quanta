@@ -295,7 +295,7 @@ class Environment extends DataContainer {
    * @param array $vars
    * @return bool
    */
-  public function hook($function, $vars = array()) {
+  public function hook($function, &$vars = array()) {
     $env = &$this;
     foreach ($this->getModules() as $module) {
       $hook = $module['name'] . '_' . $function;
@@ -344,7 +344,8 @@ class Environment extends DataContainer {
       if (is_array($this->request_json->action)) {
         $this->request_json->action = array_pop($this->request_json->action);
       }
-      $this->hook('action_' . $this->request_json->action, array('data' => (array)$this->request_json));
+      $vars = array('data' => (array) $this->request_json);
+      $this->hook('action_' . $this->request_json->action, $vars);
     }
   }
 

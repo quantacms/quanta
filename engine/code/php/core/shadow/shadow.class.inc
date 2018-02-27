@@ -46,7 +46,8 @@ class Shadow extends Page {
    */
   public function loadComponents() {
     foreach ($this->components as $component) {
-      $this->env->hook('shadow_' . $component, array('shadow' => &$this));
+      $vars = array('shadow' => &$this);
+      $this->env->hook('shadow_' . $component, $vars);
     }
   }
 
