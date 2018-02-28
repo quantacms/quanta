@@ -57,7 +57,7 @@ function access_node_open($env, $vars) {
 
   // Check if the user can access the node.
   if (!empty($node) && $node->exists) {
-    $has_access = Access::check($env, NODE_ACTION_VIEW, array('node' => $node));
+    $has_access = NodeAccess::check($env, NODE_ACTION_VIEW, array('node' => $node));
     if (!$has_access) {
       $node = NodeFactory::buildForbiddenNode($env);
     }

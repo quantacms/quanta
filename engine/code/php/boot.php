@@ -5,10 +5,24 @@
   // Include the Cache module.
   require_once('core/cache/cache.module');
 
-  // Create a new Environment.
-  $env = new Environment(NULL);
+  // Pre-set host.
+  if (!isset($host)) {
+    $host = NULL;
+  }
+  // Pre-set request uri.
+  if (!isset($request_uri)) {
+    $request_uri = NULL;
+  }
 
-  if (!isset($_GET['doctor']) || !($_GET['doctor'] == 'setup')) {
+  // Pre-set document root.
+  if (!isset($docroot)) {
+    $docroot = NULL;
+  }
+
+  // Create a new Environment.
+  $env = new Environment($host, $request_uri, $docroot);
+
+  if (!isset($doctor_cmd) || !($doctor_cmd == 'setup')) {
     // Check if the site is installed.
     $env->checkInstalled();
   }
@@ -42,7 +56,7 @@
   }
 
   // TODO: determine when to run setup.
-  if (isset($_GET['doctor']) && $_GET['doctor'] == 'setup') {
+  if (isset($doctor_cmd) && $doctor_cmd == 'setup') {
     // Create the doctor.
     $doctor = new Doctor($env);
     // Run the setup.
@@ -51,7 +65,7 @@
   }
 
   // TODO: determine when to run doctor.
-  if (isset($_GET['doctor'])) {
+  if (isset($doctor_cmd)) {
     $doctor = new Doctor($env);
     $doctor->runDoctor();
     exit;

@@ -48,21 +48,24 @@ function page_boot($env, $vars) {
  *   An array of variables.
  */
 function page_doctor($env, $vars) {
+  /** @var Doctor $doctor */
+  $doctor = $vars['doctor'];
+  
   $css = array();
   $js = array();
-  Doctor::op('Generating minified CSS and JS files...');
+  $doctor->op('Generating minified CSS and JS files...');
   // Include JS / CSS files.
   foreach ($env->getIncludes() as $file) {
     if (substr($file['path'], 0, 6) == 'engine') {
-      $file['path'] = $_SERVER['DOCUMENT_ROOT'] .'/' . $file['path'];
+      $file['path'] = $env->dir['quanta'] .'/' . $file['path'];
     }
 
     if ($file['type'] == 'css') {
-      Doctor::talk($file['path']);
+      $doctor->talk($file['path']);
       $css[] = file_get_contents($file['path']);
 
     } elseif ($file['type'] == 'js') {
-      Doctor::talk($file['path']);
+      $doctor->talk($file['path']);
       $js[] = file_get_contents($file['path']);
     }
   }
@@ -83,7 +86,7 @@ function page_doctor($env, $vars) {
     ', $js));
   fclose($fop);
   
-	Doctor::op('Writing minified files in directory: ' . $env->dir['tmp_files']);
+	$doctor->op('Writing minified files in directory: ' . $env->dir['tmp_files']);
 
   // Minify the CSS and JS.
   $temp_css_path_mini = $env->dir['tmp_files'] . '/css.min.css';
@@ -104,6 +107,6 @@ function page_doctor($env, $vars) {
   unlink($temp_css_path);
   unlink($temp_js_path);
 
-  Doctor::talk('...done!');
+  $doctor->talk('...done!');
 
 }

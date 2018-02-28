@@ -1,4 +1,6 @@
 <?php
+define('DOCTOR_MODE_BASH', 'bash');
+define('DOCTOR_MODE_BROWSER', 'browser');
 
 /**
  * Class Doctor
@@ -7,13 +9,20 @@
 class Doctor extends DataContainer {
   // @var Environment env
   public $env;
-
+  /**
+   * @var string $mode
+   *   Specifies if Doctor is running via bash or browser.
+   */
+  public $mode;
   /**
    * Doctor constructor.
+   *
    * @param Environment $env
+   *   The Environment.
    */
-  public function __construct($env) {
+  public function __construct($env, $mode = DOCTOR_MODE_BASH) {
     $this->env = $env;
+    $this->mode = $mode;
   }
 
   /**
@@ -21,29 +30,29 @@ class Doctor extends DataContainer {
    * are existing, and create the missing ones.
    */
   public function checkSystemPaths() {
-    Doctor::op("Checking system paths.");
+    $this->op("Checking system paths.");
 
     if (!is_dir($this->env->dir['sites'])) {
-      Doctor::op('Creating sites directory...');
+      $this->op('Creating sites directory...');
       mkdir($this->env->dir['sites']);
-      Doctor::ok();
+      $this->ok();
     }
 
     if (!is_dir($this->env->dir['engine'] . '/tmp')) {
-      Doctor::op('Creating tmp directory...');
+      $this->op('Creating tmp directory...');
       mkdir($this->env->dir['engine'] . '/tmp');
-      Doctor::ok();
+      $this->ok();
     }
 
     foreach ($this->env->dir as $dirname => $folder) {
-      Doctor::op('Checking ' . $dirname . '(<i>' . $folder . ')</i>');
+      $this->op('Checking ' . $dirname . '(' . $folder . ')');
       if (!is_dir($folder) && !is_link($folder)) {
-        Doctor::ko('non existing. Creating...');
+        $this->ko('non existing. Creating...');
         mkdir($folder) or die("Error: can not create " . $folder . '. Check permission and path.');
-        Doctor::ok();
+        $this->ok();
       }
       else {
-        Doctor::ok();
+        $this->ok();
       }
     }
   }
@@ -52,12 +61,12 @@ class Doctor extends DataContainer {
    * Check & repair any broken links.
    */
   public function checkBrokenLinks() {
-    $path = is_link($this->env->dir['docroot']) ? ($_SERVER['DOCUMENT_ROOT'] . '/sites/' . readlink($this->env->dir['docroot'])) : $this->env->dir['docroot'];
-    Doctor::op("Searching for all symlinks in " . $path . "...");
+    $path = is_link($this->env->dir['docroot']) ? ($this->env->dir['sites'] . '/' . readlink($this->env->dir['docroot'])) : $this->env->dir['docroot'];
+    $this->op("Searching for all symlinks in " . $path . "...");
     flush();
     $symlinks_find_cmd = "find " . $path . " -type l";
     exec($symlinks_find_cmd, $results_arr);
-    Doctor::talk("..." . count($results_arr) . ' found.<br>');
+    $this->talk("..." . count($results_arr) . ' found.');
     $wrong_links = 0;
     $fixed_links = 0;
     $unfixable_links = array ();
@@ -76,32 +85,32 @@ class Doctor extends DataContainer {
       if (!$link_exists) {
         $wrong_links++;
         $real_path = $this->env->nodePath($link_name);
-        Doctor::op("Looking for " . $link_name . ' (' . $real_path . ')...<br>');
+        $this->op("Looking for " . $link_name . ' (' . $real_path . ')...');
 
         if (is_dir($real_path)) {
           // Attempt to change the target dir of the link.
           NodeFactory::linkNodes($this->env, $link_node->realpath, $link_father, array ('symlink_name' => $link_name, 'if_exists' => 'override'));
-          Doctor::ok("...fixed! :-) <br>");
+          $this->ok("...fixed! :-)");
           $fixed_links++;
         }
         else {
-          Doctor::ko("...none found :-( <br>");
+          $this->ko("...none found :-(");
           $unfixable_links[] = $link;
         }
 
       }
       else {
-        Doctor::talk($link . ' -> ' . $link_target . '<br><br>');
+        $this->talk($link . ' -> ' . $link_target);
       }
 
     }
-    Doctor::talk($wrong_links . " wrong links found.");
+    $this->talk($wrong_links . " wrong links found.");
     if ($fixed_links > 0) {
-      Doctor::ok($fixed_links . " wrong links <b style='color: green'>FIXED</b>!<br>");
+      $this->ok($fixed_links . " wrong links FIXED!");
     }
     if (count($unfixable_links) > 0) {
-      Doctor::ko("Could not fix those " . count($unfixable_links) . " wrong links. Maybe they were deleted?");
-      Doctor::talk(implode('<br>', $unfixable_links));
+      $this->ko("Could not fix those " . count($unfixable_links) . " wrong links. Maybe they were deleted?");
+      $this->talk(implode('\n', $unfixable_links));
     }
   }
 
@@ -110,19 +119,19 @@ class Doctor extends DataContainer {
    * from the example site.
    */
   public function checkExistingIndex() {
-    Doctor::op('Looking for <b>Index...</b><br>');
+    $this->op('Looking for index.html...');
     if (!is_file($this->env->dir['docroot'] . '/index.html')) {
-      Doctor::ko('Not Found');
+      $this->ko('Not Found');
 
       $template_folder = $_SERVER['DOCUMENT_ROOT'] . '/_examples/_example2/*';
       // TODO: what to use as default for newly installed sites? Create templates folder.
 
       // TODO: do only on install hook
       exec('cp -R ' . $template_folder . ' ' . $this->env->dir['docroot']);
-      Doctor::ok('Imported from ' . $template_folder);
+      $this->ok('Imported from ' . $template_folder);
     }
     else {
-      Doctor::ok('Found');
+      $this->ok('Found');
     }
 
   }
@@ -131,9 +140,9 @@ class Doctor extends DataContainer {
    * Clear all the system cache.
    */
   public function clearCache() {
-    Doctor::op('Clearing Cache');
+    $this->op('Clearing Cache');
     Cache::clear($this->env);
-    Doctor::ok('Done!');
+    $this->ok('Done!');
   }
 
   /**
@@ -142,10 +151,10 @@ class Doctor extends DataContainer {
    * default / main page for Quanta sites.
    */
   public function checkExistingHome() {
-    Doctor::op('Looking for <b>Home</b> node<br>');
+    $this->op('Looking for Home node');
     $homenode = NodeFactory::load($this->env, 'home');
     if (!($homenode->exists)) {
-      Doctor::ko('Not found! Attempting to create Homepage...');
+      $this->ko('Not found! Attempting to create Homepage...');
       NodeFactory::buildNode($this->env, 'home', '_pages', array (
           'title' => 'Your Homepage',
           'body' => 'Welcome in your new QUANTA Homepage. That\'s where everything begins...',
@@ -153,7 +162,7 @@ class Doctor extends DataContainer {
       );
     }
     else {
-      Doctor::ok('Found at ' . $homenode->realpath . '!</b><br>');
+      $this->ok('Found at ' . $homenode->realpath . '!');
     }
   }
 
@@ -161,10 +170,10 @@ class Doctor extends DataContainer {
    * Check that the administrator user exists. Create it if it doesn't exist.
    */
   public function checkAdminUser() {
-    Doctor::op('Looking for <b>Admin</b> user');
+    $this->op('Looking for Admin user');
     $adminuser = UserFactory::load($this->env, 'administrator');
     if (!($adminuser->exists)) {
-      Doctor::ko('Not found! Attempting to create Admin User...');
+      $this->ko('Not found! Attempting to create Admin User...');
       UserFactory::buildUser($this->env, 'administrator', array (
         'title' => 'Administrator',
         'password' => 'pass',
@@ -173,10 +182,10 @@ class Doctor extends DataContainer {
         'first_name' => 'John',
         'last_name' => 'Doe',
       ));
-      Doctor::ok('Done!');
+      $this->ok('Done!');
     }
     else {
-      Doctor::ok('Found!');
+      $this->ok('Found!');
     }
   }
 
@@ -189,20 +198,23 @@ class Doctor extends DataContainer {
     $this->checkSystemPaths();
 
     // Clear all cache (for existing applications).
-    Doctor::op('Clearing cache...');
+    $this->op('Clearing cache...');
     $this->clearCache();
-    Doctor::ok('Done!');
+    $this->ok('Done!');
 
-    Doctor::op('Running setup hooks...');
+    $this->op('Running setup hooks...');
     // Run all setup hooks.
-    $this->env->hook('setup', array ('doctor' => &$this));
-    Doctor::ok();
+    $vars = array ('doctor' => &$this);
+    $this->env->hook('setup', $vars);
+    $this->ok();
     // TODO: move in modules - out of doctor.
     $this->checkExistingIndex();
     $this->checkExistingHome();
     $this->checkAdminUser();
     $this->runDoctor();
-    Doctor::yahoo(qtag_LINK($this->env, 'home', array('title' => 'Check your new site now!')));
+    if ($this->mode == DOCTOR_MODE_BROWSER) {
+      $this->yahoo(qtag_LINK($this->env, 'home', array('title' => 'Check your new site now!')));
+    }
   }
 
   /**
@@ -212,11 +224,12 @@ class Doctor extends DataContainer {
   public function runDoctor() {
     // TODO: move in modules - out of doctor.
     $this->checkBrokenLinks();
-    Doctor::op('Running doctor hooks...');
+    $this->op('Running doctor hooks...');
     // Run all doctor hooks.
-    $this->env->hook('doctor', array ('doctor' => &$this));
-    Doctor::ok();
-    Doctor::yahoo('Doctor has finished curing your environment!');
+    $vars = array ('doctor' => &$this);
+    $this->env->hook('doctor', $vars);
+    $this->ok();
+    $this->yahoo('Doctor has finished curing your environment!');
   }
 
   /**
@@ -224,9 +237,18 @@ class Doctor extends DataContainer {
    * @param string $phrase
    * @param string $style
    */
-  public static function talk($phrase, $style = 'color:#fff') {
-    print '<div class="doctor-line" style="background:#000"><div class="doctor-phrase" style="' . $style . '">' . $phrase . '</div></div>';
-    print '<script>window.scrollTo(0,document.body.scrollHeight);</script>';
+  public function talk($phrase, $style = array('bash-color' => '0;37', 'browser-style' => 'color:#fff')) {
+
+    switch ($this->mode) {
+      case DOCTOR_MODE_BASH:
+        print "\033[" . $style['bash-color'] .'m' . $phrase . "\033[0m" . "\n";
+        break;
+
+      case DOCTOR_MODE_BROWSER:
+        print '<div class="doctor-line" style="background:#000"><div class="doctor-phrase" style="' . $style['browser-style'] . '">' . $phrase . '</div></div>';
+        print '<script>window.scrollTo(0,document.body.scrollHeight);</script>';
+        break;
+    }
     flush();
   }
 
@@ -234,35 +256,37 @@ class Doctor extends DataContainer {
    * When the doctor starts an operation.
    * @param string $phrase
    */
-  public static function op($phrase) {
-    Doctor::talk($phrase, 'color:#fff;font-weight:bold;');
+  public function op($phrase) {
+    $this->talk($phrase, array('browser-style' => 'color:#fff;font-weight:bold;', 'bash-color' => '1;33'));
   }
 
   /**
    * When the doctor says "Ok!".
    * @param string $phrase
    */
-  public static function ok($phrase = 'OK') {
-    Doctor::talk($phrase, 'color:#0f0');
+  public function ok($phrase = 'OK') {
+    $this->talk($phrase, array('browser-style' => 'color:#0f0', 'bash-color' => '0;32'));
   }
 
   /**
    * When the doctor says something is going wrong.
    * @param string $phrase
    */
-  public static function ko($phrase = 'KO') {
-    Doctor::talk($phrase, 'color:#f00');
+  public function ko($phrase = 'KO') {
+    $this->talk($phrase, array('browser-style' => 'color:#f00', 'bash-color' => '0;31'));
   }
 
   /**
    * When the doctor says "Yahoo!".
    * @param string $phrase
    */
-  public static function yahoo($phrase = 'OK') {
-    Doctor::talk($phrase, 'background:#333;padding:3px;text-transform:uppercase;font-weight:bold;font-size:1.3em;color:#ff3');
+  public function yahoo($phrase = 'OK') {
+    $this->talk($phrase, array('browser-style' => 'background:#333;padding:3px;text-transform:uppercase;font-weight:bold;font-size:1.3em;color:#ff3', 'bash-color' => '0;42'));
   }
 
   /**
+   * @deprecated
+   *
    * When the doctor finishes, and wants to go home.
    *
    * @param string $destination
@@ -271,8 +295,8 @@ class Doctor extends DataContainer {
    * @param int $delay
    *   Some seconds of delay, just in case...
    */
-  public static function redirect($destination, $delay = 5) {
-    Doctor::talk('Redirecting you to ' . $destination . ' in ' . $delay . ' seconds...');
+  public function redirect($destination, $delay = 5) {
+    $this->talk('Redirecting you to ' . $destination . ' in ' . $delay . ' seconds...');
     sleep($delay);
     print '<script>window.location.href="' . $destination . '";</script>';
   }

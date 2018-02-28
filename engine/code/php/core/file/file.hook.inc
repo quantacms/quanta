@@ -12,7 +12,7 @@ function file_shadow_node_form($env, $vars) {
   /** @var Shadow $shadow */
   $shadow = $vars['shadow'];
   $node = $shadow->getNode();
-  if (Access::check($env, $env->getContext(), array('node' => $node))) {
+  if (NodeAccess::check($env, $env->getContext(), array('node' => $node))) {
     $vars['shadow']->addTab('manage files', file_get_contents('core/file/tpl/upload_form.html'), 2);
   }
 }
