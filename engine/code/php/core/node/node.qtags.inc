@@ -189,7 +189,7 @@ function qtag_ATTRIBUTE($env, $target, $attributes) {
     // Node's template file.
     case 'tpl':
       $node->buildTemplate();
-      $string = file_get_contents($node->getData('tpl_file'));
+      $string = (!empty($node->getData('tpl_file'))) ? file_get_contents($node->getData('tpl_file')) : '';
       break;
 
     // Default behavior: pick data from the json.
@@ -306,7 +306,7 @@ function qtag_LINK($env, $target, $attributes) {
 function qtag_ADD($env, $target, $attributes) {
   $nodeobj = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $link = '';
-  if (Access::check($env, NODE_ACTION_ADD, array('node' => $nodeobj))) {
+  if (NodeAccess::check($env, NODE_ACTION_ADD, array('node' => $nodeobj))) {
 
     $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
     $attributes['class'] .= 'add-link';
@@ -338,7 +338,7 @@ function qtag_ADD($env, $target, $attributes) {
 function qtag_EDIT($env, $target, $attributes) {
   $nodeobj = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $string = '';
-  if (Access::check($env, NODE_ACTION_EDIT, array('node' => $nodeobj))) {
+  if (NodeAccess::check($env, NODE_ACTION_EDIT, array('node' => $nodeobj))) {
 
   $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
   $attributes['class'] .= ' edit-link';
@@ -376,7 +376,7 @@ function qtag_EDIT($env, $target, $attributes) {
 function qtag_DELETE($env, $target, $attributes) {
   $nodeobj = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $string = '';
-  if (Access::check($env, NODE_ACTION_DELETE, array('node' => $nodeobj))) {
+  if (NodeAccess::check($env, NODE_ACTION_DELETE, array('node' => $nodeobj))) {
 
     $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
     $attributes['class'] .= 'delete-link';

@@ -78,32 +78,6 @@ function checkCodeTags(&$env, $html, $options = 'U') {
         $replacing[$tag_full] =  string_normalize(str_replace('|showtag', '', $tag_full));
       }
       else {
-        // TODO: deprecate wiki soon in favor of qtag.
-        // wiki_ will be unsupported and all this code removed in next version!
-        if ($tag_name == strtoupper($tag_name) && function_exists('wiki_' . $tag_name)) {
-          $func = 'wiki_' . $tag_name;
-          if (function_exists($func)) {
-            $attr_arr['tag_full'] = $tag_full;
-            $tag_html = $func($attr_arr, !empty($tag_destination) ? $tag_destination : NULL, $html, $env);
-            $wikitag = array($tag_full => $tag_html);
-            // Let other module hook into the rendered wiki tag.
-            $env->hook('wikitag', array(
-              'attributes' => $attr_arr,
-							'target' => $tag_destination,
-              'wikitag' => &$wikitag
-            ));
-
-            $tag_content = $wikitag[$tag_full];
-
-            // Replacement where nowiki attribute present. Used for input forms etc.
-            // TODO: maybe should we convert all special chars?
-            if (isset($attr_arr['nowiki'])) {
-              $tag_content = string_normalize($tag_content);
-            }
-            $replacing[$tag_full] = $tag_content;
-          }
-        }
-
         // New function using qtag.
         if ($tag_name == strtoupper($tag_name) && function_exists('qtag_' . $tag_name)) {
           $func = 'qtag_' . $tag_name;
@@ -112,12 +86,13 @@ function checkCodeTags(&$env, $html, $options = 'U') {
             // Run the qtag.
             $tag_html = $func($env, !empty($tag_destination) ? $tag_destination : NULL, $attr_arr);
             $qtag = array($tag_full => $tag_html);
-            // Let other module hook into the rendered qtag.
-            $env->hook('qtag', array(
+            $vars = array(
               'attributes' => $attr_arr,
               'target' => $tag_destination,
               'qtag' => &$qtag
-            ));
+            );
+            // Let other module hook into the rendered qtag.
+            $env->hook('qtag', $vars);
 
             $tag_content = $qtag[$tag_full];
 

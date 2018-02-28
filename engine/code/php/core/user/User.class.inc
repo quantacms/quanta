@@ -73,8 +73,8 @@ class User extends Node {
         $this->data = (array)$this->json->data;
       }
     }
-
-    $this->env->hook('user_load', array('user' => $this));
+    $vars = array('user' => &$this);
+    $this->env->hook('user_load', $vars);
   }
 
   /**

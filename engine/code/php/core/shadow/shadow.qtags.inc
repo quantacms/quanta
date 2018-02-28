@@ -48,7 +48,8 @@ function qtag_SHADOW($env, $target, $attributes) {
     // Extra HTML that can be attached.
     case 'extra':
       $html = '';
-      $env->hook('shadow_' . $env->getContext() . '_extra', array('html' => &$html));
+      $vars = array('html' => &$html);
+      $env->hook('shadow_' . $env->getContext() . '_extra', $vars);
       $string = $html;
       break;
   }

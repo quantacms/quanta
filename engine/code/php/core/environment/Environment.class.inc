@@ -27,9 +27,9 @@ class Environment extends DataContainer {
    * @param string $host
    * @param string $request_uri
    */
-  public function __construct($host = NULL, $request_uri = NULL) {
+  public function __construct($host = NULL, $request_uri = NULL, $docroot = NULL) {
     $this->host = (($host == NULL) ? strtolower($_SERVER['HTTP_HOST']) : $host);
-    if ($request_uri == NULL) {
+    if ($request_uri == NULL && !empty($_SERVER['REQUEST_URI'])) {
       // Remove querystring to obtain request uri...
       $exp = explode('?', $_SERVER['REQUEST_URI']);
       $this->request_uri = (str_replace('/', '', $exp[0]) == '') ? 'home/' : $exp[0];
@@ -37,13 +37,20 @@ class Environment extends DataContainer {
     else {
       $this->request_uri = $request_uri;
     }
-    $this->request = explode('/', $this->request_uri);
-    $this->request_path = $this->request[count($this->request) - 2];
-    $this->dir['sites'] = $_SERVER['DOCUMENT_ROOT'] . '/sites/';
-    $this->dir['engine'] = $_SERVER['DOCUMENT_ROOT'] . '/engine/';
+    if ($this->request_uri != NULL) {
+      $this->request = explode('/', $this->request_uri);
+      $this->request_path = $this->request[count($this->request) - 2];
+    }
+
+    if ($docroot == NULL) {
+      $docroot = $_SERVER['DOCUMENT_ROOT'];
+    }
+    $this->dir['quanta'] = $docroot;
+    $this->dir['sites'] = $this->dir['quanta'] . '/sites/';
+    $this->dir['engine'] = $this->dir['quanta'] . '/engine/';
     $this->dir['docroot'] = $this->dir['sites'] . $this->host;
     $this->dir['tmp'] = $this->dir['engine'] . '/tmp/' . $this->host;
-    $this->dir['vendor'] = $_SERVER['DOCUMENT_ROOT'] . '/vendor';
+    $this->dir['vendor'] = $this->dir['quanta'] . '/vendor';
     $this->dir['modules_core'] = $this->dir['engine'] . 'code/php/core';
     $this->dir['modules_custom'] = $this->dir['docroot'] . '/_modules';
     // TODO: move to files module.
@@ -94,7 +101,7 @@ class Environment extends DataContainer {
    * Load core modules.
    */
   private function loadCoreModules() {
-    $core_modules = $this->scanDirectory('core', array('type' => DIR_MODULES));
+    $core_modules = $this->scanDirectory($this->dir('modules_core') , array('type' => DIR_MODULES));
     $this->setModules('core', $core_modules);
   }
 
@@ -295,7 +302,7 @@ class Environment extends DataContainer {
    * @param array $vars
    * @return bool
    */
-  public function hook($function, $vars = array()) {
+  public function hook($function, &$vars = array()) {
     $env = &$this;
     foreach ($this->getModules() as $module) {
       $hook = $module['name'] . '_' . $function;
@@ -344,7 +351,8 @@ class Environment extends DataContainer {
       if (is_array($this->request_json->action)) {
         $this->request_json->action = array_pop($this->request_json->action);
       }
-      $this->hook('action_' . $this->request_json->action, array('data' => (array)$this->request_json));
+      $vars = array('data' => (array) $this->request_json);
+      $this->hook('action_' . $this->request_json->action, $vars);
     }
   }
 
@@ -475,6 +483,8 @@ class Environment extends DataContainer {
    */
   public function checkInstalled() {
     if (!is_dir($this->dir['modules_custom'])) {
+      print "CORSE MODULES: " . $this->dir['modules_core'];
+
       print "Hello! Seems like your site is not installed yet.<br /><a href='?doctor=setup'>Click here</a> to start the installation.";
       die();
     }

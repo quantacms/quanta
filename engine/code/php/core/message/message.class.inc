@@ -39,6 +39,7 @@ class Message {
     $this->severity = $severity;
     // If the Doctor is curing the environment, show messages in the blackboard.
     if (Doctor::isCuring()) {
+
       switch ($this->severity) {
         case MESSAGE_WARNING:
         case MESSAGE_ERROR:
