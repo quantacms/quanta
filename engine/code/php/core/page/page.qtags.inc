@@ -134,7 +134,7 @@ function qtag_BODYCLASSES($env, $target, $attributes) {
  *   The rendered qtag.
  */
 function qtag_URL($env, $target, $attributes) {
-	return 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+	return 'http://' . $env->host . $env->request_uri;
 }
 
 /**

@@ -7,6 +7,7 @@ define('NODE_ACTION_DELETE_FILE', 'file_delete');
 define('NODE_STATUS_DRAFT', 'node_status_draft');
 define('NODE_STATUS_PUBLISHED', 'node_status_published');
 define('NODE_STATUS_UNPUBLISHED', 'node_status_unpublished');
+define('NODE_PERMISSION_INHERIT', 'inherit');
 define('NODE_NEW', '__NEW__');
 
 date_default_timezone_set('UTC');
@@ -28,7 +29,7 @@ class Node extends JSONDataContainer {
   public $timestamp;
   public $father = NULL;
   public $thumbnail = NULL;
-  protected $lineage = array ();
+  protected $lineage = array();
   public $tpl = NULL;
   public $forbidden = FALSE;
 
@@ -285,18 +286,18 @@ class Node extends JSONDataContainer {
    * Save this node on the file system.
    */
   public function save() {
-
+    // If realpath has not been set (i.e. new node) create it based on father node.
     if (empty($this->realpath)) {
       $this->realpath = $this->getFather()->realpath . '/' . $this->getName();
     }
-    $this->env->hook('node_preinsert', array (
-      'node' => &$this,
-    ));
+    $vars = array('node' => &$this);
+    // Run node save hooks.
+    $this->env->hook('node_preinsert', $vars);
+    // Reload the node JSON.
     $this->updateJSON();
-    $this->saveJSON(array ('path', 'fullpath', 'exists', 'realpath', 'father', 'data'));
-    $this->env->hook('node_insert', array (
-      'node' => &$this,
-    ));
+    // Save the node json (excluding some fields such as path.)
+    $this->saveJSON(array('path', 'fullpath', 'exists', 'realpath', 'father', 'data'));
+    $this->env->hook('node_insert', $vars);
   }
 
   /**
@@ -452,7 +453,7 @@ class Node extends JSONDataContainer {
 
     // The node's default renderis is its content.
     $this->tpl = $this->getBody();
-    $tpl = array ();
+    $tpl = array();
     $tpl_level = 0;
 
     // a template in the same directory has always priority.
@@ -600,16 +601,17 @@ class Node extends JSONDataContainer {
    * Load and construct permissions for this node.
    */
   private function loadPermissions() {
-    $grants = array ();
+    $grants = array();
     $this->buildLineage();
     // Navigate the whole tree gathering real permissions on the node.
-    $lineage = $this->getLineage();
+    $lineage = array_reverse($this->getLineage());
     foreach ($lineage as $lineage_node) {
       if (!empty($lineage_node->json->permissions)) {
-        $lineage_node_perm = (array) $lineage_node->json->permissions;
+        $lineage_node_perm = (array)$lineage_node->json->permissions;
         foreach ($lineage_node_perm as $perm_name => $perm) {
-          if (!empty($perm)) {
+          if (!empty($perm) && $perm != NODE_PERMISSION_INHERIT) {
             $grants[$perm_name] = $perm;
+            break;
           }
         }
       }
@@ -713,7 +715,7 @@ class Node extends JSONDataContainer {
    *   All the Nodes containing a symlink to the node.
    */
   public function getCategories($node = NULL) {
-    $categories = array ();
+    $categories = array();
     if ($node != NULL) {
       $catnode = NodeFactory::load($this->env, $node);
       $root = $catnode->realpath;
@@ -744,13 +746,13 @@ class Node extends JSONDataContainer {
    */
   public function wrap($html) {
 
-    $actions = array ();
+    $actions = array();
     // If user can edit the node, add an edit button.
-    if (Access::check($this->env, NODE_ACTION_EDIT, array('node' => $this))) {
+    if (NodeAccess::check($this->env, NODE_ACTION_EDIT, array('node' => $this))) {
       $actions[] = '[EDIT:' . $this->getName() . ']';
     }
     // If user can delete the node, add a delete button.
-    if (Access::check($this->env, NODE_ACTION_DELETE, array('node' => $this))) {
+    if (NodeAccess::check($this->env, NODE_ACTION_DELETE, array('node' => $this))) {
       $actions[] = '[DELETE:' . $this->getName() . ']';
     }
 

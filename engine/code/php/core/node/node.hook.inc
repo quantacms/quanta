@@ -128,7 +128,7 @@ function node_shadow_node_delete_form($env, $vars) {
   $shadow = $vars['shadow'];
   $node = $shadow->getNode();
 
-  $has_access = Access::check($env, $env->getContext(), array('node' => $node));
+  $has_access = NodeAccess::check($env, $env->getContext(), array('node' => $node));
   if (!$has_access) {
     // TODO: move this in access check!
     new Message($env, 'User attempted to delete a node without access', MESSAGE_WARNING, MESSAGE_TYPE_LOG, 'node');

@@ -39,12 +39,14 @@ function localization_boot($env, $vars) {
  *   An array of variables.
  */
 function localization_setup($env, $vars) {
+  /** @var Doctor $doctor */
+  $doctor = $vars['doctor'];
   $enabled_languages = Localization::getEnabledLanguages($env);
-  Doctor::talk('Looking for enabled languages...');
+  $doctor->talk('Looking for enabled languages...');
 
   // Check if there are enabled languages already. If not, setup basic languages.
   if (empty($enabled_languages)) {
-    Doctor::op('None Found. Setting up basic languages...');
+    $doctor->op('None Found. Setting up basic languages...');
     // We only use english as a basic language. TODO: could be better with a custom folder.
     $basic_languages = array(
       'en' => 'English',
@@ -58,7 +60,7 @@ function localization_setup($env, $vars) {
             'status' => NODE_STATUS_PUBLISHED,
           )
         );
-        Doctor::ok('...' . $lang . ' (' . $langcode . ')');
+        $doctor->ok('...' . $lang . ' (' . $langcode . ')');
       }
     }
   }
