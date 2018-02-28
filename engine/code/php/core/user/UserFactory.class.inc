@@ -15,7 +15,8 @@ class UserFactory {
    */
   public static function load(Environment $env, $user) {
     $user = new User($env, $user);
-    $env->hook('user_open', array ('user' => &$user));
+    $vars = array ('user' => &$user);
+    $env->hook('user_open', $vars);
     return $user;
   }
 
@@ -88,11 +89,11 @@ class UserFactory {
     // Check if the current user is allowed to perform the action.
     switch ($action) {
       case USER_ACTION_REGISTER:
-        $can_edit = Access::check($env, USER_ACTION_REGISTER);
+        $can_edit = NodeAccess::check($env, USER_ACTION_REGISTER);
         break;
 
       case USER_ACTION_EDIT:
-        $can_edit = Access::check($env, ($curr_user->name == $form_data['edit-name']) ? USER_ACTION_EDIT_OWN : $action);
+        $can_edit = NodeAccess::check($env, ($curr_user->name == $form_data['edit-name']) ? USER_ACTION_EDIT_OWN : $action);
         break;
 
       default:

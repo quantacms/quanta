@@ -25,7 +25,7 @@ class Page extends DataContainer {
    * Load all the includes (CSS JS etc.) of the page.
    */
   public function loadIncludes() {
-    if (substr($_SERVER['REQUEST_URI'], 0, 7) == '/engine') die();
+    if (substr($this->env->request_uri, 0, 7) == '/engine') die();
     // TODO: better way to skip load includes.
     $this->addData('css', array('<link rel="stylesheet" type="text/css" href="/tmp/css.min.css" />'));
     $this->addData('js', array('<script type="text/javascript" src="/tmp/js.min.js"></script>'));
@@ -55,12 +55,19 @@ class Page extends DataContainer {
       $this->html = $this->getData('content');
     }
 
-    $this->env->hook('page_init', array("page" => &$this));
-    $this->env->hook('metadata', array("page" => &$this));
-    $this->env->hook('body_classes', array("page" => &$this));
-    $this->env->hook('page_after_build', array("page" => &$this));
-    $this->env->hook('page_complete', array("page" => &$this));
+    $vars = array('page' => &$this);
 
+    // Trigger various page hooks.
+    // Page init.
+    $this->env->hook('page_init', $vars);
+    // Page metadata.
+    $this->env->hook('metadata', $vars);
+    // Page body classes (TODO: not that beautiful?).
+    $this->env->hook('body_classes', $vars);
+    // Page after build.
+    $this->env->hook('page_after_build', $vars);
+    // Page complete.
+    $this->env->hook('page_complete', $vars);
   }
 
   /**

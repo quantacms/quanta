@@ -1,84 +1,85 @@
 <?php
+/**
+ * Class Access
+ * This abstract class is representing an Access check from some
+ * user, to some specific action, into some specific node.
+ *
+ *
+ * @see NodeAccess
+ * @see UserAccess
+ */
+abstract class Access implements AccessChecker {
+  /**
+   * @var Node $node
+   */
+  protected $node;
+  /**
+   * @var User $actor
+   */
+  protected $actor;
+
+  /**
+   * @var string $action
+   */
+  protected $action;
+
+  /**
+   * Constructs an access object.
+   *
+   * @param Environment $env
+   *   The Environment.
+   * @param array $vars
+   */
+  public function __construct(&$env, $action, $vars) {
+    $this->actor = isset($vars['user']) ? $vars['user'] : UserFactory::current($env);
+    $this->node = isset($vars['node']) ? $vars['node'] : NodeFactory::current($env);
+    $this->action = trim(strtolower($action));
+  }
+
+  /**
+   * Sets the action related to this access object.
+   *
+   * @param string $action
+   *   The action.
+   */
+  public function setAction($action) {
+    $this->action = $action;
+  }
+
+  /**
+   * Gets the action related to this access object.
+   *
+   * @return string
+   *   The action.
+   */
+  public function getAction() {
+    return $this->action;
+  }
+
+  /**
+   * Checks access to an action.
+   */
+  public abstract function checkAction();
+
+}
 
 /**
- * This class represents an user in the system.
- * Users in Quanta CMS are just extensions of Node objects,
- * AKA folder + json file inside.
+ * Interface AccessChecker
+ * Simple interface for static methods.
  */
-class Access
-{
-    /**
-     * Check if an user can perform a certain action.
-     *
-     * @param Environment $env
-     *   The Environment.
-     *
-     * @param string      $action
-     *   The action for which we check access.
-     *
-     * @param array       $vars
-     *   Miscellaneous variables.
-     *
-     * @return boolean
-     *   Returns true if access check was positive.
-     */
-    public static function check($env, $action, $vars = array())
-    {
-        /**
- * @var User $user 
-*/
-        $user = isset($vars['user']) ? $vars['user'] : UserFactory::current($env);
-
-        switch ($action) {
-        case NODE_ACTION_DELETE:
-        case NODE_ACTION_DELETE_FILE:
-        case NODE_ACTION_EDIT:
-        case NODE_ACTION_VIEW:
-        case NODE_ACTION_ADD:
-
-            // TODO: refactor elsewhere.
-            if (isset($vars['node'])) {
-                /**
- * @var Node $node 
-*/
-                $node = $vars['node'];
-
-                // If node doesn't exist, allow no permission to it.
-                if (!is_object($node) || !$node->exists) {
-                    return false;
-                }
-                $permissions = $node->getPermissions();
-                $action = trim(strtolower($action));
-
-                // Conversion to array as of new approach to values.
-                if (!is_array($permissions[$action])) {
-                    $permissions[$action] = array ($permissions[$action]);
-                }
-                $perm_array = array_flip($permissions[$action]);
-
-                if (isset($action) && isset($perm_array[ROLE_ANONYMOUS])) {
-                    return true;
-                }
-                else {
-                    // Compare the permissions in the node
-                    foreach ($perm_array as $perm_role => $counter) {
-                        if ($user->hasRole($perm_role)) {
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            }
-
-            break;
-
-        case USER_ACTION_REGISTER:
-        case USER_ACTION_EDIT:
-        case USER_ACTION_EDIT_OWN:
-            // TODO: rework.
-            return true;
-        break;
-        }
-        return false;
-    }
+interface AccessChecker {
+  /**
+   * Check access to a certain action.
+   *
+   * @param Environment $env
+   *   The Environment.
+   * @param string $action
+   *   The action to check.
+   * @param array $vars
+   *    Misc variables.
+   *
+   * @return bool
+   *   True if user has access to the action.
+   */
+  static function check($env, $action, $vars = array());
 }

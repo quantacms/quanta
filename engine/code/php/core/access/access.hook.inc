@@ -12,7 +12,6 @@ function access_shadow_node_form($env, $vars) {
   /** @var Shadow $shadow */
   $shadow = &$vars['shadow'];
   $shadow->addTab('manage permissions', file_get_contents('core/access/tpl/permissions_form.html'), 5);
-
 }
 
 /**
@@ -58,7 +57,7 @@ function access_node_open($env, $vars) {
 
   // Check if the user can access the node.
   if (!empty($node) && $node->exists) {
-    $has_access = Access::check($env, NODE_ACTION_VIEW, array('node' => $node));
+    $has_access = NodeAccess::check($env, NODE_ACTION_VIEW, array('node' => $node));
     if (!$has_access) {
       $node = NodeFactory::buildForbiddenNode($env);
     }

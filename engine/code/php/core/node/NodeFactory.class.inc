@@ -24,8 +24,9 @@ class NodeFactory {
     }
 
     $node = new Node($env, $node_name, NULL, $language);
+    $vars = array('node' => &$node);
 
-    $env->hook('node_open', array ('node' => &$node));
+    $env->hook('node_open', $vars);
     return $node;
   }
 
@@ -173,7 +174,6 @@ class NodeFactory {
 
 
     if ($create_link) {
-      Doctor::talk('attempt creating link...');
       try {
         symlink($from_node->realpath, $symlink_folder_node->realpath . '/' . $symlink_name);
       }
@@ -334,7 +334,8 @@ class NodeFactory {
         }
 
         $datetime = strtotime($nodedata['edit-date'] . ' ' . $nodedata['edit-time']);
-        $has_access = (Access::check($env, $action, array('node' => ($action == NODE_ACTION_ADD) ? $node->father : $node)));
+        // Check if the user can access node add / edit for this node.
+        $has_access = (NodeAccess::check($env, $action, array('node' => ($action == NODE_ACTION_ADD) ? $node->father : $node)));
         if ($has_access) {
           // Setup all node data (title, Body, etc.)
           $node->setTitle($nodedata['edit-title']);
@@ -349,26 +350,20 @@ class NodeFactory {
             $node->setData('redirect', $nodedata['redirect']);
           }
 
-          // Run the node presave hook.
-          $env->hook('node_presave', array (
+          $vars = array (
             'node' => &$node,
             'data' => $nodedata,
             'action' => $action,
-          ));
+          );
+          // Run the node presave hook.
+          $env->hook('node_presave', $vars);
 
           // If the node is validated, proceed with saving it.
           if ($node->validate()) {
             $node->save();
 
-            $env->hook('node_save', array (
-              'node' => &$node,
-              'data' => $nodedata
-            ));
-
-            $env->hook('node_post_save', array (
-              'node' => &$node,
-              'data' => $nodedata
-            ));
+            $env->hook('node_save', $vars);
+            $env->hook('node_post_save', $vars);
 
             // TODO: move elsewhere maybe?
             if (isset($nodedata['edit-tpl-file'])) {
@@ -392,7 +387,7 @@ class NodeFactory {
       // User requested to delete a Node...
       case NODE_ACTION_DELETE:
         // Check that the current user has the right to delete the node.
-        $has_access = (Access::check($env, NODE_ACTION_DELETE, array('node' => $node)));
+        $has_access = (NodeAccess::check($env, NODE_ACTION_DELETE, array('node' => $node)));
         if ($has_access) {
           // Delete the node...
           $node->delete();

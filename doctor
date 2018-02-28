@@ -1,0 +1,8 @@
+#!/usr/bin/env php
+<?php
+  $host = $argv[1];
+  $doctor_cmd = $argv[2];
+  $request_uri = '/doctor/';
+  $docroot = getenv('PWD');
+  include 'engine/code/php/boot.php';
+?>
