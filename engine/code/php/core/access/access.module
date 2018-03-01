@@ -1,3 +1,4 @@
 <?php
   require_once('Access.class.inc');
   require_once('NodeAccess.class.inc');
+  require_once('UserAccess.class.inc');

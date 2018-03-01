@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This class is used to check user access to node actions.
  */
@@ -29,48 +30,43 @@ class NodeAccess extends Access {
    * @return bool
    */
   public function checkAction() {
+    $can_access = FALSE;
+
     switch ($this->getAction()) {
       case NODE_ACTION_DELETE:
       case NODE_ACTION_DELETE_FILE:
       case NODE_ACTION_EDIT:
       case NODE_ACTION_VIEW:
       case NODE_ACTION_ADD:
-
+        $permissions = $this->node->getPermissions();
         // If node doesn't exist, allow no permission to it.
         if (!is_object($this->node) || !$this->node->exists) {
-          return FALSE;
+          new Message($this->env, 'Error: trying to access a non existing node.', MESSAGE_WARNING);
         }
-        $permissions = $this->node->getPermissions();
 
         // Conversion to array as of new approach to values.
-        if (!is_array($permissions[$this->getAction()])) {
+        elseif (!is_array($permissions[$this->getAction()])) {
           $permissions[$this->getAction()] = array($permissions[$this->getAction()]);
-        }
-        $perm_array = array_flip($permissions[$this->getAction()]);
-        // If allowed role is anonymous always grant access.
-        if (!empty($this->getAction()) && isset($perm_array[ROLE_ANONYMOUS])) {
-          return TRUE;
-        }
-        else {
-          // Compare the permissions in the node
-          foreach ($perm_array as $perm_role => $counter) {
-            if ($this->actor->hasRole($perm_role)) {
-              return TRUE;
+          $perm_array = array_flip($permissions[$this->getAction()]);
+          // If allowed role is anonymous always grant access.
+          if (!empty($this->getAction()) && isset($perm_array[ROLE_ANONYMOUS])) {
+            $can_access = TRUE;
+          }
+          else {
+            // Compare the permissions in the node
+            foreach ($perm_array as $perm_role => $counter) {
+              if ($this->actor->hasRole($perm_role)) {
+                $can_access = TRUE;
+              }
             }
           }
         }
-        return FALSE;
-
         break;
 
-      case USER_ACTION_REGISTER:
-      case USER_ACTION_EDIT:
-      case USER_ACTION_EDIT_OWN:
-        // TODO: rework.
-        return TRUE;
-        break;
+      default:
+        new Message($this->env, 'Error: the action ' . $this->getAction() . ' is unknown.', MESSAGE_ERROR);
     }
-    return FALSE;
-  }
 
+    return $can_access;
+  }
 }
