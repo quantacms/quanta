@@ -96,8 +96,15 @@ function checkCodeTags(&$env, $html, $options = 'U') {
 
             $tag_content = $qtag[$tag_full];
 
-            // Replacement where nowiki attribute present. Used for input forms etc.
-            // TODO: maybe should we convert all special chars?
+            // Add eventual suffix and prefix.
+            if (!empty($attr_arr['suffix']) && !empty($tag_content)) {
+              $tag_content .= $attr_arr['suffix'];
+            }
+            if (!empty($attr_arr['prefix']) && !empty($tag_content)) {
+              $tag_content = $attr_arr['prefix'] . $tag_content;
+            }
+
+            // Prevent replacement where no_qtags attribute present. Used for input forms etc.
             if (isset($attr_arr['no_qtags'])) {
               $tag_content = string_normalize($tag_content);
             }
@@ -107,6 +114,7 @@ function checkCodeTags(&$env, $html, $options = 'U') {
       }
     }
   }
+
   return $replacing;
 }
 
