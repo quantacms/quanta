@@ -194,7 +194,8 @@ class User extends Node {
       $this->realpath = $this->env->dir['users'] . '/' . $this->getName();
     }
 
-    $this->env->hook('user_save', array('user' => $this));
+    $vars = array('user' => $this);
+    $this->env->hook('user_save', $vars);
     $this->updateJSON();
     $this->saveJSON();
 
@@ -318,7 +319,8 @@ class User extends Node {
       new Message($this->env, 'Password fields are not the same.', MESSAGE_WARNING);
     }
     else {
-      $this->env->hook('user_validate', array('user' => $this, 'form_data' => $form_data));
+      $vars = array('user' => $this, 'form_data' => $form_data);
+      $this->env->hook('user_validate', $vars);
 
       $valid = !($this->env->getData(USER_VALIDATION_ERROR));
     }
@@ -366,14 +368,12 @@ class User extends Node {
     $this->password = $password;
   }
 
-  // TODO: refactor.
-
   /**
    * @param $context
    * @return bool|string
    */
   public function renderEditForm($context) {
-    $user_edit_form = file_get_contents('core/user/tpl/' . $context . '.inc');
+    $user_edit_form = file_get_contents('core/user/tpl/user_edit.inc');
     return $user_edit_form;
   }
 
