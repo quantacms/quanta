@@ -6,12 +6,14 @@ define("USER_ANONYMOUS", "guest");
 define("ROLE_ANONYMOUS", "anonymous");
 define("ROLE_ADMIN", "admin");
 define("ROLE_LOGGED", "logged");
+// TODO: seems arbitrary. Use a hook instead...
 define("USER_PASSWORD_MIN_LENGTH", 8);
+define("USER_MIN_NAME_LENGTH", 4);
+
 define("USER_ACTION_EDIT", "user_edit");
 define("USER_ACTION_EDIT_OWN", "user_edit_own");
 define("USER_ACTION_REGISTER", "user_register");
 define("USER_VALIDATION_ERROR", "validation_error");
-define("USER_MIN_NAME_LENGTH", 4);
 
 /**
  * This class represents an user in the system.
@@ -216,13 +218,13 @@ class User extends Node {
    *   Returns true if the user was registered correctly
    */
   public function register($form_data) {
-    $input_password = $form_data['edit-password'];
+    $input_password = $form_data['password'];
     $this->password = pwd($input_password);
-    $this->email = $form_data['edit-email'];
+    $this->email = $form_data['email'];
     // TODO: what to do when registering the user with predefined roles?
     $this->roles = array();
-    $this->setData('first_name', $form_data['edit-first_name']);
-    $this->setData('last_name', $form_data['edit-last_name']);
+    $this->setData('first_name', $form_data['first_name']);
+    $this->setData('last_name', $form_data['last_name']);
     // Validate and save the user.
     if ($valid = $this->validate($form_data)) {
       $valid = $this->save();
@@ -243,16 +245,14 @@ class User extends Node {
    * @return bool
    */
   public function update($form_data) {
-    foreach ($form_data as $k => $value) {
-      $field = str_replace('edit-', '', $k);
+
+    foreach ($form_data as $field => $value) {
       switch ($field) {
         case 'name':
         case 'action':
         case 'context':
         case 'password':
         case 'password_rp':
-        case 'old_password':
-        case 'new_password':
           break;
         case 'email':
           $this->email = $value;
@@ -263,8 +263,8 @@ class User extends Node {
       }
     }
     if ($valid = $this->validate($form_data)) {
-      if (strlen($form_data['edit-password']) > 0) {
-        $this->password = pwd($form_data['edit-password']);
+      if (strlen($form_data['password']) > 0) {
+        $this->password = pwd($form_data['password']);
       }
       $valid = $this->save();
     }
@@ -287,9 +287,9 @@ class User extends Node {
     $valid = FALSE;
     $existing_user = UserFactory::load($this->env, $this->name);
 
-    $check_password = !$this->exists || strlen($form_data['edit-password']) > 0;
+    $check_password = !$this->exists || strlen($form_data['password']) > 0;
 
-    exec('grep -r -i -o --include \*.json "\"email\"\:\"' . $form_data['edit-email'] . '\"" ' . $this->env->dir['users'], $mail_exists);
+    exec('grep -r -i -o --include \*.json "\"email\"\:\"' . $form_data['email'] . '\"" ' . $this->env->dir['users'], $mail_exists);
 
     // TODO: check also special characters.
     if (strlen($this->name) < USER_MIN_NAME_LENGTH) {
@@ -309,13 +309,13 @@ class User extends Node {
     elseif (!valid_email($this->email)) {
       new Message($this->env, 'Please enter a valid E-mail address!', MESSAGE_WARNING);
     }
-    elseif ($check_password && $this->exists && ($this->password != pwd($form_data['edit-old_password']))) {
+    elseif ($check_password && $this->exists && ($this->password != pwd($form_data['old_password']))) {
       new Message($this->env, 'The old password you entered is not valid. Please try again.', MESSAGE_WARNING);
     }
-    elseif ($check_password && strlen($form_data['edit-password']) < USER_PASSWORD_MIN_LENGTH) {
+    elseif ($check_password && strlen($form_data['password']) < USER_PASSWORD_MIN_LENGTH) {
       new Message($this->env, 'Password should be at least ' . USER_PASSWORD_MIN_LENGTH . ' characters long.', MESSAGE_WARNING);
     }
-    elseif ($check_password && pwd($form_data['edit-password_rp']) != pwd($form_data['edit-password'])) {
+    elseif ($check_password && pwd($form_data['password_rp']) != pwd($form_data['password'])) {
       new Message($this->env, 'Password fields are not the same.', MESSAGE_WARNING);
     }
     else {

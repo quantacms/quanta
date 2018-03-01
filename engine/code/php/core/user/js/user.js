@@ -17,25 +17,14 @@ function logOut() {
   action('{"action": "logout"}');
 };
 
-/**
- * Request to open an user registration form.
- */
-function register() {
-  openShadow({
-    module: 'user',
-    context: 'user_register',
-    widget: 'single',
-    components: ['user_edit_form']
-  });
-};
 
 /**
  * Request to open an user edit form.
  */
-function user_edit() {
+function user_edit(user_action) {
   openShadow({
     module: 'user',
-    context: 'user_edit',
+    context: user_action,
     widget: 'single',
     components: ['user_edit_form']
   });
@@ -64,12 +53,17 @@ $(document).ready(function () {
   });
   // User edit.
   $('.user-edit-link').click(function (e) {
-    user_edit();
+    user_edit('user_edit');
+    e.preventDefault();
+  });
+  // User edit.
+  $('.user-edit-own-link').click(function (e) {
+    user_edit('user_edit_own');
     e.preventDefault();
   });
   // Register.
   $('.register-link').click(function (e) {
-    register();
+    user_edit('user_register');
     e.preventDefault();
   });
 });
