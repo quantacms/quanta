@@ -90,38 +90,27 @@ class UserFactory {
     $valid = FALSE;
     $curr_user = UserFactory::current($env);
     $response = new StdClass();
-
     // Check if the current user is allowed to perform the action.
-    switch ($action) {
-      case USER_ACTION_REGISTER:
-        $can_edit = UserAccess::check($env, USER_ACTION_REGISTER);
-        break;
-
-      case USER_ACTION_EDIT:
-        $can_edit = UserAccess::check($env, ($curr_user->name == $form_data['edit-name']) ? USER_ACTION_EDIT_OWN : $action);
-        break;
-
-      default:
-        // Unknown requested action.
-        $can_edit = FALSE;
-        break;
-    }
-
-    $user = new User($env, $form_data['edit-name'], '_users', LANGUAGE_NEUTRAL);
+    $can_edit = UserAccess::check($env, $action);
+    $user = new User($env, $form_data['name'], '_users', LANGUAGE_NEUTRAL);
     $vars = array('user' => $user, 'form_data' => $form_data);
+
     // If user does not have the permission, show an error message.
     if (!$can_edit) {
       new Message($env, 'Sorry, you don\'t have the permissions to perform this action: ' . $action, MESSAGE_WARNING, MESSAGE_TYPE_SCREEN);
     }
     // If user has the permission, perform the requested action.
     else {
-      if ($action == USER_ACTION_REGISTER) {
-        $env->hook('user_register', $vars);
-        $valid = $user->register($form_data);
-      }
-      elseif ($action == USER_ACTION_EDIT) {
+      switch ($action) {
+        case USER_ACTION_REGISTER:
+          $env->hook('user_register', $vars);
+          $valid = $user->register($form_data);
+          break;
+        case USER_ACTION_EDIT:
+        case USER_ACTION_EDIT_OWN:
         $env->hook('user_update', $vars);
-        $valid = $user->update($form_data);
+          $valid = $user->update($form_data);
+          break;
       }
     }
 

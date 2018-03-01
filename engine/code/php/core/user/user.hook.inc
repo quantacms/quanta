@@ -92,7 +92,7 @@ function user_action_login($env, $vars) {
  */
 function user_shadow_user_register_form($env, $vars) {
   $user = UserFactory::current($env);
-  $tab = $user->renderEditForm($env->getContext());
+  $tab = '<h2>Create a free account</h2>' . $user->renderEditForm($env->getContext());
   $vars['shadow']->addTab('Insert your data', $tab, 1);
   $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Sign Up!');
 }
@@ -106,11 +106,24 @@ function user_shadow_user_register_form($env, $vars) {
  *   An array of variables.
  */
 function user_shadow_user_edit_form($env, $vars) {
-  /** @var Shadow $shadow */
-  $shadow = $vars['shadow'];
   $curr_user = UserFactory::current($env);
   $user = new User($env, $curr_user->name);
-  $tab = $user->renderEditForm($env->getContext());
+  /** @var Shadow $shadow */
+  $shadow = $vars['shadow'];
+  // TODO: customizable titles.
+  switch($env->getContext()) {
+    case 'user_register':
+      $title = 'Create a free account';
+      break;
+    case 'user_edit_own':
+      $title = 'Edit your profile';
+      break;
+    case 'user_edit':
+      $title = 'Edit user: ' . $user->getName();
+      break;
+  }
+
+  $tab = '<h2>' . $title . '</h2>' . $user->renderEditForm($env->getContext());
   $shadow->addTab('Your Profile', $tab, 1);
   $shadow->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Update');
 }
@@ -144,6 +157,19 @@ function user_shadow_user_login_form($env, $vars) {
 function user_action_user_edit($env, $vars) {
   $response_json = UserFactory::requestAction($env, $vars['data']['action'], $vars['data']);
   exit($response_json);
+}
+
+/**
+ * Implements hook_action_user_edit_own.
+ * There is an user self edit request.
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param array $vars
+ *   An array of variables.
+ */
+function user_action_user_edit_own($env, $vars) {
+  return user_action_user_edit($env, $vars);
 }
 
 /**

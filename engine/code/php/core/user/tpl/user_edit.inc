@@ -1,11 +1,10 @@
-<h2>Create a free account</h2>
-[INPUT|title=Username|id=edit_name|required|name=edit-name:user-register-form]
-<div class="description">An username is forever. Please choose it carefully!</div>
-[INPUT|title=Email|id=edit_email|required|name=edit-email:user-register-form]
-[INPUT|title=First Name|id=edit_firstname|required|name=edit-first_name:user-register-form]
-[INPUT|title=Last Name|id=edit_lastname|required|name=edit-last_name:user-register-form]
-[INPUT|title=Password|type=password|id=edit_password|required|name=edit-password:user-register-form]
-[INPUT|title=Password Repeat|type=password|id=edit_password_rp|required|name=edit-password_rp:user-register-form]
-[INPUT|id=edit_action|type=hidden|required|name=action|value={SHADOW:context}:user-register-form]
+[INPUT|{STRING|filter=context@!user_register:disabled}|title=Username|description=An username is forever. Please choose it carefully!|id=edit_name|required|name=name|value={USERATTRIBUTE|filter=context@!user_register|name=name}:user-form]
 
-[FORM:user-register-form]
+[INPUT|title=Email|id=edit_email|required|name=email|value={USERATTRIBUTE|name=email}:user-form]
+[INPUT|title=First Name|id=edit_firstname|required|name=first_name|value={USERATTRIBUTE|name=first_name}:user-form]
+[INPUT|title=Last Name|id=edit_lastname|required|name=last_name|value={USERATTRIBUTE|name=last_name}:user-form]
+[INPUT|filter=context@user_edit_own|title=Old Password|type=password|id=old_password|required|name=old_password:user-form]
+[INPUT|title={STRING|filter=context@user_edit_own:New }Password|type=password|id=edit_password|required|name=password:user-form]
+[INPUT|title={STRING|filter=context@user_edit_own:New }Password Repeat|type=password|id=edit_password_rp|required|name=password_rp:user-form]
+[INPUT|id=edit_action|type=hidden|required|name=action|value={SHADOW:context}:user-form]
+[FORM:user-form]
