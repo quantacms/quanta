@@ -74,7 +74,7 @@ function qtag_LANGUAGE_SWITCHER($env, $target, $attributes) {
     $language_switcher_tpl = 'language_switcher_compact';
   }
 
-  $dirlist = new DirList($env, DIR_LANGUAGES, $language_switcher_tpl, $attributes, 'locale');
+  $dirlist = new DirList($env, DIR_LANGUAGES, $language_switcher_tpl, $attributes, 'localization');
 
   // Don't show language switch link, if node is not available in that language.
   foreach ($dirlist->getDirs() as $langcode => $lang) {

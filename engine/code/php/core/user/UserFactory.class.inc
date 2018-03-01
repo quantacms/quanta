@@ -69,9 +69,14 @@ class UserFactory {
 
 
   /**
+   * Request performing an user action: login, logout, register, etc.
+   *
    * @param Environment $env
+   *   The Environment.
    * @param $action
+   *   The Action.
    * @param $form_data
+   *
    * @return string
    */
   public static function requestAction($env, $action, $form_data) {
@@ -89,11 +94,11 @@ class UserFactory {
     // Check if the current user is allowed to perform the action.
     switch ($action) {
       case USER_ACTION_REGISTER:
-        $can_edit = NodeAccess::check($env, USER_ACTION_REGISTER);
+        $can_edit = UserAccess::check($env, USER_ACTION_REGISTER);
         break;
 
       case USER_ACTION_EDIT:
-        $can_edit = NodeAccess::check($env, ($curr_user->name == $form_data['edit-name']) ? USER_ACTION_EDIT_OWN : $action);
+        $can_edit = UserAccess::check($env, ($curr_user->name == $form_data['edit-name']) ? USER_ACTION_EDIT_OWN : $action);
         break;
 
       default:
@@ -102,6 +107,8 @@ class UserFactory {
         break;
     }
 
+    $user = new User($env, $form_data['edit-name'], '_users', LANGUAGE_NEUTRAL);
+    $vars = array('user' => $user, 'form_data' => $form_data);
     // If user does not have the permission, show an error message.
     if (!$can_edit) {
       new Message($env, 'Sorry, you don\'t have the permissions to perform this action: ' . $action, MESSAGE_WARNING, MESSAGE_TYPE_SCREEN);
@@ -109,13 +116,11 @@ class UserFactory {
     // If user has the permission, perform the requested action.
     else {
       if ($action == USER_ACTION_REGISTER) {
-        $user = new User($env, $form_data['edit-name'], '_users', LANGUAGE_NEUTRAL);
-        $env->hook('user_register', array('user' => $user, 'form_data' => $form_data));
+        $env->hook('user_register', $vars);
         $valid = $user->register($form_data);
       }
       elseif ($action == USER_ACTION_EDIT) {
-        $user = new User($env, $form_data['edit-name']);
-        $env->hook('user_update', array('user' => $user, 'form_data' => $form_data));
+        $env->hook('user_update', $vars);
         $valid = $user->update($form_data);
       }
     }
