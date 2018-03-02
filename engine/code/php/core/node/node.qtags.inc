@@ -245,7 +245,7 @@ function qtag_LINK($env, $target, $attributes) {
     $vars = array('target' => $target);
     // Allow other modules to change the URL.
     $env->hook('link_alter', $vars);
-    $target = $vars['target'];
+    $target = '/' . $vars['target'];
     // TODO: loading the full node at each link is not performant.
     $title_default = $node->getTitle();
     // Add classes...
