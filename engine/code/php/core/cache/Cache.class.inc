@@ -63,7 +63,7 @@ class Cache extends DataContainer {
    * This useful functions allows fast retrieving of node paths
    * without having to use each time the greedy UNIX find function.
    * @see Cache::getStoredNodePath()
-   * @see Cache::nodePathCacheFolder()
+   * @see Cache::nodePathFolder()
    *
    * @param $env
    *   The Environment
@@ -73,7 +73,7 @@ class Cache extends DataContainer {
   public static function storeNodePath($env, $nodepath = NULL) {
     $exp = explode('/', $nodepath);
     $node_name = $exp[count($exp) - 1];
-    $cache_folder = Cache::nodePathCacheFolder($env, $node_name);
+    $cache_folder = Cache::nodePathFolder($env, $node_name);
     // Remove old link if existing.
     if (is_link($cache_folder . '/' . $node_name)) {
       unlink($cache_folder . '/' . $node_name);
@@ -94,12 +94,12 @@ class Cache extends DataContainer {
    *  The real path of the node.
    */
   public static function getStoredNodePath($env, $node_name) {
-    $cache_folder = self::nodePathCacheFolder($env, $node_name, $build = FALSE);
+    $cache_folder = self::nodePathFolder($env, $node_name, $build = FALSE);
     return (is_link($cache_folder . '/' . $node_name)) ? ($cache_folder . '/' . $node_name) : FALSE;
   }
 
   /**
-   * Given a node, build the candidate Cache Folder.
+   * Given a node, build the candidate Node Path Folder.
    * The folder is created in the format of a/b/c/abcnode
    * and will be added to the tmp/cache dir if it
    * does not exist yet.
@@ -113,14 +113,14 @@ class Cache extends DataContainer {
    * @return string
    *   The candidate foler.
    */
-  public static function nodePathCacheFolder($env, $node_name, $build = TRUE) {
+  public static function nodePathFolder($env, $node_name, $build = TRUE) {
     $cache_folder = $env->dir['tmp'] . '/cache';
     for ($i = 0; $i < 3; $i++) {
-        $char = substr($node_name, $i, 1);
-        $cache_folder = $cache_folder . '/' . $char;
-        if ($build && !is_dir($cache_folder)) {
-          mkdir ($cache_folder);
-        }
+      $char = substr($node_name, $i, 1);
+      $cache_folder = $cache_folder . '/' . $char;
+      if ($build && !is_dir($cache_folder)) {
+        mkdir($cache_folder);
+      }
     }
     return $cache_folder;
   }
