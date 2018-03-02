@@ -22,10 +22,8 @@ class NodeFactory {
     if (empty($language)) {
       $language = Localization::getLanguage($env);
     }
-
     $node = new Node($env, $node_name, NULL, $language);
     $vars = array('node' => &$node);
-
     $env->hook('node_open', $vars);
     return $node;
   }
@@ -361,9 +359,6 @@ class NodeFactory {
           // If the node is validated, proceed with saving it.
           if ($node->validate()) {
             $node->save();
-
-            $env->hook('node_save', $vars);
-            $env->hook('node_post_save', $vars);
 
             // TODO: move elsewhere maybe?
             if (isset($nodedata['edit-tpl-file'])) {

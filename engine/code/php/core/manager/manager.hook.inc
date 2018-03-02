@@ -26,7 +26,6 @@ function manager_init($env, $vars) {
     $node = NodeFactory::load($env, $_GET['node']);
     $manager = new Manager($env, $node);
     print $manager->renderTree($_GET['path']);
-
     exit;
   }
 }
@@ -70,7 +69,7 @@ function manager_action_node_add($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function manager_node_save($env, $vars) {
+function manager_node_presave($env, &$vars) {
   /** @var Node $node */
   $node = $vars['node'];
 

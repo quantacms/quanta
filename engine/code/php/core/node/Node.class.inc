@@ -292,12 +292,12 @@ class Node extends JSONDataContainer {
     }
     $vars = array('node' => &$this);
     // Run node save hooks.
-    $this->env->hook('node_preinsert', $vars);
+    $this->env->hook('node_save', $vars);
     // Reload the node JSON.
     $this->updateJSON();
     // Save the node json (excluding some fields such as path.)
     $this->saveJSON(array('path', 'fullpath', 'exists', 'realpath', 'father', 'data'));
-    $this->env->hook('node_insert', $vars);
+    $this->env->hook('node_after_save', $vars);
   }
 
   /**
