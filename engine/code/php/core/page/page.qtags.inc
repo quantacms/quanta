@@ -138,6 +138,56 @@ function qtag_URL($env, $target, $attributes) {
 }
 
 /**
+ * Implements qtag STRING.
+ *
+ * Renders a simple text / string.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_STRING($env, $target, $attributes) {
+  return $target;
+}
+
+/**
+ * Implements qtag DATE.
+ *
+ * Renders a formatted date.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_DATE($env, $target, $attributes) {
+  $date = new DateTime($target);
+  if (isset($attributes['format'])) {
+    $formatted_date = $date->format($attributes['format']);
+  }
+  else {
+    $formatted_date = $target;
+  }
+  return $formatted_date;
+}
+
+
+/**
  * Implements qtag EMAIL.
  *
  * Renders a clickable email address.

@@ -156,6 +156,10 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
         }
         break;
 
+      case 'context':
+        $filter_check[] = $env->getContext();
+        break;
+
       case 'category':
         $filter_check = array();
         $categories = $node->getCategories();

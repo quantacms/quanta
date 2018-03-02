@@ -6,12 +6,14 @@ define("USER_ANONYMOUS", "guest");
 define("ROLE_ANONYMOUS", "anonymous");
 define("ROLE_ADMIN", "admin");
 define("ROLE_LOGGED", "logged");
+// TODO: seems arbitrary. Use a hook instead...
 define("USER_PASSWORD_MIN_LENGTH", 8);
+define("USER_MIN_NAME_LENGTH", 4);
+
 define("USER_ACTION_EDIT", "user_edit");
 define("USER_ACTION_EDIT_OWN", "user_edit_own");
 define("USER_ACTION_REGISTER", "user_register");
 define("USER_VALIDATION_ERROR", "validation_error");
-define("USER_MIN_NAME_LENGTH", 4);
 
 /**
  * This class represents an user in the system.
@@ -196,80 +198,82 @@ class User extends Node {
 
     $vars = array('user' => $this);
     $this->env->hook('user_save', $vars);
+    // Reload the node JSON.
     $this->updateJSON();
+    // Save the node json (excluding some fields such as path.)
     $this->saveJSON();
+    $this->env->hook('user_after_save', $vars);
 
+    // If the currently logged in user was modified, reload it in the session.
     if ($this->isCurrent()) {
       $this->rebuildSession();
     }
-    // TODO: probably always true at this point, but are we sure?
     return TRUE;
   }
 
-  /**
-   * Perform an user registration / signup action.
-   *
-   * @param $form_data
-   *   The data to use for building the user.
-   *
-   * @return bool
-   *   Returns true if the user was registered correctly
-   */
-  public function register($form_data) {
-    $input_password = $form_data['edit-password'];
-    $this->password = pwd($input_password);
-    $this->email = $form_data['edit-email'];
-    // TODO: what to do when registering the user with predefined roles?
-    $this->roles = array();
-    $this->setData('first_name', $form_data['edit-first_name']);
-    $this->setData('last_name', $form_data['edit-last_name']);
-    // Validate and save the user.
-    if ($valid = $this->validate($form_data)) {
-      $valid = $this->save();
-    }
-
-    if ($valid) {
-      $message = 'Welcome ' . $this->getData('first_name') . '! You have successfully registered to the site.';
-      $this->exists = TRUE;
-      $this->logIn($input_password, $message);
-    }
-    return $valid;
-  }
-
-  // Todo:update() and register() look too much similar.
   // TODO: maybe just rely on node for saving, no need for all this customization.
+
   /**
-   * @param $form_data
+   * Action to register or update an existing user.
+   *
+   * @param array $form_data
+   *   The user data coming from the edit / registration form.
+   *
+   * @param $action
+   *   The action that is being performed.
+   *
    * @return bool
+   *   TRUE if the user is valid and the process went smooth.
    */
-  public function update($form_data) {
-    foreach ($form_data as $k => $value) {
-      $field = str_replace('edit-', '', $k);
+  public function update($form_data, $action) {
+    foreach ($form_data as $field => $value) {
+      // Load the user object from form fields.
       switch ($field) {
         case 'name':
         case 'action':
         case 'context':
         case 'password':
         case 'password_rp':
-        case 'old_password':
-        case 'new_password':
           break;
         case 'email':
           $this->email = $value;
+          break;
+        // TODO
+        case 'roles':
           break;
         default:
           $this->setData($field, $value);
           break;
       }
     }
+    // Validate the user form.
     if ($valid = $this->validate($form_data)) {
-      if (strlen($form_data['edit-password']) > 0) {
-        $this->password = pwd($form_data['edit-password']);
+      if (strlen($form_data['password']) > 0) {
+        $this->password = pwd($form_data['password']);
       }
       $valid = $this->save();
     }
     if ($valid) {
-      new Message($this->env, 'User ' . $this->name . ' was updated correctly!', MESSAGE_CONFIRM, MESSAGE_TYPE_SCREEN, 'user');
+      switch ($action) {
+        case USER_ACTION_REGISTER:
+          // What to do after registering a new user.
+          $this->exists = TRUE;
+          // TODO: customize.
+          $message = 'Welcome ' . $this->getData('first_name') . '! You have successfully registered to the site.';
+          // After registering the user to the site, log him in.
+          // TODO: will be reworked when enabling 2 level (i.e. email confirmation) security.
+          $this->logIn($this->password, $message);
+          break;
+
+        case USER_ACTION_EDIT:
+        case USER_ACTION_EDIT_OWN:
+          // What to do after editing an existing user.
+          new Message($this->env, 'User ' . $this->name . ' was updated correctly!', MESSAGE_CONFIRM, MESSAGE_TYPE_SCREEN, 'user');
+          break;
+
+        default:
+          break;
+      }
     }
     return $valid;
   }
@@ -287,9 +291,9 @@ class User extends Node {
     $valid = FALSE;
     $existing_user = UserFactory::load($this->env, $this->name);
 
-    $check_password = !$this->exists || strlen($form_data['edit-password']) > 0;
+    $check_password = !$this->exists || strlen($form_data['password']) > 0;
 
-    exec('grep -r -i -o --include \*.json "\"email\"\:\"' . $form_data['edit-email'] . '\"" ' . $this->env->dir['users'], $mail_exists);
+    exec('grep -r -i -o --include \*.json "\"email\"\:\"' . $form_data['email'] . '\"" ' . $this->env->dir['users'], $mail_exists);
 
     // TODO: check also special characters.
     if (strlen($this->name) < USER_MIN_NAME_LENGTH) {
@@ -309,13 +313,13 @@ class User extends Node {
     elseif (!valid_email($this->email)) {
       new Message($this->env, 'Please enter a valid E-mail address!', MESSAGE_WARNING);
     }
-    elseif ($check_password && $this->exists && ($this->password != pwd($form_data['edit-old_password']))) {
+    elseif ($check_password && $this->exists && ($this->password != pwd($form_data['old_password']))) {
       new Message($this->env, 'The old password you entered is not valid. Please try again.', MESSAGE_WARNING);
     }
-    elseif ($check_password && strlen($form_data['edit-password']) < USER_PASSWORD_MIN_LENGTH) {
+    elseif ($check_password && strlen($form_data['password']) < USER_PASSWORD_MIN_LENGTH) {
       new Message($this->env, 'Password should be at least ' . USER_PASSWORD_MIN_LENGTH . ' characters long.', MESSAGE_WARNING);
     }
-    elseif ($check_password && pwd($form_data['edit-password_rp']) != pwd($form_data['edit-password'])) {
+    elseif ($check_password && pwd($form_data['password_rp']) != pwd($form_data['password'])) {
       new Message($this->env, 'Password fields are not the same.', MESSAGE_WARNING);
     }
     else {

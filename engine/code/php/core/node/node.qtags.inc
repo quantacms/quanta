@@ -1,7 +1,7 @@
 <?php
 /**
  * Implements qtag AUTHOR.
- * 
+ *
  * Renders the author of a node as an user link.
  *
  * @param Environment $env
@@ -223,30 +223,35 @@ function qtag_ATTRIBUTE($env, $target, $attributes) {
  *
  * @return string
  *   The rendered qtag.
+ *
+ * TODO: we should make Links an object oriented / class item.
  */
 function qtag_LINK($env, $target, $attributes) {
-  // Load the target node.
-  $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
-
-  // Retrieve main link attributes.
-  $current = NodeFactory::current($env);
-  $querystring = array ();
+  $querystring = array();
   $link_title = '';
-  $classes = array ('link');
+  $classes = array('link');
 
   // Check if the target is a node or an external link.
-  if (((substr($target, 0, 4) == 'http') || (substr($target, 0, 4) == 'www.')) && !$node->exists) {
+  if (((substr($target, 0, 4) == 'http') || (substr($target, 0, 4) == 'www.'))) {
     $classes[] = 'link-ext';
     $title_default = $target;
     $attributes['rel'] = NULL;
   }
   else {
+    // Load the target node.
+    $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
+    // Retrieve main link attributes.
     // TODO: use something to get the real url...
-    $target = '/' . string_normalize($node->getName());
+    $vars = array('target' => $target);
+    // Allow other modules to change the URL.
+    $env->hook('link_alter', $vars);
+    $target = $vars['target'];
+    // TODO: loading the full node at each link is not performant.
     $title_default = $node->getTitle();
     // Add classes...
     $classes[] = 'link-' . string_normalize($node->getName());
-    if ($current->getName() == $node->getName()) {
+    // Check if this node's link is identical to the current node.
+    if (($target . '/') == $env->request_uri) {
       $classes[] = 'link-active';
     }
     $attributes['rel'] = $node->getName();
@@ -267,10 +272,10 @@ function qtag_LINK($env, $target, $attributes) {
     $querystring[] = 'lang=' . $attributes['language'];
   }
 
-  $link_data = array ();
+  $link_data = array();
   // TODO: make just a big variable "data".
   // Check Quanta data types.
-  $data_types = array ('rel', 'language', 'type', 'widget', 'components', 'tooltip', 'redirect');
+  $data_types = array('rel', 'language', 'type', 'widget', 'components', 'tooltip', 'redirect');
   foreach ($data_types as $data_type) {
     if (isset($attributes[$data_type])) {
       $link_data[] = 'data-' . $data_type . '="' . $attributes[$data_type] . '"';
@@ -279,8 +284,9 @@ function qtag_LINK($env, $target, $attributes) {
 
   $query = (!empty($querystring)) ? ('?' . implode('&', $querystring)) : '';
 
+  $title = string_normalize((isset($attributes['title']) ? $attributes['title'] : $title_default));
   // Create the link HTML.
-  $link = '<a ' . implode(' ', $link_data) . ' class="' . implode(' ', $classes) . '" ' . $link_title . ' href="' . $target . $query . '">' . string_normalize((isset($attributes['title']) ? $attributes['title'] : $title_default)) . '</a>';
+  $link = '<a ' . implode(' ', $link_data) . ' class="' . implode(' ', $classes) . '" ' . $link_title . ' href="' . $target . $query . '">' . $title . '</a>';
   return $link;
 }
 
@@ -340,16 +346,16 @@ function qtag_EDIT($env, $target, $attributes) {
   $string = '';
   if (NodeAccess::check($env, NODE_ACTION_EDIT, array('node' => $nodeobj))) {
 
-  $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
-  $attributes['class'] .= ' edit-link';
-  $title = empty($nodeobj->getTitle()) ? $nodeobj->getName() : $nodeobj->getTitle();
-  $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Edit <i>' . $title . '</i>...';
-  //$attributes['language'] = isset($attributes['language']) ? $attributes['language'] : $env->getLanguage();
+    $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
+    $attributes['class'] .= ' edit-link';
+    $title = empty($nodeobj->getTitle()) ? $nodeobj->getName() : $nodeobj->getTitle();
+    $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Edit <i>' . $title . '</i>...';
+    //$attributes['language'] = isset($attributes['language']) ? $attributes['language'] : $env->getLanguage();
 
-  $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&#9998;';
-  $attributes['redirect'] = isset($attributes['redirect']) ? $attributes['redirect'] : '';
+    $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&#9998;';
+    $attributes['redirect'] = isset($attributes['redirect']) ? $attributes['redirect'] : '';
 
-  $string = qtag_LINK($env, $target, $attributes);
+    $string = qtag_LINK($env, $target, $attributes);
   }
   return $string;
 }

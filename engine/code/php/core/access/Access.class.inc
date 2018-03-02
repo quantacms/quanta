@@ -10,6 +10,10 @@
  */
 abstract class Access implements AccessChecker {
   /**
+   * @var Environment $env
+   */
+  protected $env;
+  /**
    * @var Node $node
    */
   protected $node;
@@ -31,6 +35,7 @@ abstract class Access implements AccessChecker {
    * @param array $vars
    */
   public function __construct(&$env, $action, $vars) {
+    $this->env = $env;
     $this->actor = isset($vars['user']) ? $vars['user'] : UserFactory::current($env);
     $this->node = isset($vars['node']) ? $vars['node'] : NodeFactory::current($env);
     $this->action = trim(strtolower($action));
