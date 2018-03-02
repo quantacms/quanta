@@ -7,29 +7,42 @@
 class UserFactory {
 
   /**
-   * Load a node, by checking access and running hooks.
+   * Load an user, by checking access and running hooks.
+   *
    * @param Environment $env
-   * @param $user
+   *   The Environment.
+   *
+   * @param string $username
+   *   The name of the user.
    *
    * @return User
+   *   The User.
    */
-  public static function load(Environment $env, $user) {
-    $user = new User($env, $user);
-    $vars = array ('user' => &$user);
+  public static function load(Environment $env, $username, $language = NULL) {
+    if (empty($language)) {
+      $language = Localization::getLanguage($env);
+    }
+    $user = new User($env, $username, NULL, $language);
+    $vars = array('user' => &$user);
     $env->hook('user_open', $vars);
     return $user;
   }
 
   /**
    * Create an empty user.
-   * @param $env
+   *
+   * @param Environment $env
+   *   The Environment.
+   *
    * @return User
+   *   The empty User.
+   *
+   * @deprecated not used anywhere.
    */
   public static function buildEmptyUser($env) {
     $user = new User($env, USER_ANONYMOUS);
     return $user;
   }
-
 
   /**
    * Create an user with basic values.
@@ -39,11 +52,11 @@ class UserFactory {
    * @return User
    * @internal param $node
    */
-  public static function buildUser($env, $name, $vars = array ()) {
+  public static function buildUser($env, $name, $vars = array()) {
     $user = new User($env, NODE_NEW);
     $user->setName($name);
 
-    $uservars = array ('first_name', 'last_name');
+    $uservars = array('first_name', 'last_name');
     foreach ($uservars as $k) {
       if (isset($vars[$k])) {
         $user->setData($k, $vars[$k]);
@@ -57,12 +70,11 @@ class UserFactory {
     }
 
     // TODO: security issue when no pass set!
-
     $pass = (isset($vars['password'])) ? pwd($vars['password']) : pwd($name . rand(1, 1000000));
     $user->setPassword($pass);
-    $user->roles = (isset($vars['roles'])) ? $vars['roles'] : array ();
+    $user->roles = (isset($vars['roles'])) ? $vars['roles'] : array();
     $user->realpath = $env->dir['users'] . '/' . $name;
-
+    $env->hook('user_presave', $vars);
     $user->save();
     return $user;
   }
@@ -92,7 +104,7 @@ class UserFactory {
     $response = new StdClass();
     // Check if the current user is allowed to perform the action.
     $can_edit = UserAccess::check($env, $action);
-    $user = new User($env, $form_data['name'], '_users', LANGUAGE_NEUTRAL);
+    $user = new User($env, $form_data['name'], '_users');
     $vars = array('user' => $user, 'form_data' => $form_data);
 
     // If user does not have the permission, show an error message.
@@ -101,17 +113,8 @@ class UserFactory {
     }
     // If user has the permission, perform the requested action.
     else {
-      switch ($action) {
-        case USER_ACTION_REGISTER:
-          $env->hook('user_register', $vars);
-          $valid = $user->register($form_data);
-          break;
-        case USER_ACTION_EDIT:
-        case USER_ACTION_EDIT_OWN:
-        $env->hook('user_update', $vars);
-          $valid = $user->update($form_data);
-          break;
-      }
+      $env->hook($action, $vars);
+      $valid = $user->update($form_data, $action);
     }
 
     // If the newly built user object is valid, rebuild the session to keep it updated.

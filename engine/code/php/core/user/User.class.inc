@@ -198,55 +198,36 @@ class User extends Node {
 
     $vars = array('user' => $this);
     $this->env->hook('user_save', $vars);
+    // Reload the node JSON.
     $this->updateJSON();
+    // Save the node json (excluding some fields such as path.)
     $this->saveJSON();
+    $this->env->hook('user_after_save', $vars);
 
+    // If the currently logged in user was modified, reload it in the session.
     if ($this->isCurrent()) {
       $this->rebuildSession();
     }
-    // TODO: probably always true at this point, but are we sure?
     return TRUE;
   }
 
-  /**
-   * Perform an user registration / signup action.
-   *
-   * @param $form_data
-   *   The data to use for building the user.
-   *
-   * @return bool
-   *   Returns true if the user was registered correctly
-   */
-  public function register($form_data) {
-    $input_password = $form_data['password'];
-    $this->password = pwd($input_password);
-    $this->email = $form_data['email'];
-    // TODO: what to do when registering the user with predefined roles?
-    $this->roles = array();
-    $this->setData('first_name', $form_data['first_name']);
-    $this->setData('last_name', $form_data['last_name']);
-    // Validate and save the user.
-    if ($valid = $this->validate($form_data)) {
-      $valid = $this->save();
-    }
-
-    if ($valid) {
-      $message = 'Welcome ' . $this->getData('first_name') . '! You have successfully registered to the site.';
-      $this->exists = TRUE;
-      $this->logIn($input_password, $message);
-    }
-    return $valid;
-  }
-
-  // Todo:update() and register() look too much similar.
   // TODO: maybe just rely on node for saving, no need for all this customization.
-  /**
-   * @param $form_data
-   * @return bool
-   */
-  public function update($form_data) {
 
+  /**
+   * Action to register or update an existing user.
+   *
+   * @param array $form_data
+   *   The user data coming from the edit / registration form.
+   *
+   * @param $action
+   *   The action that is being performed.
+   *
+   * @return bool
+   *   TRUE if the user is valid and the process went smooth.
+   */
+  public function update($form_data, $action) {
     foreach ($form_data as $field => $value) {
+      // Load the user object from form fields.
       switch ($field) {
         case 'name':
         case 'action':
@@ -257,11 +238,15 @@ class User extends Node {
         case 'email':
           $this->email = $value;
           break;
+        // TODO
+        case 'roles':
+          break;
         default:
           $this->setData($field, $value);
           break;
       }
     }
+    // Validate the user form.
     if ($valid = $this->validate($form_data)) {
       if (strlen($form_data['password']) > 0) {
         $this->password = pwd($form_data['password']);
@@ -269,7 +254,26 @@ class User extends Node {
       $valid = $this->save();
     }
     if ($valid) {
-      new Message($this->env, 'User ' . $this->name . ' was updated correctly!', MESSAGE_CONFIRM, MESSAGE_TYPE_SCREEN, 'user');
+      switch ($action) {
+        case USER_ACTION_REGISTER:
+          // What to do after registering a new user.
+          $this->exists = TRUE;
+          // TODO: customize.
+          $message = 'Welcome ' . $this->getData('first_name') . '! You have successfully registered to the site.';
+          // After registering the user to the site, log him in.
+          // TODO: will be reworked when enabling 2 level (i.e. email confirmation) security.
+          $this->logIn($this->password, $message);
+          break;
+
+        case USER_ACTION_EDIT:
+        case USER_ACTION_EDIT_OWN:
+          // What to do after editing an existing user.
+          new Message($this->env, 'User ' . $this->name . ' was updated correctly!', MESSAGE_CONFIRM, MESSAGE_TYPE_SCREEN, 'user');
+          break;
+
+        default:
+          break;
+      }
     }
     return $valid;
   }
