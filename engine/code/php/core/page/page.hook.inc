@@ -29,6 +29,8 @@ function page_boot($env, $vars) {
   if ($env->request[count($env->request) - 1] == 'robots.txt') {
     $robots = new Robots($env);
     $robots->disallow('*', '/search');
+    $robots->disallow('*', '/qtags');
+
     // $robots->disallow('*', '/files*');
     // $robots->disallow('*', '/css*');
     // $robots->disallow('*', '/js*');

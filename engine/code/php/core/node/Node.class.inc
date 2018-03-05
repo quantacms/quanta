@@ -2,6 +2,7 @@
 define('NODE_ACTION_VIEW', 'node_view');
 define('NODE_ACTION_ADD', 'node_add');
 define('NODE_ACTION_EDIT', 'node_edit');
+define('NODE_ACTION_EDIT_TPL', 'node_edit_tpl');
 define('NODE_ACTION_DELETE', 'node_delete');
 define('NODE_ACTION_DELETE_FILE', 'file_delete');
 define('NODE_STATUS_DRAFT', 'node_status_draft');

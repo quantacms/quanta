@@ -15,9 +15,11 @@ class DirList extends ListObject {
     $i = 0;
     $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
     /** @var Node $node_current */
-    /** @var Node $node_father */
     $node_current = NodeFactory::current($this->env);
-    $node_father = $node_current->getFather();
+    /** @var Node $node_father */
+    if ($node_current->exists) {
+      $node_father = $node_current->getFather();
+    }
 
     // Cycle the subdirectories.
     foreach ($this->dirs as $dir_url => $node) {
@@ -45,7 +47,7 @@ class DirList extends ListObject {
       if ($node->isCurrent() || ($this->getAttribute('active_items') == $node->getName())) {
         $classes[] = 'list-selected';
       }
-      if ($node_father->exists && ($node_father->getName() == $node->getName())) {
+      if (isset($node_father) && $node_father->exists && ($node_father->getName() == $node->getName())) {
         $classes[] = 'list-selected-father';
       }
       foreach($this->replacements as $string => $replace) {
