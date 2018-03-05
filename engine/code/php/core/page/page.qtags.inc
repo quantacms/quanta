@@ -186,7 +186,6 @@ function qtag_DATE($env, $target, $attributes) {
   return $formatted_date;
 }
 
-
 /**
  * Implements qtag EMAIL.
  *
@@ -330,3 +329,23 @@ function qtag_BREADCRUMB($env, $target, $attributes) {
   return $themed_bc;
 }
 
+/**
+ * Implements qtag JSON.
+ *
+ * Encodes the target into json.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_JSON($env, $target, $attributes) {
+  return json_encode($target);
+}
