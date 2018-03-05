@@ -246,6 +246,9 @@ class User extends Node {
           break;
       }
     }
+    // Create a default title for the user node, if it's not set.
+    $this->title = $this->getData('first_name') . ' ' . $this->getData('last_name');
+
     // Validate the user form.
     if ($valid = $this->validate($form_data)) {
       if (strlen($form_data['password']) > 0) {
@@ -350,6 +353,47 @@ class User extends Node {
    */
   public function setEmail($email) {
     $this->email = $email;
+  }
+
+  /**
+   * Gets the last name for this user
+   *
+   * @return string
+   *   The last name of this user.
+   */
+  public function getLastName() {
+    return $this->getData('last_name');
+  }
+
+  /**
+   * Sets the last name for this user.
+   *
+   * @param $last_name
+   *   The last name to be set.
+   */
+  public function setLastName($last_name) {
+    $this->setData('last_name', $last_name);
+  }
+
+
+  /**
+   * Gets the first name for this user
+   *
+   * @return string
+   *   The first name of this user.
+   */
+  public function getFirstName() {
+    return $this->getData('first_name');
+  }
+
+  /**
+   * Sets the first name for this user.
+   *
+   * @param $first_name
+   *   The first name to be set.
+   */
+  public function setFirstName($first_name) {
+    $this->setData('first_name', $first_name);
   }
 
   /**

@@ -36,12 +36,13 @@ class NodeAccess extends Access {
       case NODE_ACTION_DELETE:
       case NODE_ACTION_DELETE_FILE:
       case NODE_ACTION_EDIT:
+      case NODE_ACTION_EDIT_TPL:
       case NODE_ACTION_VIEW:
       case NODE_ACTION_ADD:
         $permissions = $this->node->getPermissions();
         // If node doesn't exist, allow no permission to it.
         if (!is_object($this->node) || !$this->node->exists) {
-          new Message($this->env, 'Error: trying to access a non existing node.', MESSAGE_WARNING);
+          new Message($this->env, 'Error: trying to access the non existing node ' . $this->node->name . '.', MESSAGE_WARNING);
         }
 
         // Conversion to array as of new approach to values.

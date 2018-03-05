@@ -74,10 +74,10 @@ function qtag_BLOCK($env, $target, $attributes) {
  *
  * @return string
  *   The rendered qtag.
+ * @deprecated
  */
 function qtag_JSONATTRIBUTE($env, $target, $attributes) {
-  $attribute = qtag_ATTRIBUTE($env, $target, $attributes);
-  return json_encode($attribute);
+  die("JSON Attributes are deprecated. Use [JSON:your_variable]");
 }
 
 /**
@@ -106,6 +106,7 @@ function qtag_ATTRIBUTE($env, $target, $attributes) {
     $node->buildTemplate();
   }
 
+  $perm = NODE_ACTION_VIEW;
   switch ($attributes['name']) {
     // Node's name (aka name of the folder).
     case 'name':
@@ -168,6 +169,7 @@ function qtag_ATTRIBUTE($env, $target, $attributes) {
     // Node edit screen's temporary file upload directory.
     case 'tmp_files_dir':
       $string = $node->getData('tmp_files_dir');
+      $perm = NODE_ACTION_EDIT;
       break;
 
     // Node's thumbnail file.
@@ -183,24 +185,20 @@ function qtag_ATTRIBUTE($env, $target, $attributes) {
     // Node's template file.
     case 'tpl_file':
       $node->buildTemplate();
+      $perm = NODE_ACTION_EDIT_TPL;
       $string = $node->getData('tpl_file');
       break;
 
     // Node's template file.
     case 'tpl':
       $node->buildTemplate();
+      $perm = NODE_ACTION_EDIT_TPL;
       $string = (!empty($node->getData('tpl_file'))) ? file_get_contents($node->getData('tpl_file')) : '';
       break;
 
-    // Default behavior: pick data from the json.
-    // TODO: security issues?
     default:
-      if (isset($node->json->{$attributes['name']})) {
-        $string = string_normalize($node->json->{$attributes['name']});
-      }
-      else {
-        $string = '';
-      }
+      $string = '';
+    new Message($env, 'Error: trying to fetch the invalid attribute ' . $attributes['name'], MESSAGE_WARNING);
       break;
   }
 
@@ -245,7 +243,7 @@ function qtag_LINK($env, $target, $attributes) {
     $vars = array('target' => $target);
     // Allow other modules to change the URL.
     $env->hook('link_alter', $vars);
-    $target = '/' . $vars['target'];
+    $target = '/' . $node->getName();
     // TODO: loading the full node at each link is not performant.
     $title_default = $node->getTitle();
     // Add classes...
