@@ -19,7 +19,27 @@
  */
 function qtag_USERATTRIBUTE($env, $target, $attributes) {
   $user = ($target == NULL) ? UserFactory::current($env) : new User($env, $target);
-  return qtag_ATTRIBUTE($env, $user->getName(), $attributes);
+  switch ($attributes['name']) {
+    // Node's name (aka name of the folder).
+    case 'email':
+      $string = $user->getEmail();
+      break;
+
+    // Author's name (aka name of the author's node)
+    case 'first_name':
+      $string = $user->getFirstName();
+      break;
+
+    // Node's path.
+    case 'last_name':
+      $string = $user->getLastName();
+      break;
+
+    default:
+      $string = qtag_ATTRIBUTE($env, $user->getName(), $attributes);
+      break;
+  }
+  return $string;
 }
 
 /**
