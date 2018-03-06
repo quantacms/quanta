@@ -77,16 +77,17 @@ class Form extends DataContainer {
     if ($this->isSubmitted()) {
       $this->setData('validation_errors', array());
       // Run validation hooks for the form.
-      $this->env->hook('form_validate', array('form' => $this));
-      $this->env->hook('form_type_' . $this->getType() . '_validate', array('form' => $this));
-      $this->env->hook($this->getId() . '_form_validate', array('form' => $this));
+      $vars = array('form' => &$this);
+      $this->env->hook('form_validate', $vars);
+      $this->env->hook('form_type_' . $this->getType() . '_validate', $vars);
+      $this->env->hook($this->getId() . '_form_validate', $vars);
 
       // Check if any form item has thrown validation errors...
       if (empty($this->getData('validation_errors'))) {
         $this->validated = TRUE;
-        $this->env->hook('form_submit', array('form' => $this));
-        $this->env->hook('form_type_' . $this->getType() . '_submit', array('form' => $this));
-        $this->env->hook($this->getId() . '_form_submit', array('form' => $this));
+        $this->env->hook('form_submit', $vars);
+        $this->env->hook('form_type_' . $this->getType() . '_submit', $vars);
+        $this->env->hook($this->getId() . '_form_submit', $vars);
         return $this->getOkMessage();
       }
     }
