@@ -12,3 +12,4 @@ _sites
 _sites/*
 vendor
 vendor/*
+composer.lock
