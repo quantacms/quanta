@@ -10,7 +10,6 @@ abstract class FormItem extends DataContainer {
   public $env;
   private $name;
   protected $type;
-  public $allowable_values = array();
   private $input_arr = array();
   private $form;
 
@@ -176,7 +175,7 @@ abstract class FormItem extends DataContainer {
    */
   public function loadAllowableValues() {
     if (!empty($this->getInputAttr('empty'))) {
-      $this->allowable_values = self::parseAllowableValue($this->getInputAttr('empty'));
+      $this->setData('allowable_values', self::parseAllowableValue($this->getInputAttr('empty')));
     }
 
     $values = array();
@@ -194,7 +193,7 @@ abstract class FormItem extends DataContainer {
 
     // Check the allowable values for this form item.
     foreach ($values as $v) {
-      $this->allowable_values = $this->allowable_values + $this::parseAllowableValue($v);
+      $this->addData('allowable_values', $this::parseAllowableValue($v));
     }
   }
 
@@ -345,8 +344,8 @@ abstract class FormItem extends DataContainer {
    * @return array
    *   The allowed values for the form item.
    */
-  public function getAllowedValues() {
-    return $this->getData('allowed_values');
+  public function getAllowableValues() {
+    return $this->getData('allowable_values');
   }
 
   /**

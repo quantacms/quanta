@@ -292,6 +292,7 @@ class Node extends JSONDataContainer {
       $this->realpath = $this->getFather()->realpath . '/' . $this->getName();
     }
     $vars = array('node' => &$this);
+
     // Run node save hooks.
     $this->env->hook('node_save', $vars);
     // Reload the node JSON.
@@ -575,7 +576,9 @@ class Node extends JSONDataContainer {
    *   The permissions of the node.
    */
   public function getPermissions() {
-    $this->loadPermissions();
+    if (empty($this->permissions)) {
+      $this->loadPermissions();
+    }
     return $this->permissions;
   }
 
@@ -588,6 +591,7 @@ class Node extends JSONDataContainer {
    * @return array
    */
   public function getPermission($perm) {
+
     $permissions = $this->getPermissions();
     if (!empty($permissions[$perm])) {
       return $permissions[$perm];
@@ -603,36 +607,39 @@ class Node extends JSONDataContainer {
    */
   private function loadPermissions() {
     $grants = array();
+    $permissions = array(
+      NODE_ACTION_ADD,
+      NODE_ACTION_EDIT,
+      NODE_ACTION_DELETE,
+      NODE_ACTION_VIEW,
+    );
+    foreach ($permissions as $permission) {
+      if (empty($this->json->permissions->{$permission}) || $this->json->permissions->{$permission} == NODE_PERMISSION_INHERIT) {
+        $grants[$permission] = $this->loadPermissionFromLineage($permission);
+      }
+      else {
+        $grants[$permission] = $this->json->permissions->{$permission};
+      }
+    }
+    $this->permissions = $grants;
+  }
+
+  /**
+   * TODO: move in access module.
+   * Load and construct permissions for this node.
+   */
+  private function loadPermissionFromLineage($permission) {
     $this->buildLineage();
+    // TODO: default permissions when no permission can be found even in lineage.
+    $grant = ($permission == NODE_ACTION_VIEW) ? ROLE_ANONYMOUS : ROLE_ADMIN;
     // Navigate the whole tree gathering real permissions on the node.
     $lineage = array_reverse($this->getLineage());
     foreach ($lineage as $lineage_node) {
-      if (!empty($lineage_node->json->permissions)) {
-        $lineage_node_perm = (array)$lineage_node->json->permissions;
-        foreach ($lineage_node_perm as $perm_name => $perm) {
-          if (!empty($perm) && $perm != NODE_PERMISSION_INHERIT) {
-            $grants[$perm_name] = $perm;
-            break;
-          }
-        }
+      if (!empty($lineage_node->json->permissions->{$permission})) {
+        $grant = $lineage_node->json->permissions->{$permission};
       }
     }
-
-    // TODO: default permissions when nothing is set?
-    if (!isset($grants[NODE_ACTION_ADD])) {
-      $grants[NODE_ACTION_ADD] = ROLE_ADMIN;
-    }
-    if (!isset($grants[NODE_ACTION_EDIT])) {
-      $grants[NODE_ACTION_EDIT] = ROLE_ADMIN;
-    }
-    if (!isset($grants[NODE_ACTION_DELETE])) {
-      $grants[NODE_ACTION_DELETE] = ROLE_ADMIN;
-    }
-    if (!isset($grants[NODE_ACTION_VIEW])) {
-      $grants[NODE_ACTION_VIEW] = ROLE_ANONYMOUS;
-    }
-
-    $this->permissions = $grants;
+    return $grant;
   }
 
   /**
@@ -650,6 +657,14 @@ class Node extends JSONDataContainer {
    */
   public function getThumbnail() {
     return $this->thumbnail;
+  }
+
+  /**
+   * Return the temporary files upload directory of a node.
+   * @return null
+   */
+  public function getTmpFilesDir() {
+    return $this->getData('tmp_files_dir');
   }
 
   /**

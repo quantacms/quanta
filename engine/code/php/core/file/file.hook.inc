@@ -74,14 +74,14 @@ function file_node_save($env, $vars) {
         new Message($node->env, 'Warning: the temporary files dir ' . $node->getData('tmp_files_dir') . ' is empty.', MESSAGE_WARNING);
 
 	}
-  $tmp_dir = $node->env->dir['tmp_files'] . '/' . $node->getData('tmp_files_dir');
+  $tmp_dir = $env->dir['tmp_files'] . '/' . $node->getData('tmp_files_dir');
   if (is_dir($tmp_dir)) {
-    $tmp_files = $node->env->scanDirectory($tmp_dir);
+    $tmp_files = $env->scanDirectory($tmp_dir);
     foreach ($tmp_files as $file) {
       $fpath = $tmp_dir . '/' . $file;
-      $fileobj = new File($node->env, $fpath, $node);
+      $fileobj = new File($env, $fpath, $node);
       if (!$fileobj->isPublic()) {
-        new Message($node->env, 'The file <b>' . $file . '</b> has an invalid name. Please use a different name.', MESSAGE_WARNING);
+        new Message($env, 'The file <b>' . $file . '</b> has an invalid name. Please use a different name.', MESSAGE_WARNING);
       } elseif (is_file($fpath)) {
         copy($fpath, $node->realpath . '/' . $file);
         unlink($fpath);
@@ -104,7 +104,7 @@ function file_node_load($env, $vars) {
   $node = $vars['node'];
   // When saving a node, select the pre-created temporary files dir.
   if (!empty($_REQUEST['json']) && ($json = json_decode($_REQUEST['json'])) && isset($json->tmp_files_dir)) {
-    $node->setData('tmp_files_dir', $json->tmp_files_dir);
+    $node->setData('tmp_files_dir', array_pop($json->tmp_files_dir));
   }
   else {
     $node->setData('tmp_files_dir', $node->getName() . '-' . time() . '-' . rand(0, 1000));

@@ -13,6 +13,7 @@ class FormItemSelect extends FormItem {
    * @return mixed
    */
   function render() {
+    print '<span style="background:white">' . $this->getName() . ':' . '</span>';
     $rendered = '<select ' .
       ($this->isDisabled() ? 'disabled ' : '') .
       ($this->isRequired() ? 'required ' : '') .
@@ -26,8 +27,9 @@ class FormItemSelect extends FormItem {
 
 
     $value = $this->getCurrentValue();
+    print_r($value);
+    foreach ($this->getAllowableValues() as $k => $v) {
 
-    foreach ($this->allowable_values as $k => $v) {
       $rendered .= '<option value="' . $k . '" ' . ($value == $k ? 'selected' : '') . '>' . $v . '</option>';
     }
     $rendered .= '</select>';
