@@ -216,9 +216,8 @@ class NodeFactory {
    * @internal param $node
    */
   public static function buildNode($env, $name, $father, $vars = array ()) {
-    $node = new Node($env, NODE_NEW, $father);
+    $node = NodeFactory::buildEmptyNode($env, $father);
     $node->setName($name);
-
     foreach ($vars as $field_name => $field_value) {
       switch ($field_name) {
         case 'title':

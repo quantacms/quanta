@@ -310,10 +310,10 @@ function qtag_LINK($env, $target, $attributes) {
 function qtag_ADD($env, $target, $attributes) {
   $nodeobj = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $link = '';
+  // Check if the user has the permission to add a node.
   if (NodeAccess::check($env, NODE_ACTION_ADD, array('node' => $nodeobj))) {
-
     $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
-    $attributes['class'] .= 'add-link';
+    $attributes['class'] .= ' add-link ';
     $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Add to <i>' . $nodeobj->getTitle() . '</i>...';
     $attributes['language'] = isset($attributes['language']) ? $attributes['language'] : Localization::getLanguage($env);
     $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&oplus;';
