@@ -13,7 +13,6 @@ class FormItemSelect extends FormItem {
    * @return mixed
    */
   function render() {
-    print '<span style="background:white">' . $this->getName() . ':' . '</span>';
     $rendered = '<select ' .
       ($this->isDisabled() ? 'disabled ' : '') .
       ($this->isRequired() ? 'required ' : '') .
