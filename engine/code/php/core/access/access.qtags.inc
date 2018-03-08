@@ -18,7 +18,18 @@
  */
 function qtag_PERMISSION($env, $target, $attributes) {
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
-  $permission = $node->isNew() ? 'inherit' : $node->getPermission($attributes['name']);
+  if ($node->isNew()) {
+    $permission = 'inherit';
+  }
+  else {
+    if (!empty($node->getAttributeJSON('permissions')->{$attributes['name']})) {
+      // Try to fetch the permission from the node, first.
+      $permission = $node->getAttributeJSON('permissions')->{$attributes['name']};
+    }
+    else {
+      $permission = $node->getPermission($attributes['name'], 'form');
+    }
+  }
 
-  return $node->getPermission($permission);
+  return $permission;
 }

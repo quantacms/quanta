@@ -252,6 +252,7 @@ class File extends DataContainer {
 
     // Create a temporary upload directory.
     $upload_dir = ($node->env->dir['tmp_files'] . '/' . $_REQUEST['tmp_files_dir']);
+
     if (!is_dir($upload_dir)) {
       mkdir($upload_dir);
     }
