@@ -21,7 +21,9 @@ class NodeAccess extends Access {
    */
   public static function check($env, $action, $vars = array()) {
     $access = new NodeAccess($env, $action, $vars);
-    return $access->checkAction();
+    $can_access = $access->checkAction();
+    return $can_access;
+
   }
 
   /**
@@ -40,6 +42,7 @@ class NodeAccess extends Access {
       case NODE_ACTION_VIEW:
       case NODE_ACTION_ADD:
         $permissions = $this->node->getPermissions();
+
         // If node doesn't exist, allow no permission to it.
         if (!is_object($this->node) || !$this->node->exists) {
           new Message($this->env, 'Error: trying to access the non existing node ' . $this->node->name . '.', MESSAGE_WARNING);
