@@ -88,7 +88,10 @@ function valid_url($url) {
  *   The normalized string.
  */
 function string_normalize($string) {
-  $string = str_replace('[', '&lbrack;', $string);
+  if (!is_string($string)) {
+	  return;
+	}
+	$string = str_replace('[', '&lbrack;', $string);
   $string = str_replace(']', '&rbrack;', $string);
   $string = str_replace('{', '&lbrace;', $string);
   $string = str_replace('}', '&rbrace;', $string);
