@@ -24,15 +24,11 @@ class FormItemSelect extends FormItem {
       ($this->getLimit() ? 'data-limit="' . $this->getLimit() . '" ' : ' ') .
       '>';
 
-
     $value = $this->getCurrentValue();
-    print_r($value);
     foreach ($this->getAllowableValues() as $k => $v) {
-
       $rendered .= '<option value="' . $k . '" ' . ($value == $k ? 'selected' : '') . '>' . $v . '</option>';
     }
     $rendered .= '</select>';
-
     return $rendered;
   }
 
