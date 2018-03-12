@@ -306,8 +306,8 @@ class Doctor extends DataContainer {
     $this->op('Checking Apache user...');
 
     $candidate_users = array(
-      'nobody',
       'www-data',
+      'nobody',
     );
 
     foreach ($candidate_users as $candidate_user) {
@@ -340,6 +340,10 @@ class Doctor extends DataContainer {
       $this->op('IMPORTANT: as the current user (' . $this->unix_user . ') is different from your apache user (' . $this->apache_user . '), in order to allow Apache accessing those folders and use Quanta, you have to run this command manually:');
       $this->op('sudo chown -R ' . $this->apache_user . ' "' . $this->env->dir['docroot'] . '" "' . $this->env->dir['tmp'] . '"');
     }
+  }
+
+  function checkComposer() {
+    // TODO.
   }
 
   /**
