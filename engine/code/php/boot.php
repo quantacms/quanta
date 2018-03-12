@@ -22,11 +22,6 @@
   // Create a new Environment.
   $env = new Environment($host, $request_uri, $docroot);
 
-  if (!isset($doctor_cmd) || !($doctor_cmd == 'setup')) {
-    // Check if the site is installed.
-    $env->checkInstalled();
-  }
-
   // Check if the current request is a file rendering request.
   $env->checkFile();
 
