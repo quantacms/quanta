@@ -231,7 +231,16 @@ class Doctor extends DataContainer {
     $adminuser = UserFactory::load($this->env, 'administrator');
     if (!($adminuser->exists)) {
       $this->talk('Not found! Attempting to create Admin User...');
-      $password = $this->ask('Please enter a password for the administrator user');
+      $password = 'pass';
+      $password_repeat = 'pass_repeat';
+
+      while ($password != $password_repeat) {
+        $password = $this->ask('Please enter a password for the administrator user', TRUE);
+        $password_repeat = $this->ask('Please repeat your password', TRUE);
+        if ($password != $password_repeat) {
+          Doctor::ko('The two passwords are not matching. Please try again!');
+        }
+      }
       UserFactory::buildUser($this->env, 'administrator', array(
         'title' => 'Administrator',
         'password' => $password,
@@ -397,12 +406,22 @@ class Doctor extends DataContainer {
    * @param string $phrase
    *   What's the question from the doctor
    *
+   * @param bool $hidden
+   *   If you want a hidden input (i.e. for password input) set it to TRUE.
+   *
    * @return string
    *   The answer
    */
-  public function ask($phrase) {
+  public function ask($phrase, $hidden = FALSE) {
     $this->talk($phrase);
-    return str_replace("\n", "", fgets(STDIN));
+    if ($hidden) {
+      system('stty -echo');
+    }
+    $answer = str_replace("\n", "", fgets(STDIN));
+    if ($hidden) {
+      system('stty echo');
+    }
+    return $answer;
   }
 
   /**
