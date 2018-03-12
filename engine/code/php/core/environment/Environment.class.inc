@@ -46,12 +46,12 @@ class Environment extends DataContainer {
       $docroot = $_SERVER['DOCUMENT_ROOT'];
     }
     $this->dir['quanta'] = $docroot;
-    $this->dir['sites'] = $this->dir['quanta'] . '/sites/';
-    $this->dir['engine'] = $this->dir['quanta'] . '/engine/';
-    $this->dir['docroot'] = $this->dir['sites'] . $this->host;
+    $this->dir['sites'] = $this->dir['quanta'] . '/sites';
+    $this->dir['engine'] = $this->dir['quanta'] . '/engine';
+    $this->dir['docroot'] = $this->dir['sites'] . '/' . $this->host;
     $this->dir['tmp'] = $this->dir['engine'] . '/tmp/' . $this->host;
     $this->dir['vendor'] = $this->dir['quanta'] . '/vendor';
-    $this->dir['modules_core'] = $this->dir['engine'] . 'code/php/core';
+    $this->dir['modules_core'] = $this->dir['engine'] . '/code/php/core';
     $this->dir['modules_custom'] = $this->dir['docroot'] . '/_modules';
     // TODO: move to files module.
     $this->dir['tmp_files'] = $this->dir['tmp'] . '/files';
@@ -475,19 +475,6 @@ class Environment extends DataContainer {
     // Return the node name the last part of the path of the node.
     $node_name = array_slice(explode('/', $target), -1)[0];
     return $node_name;
-  }
-
-  /**
-   * Checks if currently loaded environment is for a file, and renders it if so.
-   * TODO: better define the criteria.
-   */
-  public function checkInstalled() {
-    if (!is_dir($this->dir['modules_custom'])) {
-      print "CORSE MODULES: " . $this->dir['modules_core'];
-
-      print "Hello! Seems like your site is not installed yet.<br /><a href='?doctor=setup'>Click here</a> to start the installation.";
-      die();
-    }
   }
 
   /**
