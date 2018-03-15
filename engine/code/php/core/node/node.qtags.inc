@@ -505,3 +505,73 @@ function qtag_STATUS($env, $target, $attributes) {
   $status_node = NodeFactory::load($env, $status);
   return $status_node->getTitle();
 }
+
+
+/**
+ * Implements qtag TITLE.
+ *
+ * Returns the title of a node.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_TITLE($env, $target, $attributes) {
+  $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
+  return '<h1>' . $node->getTitle() . '</h1>';
+}
+
+
+/**
+ * Implements qtag BODY.
+ *
+ * Returns the body of a node.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_BODY($env, $target, $attributes) {
+  $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
+  return $node->getBody();
+}
+
+
+/**
+ * Implements qtag CONTENT.
+ *
+ * Returns the full rendered content of a node.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_CONTENT($env, $target, $attributes) {
+  $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
+  $node->buildTemplate();
+  return $node->render();  
+}
