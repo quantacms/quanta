@@ -44,7 +44,7 @@ function access_node_presave($env, $vars) {
 }
 
 /**
- * Implements hook_node_load().
+ * Implements hook_node_open().
  *
  * @param Environment $env
  *   The Environment.
