@@ -13,3 +13,4 @@ _sites/*
 vendor
 vendor/*
 composer.lock
+composer.phar
