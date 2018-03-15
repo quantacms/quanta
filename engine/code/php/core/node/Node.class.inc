@@ -177,8 +177,13 @@ class Node extends JSONDataContainer {
    * @param $attr_name
    * @return null
    */
-  public function getAttributeJSON($attr_name) {
-    return (isset($this->json->{$attr_name})) ? string_normalize($this->json->{$attr_name}) : NULL;
+  public function getAttributeJSON($attr_name, $normalize = false) {
+    $ret = NULL;
+
+    if (isset($this->json->{$attr_name})) {
+      $ret = $normalize ? string_normalize($this->json->{$attr_name}) : $this->json->{$attr_name};
+    }
+    return $ret;
   }
 
   /**
