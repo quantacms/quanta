@@ -105,14 +105,6 @@ function node_shadow_node_form($env, $vars) {
   $shadow->addTab($action_name, file_get_contents('core/node/tpl/node_edit.inc'), 1);
   $shadow->addTab('manage metadata', file_get_contents('core/node/tpl/metadata_form.inc'), 2);
   $shadow->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Save');
-
-  // Edit the current template of the node.
-  // For now, we will only allow editing existing tpl.html files, NOT creating new ones.
-  $node = $shadow->getNode();
-  $node->buildTemplate();
-  if (is_file($node->getData('tpl_file'))) {
-    $shadow->addTab('manage templates', file_get_contents('core/node/tpl/tpl_edit.inc'), 2);
-  }
 }
 
 /**
