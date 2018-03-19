@@ -1,4 +1,5 @@
-<div class="list-item list-item-file list-item-file-admin file-[EXT]">
-  <a class="file-link" href="[URL]">[TITLE]</a>
-  <input type="text" size="25" value="[WIKI_TAG]" /> [USER_ACTIONS]
-</div>
+<span class="file-link-item file-[FILEATTRIBUTE|name=type|node={LISTNODE}:{LISTITEM}]">
+  <a class="file-link" data-node="{LISTNODE}" href="[FILEATTRIBUTE|name=name|node={LISTNODE}:{LISTITEM}]">
+    [FILEATTRIBUTE|name=name|node={LISTNODE}:{LISTITEM}]
+  </a>
+</span>
