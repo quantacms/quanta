@@ -17,7 +17,7 @@ class FileList extends ListObject {
    * @internal param $type
    * @internal param $page
    */
-  public function theme() {
+  public function generate() {
     $file_types = $this->getAttribute('file_types');
     $i = 0;
     $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');

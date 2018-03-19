@@ -14,7 +14,6 @@ abstract class ListObject extends DataContainer {
   protected $node;
   protected $dir;
   protected $tpl;
-  protected $contents;
   protected $limit;
   /** @var array */
   protected $dirs = array();
@@ -29,7 +28,7 @@ abstract class ListObject extends DataContainer {
 
   protected $scantype = DIR_ALL;
   protected $module = 'list';
-  protected $themed = FALSE;
+  protected $generated = FALSE;
   // Filter by status. TODO: discontinue.
   protected $status = array();
   // Filter
@@ -106,11 +105,11 @@ abstract class ListObject extends DataContainer {
    * Must be extended.
    */
   public function render() {
+
     // Check if the list was already generated. If not, generate it.
-    // TODO: change function name from theme() to generate().
-    if (!($this->themed)) {
-      $this->theme();
-      $this->themed = TRUE;
+    if (!($this->generated)) {
+      $this->generate();
+      $this->generated = TRUE;
     }
 
     $separator = empty($this->getAttribute('separator')) ? '' : $this->getAttribute('separator');
@@ -210,6 +209,8 @@ abstract class ListObject extends DataContainer {
    *
    * @return bool
    *   Returns true if the node status is the one for which the list is filtered.
+   *
+   * TODO: deprecate and move as status filter.
    */
   public function validateStatus($node) {
     if (!empty($this->status)) {
@@ -286,10 +287,10 @@ abstract class ListObject extends DataContainer {
   }
 
   /**
-   * Generate the html of the list.
+   * Generate the list itemst.
    * Must be extended.
    */
-  abstract public function theme();
+  abstract public function generate();
 
   /**
    * Return the template of this list.
@@ -336,16 +337,23 @@ abstract class ListObject extends DataContainer {
     return ($check) ? 1 : -1;
   }
 
+  /**
+   * Unset the list elements.
+   */
+  public function clear() {
+    $this->generated = TRUE;
+    $this->list_items = array();
+  }
 
   /**
    * Return items' count.
    * @return integer
    */
   public function countItems() {
-    //TODO: theme() should not be invoked here but list_items is not valorized otherwise
-    if (!($this->themed)) {
-      $this->theme();
-      $this->themed = TRUE;
+    //TODO: generate() should not be invoked here but list_items is not valorized otherwise
+    if (!($this->generated)) {
+      $this->generate();
+      $this->generated = TRUE;
     }
     return count($this->list_items);
   }
