@@ -2,8 +2,8 @@
 
 /**
  * Class DirList
- * This class is providing "listing" features useful to scan a folder and
- * render the files and folders contained into it.
+ * This class is providing "node listing" features. It's used to scan a folder and
+ * render the files and folders contained into it as nodes.
  */
 class DirList extends ListObject {
   protected $scantype = DIR_DIRS;
@@ -11,7 +11,7 @@ class DirList extends ListObject {
   /**
    * Generate the html of the list.
    */
-  public function theme() {
+  public function generate() {
     $i = 0;
     $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
     /** @var Node $node_current */

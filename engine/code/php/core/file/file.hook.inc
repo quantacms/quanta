@@ -66,7 +66,7 @@ function file_init($env, $vars) {
  * @param $vars
  *   An array of variables.
  */
-function file_node_save($env, $vars) {
+function file_node_after_save($env, $vars) {
   // TODO: move in File or create FileFactory module.
   /** @var Node $node */
   $node = $vars['node'];

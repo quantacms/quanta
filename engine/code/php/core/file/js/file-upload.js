@@ -1,153 +1,182 @@
-$(function(){
-    var ul = $('#filelist ul');
+$(function () {
+  var ul = $('#filelist ul');
 
-    $('#drop a').click(function(){
-        // Simulate a click on the file input button
-        // to show the file browser dialog
-      $(this).parent().find('input').click();
-    });
+  $('#drop a').click(function () {
+    // Simulate a click on the file input button
+    // to show the file browser dialog
+    $(this).parent().find('input').click();
+  });
 
-    // Initialize the jQuery File Upload plugin
-    $('#edit-files').fileupload({
+  // Initialize the jQuery File Upload plugin
+  $('#edit-files').fileupload({
 
-        // This element will accept file drag/drop uploading
-        dropZone: $('#drop'),
+    // This element will accept file drag/drop uploading
+    dropZone: $('#drop'),
 
-        // This function is called when a file is added to the queue;
-        // either via the browse button, or via drag/drop:
-        add: function (e, data) {
+    // This function is called when a file is added to the queue;
+    // either via the browse button, or via drag/drop:
+    add: function (e, data) {
 
-            var tfile = data.files[0].name.split('.');
+      var tfile = data.files[0].name.split('.');
 
-            var tpl = $('<li class="working list-item list-item-file file-' + tfile[1] + '"><span class="filename"></span><span class="progress-wrapper"><span class="progress"></span><input type="text" value="0" data-width="20" data-height="20"'+
-                ' data-fgColor="#0788a5" data-readOnly="1" data-bgColor="#3e4043" /></span></li>');
+      var tpl = $('<li class="working list-item list-item-file file-' + tfile[1] + '"><span class="filename"></span><span class="progress-wrapper"><span class="progress"></span><input type="text" value="0" data-width="20" data-height="20"' +
+        ' data-fgColor="#0788a5" data-readOnly="1" data-bgColor="#3e4043" /></span></li>');
 
-            // Append the file name and file size
-            tpl.find('.filename').html('<a class="file-link" href="' + data.files[0].name + '">' + data.files[0].name + "</a>").append('<i>(' + formatFileSize(data.files[0].size) + ')</i>');
+      // Append the file name and file size
+      tpl.find('.filename').html('<a class="file-link" href="' + data.files[0].name + '">' + data.files[0].name + "</a>").append('<i>(' + formatFileSize(data.files[0].size) + ')</i>');
 
 
-            // Add the HTML to the UL element
-            data.context = tpl.appendTo(ul);
+      // Add the HTML to the UL element
+      data.context = tpl.appendTo(ul);
 
-            // Initialize the knob plugin
-            tpl.find('input').knob();
+      // Initialize the knob plugin
+      tpl.find('input').knob();
 
-            // Listen for clicks on the cancel icon
-            tpl.find('.progress').click(function(){
+      // Listen for clicks on the cancel icon
+      tpl.find('.progress').click(function () {
 
-                if(tpl.hasClass('working')){
-                    jqXHR.abort();
-                }
-
-                tpl.fadeOut(function(){
-                    tpl.remove();
-                });
-
-            });
-
-            // Automatically upload the file once it is added to the queue
-            var jqXHR = data.submit();
-        },
-
-        progress: function(e, data){
-
-            // Calculate the completion percentage of the upload
-            var progress = parseInt(data.loaded / data.total * 100, 10);
-
-            // Update the hidden input field and trigger a change
-            // so that the jQuery knob plugin knows to update the dial
-            data.context.find('input').val(progress).change();
-
-            if(progress == 100){
-                data.context.removeClass('working');
-                $(document).trigger('refresh');
-            }
-        },
-
-        fail:function(e, data){
-            // Something has gone wrong!
-            data.context.addClass('error');
+        if (tpl.hasClass('working')) {
+          jqXHR.abort();
         }
 
-    });
+        tpl.fadeOut(function () {
+          tpl.remove();
+        });
 
+      });
 
-    // Prevent the default action when a file is dropped on the window
-    $(document).on('drop dragover', function (e) {
-        e.preventDefault();
-    });
+      // Automatically upload the file once it is added to the queue
+      var jqXHR = data.submit();
+    },
 
-    // Helper function that formats the file sizes
-    function formatFileSize(bytes) {
-        if (typeof bytes !== 'number') {
-            return '';
-        }
+    progress: function (e, data) {
 
-        if (bytes >= 1000000000) {
-            return (bytes / 1000000000).toFixed(2) + ' GB';
-        }
+      // Calculate the completion percentage of the upload
+      var progress = parseInt(data.loaded / data.total * 100, 10);
 
-        if (bytes >= 1000000) {
-            return (bytes / 1000000).toFixed(2) + ' MB';
-        }
-        return (bytes / 1000).toFixed(2) + ' KB';
+      // Update the hidden input field and trigger a change
+      // so that the jQuery knob plugin knows to update the dial
+      data.context.find('input').val(progress).change();
+
+      if (progress == 100) {
+        data.context.removeClass('working');
+        $(document).trigger('refresh');
+      }
+    },
+
+    fail: function (e, data) {
+      // Something has gone wrong!
+      data.context.addClass('error');
     }
+
+  });
+
+
+  // Prevent the default action when a file is dropped on the window
+  $(document).on('drop dragover', function (e) {
+    e.preventDefault();
+  });
+
+  // Helper function that formats the file sizes
+  function formatFileSize(bytes) {
+    if (typeof bytes !== 'number') {
+      return '';
+    }
+
+    if (bytes >= 1000000000) {
+      return (bytes / 1000000000).toFixed(2) + ' GB';
+    }
+
+    if (bytes >= 1000000) {
+      return (bytes / 1000000).toFixed(2) + ' MB';
+    }
+    return (bytes / 1000).toFixed(2) + ' KB';
+  }
 
 });
 
 
 // Initialize button events for file table admin.
-var refreshFileActions = function() {
+var refreshFileActions = function (hoverFileElement) {
 
-    // Initialize file delete buttons.
-    $('.delete-file').on('click', function() {
-        var filepath = $(this).parents('li').find('.file-link').attr('href');
-        var parent = $(this).closest('li');
-        if (confirm('Are you sure you want to delete this file? \n' + filepath)) {
-            var node_name = ($(this).closest('.list').data('node'));
+  var thumb_href = $('#edit_thumbnail').val();
 
-            $.ajax({
-                url: "/" + node_name + "/?file_delete=" + filepath,
-                success: function() {
-                    parent.fadeOut('slow');
-                },
-                error: function() {
-                    alert("ERROR in deleting file.");
-                }
-            });
-        }
-        return false;
-    });
+  var tagType = hoverFileElement.find('.file-link-item').hasClass('file-image') ? 'IMG' : 'FILE';
+  var href = (hoverFileElement.find('.file-link').attr('href'));
+
+
+  var preview = '';
+
+  if (tagType == 'IMG') {
+    preview = '<img class="file-preview-img" src="' + href + '">';
+  }
+
+  if (!hoverFileElement.find('.file-preview').length) {
+    hoverFileElement.prepend('<span class="file-preview">' + preview + '</span>');
+  }
+  hoverFileElement.on('mouseenter', function() {
+    // Create file actions.
+    if (!$(this).find('.file-actions').length) {
+      // Append file actions to manage files.
+      $(this).append('<div class="file-actions">' +
+        '<input type="text" value="[' + tagType + ':' + href + ']" />' +
+        '<input type="button" class="set-thumbnail" data-href="' + href + '" value="" />' +
+        '<input type="button" class="delete-file" value="delete file" />' +
+        '</div>'
+      );
+    }
 
     // Initialize set thumbnail buttons.
-    $('.set-thumbnail').on('click', function() {
-        var filepath = $(this).parents('li').find('.file-link').attr('href');
-        $('#edit_thumbnail').val(filepath);
+    $('.set-thumbnail').on('click', function () {
+      if (!($(this).hasClass('selected-thumbnail'))) {
         $('.selected-thumbnail').removeClass('selected-thumbnail');
-        $(this).addClass('selected-thumbnail');
-        return false;
+        $('#edit_thumbnail').val($(this).data('href'));
+      }
+      else {
+        $('#edit_thumbnail').val('');
+      }
+      refreshThumbnail();
+      return false;
     });
-    var thumb_href = $('#edit_thumbnail').val();
-    $('a[href="' + thumb_href + '"]').addClass('selected-thumbnail');
+
+    // Initialize file delete buttons.
+    $('.delete-file').on('click', function () {
+      var filepath = $(this).parents('li').find('.file-link').attr('href');
+      var parent = $(this).closest('li');
+      if (confirm('Are you sure you want to delete this file? \n' + filepath)) {
+        var node_name = ($(this).closest('.list').data('node'));
+
+        $.ajax({
+          url: "/" + node_name + "/?file_delete=" + filepath,
+          success: function () {
+            parent.fadeOut('slow');
+          },
+          error: function () {
+            alert("Error while deleting file. Aborting.");
+          }
+        });
+      }
+      return false;
+    });
+
+    refreshThumbnail();
+  }).on('mouseleave', function () {
+    $(this).find('.file-actions').remove();
+  });
+
 
 
 };
 
-$(document).bind('refresh', function() {
-    var thumb_href = $('#edit_thumbnail').val();
+var refreshThumbnail = function() {
+  var thumb_href = $('#edit_thumbnail').val();
+  $('.set-thumbnail').val('set as thumbnail');
+  $('a[href="' + thumb_href + '"]').addClass('selected-thumbnail').closest('.list-item-file').find('.set-thumbnail').val('unset as thumbnail').addClass('selected-thumbnail');
+}
 
-    $('#filelist .list-item-file').on('mouseenter', function() {
-      $(this).find('.file-actions').remove();
-      // TODO: how to create a full path?
-      var href = ($(this).find('.file-link').attr('href'));
-      var selectedThumbnail = (href == thumb_href) ? 'selected-thumbnail' : '';
-      var tagType = $(this).find('.file-link-item').hasClass('file-image') ? 'IMG' : 'FILE';
-     $(this).append('<span class="file-actions"><input type="text" value="[' + tagType + ':' + href + ']" /><input type="button" class="set-thumbnail ' + selectedThumbnail + '" value="set as thumbnail" /><input type="button" class="delete-file" value="delete file" /></span>');
-
-     refreshFileActions();
-    }).on('mouseleave', function() {
-      $(this).find('.file-actions').hide();
-    });
-
-    refreshFileActions();
+$(document).bind('refresh', function () {
+  $('.list-item-file_admin').each(function () {
+    refreshFileActions($(this));
+    refreshThumbnail();
+  });
 });
