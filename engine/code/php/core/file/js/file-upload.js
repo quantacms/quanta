@@ -124,8 +124,7 @@ var refreshFileActions = function() {
         var filepath = $(this).parents('li').find('.file-link').attr('href');
         $('#edit_thumbnail').val(filepath);
         $('.selected-thumbnail').removeClass('selected-thumbnail');
-        $(this).toggleClass('selected-thumbnail');
-        $('.show-thumbnail').html('<img src="' + filepath + '" />');
+        $(this).addClass('selected-thumbnail');
         return false;
     });
     var thumb_href = $('#edit_thumbnail').val();
@@ -141,12 +140,9 @@ $(document).bind('refresh', function() {
       $(this).find('.file-actions').remove();
       // TODO: how to create a full path?
       var href = ($(this).find('.file-link').attr('href'));
-
       var selectedThumbnail = (href == thumb_href) ? 'selected-thumbnail' : '';
-
       var tagType = $(this).find('.file-link-item').hasClass('file-image') ? 'IMG' : 'FILE';
-
-     $(this).append('<span class="file-actions"><input type="text" value="[' + tagType + ':' + href + ']" /><a class="delete-file" href="#">x</a><a class="set-thumbnail ' + selectedThumbnail + '" href="#">&#9786;</a></span>');
+     $(this).append('<span class="file-actions"><input type="text" value="[' + tagType + ':' + href + ']" /><input type="button" class="set-thumbnail ' + selectedThumbnail + '" value="set as thumbnail" /><input type="button" class="delete-file" value="delete file" /></span>');
 
      refreshFileActions();
     }).on('mouseleave', function() {

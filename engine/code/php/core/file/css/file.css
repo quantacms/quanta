@@ -25,13 +25,6 @@
     display: block;
 }
 
-.delete-file {
-    color: red;
-    text-decoration: none;
-    font-weight: bold;
-    margin-left: 10px;
-}
-
 #drop {
     display: block;
     background-color: #2E3134;
@@ -238,4 +231,18 @@ a.file-link {
 
 .file-sheet {
     background-image: url('../img/icons/xls.png')
+}
+
+.selected-thumbnail {
+    display: inline-block;
+    color: #0a0;
+    border: 1px solid #0a0;
+    padding: 2px;
+}
+
+.delete-file {
+    color: red;
+    text-decoration: none;
+    font-weight: bold;
+    margin-left: 10px;
 }

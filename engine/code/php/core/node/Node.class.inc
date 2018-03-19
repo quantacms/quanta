@@ -455,11 +455,13 @@ class Node extends JSONDataContainer {
   /**
    * Generate the template for displaying the node.
    * Eventually node will use tpl.html files (with dashed depth).
+   *
+   * TODO: separate template in another object.
    */
   public function buildTemplate() {
 
     // The node's default renderis is its content.
-    $this->tpl = $this->getBody();
+
     $tpl = array();
     $tpl_level = 0;
 
@@ -471,23 +473,26 @@ class Node extends JSONDataContainer {
       foreach ($this->lineage as $lineage) {
 
         $tpl_level++;
-        if (is_file($lineage->path . '/tpl.html')) {
-          $this->setData('tpl_file', $lineage->path . '/tpl.html');
+
+        // If tpl^.html exists - template applies to all sublevels of the node.
+        if (is_file($lineage->path . '/tpl^.html')) {
+          $this->setData('tpl_file', $lineage->path . '/tpl^.html');
         }
+        else {
+          $min = '';
 
-        $min = '';
+          // We support 5 levels of sub-level templates for now.
+          // level 0 = tpl.html
+          // level 1 = tpl-.html
+          // level 2 = tpl--.html
+          // etc...
 
-        // We support 5 levels of sub-level templates for now.
-        // level 0 = tpl.html
-        // level 1 = tpl-.html
-        // level 2 = tpl--.html
-        // etc...
-
-        for ($i = 1; $i <= 6; $i++) {
-          $min .= '-';
-          $file = $lineage->path . '/tpl' . $min . '.html';
-          if (file_exists($file)) {
-            $tpl[$tpl_level + $i] = $file;
+          for ($i = 1; $i <= 6; $i++) {
+            $min .= '-';
+            $file = $lineage->path . '/tpl' . $min . '.html';
+            if (file_exists($file)) {
+              $tpl[$tpl_level + $i] = $file;
+            }
           }
         }
       }
@@ -498,9 +503,8 @@ class Node extends JSONDataContainer {
       }
     }
 
-    if (!empty($this->getData('tpl_file'))) {
-      $this->tpl = file_get_contents($this->getData('tpl_file'));
-    }
+    // Set the template.
+    $this->tpl = (!empty($this->getData('tpl_file'))) ? file_get_contents($this->getData('tpl_file')) : $this->getBody();
 
   }
 
