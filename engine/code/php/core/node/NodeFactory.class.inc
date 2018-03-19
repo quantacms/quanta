@@ -358,11 +358,7 @@ class NodeFactory {
           // If the node is validated, proceed with saving it.
           if ($node->validate()) {
             $node->save();
-            $env->hook('node_' . $action);
-            // TODO: move elsewhere maybe?
-            if (isset($nodedata['edit-tpl-file'])) {
-              NodeFactory::updateTemplate($env, $nodedata['edit-tpl-file'], $nodedata['edit-tpl']);
-            }
+            $env->hook($action);
             // If the form has a redirect field, setup a redirect.
             $response->redirect = !empty($node->getData('redirect')) ? $node->getData('redirect') : ('/' . $node->getName() . '/');
           }
