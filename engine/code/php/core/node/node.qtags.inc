@@ -59,31 +59,9 @@ function qtag_BLOCK($env, $target, $attributes) {
 }
 
 /**
- * Implements qtag JSONATTRIBUTE.
- *
- * A Json version of an attribute.
- *
- * @param Environment $env
- *   The Environment.
- *
- * @param string $target
- *   The qtag's target.
- *
- * @param array $attributes
- *   The qtag's attributes.
- *
- * @return string
- *   The rendered qtag.
- * @deprecated
- */
-function qtag_JSONATTRIBUTE($env, $target, $attributes) {
-  die("JSON Attributes are deprecated. Use [JSON:your_variable]");
-}
-
-/**
  * Implements of qtag ATTRIBUTE.
  *
- * Very important tag that allows retrieving every attribute of a node.
+ * Very important tag that allows retrieving every standard attribute of a node.
  *
  * @param Environment $env
  *   The Environment.

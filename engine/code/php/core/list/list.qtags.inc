@@ -67,6 +67,34 @@ function qtag_FILES($env, $target, $attributes) {
   return $filelist->render();
 }
 
+
+/**
+ * Implements FILES_ADMIN qtag.
+ *
+ * Renders a list of files in the "manage files" admin interface.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_FILES_ADMIN($env, $target, $attributes) {
+  $filelist = new FileList($env, $target, 'file_admin', $attributes);
+  // TODO: not optimal, but we don't want default files from father node on node add...
+  if ($env->getContext() == NODE_ACTION_ADD) {
+    $filelist->clear();
+  }
+  return $filelist->render();
+}
+
+
 /**
  * Implements TREE qtag.
  *

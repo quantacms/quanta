@@ -162,26 +162,19 @@ li.list-item {
     margin-top: 11px;
 }
 
-.file_admin {
-    font-size: 0.8em;
-}
 
-#filelist .list-item-file {
+#filelist .list-item-file_admin {
     border-bottom: 1px dotted #ddd;
     padding: 4px;
     padding-left: 24px;
     width: 60%;
 }
 
-#filelist .list-item-file:hover {
+#filelist .list-item-file_admin:hover {
     background-color: #ddd;
 }
 
-#filelist .list-item-file .imgcode {
-    float: right;
-}
-
-#filelist .list-item-file a {
+#filelist .list-item-file_admin a {
     text-decoration: none;
     font-size: 12px;
 }
@@ -245,4 +238,21 @@ a.file-link {
     text-decoration: none;
     font-weight: bold;
     margin-left: 10px;
+}
+
+.file-preview {
+    width: 150px;
+    height: 80px;
+    vertical-align: middle;
+    display: inline-block;
+    margin-right: 20px;
+    border: 2px solid #ccc;
+    background: #eee;}
+
+.file-preview img {
+    max-width: 100%;
+    display: inline;
+}
+.file-actions {
+    margin-top: 8px;
 }

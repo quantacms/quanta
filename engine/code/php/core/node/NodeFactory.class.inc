@@ -358,7 +358,8 @@ class NodeFactory {
           // If the node is validated, proceed with saving it.
           if ($node->validate()) {
             $node->save();
-            $env->hook($action);
+            // Hook node_add_complete, node_edit_complete, etc.
+            $env->hook($action . '_complete');
             // If the form has a redirect field, setup a redirect.
             $response->redirect = !empty($node->getData('redirect')) ? $node->getData('redirect') : ('/' . $node->getName() . '/');
           }
