@@ -75,6 +75,7 @@ li.list-item {
     display: block;
 }
 
+
 #edit-files ul li p {
     width: 144px;
     white-space: nowrap;
@@ -164,19 +165,44 @@ li.list-item {
 
 
 #filelist .list-item-file_admin {
-    border-bottom: 1px dotted #ddd;
-    padding: 4px;
-    padding-left: 24px;
-    width: 60%;
+    position:relative;
+    padding: 10px 10px 10px 60px;
+    width: 75%;
+    background:#f6f6f6;
+    margin-bottom:10px;
 }
 
 #filelist .list-item-file_admin:hover {
-    background-color: #ddd;
+    background-color: #eee;
 }
 
 #filelist .list-item-file_admin a {
     text-decoration: none;
     font-size: 12px;
+}
+
+
+.sort-handle{
+    position:absolute;
+    top:0;
+    left:0;
+    height:100%;
+    width:50px;
+    background:#ddd;
+    cursor:pointer;
+    display:block;
+    text-align:center;
+}
+.sort-handle::after{
+    content:"\f047"; /* fa-arrows */
+    font-family: "FontAwesome";
+    font-size:20px;
+    line-height:20px;
+    color:#333;
+}
+.sort-handle:hover, 
+.sort-handle:focus{
+    background:#bbb;
 }
 
 a.file-link {
