@@ -11,7 +11,8 @@ class DirList extends ListObject {
   /**
    * Generate the html of the list.
    */
-  public function generate() {
+  public function generateList() {
+
     $i = 0;
     $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
     /** @var Node $node_current */
@@ -74,7 +75,6 @@ class DirList extends ListObject {
 
       $this->list_items[] = $list_item;
     }
-
   }
 
   /**
