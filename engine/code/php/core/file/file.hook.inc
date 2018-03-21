@@ -66,6 +66,30 @@ function file_init($env, $vars) {
  * @param $vars
  *   An array of variables.
  */
+function file_node_presave($env, $vars) {
+  // TODO: move in File or create FileFactory module.
+  /** @var Node $node */
+  $node = $vars['node'];
+  $data = $vars['data'];
+  $files = array();
+  foreach ($data as $label => $name) {
+    if (substr($label,0, 13) == 'uploaded-file') {
+      $files[] = substr($label, 14);
+    }
+  }
+  $node->json->files = $files;
+}
+
+/**
+ * Implements hook_node_save().
+ *
+ * Saves all files uploaded on the node.
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param $vars
+ *   An array of variables.
+ */
 function file_node_after_save($env, $vars) {
   // TODO: move in File or create FileFactory module.
   /** @var Node $node */

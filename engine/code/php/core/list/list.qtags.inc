@@ -86,10 +86,29 @@ function qtag_FILES($env, $target, $attributes) {
  *   The rendered qtag.
  */
 function qtag_FILES_ADMIN($env, $target, $attributes) {
+  $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $filelist = new FileList($env, $target, 'file_admin', $attributes);
+
   // TODO: not optimal, but we don't want default files from father node on node add...
   if ($env->getContext() == NODE_ACTION_ADD) {
     $filelist->clear();
+  }
+  else {
+    $filelist->generate();
+  }
+
+  if (isset($node->json->files)) {
+    // Rearrange Files according with what was set in the node json.
+    $files_json = array_flip($node->json->files);
+
+    // Compare files found in the directory with files saved in the json
+    // and reorder them accordingly.
+    // This allows the user to keep the file order he has set via drag&drop.
+    foreach ($filelist->list_items as $filename => $file) {
+      $filelist->list_items[$files_json[$filename]] = $file;
+      unset($filelist->list_items[$filename]);
+    }
+    ksort($filelist->list_items);
   }
   return $filelist->render();
 }

@@ -171,9 +171,10 @@ class Node extends JSONDataContainer {
     $this->json->status = $this->getStatus();
   }
 
-  //*** TEMPORARY FIX ***
-
   /**
+   * Temporary function.
+   * TODO: better evaluation of JSON.
+   *
    * @param $attr_name
    * @return null
    */
@@ -190,7 +191,6 @@ class Node extends JSONDataContainer {
    * Load node with its variables internally.
    */
   public function load() {
-    $this->fullpath = str_replace($this->env->dir['docroot'], '', $this->realpath);
     $vars = array('node' => &$this);
     $this->env->hook('node_load', $vars);
 
@@ -303,7 +303,7 @@ class Node extends JSONDataContainer {
     // Reload the node JSON.
     $this->updateJSON();
     // Save the node json (excluding some fields such as path.)
-    $this->saveJSON(array('path', 'fullpath', 'exists', 'realpath', 'father', 'data'));
+    $this->saveJSON(array('path', 'exists', 'realpath', 'father', 'data'));
     $this->env->hook('node_after_save', $vars);
   }
 
@@ -431,14 +431,13 @@ class Node extends JSONDataContainer {
     if (!empty($this->lineage)) {
       return;
     }
-
+    // Homepage should not have a lineage. TODO: correct?
     if ($this->isHome()) {
       return;
     }
 
-    // TODO: dismiss fullpath.
-    // TODO: redo this.
-    $bca = explode('/', $this->fullpath);
+    $fullpath = str_replace($this->env->dir['docroot'], '', $this->realpath);
+    $bca = explode('/', $fullpath);
     foreach ($bca as $bread_node) {
       if ($bread_node == '') {
         continue;
@@ -635,7 +634,7 @@ class Node extends JSONDataContainer {
 
   /**
    * TODO: move in access module.
-   * Load and construct permissions for this node.
+   * Attempting finding permissions for this node using its lineage.
    */
   private function loadPermissionFromLineage($permission) {
     $this->buildLineage();

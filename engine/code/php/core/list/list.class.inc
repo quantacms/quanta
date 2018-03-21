@@ -20,7 +20,7 @@ abstract class ListObject extends DataContainer {
   /** @var array */
   protected $files = array();
   /** @var array */
-  protected $list_items = array();
+  public $list_items = array();
   /** @var array */
   private $attributes = array();
   /** @var array */
@@ -287,10 +287,20 @@ abstract class ListObject extends DataContainer {
   }
 
   /**
-   * Generate the list itemst.
-   * Must be extended.
+   * Generate the list items.
    */
-  abstract public function generate();
+  public function generate() {
+    if ($this->generated) {
+      return;
+    }
+    $this->generateList();
+    $this->generated = 1;
+  }
+
+  /**
+   * Generate the list items (extended by modules implementing List).
+   */
+  abstract function generateList();
 
   /**
    * Return the template of this list.
@@ -356,6 +366,10 @@ abstract class ListObject extends DataContainer {
       $this->generated = TRUE;
     }
     return count($this->list_items);
+  }
+
+  public function getItems() {
+    return $this->list_items;
   }
 
 }
