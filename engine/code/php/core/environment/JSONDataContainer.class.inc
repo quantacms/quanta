@@ -7,8 +7,6 @@
  */
 abstract class JSONDataContainer extends DataContainer {
   public $name;
-  // TODO: dismiss fullpath.
-  public $fullpath;
   public $realpath;
   public $dir;
   public $json;
