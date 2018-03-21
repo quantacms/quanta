@@ -95,10 +95,6 @@ $(function () {
 
 });
 
-// Initialize button events for file table admin.
-var refreshFileWeights = function() {
-
-}
 
 // Initialize button events for file table admin.
 var refreshFileActions = function (hoverFileElement) {
@@ -112,10 +108,9 @@ var refreshFileActions = function (hoverFileElement) {
     preview = '<img class="file-preview-img" src="' + href + '">';
   }
 
-  var weight;
   if (!hoverFileElement.find('.file-preview').length) {
     hoverFileElement.prepend('<span class="file-preview">' + preview + '</span>');
-    hoverFileElement.prepend('<input type="text" class="file-weight" name="weight-' + href + '" value="' + href + '" >');
+    hoverFileElement.prepend('<input type="text" class="file-name" name="uploaded-file-' + href + '" value="' + href + '" >');
   }
 
 
@@ -186,13 +181,6 @@ var refreshThumbnail = function() {
   $('a[href="' + thumb_href + '"]').addClass('selected-thumbnail').closest('.list-item-file').find('.set-thumbnail').val('unset as thumbnail').addClass('selected-thumbnail');
 }
 
-var refreshFileWeights = function() {
-  var weight = 0;
-  $('.list-item-file_admin').each(function () {
-    weight++;
-    $(this).find('.file-weight').data(weight, weight);
-  });
-}
 
 $(document).bind('refresh', function () {
   $('.list-item-file_admin').each(function () {
@@ -203,7 +191,7 @@ $(document).bind('refresh', function () {
   $('.list-file_admin').each(function() {
     $(this).sortable({
       update: function() {
-        refreshFileWeights();
+        // ...
       }
     });
   });
