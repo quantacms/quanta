@@ -71,20 +71,24 @@ function file_node_after_save($env, $vars) {
   /** @var Node $node */
   $node = $vars['node'];
 	if (empty($node->getData('tmp_files_dir'))) {
-        new Message($node->env, 'Warning: the temporary files dir ' . $node->getData('tmp_files_dir') . ' is empty.', MESSAGE_WARNING);
-
+        new Message($node->env, 'Warning: the temporary files directory was not initialized.', MESSAGE_WARNING);
 	}
   $tmp_dir = $env->dir['tmp_files'] . '/' . $node->getData('tmp_files_dir');
   if (is_dir($tmp_dir)) {
     $tmp_files = $env->scanDirectory($tmp_dir);
     foreach ($tmp_files as $file) {
-      $fpath = $tmp_dir . '/' . $file;
-      $fileobj = new File($env, $fpath, $node);
+      $tmp_file_path = $tmp_dir . '/' . $file;
+      $fileobj = new File($env, $tmp_file_path, $node);
+      // Check that uploaded files are valid.
       if (!$fileobj->isPublic()) {
-        new Message($env, 'The file <b>' . $file . '</b> has an invalid name. Please use a different name.', MESSAGE_WARNING);
-      } elseif (is_file($fpath)) {
-        copy($fpath, $node->realpath . '/' . $file);
-        unlink($fpath);
+        new Message($env, 'The file <b>' . $file . '</b> has an invalid name and could not be uploaded. Please use a different name.', MESSAGE_WARNING);
+      }
+      elseif (is_file($tmp_file_path)) {
+        copy($tmp_file_path, $node->realpath . '/' . $file);
+        unlink($tmp_file_path);
+      }
+      else {
+        new Message($env, 'The file <b>' . $file . '</b> is invalid and could not be uploaded.', MESSAGE_WARNING);
       }
     }
     rmdir($tmp_dir);
