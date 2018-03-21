@@ -136,7 +136,6 @@ var refreshFileActions = function (hoverFileElement) {
     // Initialize set thumbnail buttons.
     $('.set-thumbnail').on('click', function () {
       if (!($(this).hasClass('selected-thumbnail'))) {
-        $('.selected-thumbnail').removeClass('selected-thumbnail');
         $('#edit_thumbnail').val($(this).data('href'));
       }
       else {
@@ -178,7 +177,8 @@ var refreshFileActions = function (hoverFileElement) {
 var refreshThumbnail = function() {
   var thumb_href = $('#edit_thumbnail').val();
   $('.set-thumbnail').val('set as thumbnail');
-  $('a[href="' + thumb_href + '"]').addClass('selected-thumbnail').closest('.list-item-file').find('.set-thumbnail').val('unset as thumbnail').addClass('selected-thumbnail');
+  $('.selected-thumbnail').removeClass('selected-thumbnail');
+  $('a[href="' + thumb_href + '"]').addClass('selected-thumbnail').closest('.list-item-file_admin').find('.set-thumbnail').val('unset as thumbnail').addClass('selected-thumbnail');
 }
 
 
