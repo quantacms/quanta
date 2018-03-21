@@ -95,26 +95,38 @@ $(function () {
 
 });
 
+// Initialize button events for file table admin.
+var refreshFileWeights = function() {
+
+}
 
 // Initialize button events for file table admin.
 var refreshFileActions = function (hoverFileElement) {
-
-  var thumb_href = $('#edit_thumbnail').val();
-
+  // The file Type.
   var tagType = hoverFileElement.find('.file-link-item').hasClass('file-image') ? 'IMG' : 'FILE';
+  // The file URL.
   var href = (hoverFileElement.find('.file-link').attr('href'));
-
-
   var preview = '';
 
   if (tagType == 'IMG') {
     preview = '<img class="file-preview-img" src="' + href + '">';
   }
 
+  var weight;
   if (!hoverFileElement.find('.file-preview').length) {
     hoverFileElement.prepend('<span class="file-preview">' + preview + '</span>');
+    hoverFileElement.prepend('<input type="text" class="file-weight" name="weight-' + href + '" value="' + href + '" >');
   }
+
+
+  /**
+   * Open manage file settings form on mouse enter.
+   */
   hoverFileElement.on('mouseenter', function() {
+    if ($(this).hasClass('is-editing')) {
+      return;
+    }
+    $(this).addClass('is-editing');
     // Create file actions.
     if (!$(this).find('.file-actions').length) {
       // Append file actions to manage files.
@@ -161,12 +173,12 @@ var refreshFileActions = function (hoverFileElement) {
 
     refreshThumbnail();
   }).on('mouseleave', function () {
+    $(this).removeClass('is-editing');
     $(this).find('.file-actions').remove();
   });
 
-
-
 };
+
 
 var refreshThumbnail = function() {
   var thumb_href = $('#edit_thumbnail').val();
@@ -174,9 +186,27 @@ var refreshThumbnail = function() {
   $('a[href="' + thumb_href + '"]').addClass('selected-thumbnail').closest('.list-item-file').find('.set-thumbnail').val('unset as thumbnail').addClass('selected-thumbnail');
 }
 
+var refreshFileWeights = function() {
+  var weight = 0;
+  $('.list-item-file_admin').each(function () {
+    weight++;
+    $(this).find('.file-weight').val(weight);
+  });
+}
+
 $(document).bind('refresh', function () {
   $('.list-item-file_admin').each(function () {
     refreshFileActions($(this));
     refreshThumbnail();
   });
+
+  $('.list-file_admin').sortable({
+    update: function() {
+      refreshFileWeights();
+    }
+  });
+
 });
+
+
+
