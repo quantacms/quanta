@@ -95,10 +95,6 @@ $(function () {
 
 });
 
-// Initialize button events for file table admin.
-var refreshFileWeights = function() {
-
-}
 
 // Initialize button events for file table admin.
 var refreshFileActions = function (hoverFileElement) {
@@ -112,10 +108,9 @@ var refreshFileActions = function (hoverFileElement) {
     preview = '<img class="file-preview-img" src="' + href + '">';
   }
 
-  var weight;
   if (!hoverFileElement.find('.file-preview').length) {
     hoverFileElement.prepend('<span class="file-preview">' + preview + '</span>');
-    hoverFileElement.prepend('<input type="text" class="file-weight" name="weight-' + href + '" value="' + href + '" >');
+    hoverFileElement.prepend('<input type="text" class="file-name" name="uploaded-file-' + href + '" value="' + href + '" >');
   }
 
 
@@ -141,7 +136,6 @@ var refreshFileActions = function (hoverFileElement) {
     // Initialize set thumbnail buttons.
     $('.set-thumbnail').on('click', function () {
       if (!($(this).hasClass('selected-thumbnail'))) {
-        $('.selected-thumbnail').removeClass('selected-thumbnail');
         $('#edit_thumbnail').val($(this).data('href'));
       }
       else {
@@ -183,16 +177,10 @@ var refreshFileActions = function (hoverFileElement) {
 var refreshThumbnail = function() {
   var thumb_href = $('#edit_thumbnail').val();
   $('.set-thumbnail').val('set as thumbnail');
-  $('a[href="' + thumb_href + '"]').addClass('selected-thumbnail').closest('.list-item-file').find('.set-thumbnail').val('unset as thumbnail').addClass('selected-thumbnail');
+  $('.selected-thumbnail').removeClass('selected-thumbnail');
+  $('a[href="' + thumb_href + '"]').addClass('selected-thumbnail').closest('.list-item-file_admin').find('.set-thumbnail').val('unset as thumbnail').addClass('selected-thumbnail');
 }
 
-var refreshFileWeights = function() {
-  var weight = 0;
-  $('.list-item-file_admin').each(function () {
-    weight++;
-    $(this).find('.file-weight').data(weight, weight);
-  });
-}
 
 $(document).bind('refresh', function () {
   $('.list-item-file_admin').each(function () {
@@ -203,7 +191,7 @@ $(document).bind('refresh', function () {
   $('.list-file_admin').each(function() {
     $(this).sortable({
       update: function() {
-        refreshFileWeights();
+        // ...
       }
     });
   });
