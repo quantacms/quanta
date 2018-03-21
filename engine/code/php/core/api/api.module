@@ -87,7 +87,7 @@ function valid_url($url) {
  * @return string
  *   The normalized string.
  */
-function string_normalize($string) {
+function string_normalize($string, $nl2br = FALSE) {
   if (!is_string($string)) {
 	  return;
 	}
@@ -97,9 +97,15 @@ function string_normalize($string) {
   $string = str_replace('}', '&rbrace;', $string);
   $string = str_replace(':', '&colon;', $string);
   $string = str_replace('|', '&verbar;', $string);
+
+  if ($nl2br) {
+    $string = nl2br($string);
+  }
+
   // Remove tabs and newlines.
   // TODO: was necessary as it broke INPUT tags by weirdly printing the value...
   return preg_replace('~[\r\n\t]+~', '', $string);
+
 }
 
 /**
