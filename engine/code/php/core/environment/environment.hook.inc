@@ -12,6 +12,7 @@ function environment_boot($env, $vars) {
     $env->addInclude('engine/code/css/engine.css');
     $env->addInclude('engine/code/js/lib/jquery.min.js');
     $env->addInclude('engine/code/js/lib/jquery.knob.js');
+    $env->addInclude('engine/code/js/lib/jquery-ui.min.js');
     $env->addInclude('engine/code/js/lib/jquery.ui.widget.js');
     $env->addInclude('engine/code/js/lib/jquery.iframe-transport.js');
     $env->addInclude('engine/code/js/lib/zebra.js');

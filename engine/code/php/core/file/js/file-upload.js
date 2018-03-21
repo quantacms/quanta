@@ -98,13 +98,10 @@ $(function () {
 
 // Initialize button events for file table admin.
 var refreshFileActions = function (hoverFileElement) {
-
-  var thumb_href = $('#edit_thumbnail').val();
-
+  // The file Type.
   var tagType = hoverFileElement.find('.file-link-item').hasClass('file-image') ? 'IMG' : 'FILE';
+  // The file URL.
   var href = (hoverFileElement.find('.file-link').attr('href'));
-
-
   var preview = '';
 
   if (tagType == 'IMG') {
@@ -113,8 +110,18 @@ var refreshFileActions = function (hoverFileElement) {
 
   if (!hoverFileElement.find('.file-preview').length) {
     hoverFileElement.prepend('<span class="file-preview">' + preview + '</span>');
+    hoverFileElement.prepend('<input type="text" class="file-name" name="uploaded-file-' + href + '" value="' + href + '" >');
   }
+
+
+  /**
+   * Open manage file settings form on mouse enter.
+   */
   hoverFileElement.on('mouseenter', function() {
+    if ($(this).hasClass('is-editing')) {
+      return;
+    }
+    $(this).addClass('is-editing');
     // Create file actions.
     if (!$(this).find('.file-actions').length) {
       // Append file actions to manage files.
@@ -129,7 +136,6 @@ var refreshFileActions = function (hoverFileElement) {
     // Initialize set thumbnail buttons.
     $('.set-thumbnail').on('click', function () {
       if (!($(this).hasClass('selected-thumbnail'))) {
-        $('.selected-thumbnail').removeClass('selected-thumbnail');
         $('#edit_thumbnail').val($(this).data('href'));
       }
       else {
@@ -161,22 +167,36 @@ var refreshFileActions = function (hoverFileElement) {
 
     refreshThumbnail();
   }).on('mouseleave', function () {
+    $(this).removeClass('is-editing');
     $(this).find('.file-actions').remove();
   });
 
-
-
 };
+
 
 var refreshThumbnail = function() {
   var thumb_href = $('#edit_thumbnail').val();
   $('.set-thumbnail').val('set as thumbnail');
-  $('a[href="' + thumb_href + '"]').addClass('selected-thumbnail').closest('.list-item-file').find('.set-thumbnail').val('unset as thumbnail').addClass('selected-thumbnail');
+  $('.selected-thumbnail').removeClass('selected-thumbnail');
+  $('a[href="' + thumb_href + '"]').addClass('selected-thumbnail').closest('.list-item-file_admin').find('.set-thumbnail').val('unset as thumbnail').addClass('selected-thumbnail');
 }
+
 
 $(document).bind('refresh', function () {
   $('.list-item-file_admin').each(function () {
     refreshFileActions($(this));
     refreshThumbnail();
   });
+
+  $('.list-file_admin').each(function() {
+    $(this).sortable({
+      update: function() {
+        // ...
+      }
+    });
+  });
+
 });
+
+
+

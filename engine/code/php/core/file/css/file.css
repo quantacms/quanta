@@ -247,10 +247,15 @@ a.file-link {
     display: inline-block;
     margin-right: 20px;
     border: 2px solid #ccc;
-    background: #eee;}
+    background: #eee;
+    text-align: center;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
 
 .file-preview img {
     max-width: 100%;
+    max-height: 100%;
     display: inline;
 }
 .file-actions {
