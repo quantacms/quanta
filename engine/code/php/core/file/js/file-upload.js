@@ -190,7 +190,7 @@ var refreshFileWeights = function() {
   var weight = 0;
   $('.list-item-file_admin').each(function () {
     weight++;
-    $(this).find('.file-weight').val(weight);
+    $(this).find('.file-weight').data(weight, weight);
   });
 }
 
@@ -200,10 +200,12 @@ $(document).bind('refresh', function () {
     refreshThumbnail();
   });
 
-  $('.list-file_admin').sortable({
-    update: function() {
-      refreshFileWeights();
-    }
+  $('.list-file_admin').each(function() {
+    $(this).sortable({
+      update: function() {
+        refreshFileWeights();
+      }
+    });
   });
 
 });
