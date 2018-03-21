@@ -40,14 +40,11 @@ function qtag_PLAYLIST($env, $target, $attributes) {
  *   The rendered qtag.
  */
 function qtag_AUDIO($env, $target, $attributes) {
-
-  return '<audio src="' . $target . '" preload="auto" controls>
-<p>Your browser does not support the audio element.</p>
-</audio>';
+  return '<audio src="' . $target . '" preload="auto" controls><p>Your browser does not support the audio element.</p></audio>';
 }
 
 /**
- * Implements qtag AUDIO.
+ * Implements qtag ALBUM.
  *
  * Render an Album of audio files.
  *
