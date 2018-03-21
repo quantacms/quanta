@@ -74,11 +74,10 @@ function file_node_presave($env, $vars) {
   $files = array();
   foreach ($data as $label => $name) {
     if (substr($label,0, 13) == 'uploaded-file') {
-      $files[] = substr($label, 13);
+      $files[] = substr($label, 14);
     }
   }
-  print_r($files);
-  die();
+  $node->json->files = $files;
 }
 
 /**

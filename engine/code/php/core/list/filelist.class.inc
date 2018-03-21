@@ -17,10 +17,12 @@ class FileList extends ListObject {
    * @internal param $type
    * @internal param $page
    */
-  public function generate() {
+  public function generateList() {
+
     $file_types = $this->getAttribute('file_types');
     $i = 0;
     $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
+
     foreach ($this->files as $file) {
       /** @var File $file */
       $i++;
@@ -47,7 +49,7 @@ class FileList extends ListObject {
           $list_item = '<li class="' . implode(' ', $classes) . '" data-index="' . $i . '">' . $list_item . '</li>';
         }
 
-        $this->list_items[] = $list_item;
+        $this->list_items[$file->getName()] = $list_item;
       }
     }
   }
@@ -56,6 +58,13 @@ class FileList extends ListObject {
    * @return array
    */
   public function getFiles() {
+    return $this->files;
+  }
+
+  /**
+   * @return array
+   */
+  public function setFiles($files) {
     return $this->files;
   }
 }
