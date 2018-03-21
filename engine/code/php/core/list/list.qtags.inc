@@ -97,18 +97,19 @@ function qtag_FILES_ADMIN($env, $target, $attributes) {
     $filelist->generate();
   }
 
-  // Rearrange Files according with what was set in the node json.
-  $files_json = array_flip($node->json->files);
+  if (isset($node->json->files)) {
+    // Rearrange Files according with what was set in the node json.
+    $files_json = array_flip($node->json->files);
 
-  // Compare files found in the directory with files saved in the json
-  // and reorder them accordingly.
-  // This allows the user to keep the file order he has set via drag&drop.
-  foreach ($filelist->list_items as $filename => $file) {
-    $filelist->list_items[$files_json[$filename]] = $file;
-    unset($filelist->list_items[$filename]);
+    // Compare files found in the directory with files saved in the json
+    // and reorder them accordingly.
+    // This allows the user to keep the file order he has set via drag&drop.
+    foreach ($filelist->list_items as $filename => $file) {
+      $filelist->list_items[$files_json[$filename]] = $file;
+      unset($filelist->list_items[$filename]);
+    }
+    ksort($filelist->list_items);
   }
-  ksort($filelist->list_items);
-
   return $filelist->render();
 }
 
