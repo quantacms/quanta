@@ -74,7 +74,7 @@ function access_node_open($env, $vars) {
  * @param $vars
  *   An array of variables.
  */
-function access_qtag($env, $vars) {
+function access_qtag_preload($env, $vars) {
   $node = NodeFactory::current($env);
   $user = UserFactory::current($env);
   // The user has selected to show the tag only if a certain criteria is matched.
@@ -83,7 +83,7 @@ function access_qtag($env, $vars) {
     // If there is an active tag filter, and it doesn't match, empty the tag.
     foreach ($vars['qtag'] as $tag => $content) {
       if (!$filter_match) {
-        $vars['qtag'][$tag] = '';
+        unset($vars['qtag']);
       }
     }
   }

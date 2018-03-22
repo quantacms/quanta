@@ -103,10 +103,9 @@ var refreshFileActions = function (fileElement) {
   // The file URL.
   var href = (fileElement.find('.file-link').attr('href'));
 
-  if (!fileElement.find('.file-preview').length) {
+  if (fileElement.find('.file-preview').length) {
     fileElement.prepend('<input type="hidden" class="file-name" name="uploaded-file-' + href + '" value="' + href + '" >');
   }
-
 
   /**
    * Open manage file settings form on mouse enter.
@@ -184,9 +183,8 @@ $(document).bind('refresh', function () {
 
   $('.list-file_admin').each(function() {
     $(this).sortable({
-      handle: ".sort-handle",
       update: function() {
-        // ...
+
       }
     });
   });

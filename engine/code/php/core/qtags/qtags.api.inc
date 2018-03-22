@@ -82,33 +82,45 @@ function checkCodeTags(&$env, $html, $options = 'U') {
         if ($tag_name == strtoupper($tag_name) && function_exists('qtag_' . $tag_name)) {
           $func = 'qtag_' . $tag_name;
           if (function_exists($func)) {
+            $qtag[$tag_full] = '';
             $attr_arr['tag_full'] = $tag_full;
-            // Run the qtag.
-            $tag_html = $func($env, !empty($tag_destination) ? $tag_destination : NULL, $attr_arr);
-            $qtag = array($tag_full => $tag_html);
             $vars = array(
               'attributes' => $attr_arr,
               'target' => $tag_destination,
               'qtag' => &$qtag
             );
-            // Let other module hook into the rendered qtag.
-            $env->hook('qtag', $vars);
 
-            $tag_content = $qtag[$tag_full];
+            $env->hook('qtag_preload', $vars);
 
-            // Add eventual suffix and prefix.
-            if (!empty($attr_arr['suffix']) && !empty($tag_content)) {
-              $tag_content .= $attr_arr['suffix'];
+            if (!isset($vars['qtag'])) {
+              $replacing[$tag_full] = '';
             }
-            if (!empty($attr_arr['prefix']) && !empty($tag_content)) {
-              $tag_content = $attr_arr['prefix'] . $tag_content;
-            }
+            else {
 
-            // Prevent replacement where no_qtags attribute present. Used for input forms etc.
-            if (isset($attr_arr['no_qtags'])) {
-              $tag_content = string_normalize($tag_content);
+              // Run the qtag.
+              $tag_html = $func($env, !empty($tag_destination) ? $tag_destination : NULL, $attr_arr);
+              $qtag[$tag_full] = $tag_html;
+
+              // Let other module hook into the rendered qtag.
+              $env->hook('qtag', $vars);
+
+              $tag_content = $qtag[$tag_full];
+
+              // Add eventual suffix and prefix.
+              if (!empty($attr_arr['suffix']) && !empty($tag_content)) {
+                $tag_content .= $attr_arr['suffix'];
+              }
+              if (!empty($attr_arr['prefix']) && !empty($tag_content)) {
+                $tag_content = $attr_arr['prefix'] . $tag_content;
+              }
+
+              // Prevent replacement where no_qtags attribute present. Used for input forms etc.
+              if (isset($attr_arr['no_qtags'])) {
+                $tag_content = string_normalize($tag_content);
+              }
+
+              $replacing[$tag_full] = $tag_content;
             }
-            $replacing[$tag_full] = $tag_content;
           }
         }
       }
