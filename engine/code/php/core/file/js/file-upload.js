@@ -97,27 +97,21 @@ $(function () {
 
 
 // Initialize button events for file table admin.
-var refreshFileActions = function (hoverFileElement) {
+var refreshFileActions = function (fileElement) {
   // The file Type.
-  var tagType = hoverFileElement.find('.file-link-item').hasClass('file-image') ? 'IMG' : 'FILE';
+  var tagType = fileElement.find('.file-link-item').hasClass('file-image') ? 'IMG' : 'FILE';
   // The file URL.
-  var href = (hoverFileElement.find('.file-link').attr('href'));
-  var preview = '';
+  var href = (fileElement.find('.file-link').attr('href'));
 
-  if (tagType == 'IMG') {
-    preview = '<img class="file-preview-img" src="' + href + '">';
-  }
-
-  if (!hoverFileElement.find('.file-preview').length) {
-    hoverFileElement.prepend('<span class="file-preview">' + preview + '</span>');
-    hoverFileElement.prepend('<input type="text" class="file-name" name="uploaded-file-' + href + '" value="' + href + '" >');
+  if (!fileElement.find('.file-preview').length) {
+    fileElement.prepend('<input type="hidden" class="file-name" name="uploaded-file-' + href + '" value="' + href + '" >');
   }
 
 
   /**
    * Open manage file settings form on mouse enter.
    */
-  hoverFileElement.on('mouseenter', function() {
+  fileElement.on('mouseenter', function() {
     if ($(this).hasClass('is-editing')) {
       return;
     }
@@ -190,6 +184,7 @@ $(document).bind('refresh', function () {
 
   $('.list-file_admin').each(function() {
     $(this).sortable({
+      handle: ".sort-handle",
       update: function() {
         // ...
       }
