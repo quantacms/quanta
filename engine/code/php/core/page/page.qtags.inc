@@ -236,7 +236,7 @@ function qtag_PHONE($env, $target, $attributes) {
     $attributes['class'] = ' tel';
   }
   
-	return '<a href="tel:' . $target . '">' . $target . '</a>';
+	return '<a class="phone" href="tel:' . $target . '">' . $target . '</a>';
 }
 
 /**
