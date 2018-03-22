@@ -25,7 +25,7 @@ class Manager {
    */
   public function renderTree($path = 'root') {
     $list = new DirList($this->env, $path, 'simple', array('symlinks' => 'no'));
-    $leaves = $list->getDirs();
+    $leaves = $list->getItems();
     $lines = array();
     foreach ($leaves as $leaf) {
 
