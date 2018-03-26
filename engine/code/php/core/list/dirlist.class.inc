@@ -23,7 +23,7 @@ class DirList extends ListObject {
     }
 
     // Cycle the subdirectories.
-    foreach ($this->dirs as $dir_url => $node) {
+    foreach ($this->items as $dir_url => $node) {
 
       /** @var Node $node */
       // If user can't access a node, completely exclude it from the list.
@@ -55,7 +55,7 @@ class DirList extends ListObject {
         $tpl = preg_replace("/" . str_replace('[', '\[', str_replace(']', '\]', $string)) . "/is", string_normalize($replace), $tpl);
       }
       $list_item = transformCodeTags($this->env, preg_replace("/\[LISTITEM\]/is", string_normalize($dir_url), $tpl));
-      $list_item = transformCodeTags($this->env, preg_replace("/\[LISTNODE\]/is", string_normalize($this->dir), $list_item));
+      $list_item = transformCodeTags($this->env, preg_replace("/\[LISTNODE\]/is", string_normalize($this->getNode()->getName()), $list_item));
 
       $vars = array(
         'list' => &$this,
@@ -78,19 +78,36 @@ class DirList extends ListObject {
   }
 
   /**
-   * Return all directories (nodes) found by the list.
-   * @return array
-   */
-  public function getDirs() {
-    return $this->dirs;
-  }
-
-  /**
    * Remove one of the loaded directories.
    * @param $dir
    */
   public function removeDir($dir) {
-    unset($this->dirs[$dir]);
+    unset($this->items[$dir]);
   }
 
+  public function sortBy($x, $y) {
+    {
+      // Which field to use for sorting.
+      switch ($this->sort) {
+        case 'name':
+          $check = strcasecmp($x->getName(), $y->getName()) > 0;
+          break;
+
+        case 'title':
+          $check = strcasecmp($x->getTitle(), $y->getTitle()) > 0;
+          break;
+
+        case 'time':
+          $check = ($x->getTimestamp() < $y->getTimestamp());
+          break;
+
+        default:
+          //Sort by Number DESC
+          $check = ($x->getAttributeJSON($this->sort) < $y->getAttributeJSON($this->sort));
+          break;
+      }
+
+      return ($check) ? 1 : -1;
+    }
+  }
 }

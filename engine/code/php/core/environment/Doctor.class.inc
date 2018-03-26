@@ -36,14 +36,7 @@ class Doctor extends DataContainer {
   public function __construct($env, $mode = DOCTOR_MODE_BASH) {
     $this->env = $env;
     $this->mode = $mode;
-  }
-
-  /**
-   * Verify that all system directories (as defined with sysdir() commands
-   * are existing, and create the missing ones.
-   */
-  public function checkSystemUser() {
-
+    $this->env->setData('doctor', $this);
   }
 
   /**
@@ -126,6 +119,7 @@ class Doctor extends DataContainer {
     $symlinks_find_cmd = "find " . $path . " -type l";
     $results_arr = $this->execute($symlinks_find_cmd);
     $this->talk("..." . count($results_arr) . ' found.');
+    $good_links = 0;
     $wrong_links = 0;
     $fixed_links = 0;
     $unfixable_links = array();
@@ -135,35 +129,44 @@ class Doctor extends DataContainer {
       // Retrieve the link destination.
       $link_target = readlink($link);
       $link_exists = is_dir($link_target);
-      $link_split = array_reverse(explode('/', $link_target));
-      $link_father = isset($link_split[1]) ? $link_split[1] : NULL;
+      $link_split = array_reverse(explode('/', $link));
+      $link_father = isset($link_split[0]) ? $link_split[1] : NULL;
       $link_name = $link_split[0];
-      $link_node = NodeFactory::load($this->env, $link_name);
 
       // If a link is not corresponding to a dir, attempt to find the real dir.
       if (!$link_exists) {
         $wrong_links++;
         $real_path = $this->env->nodePath($link_name);
-        $this->op("Looking for " . $link_name . ' (' . $real_path . ')...');
+        $this->ko("Missing link found (" . $link_target . ")");
 
         if (is_dir($real_path)) {
+
+          $this->op("Linking " . $link_name . " (" . $real_path . ") into " . $link . "...");
           // Attempt to change the target dir of the link.
-          NodeFactory::linkNodes($this->env, $link_node->realpath, $link_father, array('symlink_name' => $link_name, 'if_exists' => 'override'));
-          $this->ok("...fixed! :-)");
-          $fixed_links++;
+          if (NodeFactory::linkNodes($this->env, $link_name, $link_father, array('symlink_name' => $link_name, 'if_exists' => 'override'))) {
+            $this->ok("...fixed! :-)");
+            $fixed_links++;
+          }
+          else {
+            $this->ko("...could not be fixed! :-(");
+          }
         }
         else {
-          $this->ko("...none found :-(");
+          $this->ko("...no alternative target found :-(");
           $unfixable_links[] = $link;
         }
 
       }
       else {
-        $this->talk($link . ' -> ' . $link_target);
+        $good_links++;
       }
 
     }
-    $this->talk($wrong_links . " wrong links found.");
+
+    $this->talk($good_links + $wrong_links . ' total links found.');
+    if ($wrong_links > 0) {
+      $this->talk($wrong_links . " wrong links found.");
+    }
     if ($fixed_links > 0) {
       $this->ok($fixed_links . " wrong links FIXED!");
     }
@@ -525,12 +528,15 @@ class Doctor extends DataContainer {
   /**
    * Check if the doctor is curing (if we are in a Doctor page).
    *
+   * @param Environment $env
+   *   The Environment.
+   *
    * @return boolean
    *   True if the doctor task is running.
    *
    */
-  public static function isCuring() {
-    return isset($_GET['doctor']);
+  public static function isCuring($env) {
+    return !empty($env->getData('doctor'));
   }
 
   /**

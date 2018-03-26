@@ -47,7 +47,7 @@ function qtag_FILEATTRIBUTE($env, $target, $attributes) {
 /**
  * Implements FILE qtag.
  *
- * Render a file.
+ * Render a file item.
  *
  * @param Environment $env
  *   The Environment.
@@ -70,4 +70,29 @@ function qtag_FILE($env, $target, $attributes) {
   else {
     return NULL;
   }
+}
+
+
+/**
+ * Implements PREVIEW qtag.
+ *
+ * Render a preview of a file.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_PREVIEW($env, $target, $attributes) {
+
+  // TODO: implement.
+  // return 'PREVIEW';
+
 }
