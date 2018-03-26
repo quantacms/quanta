@@ -73,7 +73,7 @@ class DirList extends ListObject {
         $list_item = '<li class="' . implode(' ', $classes) . '">' . $list_item . '</li>';
       }
 
-      $this->list_items[] = $list_item;
+      $this->rendered_items[] = $list_item;
     }
   }
 
