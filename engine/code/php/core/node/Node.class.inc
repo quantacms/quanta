@@ -182,7 +182,7 @@ class Node extends JSONDataContainer {
     $ret = NULL;
 
     if (isset($this->json->{$attr_name})) {
-      $ret = $normalize ? string_normalize($this->json->{$attr_name}) : $this->json->{$attr_name};
+      $ret = ($normalize && is_string($this->json->{$attr_name})) ? string_normalize($this->json->{$attr_name}) : $this->json->{$attr_name};
     }
     return $ret;
   }

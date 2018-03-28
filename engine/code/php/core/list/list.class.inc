@@ -1,4 +1,5 @@
 <?php
+define('LIST_ROOT', 'root');
 /**
  * Class DirList
  * This class is providing "listing" features useful to scan a folder and
@@ -6,26 +7,21 @@
  */
 abstract class ListObject extends DataContainer {
   public $loaded = FALSE;
-  protected $path;
   protected $realpath;
   /**
    * @var Environment $env
    */
   protected $node;
-  protected $dir;
   protected $tpl;
   protected $limit;
   /** @var array */
-  protected $dirs = array();
+  protected $items = array();
   /** @var array */
-  protected $files = array();
-  /** @var array */
-  public $list_items = array();
+  public $rendered_items = array();
   /** @var array */
   private $attributes = array();
   /** @var array */
   protected $replacements = array();
-
   protected $scantype = DIR_ALL;
   protected $module = 'list';
   protected $generated = FALSE;
@@ -49,32 +45,30 @@ abstract class ListObject extends DataContainer {
    *   The module in where to look for the template file (defaults to list).
    */
   public function __construct(&$env, $path, $tpl, $attr_arr = array(), $module = NULL) {
-    if ($path == NULL) {
-      $path = $env->getRequestedPath();
-    }
+    $this->env = $env;
+    $this->tpl = strtolower($tpl);
 
     // Check if the template is in a different module than the default.
     if (!empty($module)) {
       $this->module = $module;
     }
-    
-		$this->env = $env;
-    // TODO: no need to rebuild node when it's current page.
-    $this->dir = $path;
-    $this->tpl = strtolower($tpl);
 
-    if ($path == 'root') {
-      $this->path = $env->dir['docroot'];
+    // Support for "root" list.
+    if ($path == LIST_ROOT) {
       $this->realpath = $env->dir['docroot'];
-      $this->node = NULL;
+      $this->setNode(NULL);
+      }
+    elseif ($path == NULL) {
+      $this->setNode(NodeFactory::current($this->env));
+      $this->realpath = $this->getNode()->realpath;
     }
     else {
-      $this->path = $this->env->nodePath($path);
-      $this->node = NodeFactory::load($this->env, $path);
-      $this->realpath = $this->node->realpath;
+      $this->setNode(NodeFactory::load($this->env, $path));
+      $this->realpath = $this->getNode()->realpath;
     }
 
     $this->tag = 'li';
+
     foreach ($attr_arr as $attr_key => $attr_val) {
       $this->setAttribute($attr_key, $attr_val);
     }
@@ -113,14 +107,14 @@ abstract class ListObject extends DataContainer {
     }
 
     $separator = empty($this->getAttribute('separator')) ? '' : $this->getAttribute('separator');
-    $output = implode($separator, $this->list_items);
+    $output = implode($separator, $this->rendered_items);
 
     $ajax = (!empty($this->getAttribute('ajax'))) ? ' rel= ' . $this->getAttribute('ajax') : '';
     $this->setData('list_html_tag', !empty($this->getAttribute('ordered')) ? 'ol' : 'ul');
 
     $tpl = (!empty($this->getAttribute('tpl'))) ? ' tpl= ' . $this->getAttribute('tpl') : '';
 
-    if (!empty($this->getAttribute('empty_message')) && (count($this->list_items) == 0)) {
+    if (!empty($this->getAttribute('empty_message')) && (count($this->rendered_items) == 0)) {
       $output = $this->getAttribute('empty_message');
     }
 
@@ -144,7 +138,7 @@ abstract class ListObject extends DataContainer {
   public function load() {
     if (!is_dir($this->realpath)) {
       $this->loaded = TRUE;
-      new Message($this->env, $this->node->name . ' is not a valid page. Path: ' . $this->path . ' Full path: ' . $this->realpath, MESSAGE_ERROR);
+      new Message($this->env, $this->node->name . ' is not a valid page. Full path: ' . $this->realpath, MESSAGE_ERROR);
       return FALSE;
     }
 
@@ -183,13 +177,13 @@ abstract class ListObject extends DataContainer {
         $node = NodeFactory::load($this->env, $item_name);
         if ($node->exists && $this->validateStatus($node)) {
 
-          $this->dirs[$item_name] = $node;
+          $this->items[$item_name] = $node;
         }
       }
       elseif (($this->scantype == DIR_FILES) && $this->node != NULL) {
 				$file = new File($this->env, $item_name, $this->node);
         if ($file->isPublic()) {
-          $this->files[] = $file;
+          $this->items[] = $file;
         }
       }
     }
@@ -228,21 +222,15 @@ abstract class ListObject extends DataContainer {
 		foreach ($this->getAttributes() as $attr_name => $attr) {
       switch ($attr_name) {
         case 'reverse': {
-          $this->dirs = array_reverse($this->dirs);
-          $this->files = array_reverse($this->files);
+          $this->items = array_reverse($this->items);
           break;
         }
-        // TODO: deprecate.
-        case 'sortbytime':
-          $this->sort = 'time';
-          uasort($this->dirs, array($this, 'sortBy'));
-          break;
         // Check list sorting.
         case 'sort':
           $this->sort = $attr;
-          uasort($this->dirs, array($this, 'sortBy'));
+          uasort($this->items, array($this, 'sortBy'));
           if (!empty($this->getAttribute('asc'))) {
-            $this->dirs = array_reverse($this->dirs);
+            $this->items = array_reverse($this->items);
           }
           break;
         // Set a limit for items to display.
@@ -323,53 +311,68 @@ abstract class ListObject extends DataContainer {
    *
    * @return int
    */
-  private function sortBy($x, $y) {
-    // Which field to use for sorting.
-    switch ($this->sort) {
-      case 'name':
-        $check = strcasecmp($x->getName(), $y->getName()) > 0;
-        break;
-
-      case 'title':
-        $check = strcasecmp($x->getTitle(), $y->getTitle()) > 0;
-        break;
-
-      case 'time':
-        $check = ($x->getTimestamp() < $y->getTimestamp());
-        break;
-
-      default:
-        //Sort by Number DESC
-        $check = ($x->getAttributeJSON($this->sort) < $y->getAttributeJSON($this->sort));
-        break;
-    }
-
-    return ($check) ? 1 : -1;
-  }
+  abstract function sortBy($x, $y);
 
   /**
    * Unset the list elements.
    */
   public function clear() {
     $this->generated = TRUE;
-    $this->list_items = array();
+    $this->rendered_items = array();
   }
 
   /**
    * Return items' count.
+   *
    * @return integer
    */
   public function countItems() {
-    //TODO: generate() should not be invoked here but list_items is not valorized otherwise
+    //TODO: generate() should not be invoked here but rendered_items is not valorized otherwise
     if (!($this->generated)) {
       $this->generate();
       $this->generated = TRUE;
     }
-    return count($this->list_items);
+    return count($this->rendered_items);
   }
 
+  /**
+   * Gets the rendered list items.
+   *
+   * @return array
+   *   The rendered list items.
+   */
   public function getItems() {
-    return $this->list_items;
+    return $this->items;
+  }
+
+  /**
+   * Gets the rendered list items.
+   *
+   * @return array
+   *   The rendered list items.
+   */
+  public function getRenderedItems() {
+    return $this->rendered_items;
+  }
+
+  /**
+   * Gets the lists' node.
+   *
+   * @return Node
+   *   The lists' node.
+   */
+  public function getNode() {
+    return $this->node;
+  }
+
+  /**
+   * Sets the lists' node.
+   *
+   * @param Node
+   *   The lists' node.
+   */
+  public function setNode($node) {
+    $this->node = $node;
   }
 
 }
