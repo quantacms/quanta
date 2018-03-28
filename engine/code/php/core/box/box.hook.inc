@@ -14,7 +14,9 @@ function box_load_includes($env, $vars) {
 }
 
 /**
- * Render a Quanta box.
+ * Renders a Quanta box.
+ *
+ * @see Box.class.inc
  *
  * @param Environment $env
  *   The Environment.
@@ -27,10 +29,7 @@ function box_qtag($env, $vars) {
     $w = empty($boxsize[1]) ? NULL : $boxsize[0];
     $h = empty($boxsize[1]) ? NULL : $boxsize[1];
     $box = new Box($env, $w, $h, $vars['attributes']);
-
-    foreach ($vars['qtag'] as $tag => $content) {
-      $box->setHtml($content);
-      $vars['qtag'][$tag] = $box->render();
-    }
+    $box->setHtml($vars['qtag']);
+    $vars['qtag'] = $box->render();
   }
 }
