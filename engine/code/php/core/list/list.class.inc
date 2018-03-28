@@ -342,8 +342,9 @@ abstract class ListObject extends DataContainer {
    *   The list item.
    */
   public function getItem($index) {
-    if (isset($this->items[$index])) {
-      $item = $this->items[$index];
+    $items = array_values($this->items);
+    if (isset($items[$index])) {
+      $item = $items[$index];
     }
     else {
       new Message($this->env, 'Undefined list index: ' . $index . ' while listing ' . $this->getNode()->getName(), MESSAGE_ERROR);
