@@ -37,16 +37,18 @@ class Message {
     $this->type = $type;
     $this->module = $module;
     $this->severity = $severity;
+    $doctor = $env->getData('doctor');
+
     // If the Doctor is curing the environment, show messages in the blackboard.
-    if (Doctor::isCuring()) {
+    if (Doctor::isCuring($env)) {
 
       switch ($this->severity) {
         case MESSAGE_WARNING:
         case MESSAGE_ERROR:
-          Doctor::ko($this->body);
+          $doctor->ko($this->body);
           break;
         default:
-          Doctor::talk($this->body);
+          $doctor->talk($this->body);
           break;
       }
     }
