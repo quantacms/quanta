@@ -23,6 +23,6 @@ function qtags_page_complete($env, $vars) {
 function qtags_boot($env, $vars) {
   if ($env->request[1] == 'qtag') {
     print transformCodeTags($env, urldecode($env->request[2]));
-    die();
+    exit;
   }
 }

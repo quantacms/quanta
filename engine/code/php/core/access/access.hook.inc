@@ -77,14 +77,13 @@ function access_node_open($env, $vars) {
 function access_qtag_preload($env, $vars) {
   $node = NodeFactory::current($env);
   $user = UserFactory::current($env);
+
   // The user has selected to show the tag only if a certain criteria is matched.
   if (!empty($vars['attributes']['filter'])) {
-    $filter_match = _access_filter($env, $vars['attributes']['filter'], $node, $user);
+  $filter_match = _access_filter($env, $vars['attributes']['filter'], $node, $user);
     // If there is an active tag filter, and it doesn't match, empty the tag.
-    foreach ($vars['qtag'] as $tag => $content) {
-      if (!$filter_match) {
-        unset($vars['qtag']);
-      }
+    if (!$filter_match) {
+      $vars['access'] = FALSE;
     }
   }
 }
