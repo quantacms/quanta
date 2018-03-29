@@ -31,12 +31,12 @@ function qtag_CAROUSEL($env, $target, $attributes) {
 
     case CAROUSEL_DIRS:
       $tpl = isset($attributes['tpl']) ? $attributes['tpl'] : 'flickity-carousel';
-      $list = new DirList($env, $target, $tpl, array('sortby' => 'title', 'clean' => true, 'class' => 'flickity-carousel') + $attributes, $module);
+      $list = new DirList($env, $target, $tpl, array('clean' => true, 'class' => 'flickity-carousel') + $attributes, $module);
       break;
 
     case CAROUSEL_FILES:
       $tpl = isset($attributes['tpl']) ? $attributes['tpl'] : 'flickity-file-carousel';
-      $list = new FileList($env, $target, $tpl, array('sortby' => 'title', 'clean' => true, 'class' => 'flickity-carousel') + $attributes, $module);
+      $list = new FileList($env, $target, $tpl, array('clean' => true, 'class' => 'flickity-carousel') + $attributes, $module);
       break;
 
     default:
