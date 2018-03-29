@@ -84,15 +84,19 @@ function checkCodeTags(&$env, $html, $options = 'U') {
           if (function_exists($func)) {
             $qtag[$tag_full] = '';
             $attr_arr['tag_full'] = $tag_full;
+            $qtag_access = TRUE;
+
             $vars = array(
               'attributes' => $attr_arr,
               'target' => $tag_destination,
-              'qtag' => &$qtag
+              'qtag' => &$qtag[$tag_full],
+              'access' => &$qtag_access,
             );
 
             $env->hook('qtag_preload', $vars);
 
-            if (!isset($vars['qtag'])) {
+            // Check that access is OK for the qtag.
+            if (!$qtag_access) {
               $replacing[$tag_full] = '';
             }
             else {

@@ -336,10 +336,28 @@ abstract class ListObject extends DataContainer {
   }
 
   /**
-   * Gets the rendered list items.
+   * Gets a loaded list item.
+   *
+   * @return mixed
+   *   The list item.
+   */
+  public function getItem($index) {
+    $items = array_values($this->items);
+    if (isset($items[$index])) {
+      $item = $items[$index];
+    }
+    else {
+      new Message($this->env, 'Undefined list index: ' . $index . ' while listing ' . $this->getNode()->getName(), MESSAGE_ERROR);
+      $item = '';
+    }
+    return $item;
+  }
+
+  /**
+   * Gets the laoded list items (files or directories).
    *
    * @return array
-   *   The rendered list items.
+   *   The loaded list items.
    */
   public function getItems() {
     return $this->items;
