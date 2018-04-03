@@ -42,30 +42,31 @@ class NodeAccess extends Access {
       case NODE_ACTION_VIEW:
       case NODE_ACTION_ADD:
         $permissions = $this->node->getPermissions();
+
         // If node doesn't exist, allow no permission to it.
         if (!is_object($this->node) || !$this->node->exists) {
           new Message($this->env, 'Error: trying to access the non existing node ' . $this->node->name . '.', MESSAGE_WARNING);
         }
-
-        // Conversion to array as of new approach to values.
-        elseif (!is_array($permissions[$this->getAction()])) {
-          $permissions[$this->getAction()] = array($permissions[$this->getAction()]);
+        else {
+          // Conversion to array as of new approach to values.
+          if (!is_array($permissions[$this->getAction()])) {
+            $permissions[$this->getAction()] = array($permissions[$this->getAction()]); 
+          }         
           $perm_array = array_flip($permissions[$this->getAction()]);
+
           // If allowed role is anonymous always grant access.
           if (!empty($this->getAction()) && isset($perm_array[ROLE_ANONYMOUS])) {
             $can_access = TRUE;
           }
-        } 
-        else {
-          $perm_array = array_flip($permissions[$this->getAction()]);
-          // Compare the permissions in the node
-          foreach ($perm_array as $perm_role => $counter) {
-            if ($this->actor->hasRole($perm_role)) {
-              $can_access = TRUE;
+          else {
+            // Compare the permissions in the node
+            foreach ($perm_array as $perm_role => $counter) {
+              if ($this->actor->hasRole($perm_role)) {
+                $can_access = TRUE;
+              }
             }
           }
-        }
-
+        } 
         break;
 
       default:
