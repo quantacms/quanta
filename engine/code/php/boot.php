@@ -38,7 +38,7 @@
   $env->hook('boot');
 
   // Start page's standard index.html.
-  $page = new Page($env, 'index.html');
+  $page = new Page($env);
   $vars = array('page' => &$page);
 
   $env->setData('page', $page);
