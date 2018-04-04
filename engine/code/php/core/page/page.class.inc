@@ -1,7 +1,7 @@
 <?php
 /**
  * Class Page
- * This class represents a Page (corrisponding to a rendered html page).
+ * This class represents a Page (corresponding to a rendered html page).
  */
 class Page extends DataContainer {
   public $html;
@@ -9,14 +9,16 @@ class Page extends DataContainer {
   public $file;
 
   /**
+   * Constructs the page object.
+   *
    * @param $env Environment
+   *   The Environment.
+   *
    * @param $file
-   * @param null $title
-   * @param null $content
-   * @internal param $filename
-   * @internal param null $name
+   *   The page file.
+   *
    */
-  public function __construct(&$env, $file, $title = NULL, $content = NULL) {
+  public function __construct(&$env, $file = 'index.html') {
     $this->env = $env;
     $this->file = $file;
   }
@@ -29,7 +31,6 @@ class Page extends DataContainer {
     // TODO: better way to skip load includes.
     $this->addData('css', array('<link rel="stylesheet" type="text/css" href="/tmp/css.min.css" />'));
     $this->addData('js', array('<script type="text/javascript" src="/tmp/js.min.js"></script>'));
-
   }
 
   /**
