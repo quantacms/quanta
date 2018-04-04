@@ -70,30 +70,6 @@ function qtag_JS($env, $target, $attributes) {
 }
 
 /**
- * Implements qtag META_DATA.
- *
- * Automatically generated page meta data.
- *
- * @param Environment $env
- *   The Environment.
- *
- * @param string $target
- *   The qtag's target.
- *
- * @param array $attributes
- *   The qtag's attributes.
- *
- * @return string
- *   The rendered qtag.
- */
-function qtag_META_DATA($env, $target, $attributes) {
-  $page = $env->getData('page');
-  $meta = $page->getData('metadata');
-  return implode('
-  ', $meta);
-}
-
-/**
  * Implements qtag BODYCLASSES.
  *
  * Automatically generated header data.
@@ -134,7 +110,7 @@ function qtag_BODYCLASSES($env, $target, $attributes) {
  *   The rendered qtag.
  */
 function qtag_URL($env, $target, $attributes) {
-	return 'http://' . $env->host . $env->request_uri;
+  return $env->getData('request_url');
 }
 
 /**
