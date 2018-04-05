@@ -10,9 +10,9 @@
 function sitemap_boot($env, $vars) {
   // TODO: object oriented, using templates, etc. etc.
   if ($env->getRequestedPath() == 'google_sitemap') {
-      header("Content-type: text/xml");
+    header("Content-type: text/xml");
 
-      print "<?xml version=\"1.0\" encoding=\"utf-8\" ?>" . "\n";
+    print "<?xml version=\"1.0\" encoding=\"utf-8\" ?>" . "\n";
     echo "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n";
     $site_pages = $env->scanDirectoryDeep($env->dir['docroot'], '', array(), array(
       'exclude_dirs' => DIR_INACTIVE,
@@ -23,15 +23,15 @@ function sitemap_boot($env, $vars) {
 
     $already_done = array();
     foreach ($site_pages as $item) {
-        $node = NodeFactory::load($env, $item['name']);
-        $modtime = (file_exists($item['path'] . '/data.json') ? filemtime($item['path'] . '/data.json') : filemtime($item['path']));
+      $node = NodeFactory::load($env, $item['name']);
+      $modtime = (file_exists($item['path'] . '/data.json') ? filemtime($item['path'] . '/data.json') : filemtime($item['path']));
 
-        if (!($node->isPublished()) || isset($already_done[$item['name']])) {
-          continue;
-        }
-        $already_done[$item['name']] = TRUE;
-        $priority = ($item['name'] == '') ? 1 : 0.7;
-        $freq = ($item['name'] == '' ? 'daily' : 'weekly');
+      if (!($node->isPublished()) || isset($already_done[$item['name']]) || $node->getAttributeJSON('sitemap_exclude')) {
+        continue;
+      }
+      $already_done[$item['name']] = TRUE;
+      $priority = ($item['name'] == '') ? 1 : 0.7;
+      $freq = ($item['name'] == '' ? 'daily' : 'weekly');
 
       echo "<url>\n";
       echo "<loc>" . $env->getBaseUrl() . "/" . $item['name'] . "</loc>";

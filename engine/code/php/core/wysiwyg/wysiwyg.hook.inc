@@ -23,20 +23,22 @@ function wysiwyg_load_includes($env, $vars) {
   $env->addInclude('engine/code/php/core/wysiwyg/froala/plugins/line_breaker.min.js');
   $env->addInclude('engine/code/php/core/wysiwyg/froala/plugins/url.min.js');
   $env->addInclude('engine/code/php/core/wysiwyg/froala/js/froala-quanta.js');
-  $env->addInclude('engine/code/php/core/wysiwyg/css/wysiwyg.css');  
+  $env->addInclude('engine/code/php/core/wysiwyg/css/wysiwyg.css');
+
 }
 
 /**
- * Implements hook_metadata().
+ * Implements hook_page_init().
  *
  * @param Environment $env
  *   The Environment.
  * @param array $vars
  *   An array of variables.
  */
-function wysiwyg_metadata($env, $vars) {
+function wysiwyg_page_init($env, $vars) {
+  /** @var Page $page */
+  $page = $vars['page'];
+
   // Include the codemirror lib.
-  $vars['page']->addData('metadata', array(
-    '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/codemirror.min.css">',
-  ));
-} 
+  $page->addData('css', array('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/codemirror.min.css" />'));
+}
