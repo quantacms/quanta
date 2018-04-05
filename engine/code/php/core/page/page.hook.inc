@@ -22,7 +22,7 @@ function page_body_classes($env, $vars) {
  *   An array of variables.
  */
 function page_boot($env, $vars) {
-  $env->sysdir('pages', '_pages');
+  $env->sysdir('pages', 'pages');
 
   // Start robots.txt configuration.
   // TODO: object oriented, using templates, etc. etc.

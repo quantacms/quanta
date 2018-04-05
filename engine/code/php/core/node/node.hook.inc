@@ -143,22 +143,65 @@ function node_shadow_node_delete_form($env, $vars) {
 function node_metadata($env, $vars) {
   // Setup body classes per each item in the current node lineage.
   $node = NodeFactory::current($env);
-  $vars['page']->addData('metadata', array(
-    '<meta name="description" content="' . $node->getTeaser() . '" />',
-    '<meta name="author" content="[ATTRIBUTE|name=title:' . $node->getAuthor() . ']" />',
-    '<meta name="copyright" content="Aldo Tripiciano" />',
-    '<meta name="application-name" content="Quanta CMS" />',
-    '<meta property="fb:app_id" content="123352434839142" />',
-    '<meta property="og:title" content="' . $node->getTitle() . '" />',
-    '<meta property="og:type" content="article" />',
-    '<meta property="og:image" content="[URL]' . $node->getThumbnail() . '" />',
-    '<meta property="og:url" content="[URL]" />',
-    '<meta property="og:description" content="' . $node->getTeaser() . '" />',
-    '<meta name="twitter:card" content="' . $node->getTeaser() . '" />',
-    '<meta name="twitter:title" content="' . $node->getTitle() . '" />',
-    '<meta name="twitter:description" content="' . $node->getTeaser() . '" />',
-    '<meta name="twitter:image" content="[URL]' . $node->getThumbnail() . '" />',
-  ));
+  $author = UserFactory::load($env, $node->getAuthor());
+
+  $vars['metadata']['charset'] = array(
+    'content' => 'utf-8',
+  );
+
+  $vars['metadata']['description'] = array(
+    'content' => $node->getTeaser(),
+  );
+
+  $vars['metadata']['name'] = array(
+    'content' => $author->getTitle(),
+  );
+
+  $vars['metadata']['application-name'] = array(
+    'content' => 'Quanta CMS',
+  );
+
+  $vars['metadata']['og:title'] = array(
+    'property' => 'og:title',
+    'content' => $node->getTitle(),
+  );
+
+  $vars['metadata']['og:type'] = array(
+    'property' => 'og:type',
+    'content' => 'article',
+  );
+
+  $vars['metadata']['og:url'] = array(
+    'property' => 'og:url',
+    'content' => $env->getData('request_url'),
+  );
+
+  $vars['metadata']['og:image'] = array(
+    'property' => 'og:image',
+    'content' => $env->getData('request_url') . $node->getThumbnail(),
+  );
+
+  $vars['metadata']['og:description'] = array(
+    'property' => 'og:description',
+    'content' => $node->getTeaser(),
+  );
+
+  $vars['metadata']['twitter:description'] = array(
+    'content' => $node->getTeaser(),
+  );
+
+  $vars['metadata']['twitter:image'] = array(
+    'content' => $env->getData('request_url') . $node->getThumbnail(),
+  );
+
+  $vars['metadata']['twitter:title'] = array(
+    'content' => $node->getTitle(),
+  );
+
+  $vars['metadata']['twitter:card'] = array(
+    'content' => $node->getTeaser(),
+  );
+
 }
 
 /**

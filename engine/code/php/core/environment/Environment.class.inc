@@ -28,6 +28,8 @@ class Environment extends DataContainer {
    * @param string $request_uri
    */
   public function __construct($host = NULL, $request_uri = NULL, $docroot = NULL) {
+
+
     $this->host = (($host == NULL) ? strtolower($_SERVER['HTTP_HOST']) : $host);
     if ($request_uri == NULL && !empty($_SERVER['REQUEST_URI'])) {
       // Remove querystring to obtain request uri...
@@ -45,6 +47,8 @@ class Environment extends DataContainer {
     if ($docroot == NULL) {
       $docroot = $_SERVER['DOCUMENT_ROOT'];
     }
+    // TODO: move request_uri in data.
+    $this->setData('request_url', $this->getProtocol() . '://' . $this->request_uri);
     $this->dir['quanta'] = $docroot;
     $this->dir['sites'] = $this->dir['quanta'] . '/sites';
     $this->dir['engine'] = $this->dir['quanta'] . '/engine';
@@ -63,6 +67,23 @@ class Environment extends DataContainer {
     if (isset($_REQUEST['json'])) {
       $this->request_json = json_decode($_REQUEST['json']);
     }
+  }
+
+  /**
+   * Get the current server protocol.
+   */
+  public function getProtocol() {
+    if (isset($_SERVER['HTTPS']) &&
+      ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] == 1) ||
+      isset($_SERVER['HTTP_X_FORWARDED_PROTO']) &&
+      $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') {
+      $protocol = 'https';
+    }
+    else {
+      $protocol = 'http';
+    }
+
+    return $protocol;
   }
 
   /**
