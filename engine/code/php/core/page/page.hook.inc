@@ -23,6 +23,7 @@ function page_body_classes($env, $vars) {
  */
 function page_boot($env, $vars) {
   $env->sysdir('pages', 'pages');
+  $env->sysdir('system', '_system');
 
   // Start robots.txt configuration.
   // TODO: object oriented, using templates, etc. etc.
@@ -38,6 +39,31 @@ function page_boot($env, $vars) {
     print $robots->render();
     exit();
   }
+}
+
+
+/**
+ * Implements hook_setup.
+ * Main setup of users.
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param array $vars
+ *   Miscellaneous environment / page variables.
+ */
+function page_setup($env, $vars) {
+  // Create the basic roles.
+  $basic_pages = array(
+    '403' => array('title' => '403 - Forbidden'),
+    '404' => array('title' => '404 - File not found'),
+  );
+
+  foreach ($basic_pages as $page => $pagedata) {
+    if (!is_dir($env->dir['system'] . '/' . $page)) {
+      NodeFactory::buildNode($env, $page, '_system', $pagedata);
+    }
+  }
+
 }
 
 /**
