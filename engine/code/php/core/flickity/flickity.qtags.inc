@@ -72,9 +72,7 @@ function qtag_CAROUSEL($env, $target, $attributes) {
   $html .=
   '<script>
     window.addEventListener("DOMContentLoaded", function(){
-      console.log("dom loaded");
       $(".flickity-' . $rand_class . '").flickity({' . implode(',', $carousel_attributes_arr) . '});
-      console.log("carousel loaded");
     });
   </script>';
   return $html;
