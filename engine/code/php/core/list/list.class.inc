@@ -58,6 +58,10 @@ abstract class ListObject extends DataContainer {
       $this->realpath = $env->dir['docroot'];
       $this->setNode(NULL);
       }
+    elseif ($path == NODE_NEW) {
+      $this->realpath = NULL;
+      $this->setNode(NULL);
+    }
     elseif ($path == NULL) {
       $this->setNode(NodeFactory::current($this->env));
       $this->realpath = $this->getNode()->realpath;
@@ -136,7 +140,13 @@ abstract class ListObject extends DataContainer {
    * @return bool
    */
   public function load() {
+    // Empty realpath. Usually happens with a new node, that has no path yet.
+    if (empty($this->realpath)) {
+      $this->loaded = TRUE;
+      return FALSE;
+    }
     if (!is_dir($this->realpath)) {
+      // Attempt to run a list on an invalid node.
       $this->loaded = TRUE;
       new Message($this->env, $this->node->name . ' is not a valid page. Full path: ' . $this->realpath, MESSAGE_ERROR);
       return FALSE;
