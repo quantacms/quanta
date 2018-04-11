@@ -280,7 +280,7 @@ class Node extends JSONDataContainer {
       new Message($this->env, 'Node title can not be empty.', MESSAGE_WARNING);
       $valid = FALSE;
     }
-    if (!$author->exists) {
+    if (!$author->exists && $author->getName() != USER_ANONYMOUS) {
       new Message($this->env, 'User ' . $this->getAuthor() . ' is not a valid user!', MESSAGE_WARNING);
       $valid = FALSE;
     }

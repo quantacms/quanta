@@ -6,7 +6,7 @@
 class Shadow extends Page {
   private $tabs = array();
   private $widget;
-  private $buttons = array();
+  public $buttons = array();
   public $components = array();
   /**
    * @var Node $node.
@@ -49,6 +49,8 @@ class Shadow extends Page {
       $vars = array('shadow' => &$this);
       $this->env->hook('shadow_' . $component, $vars);
     }
+    $this->addTab('Temporary form', file_get_contents('core/node/tpl/node_data.inc'), 1);
+    $this->addButton('edit-save', 'Save');
   }
 
   /**

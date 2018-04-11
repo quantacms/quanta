@@ -335,17 +335,20 @@ class NodeFactory {
           $node->setThumbnail($nodedata['edit-thumbnail']);
         }
 
-        $datetime = strtotime($nodedata['edit-date'] . ' ' . $nodedata['edit-time']);
         // Check if the user can access node add / edit for this node.
         $has_access = (NodeAccess::check($env, $action, array('node' => ($action == NODE_ACTION_ADD) ? $node->father : $node)));
         if ($has_access) {
-          // Setup all node data (title, Body, etc.)
-          $node->setTitle($nodedata['edit-title']);
-          $node->setBody($nodedata['edit-content']);
-          $node->setAuthor($nodedata['edit-author']);
-          $node->setTeaser($nodedata['edit-teaser']);
-          $node->setContent('<h1>' . $node->getTitle() . '</h1>' . $node->getBody());
-          $node->setTimestamp($datetime > 0 ? $datetime : time());
+
+          if (isset($nodedata['edit-title'])) {
+            // Setup all node data (title, Body, etc.)
+            $node->setTitle($nodedata['edit-title']);
+            $node->setBody($nodedata['edit-content']);
+            $node->setAuthor($nodedata['edit-author']);
+            $node->setTeaser($nodedata['edit-teaser']);
+            $node->setContent('<h1>' . $node->getTitle() . '</h1>' . $node->getBody());
+            $datetime = strtotime($nodedata['edit-date'] . ' ' . $nodedata['edit-time']);
+            $node->setTimestamp($datetime > 0 ? $datetime : time());
+          }
           // Also setup the temporary file directory for the upload.
           $node->setData('tmp_files_dir', $nodedata['tmp_files_dir']);
           if (isset($nodedata['redirect'])) {
