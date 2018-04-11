@@ -41,7 +41,7 @@
   $page = new Page($env);
   $vars = array('page' => &$page);
 
-  $env->setData('page', $page);
+  $env->setData('page', $vars['page']);
 
   // Run the init hook.
 
