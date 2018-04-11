@@ -16,11 +16,7 @@
 }
 
 .box > .inner {
-    border-color: #aaa;
-    border-style: solid;
-    border-width: 1px;
     overflow: hidden;
-    background: #e8e8e2;
 }
 
 /* > 600px */
@@ -55,8 +51,4 @@
 .box img {
     max-width: 100%;
     max-height: 100%;
-}
-
-.anchor {
-
 }
