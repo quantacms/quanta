@@ -10,6 +10,7 @@ define("ROLE_LOGGED", "logged");
 define("USER_PASSWORD_MIN_LENGTH", 8);
 define("USER_MIN_NAME_LENGTH", 4);
 
+define("USER_ACTION_LOGIN", "user_login");
 define("USER_ACTION_EDIT", "user_edit");
 define("USER_ACTION_EDIT_OWN", "user_edit_own");
 define("USER_ACTION_REGISTER", "user_register");

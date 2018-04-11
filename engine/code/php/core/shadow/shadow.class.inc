@@ -49,8 +49,13 @@ class Shadow extends Page {
       $vars = array('shadow' => &$this);
       $this->env->hook('shadow_' . $component, $vars);
     }
-    $this->addTab('Temporary form', file_get_contents('core/node/tpl/node_data.inc'), 1);
-    $this->addButton('edit-save', 'Save');
+
+    // TODO: change this total shit and use another criteria for adding standard node data!
+    // TODO: IMPORTANT!
+    if ($this->env->getContext() != USER_ACTION_LOGIN) {
+      $this->addTab('Temporary form', file_get_contents('core/node/tpl/node_data.inc'), 1);
+      $this->addButton('edit-save', 'Save');
+    }
   }
 
   /**
