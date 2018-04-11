@@ -46,5 +46,7 @@ function workflow_setup($env, $vars) {
  *   An array of variables.
  */
 function workflow_node_presave($env, $vars) {
-  $vars['node']->setStatus($vars['data']['edit-status']);
+  if (isset($vars['data']['edit-status'])) {
+    $vars['node']->setStatus($vars['data']['edit-status']);
+  }
 }
