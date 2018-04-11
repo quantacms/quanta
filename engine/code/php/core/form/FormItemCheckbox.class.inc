@@ -35,8 +35,7 @@ class FormItemCheckbox extends FormItem {
    * We handle the "checked" attribute by comparing defualt and current value.
    */
   public function loadAttributes() {
-    $value = $this->getValue();
-    $this->setData('checked', $this->getDefaultValue() == array_pop($value));
+    $this->setData('checked', $this->getCheckedValue());
     // TODO: Implement loadAttributes() method.
   }
 
@@ -50,5 +49,17 @@ class FormItemCheckbox extends FormItem {
       return NULL;
     }
   }
+
+
+  /**
+   * Return the checked value of a form item.
+   *
+   * @return mixed
+   *   The checked value of the form item.
+   */
+  public function getCheckedValue() {
+    $value = $this->getValue();
+    return ($this->getDefaultValue() == array_pop($value));
+  }  
 
 }
