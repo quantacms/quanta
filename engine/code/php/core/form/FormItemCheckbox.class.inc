@@ -12,7 +12,7 @@ class FormItemCheckbox extends FormItem {
    * @return mixed
    */
   function render() {
-    $rendered = '<input value="' . $this->getDefaultValue() . '" type="checkbox" ' .
+    $rendered = '<input value="' . array_pop($this->getValue()) . '" type="checkbox" ' .
       ($this->isDisabled() ? 'disabled ' : '') .
       ($this->isRequired() ? 'required ' : '') .
       ('class="' . $this->getClass() . '" ') .
@@ -22,6 +22,16 @@ class FormItemCheckbox extends FormItem {
       '/> ' . $this->getData('title');
 
     return $rendered;
+  }
+
+  /**
+   * Checkbox must have a default 0/1 state as the value is fixed.
+   *
+   * Load the default value for the input item.
+   */
+  public function loadDefault() {
+    // If there is already a value set for the input item, ignore the default.
+    $this->setData('default_value', !empty($single_value) ? $single_value : $this->getInputAttr('default'));
   }
 
   /**
@@ -35,8 +45,7 @@ class FormItemCheckbox extends FormItem {
    * We handle the "checked" attribute by comparing defualt and current value.
    */
   public function loadAttributes() {
-    $value = $this->getValue();
-    $this->setData('checked', $this->getCheckedValue() == array_pop($value));
+    $this->setData('checked', $this->getCheckedValue() == $this->getDefaultValue());
     // TODO: Implement loadAttributes() method.
   }
 
