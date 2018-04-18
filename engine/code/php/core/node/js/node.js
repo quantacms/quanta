@@ -19,15 +19,20 @@ $(document).bind('refresh', function() {
         var shadow = {
           module : 'node',
           context: 'node_edit',
-          widget: $(this).attr('data-widget'),
+          widget: $(this).data('widget'),
           components: components,
-          node: $(this).attr('data-rel'),
-          redirect: $(this).attr('data-redirect')
+          node: $(this).data('rel'),
+          redirect: $(this).data('redirect')
         };
 
-        if ($(this).attr('data-language') != undefined) {
+        if ($(this).data('language') != undefined) {
           shadow.language = $(this).attr('data-language');
         }
+
+        if ($(this).data('manager') != undefined) {
+          shadow.manager = $(this).attr('data-manager');
+        }
+
 
       openShadow(shadow);
 
@@ -37,15 +42,26 @@ $(document).bind('refresh', function() {
     // Add Node link behavior.
     $('.add-link').off('click').on('click', function(e) {
             var components = (($(this).attr('data-components') != undefined) ? ($(this).attr('data-components').split(',')) : ['node_form', 'file_form']);
-            openShadow({
+            var shadow = {
                 module: 'node',
                 context: 'node_add',
                 widget: $(this).attr('data-widget'),
                 language: $(this).attr('data-language'),
                 components: components,
                 node: $(this).attr('data-rel')
-            });
-            e.preventDefault();
+            };
+
+
+      if ($(this).data('language') != undefined) {
+        shadow.language = $(this).attr('data-language');
+      }
+
+      if ($(this).data('manager') != undefined) {
+        shadow.manager = $(this).attr('data-manager');
+      }
+      openShadow(shadow);
+
+      e.preventDefault();
         });
 
 
