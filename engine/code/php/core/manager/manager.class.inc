@@ -47,7 +47,7 @@ class Manager {
    */
   public function renderLeaf($leaf) {
     $selected = !empty($this->node->name) ? $leaf->hasChild($this->node->name) : FALSE;
-    $is_father = ($leaf->name == $this->node->getFather()->name);
+    $is_father = (!empty($this->node->getFather())) ? ($leaf->name == $this->node->getFather()->name) : FALSE;
     $classes = array('manager-leaf');
     if ($leaf->hasChildren()) {
       $classes[] = "has-children";
