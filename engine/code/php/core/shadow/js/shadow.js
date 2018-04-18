@@ -31,6 +31,7 @@ function closeShadow() {
  * @param stdClass shadowData
  */
 function openShadow(shadowData) {
+  $(document).trigger('shadow', shadow);
   shadow = shadowData;
   shadowUpdated = false;
 
