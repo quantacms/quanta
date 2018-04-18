@@ -41,9 +41,15 @@ function manager_init($env, $vars) {
 function manager_shadow_manager_form($env, $vars) {
   /** @var Shadow $shadow */
   $shadow = $vars['shadow'];
+
   $node = $shadow->getNode();
   $manager = new Manager($env, $node);
-  $shadow->addTab('manage categories', '<h2>Manage Categories</h2>' . '<div class="shadow-hint">In this screen you can select the categories in which you want to include the node.</div>' . $manager->renderTree(), 4, 'manager-tree');
+  $manager_cats = $shadow->getData('manager');
+  if (empty($manager_cats)) {
+    $manager_cats = 'root';
+  }
+
+  $shadow->addTab('manage categories', '<h2>Manage Categories</h2>' . '<div class="shadow-hint">In this screen you can select the categories in which you want to include the node.</div>' . $manager->renderTree($manager_cats), 4, 'manager-tree');
 }
 
 /**
@@ -86,3 +92,20 @@ function manager_node_presave($env, &$vars) {
     }
   }
 }
+
+/**
+ * Implements hook_link_alter().
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param array $vars
+ *   An array of variables.
+ */
+function manager_link_alter($env, $vars) {
+  // TODO: bugged on node add because we do not know the name of the node!
+  if (isset($vars['attributes']['manager'])) {
+    $vars['link_data'][] = 'data-manager="' . $vars['attributes']['manager'] . '"';
+  }
+}
+
+

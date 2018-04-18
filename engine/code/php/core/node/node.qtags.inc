@@ -50,10 +50,8 @@ function qtag_BLOCK($env, $target, $attributes) {
     $body = isset($attributes['with-title']) ? ('<h2 class="block-title">' . $node->getTitle() . '</h2>' . $node->getBody()) : $node->getBody();
   }
 
-  $editable = $attributes['editable'];
-
   // Wrap in the inline editor.
-  if (empty($editable) || $editable == 'true') {
+  if (empty($attributes['editable']) || $attributes['editable'] == 'true') {
     $body = $node->wrap($body);
   }
   // If user can't see the node, don't display it.
@@ -208,6 +206,8 @@ function qtag_LINK($env, $target, $attributes) {
   $querystring = array();
   $link_title = '';
   $link_target = '';
+  $link_data = array();
+
   $classes = array('link');
 
   // Check if the target is a node or an external link.
@@ -221,9 +221,7 @@ function qtag_LINK($env, $target, $attributes) {
     $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
     // Retrieve main link attributes.
     // TODO: use something to get the real url...
-    $vars = array('target' => $target);
     // Allow other modules to change the URL.
-    $env->hook('link_alter', $vars);
     $target = '/' . $node->getName();
     // TODO: loading the full node at each link is not performant.
     $title_default = $node->getTitle();
@@ -235,6 +233,9 @@ function qtag_LINK($env, $target, $attributes) {
     }
     $attributes['rel'] = $node->getName();
   }
+
+  $vars = array('target' => $target, 'attributes' => $attributes, 'link_data' => &$link_data);
+  $env->hook('link_alter', $vars);
 
   // Add custom classes to the link.
   if (isset($attributes['class'])) {
@@ -256,7 +257,6 @@ function qtag_LINK($env, $target, $attributes) {
     $link_target = 'target="' . $attributes['target'] . '"';
   }
 
-  $link_data = array();
   // TODO: make just a big variable "data".
   // Check Quanta data types.
   $data_types = array('rel', 'language', 'type', 'widget', 'components', 'tooltip', 'redirect');
@@ -300,7 +300,7 @@ function qtag_ADD($env, $target, $attributes) {
   if (NodeAccess::check($env, NODE_ACTION_ADD, array('node' => $nodeobj))) {
     $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
     $attributes['class'] .= ' add-link ';
-    $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Add to <i>' . $nodeobj->getTitle() . '</i>...';
+    $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Add to ' . $nodeobj->getTitle() . '...';
     $attributes['language'] = isset($attributes['language']) ? $attributes['language'] : Localization::getLanguage($env);
     $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&oplus;';
     $link = qtag_LINK($env, $target, $attributes);
@@ -333,7 +333,7 @@ function qtag_EDIT($env, $target, $attributes) {
     $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
     $attributes['class'] .= ' edit-link';
     $title = empty($nodeobj->getTitle()) ? $nodeobj->getName() : $nodeobj->getTitle();
-    $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Edit <i>' . $title . '</i>...';
+    $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Edit ' . $title . '...';
     //$attributes['language'] = isset($attributes['language']) ? $attributes['language'] : $env->getLanguage();
 
     $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&#9998;';
@@ -371,7 +371,7 @@ function qtag_DELETE($env, $target, $attributes) {
     $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
     $attributes['class'] .= 'delete-link';
     $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&ominus;';
-    $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Delete <i>' . $nodeobj->getTitle() . '</i>...';
+    $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Delete ' . $nodeobj->getTitle() . '...';
 
     $string = qtag_LINK($env, $target, $attributes);
   }
