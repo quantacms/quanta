@@ -107,7 +107,7 @@ class Image extends File {
    * @param string $sType
    * @param int $compression
    */
-  public function generateThumbnail($env, $thumbfile, $maxw = NULL, $maxh = NULL, $sType = 'crop', $compression = 60) {
+  public function generateThumbnail($env, $thumbfile, $maxw = NULL, $maxh = NULL, $sType = 'crop', $compression = 60, $fallback) {
 
     if (!(intval($maxw) > 0)) {
       $maxw = 999999;
@@ -119,15 +119,30 @@ class Image extends File {
     // Get the File path for the image
     $thumbRoot = $env->dir['tmp'] . '/thumbs';
     $sImagePath = $this->getRealPath();
-    $thumbImagePath =  $thumbRoot . '/' . $thumbfile;
+    $thumbImagePath = $thumbRoot . '/' . $thumbfile;
 
+    // TODO: a better cache system (refresh cache when image changes, also with same filename)
     // If thumbnail exists, use it.
     if (is_file($thumbImagePath)) {
-      return;
+      return $thumbfile;
     }
+    
     // If the image file is broken, use the default broken image.
-    if ($image_is_broken = !is_file($sImagePath)) {
-      $sImagePath = '/var/www/quanta/engine/code/php/core/image/assets/broken-img.jpg';
+    if (!is_file($sImagePath)) {
+      // Check if if set a fallback image.
+      if (isset($fallback) && is_file($fallback)){
+        // Set custom fallback image.
+        $sImagePath = $fallback;
+        $fallbackArr = explode('.', $fallback);
+        $fallbackExtension = strtolower(end($fallbackArr));
+
+        // New thumbfile.
+        $thumbfile .= 'fallback.' . $fallbackExtension;
+        $thumbImagePath = $thumbRoot . '/' . $thumbfile;
+      } else {
+        // Set Quanta default fallback image.
+        $sImagePath = '/var/www/quanta/engine/code/php/core/image/assets/broken-img.jpg';
+      }
     }
 
     if (!is_dir($thumbRoot)) {
@@ -179,15 +194,11 @@ class Image extends File {
       $img = imagecreatefromjpeg($sImagePath)
       or print("Cannot create new JPEG image: " . $sImagePath);
     } else if ($sExtension == 'png') {
-
       $img = imagecreatefrompng($sImagePath)
       or print("Cannot create new PNG image: " . $sImagePath);
-
     } else if ($sExtension == 'gif') {
-
       $img = imagecreatefromgif($sImagePath)
       or print("Cannot create new GIF image: " . $sImagePath);
-
     }
 
     // header("Content-type: image/" . $sExtension);
@@ -411,5 +422,6 @@ class Image extends File {
         imagegif($img, $thumbImagePath);
       }
     }
+    return $thumbfile;
   }
 } 
