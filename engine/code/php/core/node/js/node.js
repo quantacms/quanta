@@ -1,5 +1,6 @@
 $(document).bind('refresh', function() {
-    $('.delete-link').off('click').on('click', function(e) {
+  // Delete Node link behavior.
+  $('.delete-link').off('click').on('click', function(e) {
         openShadow({
             module: 'node',
             context: 'node_delete',
@@ -11,6 +12,7 @@ $(document).bind('refresh', function() {
 
     });
 
+    // Edit Node link behavior.
     $('.edit-link').off('click').on('click', function(e) {
         var components = (($(this).attr('data-components') != undefined) ? ($(this).attr('data-components').split(',')) : ['node_form', 'file_form', 'manager_form', 'access_form', 'status_form']);
 
@@ -32,6 +34,7 @@ $(document).bind('refresh', function() {
         e.preventDefault();
     });
 
+    // Add Node link behavior.
     $('.add-link').off('click').on('click', function(e) {
             var components = (($(this).attr('data-components') != undefined) ? ($(this).attr('data-components').split(',')) : ['node_form', 'file_form']);
             openShadow({

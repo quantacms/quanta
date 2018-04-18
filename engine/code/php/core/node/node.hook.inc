@@ -104,7 +104,6 @@ function node_shadow_node_form($env, $vars) {
   $action_name = ($env->getContext() == NODE_ACTION_ADD ? 'create' : 'edit') . ' content';
   $shadow->addTab($action_name, file_get_contents('core/node/tpl/node_edit.inc'), 1);
   $shadow->addTab('manage metadata', file_get_contents('core/node/tpl/metadata_form.inc'), 2);
-  $shadow->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Save');
 }
 
 /**
