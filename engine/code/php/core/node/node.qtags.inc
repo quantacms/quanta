@@ -50,8 +50,10 @@ function qtag_BLOCK($env, $target, $attributes) {
     $body = isset($attributes['with-title']) ? ('<h2 class="block-title">' . $node->getTitle() . '</h2>' . $node->getBody()) : $node->getBody();
   }
 
-  $editable = !empty($attributes['editable']) ? $attributes['editable'] : 'true';
-  if ($editable == 'true') {
+  $editable = $attributes['editable'];
+
+  // Wrap in the inline editor.
+  if (empty($editable) || $editable == 'true') {
     $body = $node->wrap($body);
   }
   // If user can't see the node, don't display it.
@@ -205,6 +207,7 @@ function qtag_ATTRIBUTE($env, $target, $attributes) {
 function qtag_LINK($env, $target, $attributes) {
   $querystring = array();
   $link_title = '';
+  $link_target = '';
   $link_data = array();
 
   $classes = array('link');
@@ -251,6 +254,12 @@ function qtag_LINK($env, $target, $attributes) {
     $querystring[] = 'lang=' . $attributes['language'];
   }
 
+  // Check if there is "target" attribute.
+  if (isset($attributes['target'])) {
+    $link_target = 'target="' . $attributes['target'] . '"';
+  }
+
+  $link_data = array();
   // TODO: make just a big variable "data".
   // Check Quanta data types.
   $data_types = array('rel', 'language', 'type', 'widget', 'components', 'tooltip', 'redirect');
@@ -264,7 +273,7 @@ function qtag_LINK($env, $target, $attributes) {
 
   $title = string_normalize((isset($attributes['title']) ? $attributes['title'] : $title_default));
   // Create the link HTML.
-  $link = '<a ' . implode(' ', $link_data) . ' class="' . implode(' ', $classes) . '" ' . $link_title . ' href="' . $target . $query . '">' . $title . '</a>';
+  $link = '<a ' . implode(' ', $link_data) . ' class="' . implode(' ', $classes) . '" ' . $link_title . ' href="' . $target . $query . '" ' . $link_target . '>' . $title . '</a>';
   return $link;
 }
 

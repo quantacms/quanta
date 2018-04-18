@@ -77,9 +77,11 @@ function qtag_IMGTHUMB($env, $target, $attributes) {
   // Setup compression level (JPEG / PNG).
   $compression = isset($attributes['compression']) ? $attributes['compression'] : 60;
 
+  // Setup fallback image.
+  $fallback = isset($attributes['fallback']) ? $attributes['fallback'] : NULL;
+
   // Setup alt for the image.
   $alt = isset($attributes['alt']) ? $attributes['alt'] : $target;
-
 
   // Setup title for the image link (if present).
   $link_title = isset($attributes['link_title']) ? $attributes['link_title'] : NULL;
@@ -93,10 +95,10 @@ function qtag_IMGTHUMB($env, $target, $attributes) {
 	$filename = $filearr[count($filearr) - 1];
 
 	// Generate the thumbnail of the requested image.
-  $image->generateThumbnail($env, $thumbfile, $image->width, $image->height, $op, $compression);
+  $newthumbfile = $image->generateThumbnail($env, $thumbfile, $image->width, $image->height, $op, $compression, $fallback);
 
   // TODO: stupid way to get to the tmp folder...
-  $src = '/thumbs/' . $thumbfile;
+  $src = '/thumbs/' . $newthumbfile;
 
   // Generate the image's url.
   if (isset($attributes['url'])) {

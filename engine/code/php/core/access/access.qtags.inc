@@ -25,10 +25,10 @@ function qtag_PERMISSION($env, $target, $attributes) {
     if (!empty($node->getAttributeJSON('permissions')->{$attributes['name']})) {
       // Try to fetch the permission from the node, first.
       $permission = $node->getAttributeJSON('permissions')->{$attributes['name']};
-    }
+    }/*
     else {
       $permission = $node->getPermission($attributes['name'], 'form');
-    }
+    }*/
   }
 
   return $permission;
