@@ -50,10 +50,8 @@ function qtag_BLOCK($env, $target, $attributes) {
     $body = isset($attributes['with-title']) ? ('<h2 class="block-title">' . $node->getTitle() . '</h2>' . $node->getBody()) : $node->getBody();
   }
 
-  $editable = $attributes['editable'];
-
   // Wrap in the inline editor.
-  if (empty($editable) || $editable == 'true') {
+  if (empty($attributes['editable']) || $attributes['editable'] == 'true') {
     $body = $node->wrap($body);
   }
   // If user can't see the node, don't display it.
@@ -259,7 +257,6 @@ function qtag_LINK($env, $target, $attributes) {
     $link_target = 'target="' . $attributes['target'] . '"';
   }
 
-  $link_data = array();
   // TODO: make just a big variable "data".
   // Check Quanta data types.
   $data_types = array('rel', 'language', 'type', 'widget', 'components', 'tooltip', 'redirect');
