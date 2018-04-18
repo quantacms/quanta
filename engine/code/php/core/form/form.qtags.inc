@@ -108,7 +108,7 @@ function qtag_FORM($env, $target, $attributes) {
  *   The rendered qtag.
  */
 function qtag_LIST_VALUES($env, $target, $attributes) {
-  $attributes['nowrap'] = TRUE;
+  $attributes['editable'] = 'false';
   $attributes['clean'] = TRUE;
   $attributes['separator'] = ',';
   $dirlist = new DirList($env, $target, 'list-values', $attributes, 'form');
