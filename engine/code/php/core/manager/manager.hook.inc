@@ -45,6 +45,9 @@ function manager_shadow_manager_form($env, $vars) {
   $node = $shadow->getNode();
   $manager = new Manager($env, $node);
   $manager_cats = $shadow->getData('manager');
+  if (empty($manager_cats)) {
+    $manager_cats = 'root';
+  }
 
   $shadow->addTab('manage categories', '<h2>Manage Categories</h2>' . '<div class="shadow-hint">In this screen you can select the categories in which you want to include the node.</div>' . $manager->renderTree($manager_cats), 4, 'manager-tree');
 }
