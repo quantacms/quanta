@@ -645,8 +645,10 @@ class Node extends JSONDataContainer {
     foreach ($lineage as $lineage_node) {
       if (!empty($lineage_node->json->permissions->{$permission}) && $lineage_node->json->permissions->{$permission} != NODE_PERMISSION_INHERIT) {
         $grant = $lineage_node->json->permissions->{$permission};
+        break;
       }
     }
+
     return $grant;
   }
 
