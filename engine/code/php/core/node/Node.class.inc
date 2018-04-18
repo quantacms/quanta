@@ -643,6 +643,7 @@ class Node extends JSONDataContainer {
     // Navigate the whole tree gathering real permissions on the node.
     $lineage = array_reverse($this->getLineage());
     foreach ($lineage as $lineage_node) {
+      // Stop when a suitable parent node with permissions is found.
       if (!empty($lineage_node->json->permissions->{$permission}) && $lineage_node->json->permissions->{$permission} != NODE_PERMISSION_INHERIT) {
         $grant = $lineage_node->json->permissions->{$permission};
         break;
