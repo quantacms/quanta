@@ -44,8 +44,8 @@ class NodeAccess extends Access {
         $permissions = $this->node->getPermissions();
 
         // If node doesn't exist, allow no permission to it.
-        if (!is_object($this->node) || !$this->node->exists) {
-          new Message($this->env, 'Error: trying to access the non existing node ' . $this->node->name . '.', MESSAGE_WARNING);
+        if ((!is_object($this->node) || !$this->node->exists) && $this->getAction() != NODE_ACTION_ADD) {
+          new Message($this->env, 'Error: trying to perform the ' . $this->getAction() . ' action on a non existing node ' . $this->node->name . '.', MESSAGE_WARNING);
         }
         else {
           // Conversion to array as of new approach to values.
