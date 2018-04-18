@@ -68,10 +68,14 @@ function qtag_CAROUSEL($env, $target, $attributes) {
   }
 
   $rand_class = rand(0, 99999999);
-  $html = '<div class="flickity-carousel flickity-' . $rand_class . '">' . $list->render() . '</div>
-  <script>$(".flickity-' . $rand_class . '").flickity({' . implode(',', $carousel_attributes_arr) . '});</script>';
+  $html = '<div class="flickity-carousel flickity-' . $rand_class . '">' . $list->render() . '</div>';
+  $html .=
+  '<script>
+    window.addEventListener("DOMContentLoaded", function(){
+      $(".flickity-' . $rand_class . '").flickity({' . implode(',', $carousel_attributes_arr) . '});
+    });
+  </script>';
   return $html;
-
 }
 
 /**
