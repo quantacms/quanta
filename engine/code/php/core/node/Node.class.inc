@@ -187,6 +187,19 @@ class Node extends JSONDataContainer {
     return $ret;
   }
 
+
+  /**
+   * Set up a node's JSON attribute.
+   *
+   * @param string $attr_name
+   *   The JSON attribute name.
+   * @param string $attr_value
+   *   The JSON attribute value.
+   */
+  public function setAttributeJSON($attr_name, $attr_value) {
+    $this->json->{$attr_name} = $attr_value;
+  }
+
   /**
    * Load node with its variables internally.
    */
