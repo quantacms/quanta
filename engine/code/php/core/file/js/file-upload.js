@@ -17,13 +17,20 @@ $(function () {
     // either via the browse button, or via drag/drop:
     add: function (e, data) {
 
-      var tfile = data.files[0].name.split('.');
-
-      var tpl = $('<li class="working list-item list-item-file file-' + tfile[1] + '"><span class="filename"></span><span class="progress-wrapper"><span class="progress"></span><input type="text" value="0" data-width="20" data-height="20"' +
-        ' data-fgColor="#0788a5" data-readOnly="1" data-bgColor="#3e4043" /></span></li>');
-
-      // Append the file name and file size
-      tpl.find('.filename').html('<a class="file-link" href="' + data.files[0].name + '">' + data.files[0].name + "</a>").append('<i>(' + formatFileSize(data.files[0].size) + ')</i>');
+      // TODO: should use a normal QTAG.
+      var tpl = $('' +
+        '<li class="working file-list-item list-item-file_admin">' +
+        '<span class="file-preview">file preview</span>' +
+        '<span class="file-link-item">' +
+        '<a class="file-link" href="' + (data.files[0].name) + '">' + (data.files[0].name) + "</a>" +
+        '<i>(' + formatFileSize(data.files[0].size) + ')</i>' +
+        '</span>' +
+        '<span class="progress-wrapper">' +
+        '<span class="progress"></span>' +
+        '<input type="text" value="0" data-width="20" data-height="20"' +
+        ' data-fgColor="#0788a5" data-readOnly="1" data-bgColor="#3e4043" />' +
+        '</span>' +
+        '</li>');
 
 
       // Add the HTML to the UL element

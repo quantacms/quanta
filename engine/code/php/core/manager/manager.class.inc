@@ -46,7 +46,7 @@ class Manager {
    *   The rendered leaf.
    */
   public function renderLeaf($leaf) {
-    $selected = !empty($this->node->name) ? $leaf->hasChild($this->node->name) : FALSE;
+    $selected = (!empty($this->node->name) && $this->env->getContext() != NODE_ACTION_ADD) ? $leaf->hasChild($this->node->name) : FALSE;
     $is_father = (!empty($this->node->getFather())) ? ($leaf->name == $this->node->getFather()->name) : FALSE;
     $classes = array('manager-leaf');
     if ($leaf->hasChildren()) {
