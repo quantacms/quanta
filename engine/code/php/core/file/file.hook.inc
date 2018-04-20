@@ -94,9 +94,7 @@ function file_node_after_save($env, $vars) {
   // TODO: move in File or create FileFactory module.
   /** @var Node $node */
   $node = $vars['node'];
-	if (empty($node->getData('tmp_files_dir'))) {
-        new Message($node->env, 'Warning: the temporary files directory was not initialized.', MESSAGE_WARNING);
-	}
+	if (!empty($node->getData('tmp_files_dir'))) {
   $tmp_dir = $env->dir['tmp_files'] . '/' . $node->getData('tmp_files_dir');
   if (is_dir($tmp_dir)) {
     $tmp_files = $env->scanDirectory($tmp_dir);
@@ -116,6 +114,7 @@ function file_node_after_save($env, $vars) {
       }
     }
     rmdir($tmp_dir);
+  }
   }
 }
 
