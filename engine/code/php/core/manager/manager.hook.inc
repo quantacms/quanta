@@ -53,16 +53,16 @@ function manager_shadow_manager_form($env, $vars) {
 }
 
 /**
- * Implements hook_action_node_add().
+ * Implements hook_node_add_complete().
  *
  * @param Environment $env
  *   The Environment.
  * @param array $vars
  *   An array of variables.
  */
-function manager_action_node_add($env, $vars) {
+function manager_node_add_complete($env, $vars) {
   // TODO: bugged on node add because we do not know the name of the node!
-  // manager_action_node_edit($env, $vars);
+  manager_node_edit_complete($env, $vars);
 }
 
 /**
@@ -75,7 +75,7 @@ function manager_action_node_add($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function manager_node_presave($env, &$vars) {
+function manager_node_edit_complete($env, &$vars) {
   /** @var Node $node */
   $node = $vars['node'];
 
@@ -87,8 +87,9 @@ function manager_node_presave($env, &$vars) {
     }
     // If the user has deselected a checkbox in the manager, attempt to remove the symlink.
     elseif (substr($label, 0, 8) == 'rem-leaf') {
+
       $leaf = substr($label, 9);
-      NodeFactory::unlinkNodes($env, $leaf, $node->getName());
+      NodeFactory::unlinkNodes($env, $node->getName(), $leaf);
     }
   }
 }
