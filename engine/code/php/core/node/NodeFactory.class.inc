@@ -338,7 +338,6 @@ class NodeFactory {
         // Check if the user can access node add / edit for this node.
         $has_access = (NodeAccess::check($env, $action, array('node' => ($action == NODE_ACTION_ADD) ? $node->father : $node)));
         if ($has_access) {
-
           if (isset($nodedata['edit-title'])) {
             // Setup all node data (title, Body, etc.)
             $node->setTitle($nodedata['edit-title']);
@@ -350,7 +349,10 @@ class NodeFactory {
             $node->setTimestamp($datetime > 0 ? $datetime : time());
           }
           // Also setup the temporary file directory for the upload.
-          $node->setData('tmp_files_dir', $nodedata['tmp_files_dir']);
+          if (isset($nodedata['tmp_files_dir'])) {
+            $node->setData('tmp_files_dir', $nodedata['tmp_files_dir']);
+          }
+          // Setup the after-save redirect.
           if (isset($nodedata['redirect'])) {
             $node->setData('redirect', $nodedata['redirect']);
           }
@@ -367,7 +369,7 @@ class NodeFactory {
           if ($node->validate()) {
             $node->save();
             // Hook node_add_complete, node_edit_complete, etc.
-            $env->hook($action . '_complete');
+            $env->hook($action . '_complete', $vars);
             // If the form has a redirect field, setup a redirect.
             $response->redirect = !empty($node->getData('redirect')) ? $node->getData('redirect') : ('/' . $node->getName() . '/');
           }
@@ -376,6 +378,7 @@ class NodeFactory {
             $response->errors = Message::burnMessages();
           }
         }
+
         else {
           // Page not found.
           $response->redirect = '/403';
