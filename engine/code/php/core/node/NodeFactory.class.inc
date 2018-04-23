@@ -332,12 +332,7 @@ class NodeFactory {
         }
         // TODO complete validation code.
         if (isset($nodedata['edit-thumbnail'])) {
-          $file = $nodedata['edit-thumbnail'];
-          $fileArr = explode('.', $file);
-          $fileExt = strtolower(array_pop($fileArr));
-          // normalizing filename
-          $fileName = $env->getCandidatePath(implode('.', $fileArr));
-          $node->setThumbnail($fileName . '.' . $fileExt);
+          $node->setThumbnail(normalizeFilePath($nodedata['edit-thumbnail']));
         }
 
         // Check if the user can access node add / edit for this node.

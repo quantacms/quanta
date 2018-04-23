@@ -129,6 +129,30 @@ function normalizePath($s) {
 
 
 /**
+ * Normalize a path by replacing all special characters for files.
+ *
+ * @param string $f
+ *   The file to normalize.
+ *
+ * @return string
+ *   The normalized file.
+ */
+function normalizeFilePath($f) {
+  $fArr = explode('.', $f);
+  $fExt = strtolower(array_pop($fArr));
+  $fName = implode('.', $fArr);
+  $fName = trim($fName);
+  $fName = remove_accents($fName);
+  $fName = strtolower($fName);
+  $fName = str_replace(' ', '-', $fName);
+  $fName = str_replace('_', '-', $fName);
+  $fName = preg_replace('/[^\pL\pN@-]+/', '', $fName);
+  return $fName . '.' . $fExt;  
+}
+
+
+
+/**
  * Converts all accent characters to ASCII characters.
  *
  * If there are no accent characters, then the string given is just returned.
