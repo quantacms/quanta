@@ -38,8 +38,8 @@ function node_action_node_edit($env, $vars) {
  *   An array of variables.
  */
 function node_action_node_delete($env, $vars) {
-  $response_json = NodeFactory::requestAction($env, $vars['data']['action'], $vars['data']);
-  exit($response_json);
+	$response_json = NodeFactory::requestAction($env, $vars['data']['action'], $vars['data']);
+	exit($response_json);
 }
 
 /**
