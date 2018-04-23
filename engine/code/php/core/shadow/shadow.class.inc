@@ -58,12 +58,22 @@ class Shadow extends Page {
 
     // TODO: change this total shit and use another criteria for adding standard node data!
     // TODO: IMPORTANT!
-    if ($this->env->getContext() != USER_ACTION_LOGIN) {
-      $this->addTab('Temporary form', file_get_contents('core/node/tpl/node_data.inc'), 1);
-      $this->addButton('edit-save', 'Save');
+    switch ($this->env->getContext()) {
+      case USER_ACTION_LOGIN:
+        break;
+        
+      case NODE_ACTION_DELETE:
+        $this->addTab('Temporary form', file_get_contents('core/node/tpl/node_data.inc'), 1);
+        $this->addButton('edit-save', 'Delete');      
+        break;
+      
+      default:
+        $this->addTab('Temporary form', file_get_contents('core/node/tpl/node_data.inc'), 1);
+        $this->addButton('edit-save', 'Save');         
+        break;
     }
   }
-
+  
   /**
    * Renders a Shadow using the Page class.
    */

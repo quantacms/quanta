@@ -73,8 +73,10 @@ function file_node_presave($env, $vars) {
   $data = $vars['data'];
   $files = array();
   foreach ($data as $label => $name) {
+
     if (substr($label,0, 13) == 'uploaded-file') {
-      $files[] = substr($label, 14);
+      $file = substr($label, 14);
+      $files[] = normalizeFilePath($file);
     }
   }
   $node->json->files = $files;
@@ -106,7 +108,7 @@ function file_node_after_save($env, $vars) {
         new Message($env, 'The file <b>' . $file . '</b> has an invalid name and could not be uploaded. Please use a different name.', MESSAGE_WARNING);
       }
       elseif (is_file($tmp_file_path)) {
-        copy($tmp_file_path, $node->realpath . '/' . $file);
+        copy($tmp_file_path, $node->realpath . '/' . normalizeFilePath($file));
         unlink($tmp_file_path);
       }
       else {
