@@ -372,6 +372,7 @@ function qtag_DELETE($env, $target, $attributes) {
     $attributes['class'] .= 'delete-link';
     $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&ominus;';
     $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Delete ' . $nodeobj->getTitle() . '...';
+    $attributes['redirect'] = isset($attributes['redirect']) ? $attributes['redirect'] : '';
 
     $string = qtag_LINK($env, $target, $attributes);
   }
