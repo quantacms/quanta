@@ -318,10 +318,13 @@ class NodeFactory {
       $path = $nodedata['edit-path'];
     }
 
+		// TODO: why?
+		if (is_array($path)) {
+		  $path = array_pop($path);
+		}
     // Check the father of the node.
     $father = ($action == NODE_ACTION_ADD) ? $nodedata['edit-father'] : NULL;
     $node = new Node($env, $path, $father);
-
     switch ($action) {
       case NODE_ACTION_ADD:
       case NODE_ACTION_EDIT:
@@ -388,7 +391,7 @@ class NodeFactory {
 
       // User requested to delete a Node...
       case NODE_ACTION_DELETE:
-        // Check that the current user has the right to delete the node.
+				// Check that the current user has the right to delete the node.
         $has_access = (NodeAccess::check($env, NODE_ACTION_DELETE, array('node' => $node)));
         if ($has_access) {
           // Delete the node...
@@ -397,6 +400,9 @@ class NodeFactory {
           new Message($node->env, $node->getName() . ' was deleted correctly');
           $response->redirect = !empty($node->getData('redirect')) ? $node->getData('redirect') : ('/' . $node->getFather()->getName() . '/');
         }
+				else {
+					print "ACCESS DENIED";
+				}
         break;
     }
 
