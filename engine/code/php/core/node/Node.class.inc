@@ -407,7 +407,7 @@ class Node extends JSONDataContainer {
     $np[count($np) - 1] = $rmname;
     // Delete file is indeed not an immediate deletion: it adds __ to folder name.
     // This is useful in order to recover a node that was accidentally deleted.
-    unlink($this->path);
+    //unlink($this->path);
     rename($this->realpath, implode('/', $np));
     new Message($this->env, 'user deleted this page: ' . $this->name . '.', MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
   }
