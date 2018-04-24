@@ -63,12 +63,12 @@ class Shadow extends Page {
         break;
         
       case NODE_ACTION_DELETE:
-        $this->addTab('Temporary form', file_get_contents('core/node/tpl/node_data.inc'), 1);
+        $this->addTab('temporary form', file_get_contents('core/node/tpl/node_data.inc'), 1);
         $this->addButton('edit-save', 'Delete');      
         break;
       
       default:
-        $this->addTab('Temporary form', file_get_contents('core/node/tpl/node_data.inc'), 1);
+        $this->addTab('temporary form', file_get_contents('core/node/tpl/node_data.inc'), 1);
         $this->addButton('edit-save', 'Save');         
         break;
     }
@@ -91,7 +91,7 @@ class Shadow extends Page {
         $i++;
         // A tab can be null in case of single-page Shadows.
         if ($tab['title'] != NULL) {
-          $tab_titles .= '<li class="shadow-title ' . (($i == 1) ? 'enabled' : '') . '" ><a href="#" data-rel="' . $i . '" id="shadow-title-' . $i . '">' . $tab['title'] . '</a></li>';
+          $tab_titles .= '<li data-title="' . $tab['title'] . '" class="shadow-title ' . (($i == 1) ? 'enabled' : '') . '" ><a href="#" data-rel="' . $i . '" id="shadow-title-' . $i . '">' . $tab['title'] . '</a></li>';
         }
         $tab_contents .= '<div class="shadow-content shadow-content-' . $this->env->getContext() . ' ' . $tab['classes'] . ' ' . (($i == 1) ? 'enabled' : '') . '" id="shadow-content-' . $i . '">' . $tab['content'] . '</div>';
       }
