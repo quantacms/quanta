@@ -224,11 +224,8 @@ class File extends DataContainer {
    *
    * @param $node
    */
-  public static function checkUploads($node) {
-    if (!NodeAccess::check($node->env, NODE_ACTION_EDIT, array('node' => $node))) {
-      new Message($node->env, 'Error: you have no permissions to upload files in this node', MESSAGE_ERROR);
-      return;
-		}
+  public static function checkUploads($env) {
+    // TODO: restore some kind of access check.
     $allowed = array(
       'png',
       'jpg',
@@ -251,7 +248,7 @@ class File extends DataContainer {
     );
 
     // Create a temporary upload directory.
-    $upload_dir = ($node->env->dir['tmp_files'] . '/' . $_REQUEST['tmp_files_dir']);
+    $upload_dir = ($env->dir['tmp_files'] . '/' . $_REQUEST['tmp_files_dir']);
 
     if (!is_dir($upload_dir)) {
       mkdir($upload_dir);
@@ -298,7 +295,7 @@ class File extends DataContainer {
    */
   public static function deleteFile($node, $file) {
     if (!NodeAccess::check($node->env, NODE_ACTION_EDIT, array('node' => $node))) {
-      new Message($node->env, 'Error: you have no permissions to upload files in this node', MESSAGE_ERROR);
+      new Message($node->env, 'Error: you have no permissions to delete files in this node', MESSAGE_ERROR);
     }
     unlink($node->realpath . '/' . $file);
   }
