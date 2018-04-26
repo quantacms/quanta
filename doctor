@@ -3,8 +3,8 @@
   if (empty($argv[1])) {
     die("Please enter a Quanta target / host, and a doctor command\n(i.e. doctor mysite.com check)\n");
   }
-  if (empty($argv[2]) || ($argv[2] != 'check' && $argv[2] != 'setup')) {
-    die("Wrong doctor command. Available doctor commands are: check, setup (i.e. doctor mysite.com check)\n");
+  if (empty($argv[2]) || ($argv[2] != 'check' && $argv[2] != 'clear-cache' && $argv[2] != 'setup')) {
+    die("Wrong doctor command. Available doctor commands are: check, setup, clear-cache (i.e. doctor mysite.com check)\n");
   }
   $host = $argv[1];
   $doctor_cmd = $argv[2];

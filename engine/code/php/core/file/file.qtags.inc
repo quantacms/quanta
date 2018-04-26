@@ -62,7 +62,9 @@ function qtag_FILEATTRIBUTE($env, $target, $attributes) {
  *   The rendered qtag.
  */
 function qtag_FILE($env, $target, $attributes) {
-  $file = new File($env, $target, NULL, $attributes['title']);
+  $node = empty($attributes['node']) ? NodeFactory::current($env) : NodeFactory::load($env, $attributes['node']);
+
+  $file = new File($env, $target, $node, $attributes['title']);
   // Return the rendered file, if exists.
   if ($file->exists) {
     return $file->render();
@@ -91,8 +93,16 @@ function qtag_FILE($env, $target, $attributes) {
  *   The rendered qtag.
  */
 function qtag_PREVIEW($env, $target, $attributes) {
+  $node = empty($attributes['node']) ? NodeFactory::current($env) : NodeFactory::load($env, $attributes['node']);
+  $file = new File($env, $target, $node);
 
-  // TODO: implement.
-  // return 'PREVIEW';
+  switch($file->getType()) {
+    case 'image':
+      $attributes['150xauto'] = '|test';
+      print qtag_IMGTHUMB($env, $target, $attributes);
+      break;
 
+    default:
+      break;
+  }
 }
