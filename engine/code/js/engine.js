@@ -41,13 +41,15 @@ var refreshButtons = function() {
 };
 
 var action = function(dataJson) {
-
+    //console.log("dataJson", dataJson);
     $.ajax({
         type: "POST",
         dataType: 'json',
         url: '/',
         data: {json: dataJson},
-        success: actionSuccess,
+        success: function(data, textStatus, jqXHR) {
+            actionSuccess(data); 
+        },
         error: actionError
     });
 };
@@ -57,6 +59,8 @@ var action = function(dataJson) {
  * @param data
  */
 var actionSuccess = function(data) {
+    //console.log("data", data);
+    //throw "errrr";
     if (data.errors) {
         $('.messages').html(data.errors).fadeIn('slow');
         setTimeout(function() {
