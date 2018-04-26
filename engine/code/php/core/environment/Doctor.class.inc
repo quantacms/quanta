@@ -350,12 +350,23 @@ class Doctor extends DataContainer {
   function checkApacheVsUnixUser() {
     if ($this->apache_user != $this->unix_user) {
       $this->op('IMPORTANT: as the current user (' . $this->unix_user . ') is different from your apache user (' . $this->apache_user . '), in order to allow Apache accessing those folders and use Quanta, you have to run this command manually:');
-      $this->op('sudo chown -R ' . $this->apache_user . ' "' . $this->env->dir['docroot'] . '" "' . $this->env->dir['tmp'] . '"');
+      $this->op('sudo chown -R ' . $this->apache_user . ' "' . $this->env->dir['docroot'] . '"; sudo chown -R ' . $this->apache_user . ' "' . $this->env->dir['tmp'] . '"');
     }
   }
 
   function checkComposer() {
     // TODO.
+  }
+
+  /**
+   * This functions clears the caches (thumbnails, node paths, etc.).
+   */
+  public function runClearCache() {
+    $this->op('Running clear cache hooks...');
+    // Run all setup hooks.
+    $vars = array('doctor' => &$this);
+    $this->env->hook('clear_cache', $vars);
+    $this->ok();
   }
 
   /**

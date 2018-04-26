@@ -62,7 +62,22 @@
   // TODO: determine when to run doctor.
   if (isset($doctor_cmd)) {
     $doctor = new Doctor($env);
-    $doctor->runDoctor();
+    switch ($doctor_cmd) {
+      case 'clear-cache':
+        $doctor->runClearCache();
+        break;
+
+      case 'setup':
+        $doctor->runSetup();
+        $doctor->runDoctor();
+
+        break;
+
+      case 'check':
+      default:
+        $doctor->runDoctor();
+        break;
+    }
     exit;
   }
 
