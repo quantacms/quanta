@@ -288,6 +288,7 @@ function qtag_BREADCRUMB($env, $target, $attributes) {
   }
   // Add all nodes in the lineage to the breadcrumb.
   foreach ($lineage as $n) {
+    /** @var Node $n */
     // Add only nodes without "breadcrumb_exclude".
     if (!$n->getAttributeJSON('breadcrumb_exclude')) {
       $breadcrumb[$n->getName()] = $n;
