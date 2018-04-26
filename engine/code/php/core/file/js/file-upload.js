@@ -198,7 +198,7 @@ $(document).bind('refresh', function () {
 
   $('.file-preview').each(function() {
     var flink = $(this).parent().find('.file-link').attr('href');
-    alert(flink);
+    // alert(flink);
     $(this).load('/qtag/[FILE_PREVIEW:' + encodeURIComponent(flink) + ']');
   });
 
