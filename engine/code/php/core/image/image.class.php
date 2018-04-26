@@ -117,7 +117,7 @@ class Image extends File {
     }
 
     // Get the File path for the image
-    $thumbRoot = $env->dir['tmp'] . '/thumbs';
+    $thumbRoot = $env->dir['thumbs'];
     $sImagePath = $this->getRealPath();
     $thumbImagePath = $thumbRoot . '/' . $thumbfile;
 
@@ -143,10 +143,6 @@ class Image extends File {
         // Set Quanta default fallback image.
         $sImagePath = '/var/www/quanta/engine/code/php/core/image/assets/broken-img.jpg';
       }
-    }
-
-    if (!is_dir($thumbRoot)) {
-      mkdir($thumbRoot);
     }
 
     // If you want exact dimensions, you
