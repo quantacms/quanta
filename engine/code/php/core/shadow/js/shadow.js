@@ -91,6 +91,6 @@ function submitShadow() {
   });
   var formData = JSON.stringify(form_items);
   $(document).trigger('shadow_submit');
-
+  //console.log("formData", formData);
   action(formData);
 };

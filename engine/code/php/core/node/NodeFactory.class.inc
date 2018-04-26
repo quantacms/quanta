@@ -334,11 +334,8 @@ class NodeFactory {
           $node->setAuthor($user->getName());
         }
         // TODO complete validation code.
-        if (isset($nodedata['edit-thumbnail'])) {
-          // TODO: TEMP workoround to avoid {redirect...}
-          if (!empty($nodedata['edit-thumbnail'])){
-            $node->setThumbnail(normalizeFilePath($nodedata['edit-thumbnail']));
-          }
+        if (!empty($nodedata['edit-thumbnail'])) {
+          $node->setThumbnail(normalizeFilePath($nodedata['edit-thumbnail']));
         }
 
         // Check if the user can access node add / edit for this node.
