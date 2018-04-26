@@ -325,6 +325,11 @@ class NodeFactory {
     // Check the father of the node.
     $father = ($action == NODE_ACTION_ADD) ? $nodedata['edit-father'] : NULL;
     $node = new Node($env, $path, $father);
+    // Setup the after-save redirect.
+    if (isset($nodedata['redirect'])) {
+      $node->setData('redirect', $nodedata['redirect']);
+    }
+
     switch ($action) {
       case NODE_ACTION_ADD:
       case NODE_ACTION_EDIT:
@@ -354,10 +359,6 @@ class NodeFactory {
           // Also setup the temporary file directory for the upload.
           if (isset($nodedata['tmp_files_dir'])) {
             $node->setData('tmp_files_dir', $nodedata['tmp_files_dir']);
-          }
-          // Setup the after-save redirect.
-          if (isset($nodedata['redirect'])) {
-            $node->setData('redirect', $nodedata['redirect']);
           }
 
           $vars = array (
