@@ -198,8 +198,8 @@ $(document).bind('refresh', function () {
 
   $('.file-preview').each(function() {
     var flink = $(this).parent().find('.file-link').attr('href');
-    // alert(flink);
-    $(this).load('/qtag/[FILE_PREVIEW:' + encodeURIComponent(flink) + ']');
+    var qtag ='/qtag/[FILE_PREVIEW|node=prova-prova:' + encodeURIComponent(flink) + ']';
+    $(this).load(qtag);
   });
 
 });
