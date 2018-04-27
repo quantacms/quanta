@@ -266,16 +266,31 @@ a.file-link {
 }
 
 .file-preview {
-    width: 150px;
+    max-width: 150px;
+    min-width: 80px;
     height: 80px;
     vertical-align: middle;
     display: inline-block;
     margin-right: 20px;
-    border: 2px solid #ccc;
     background: #eee;
     text-align: center;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    padding: 0;
+}
+
+.file-preview-item {
+    border: 2px solid #ccc;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+.file-preview-item.file-pdf {
+    border-color: red;
+}
+
+.file-preview-item.file-document {
+    border-color: #00bfff;
 }
 
 .file-preview img {
