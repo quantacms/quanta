@@ -20,7 +20,7 @@ $(function () {
       // TODO: should use a normal QTAG.
       var tpl = $('' +
         '<li class="working file-list-item list-item-file_admin">' +
-        '<span class="file-preview">file preview</span>' +
+        '<span class="file-preview"></span>' +
         '<span class="file-link-item">' +
         '<a class="file-link" href="' + (data.files[0].name) + '">' + (data.files[0].name) + "</a>" +
         '<i>(' + formatFileSize(data.files[0].size) + ')</i>' +
@@ -194,6 +194,12 @@ $(document).bind('refresh', function () {
 
       }
     });
+  });
+
+  $('.file-preview').each(function() {
+    var flink = $(this).parent().find('.file-link').attr('href');
+    // alert(flink);
+    $(this).load('/qtag/[FILE_PREVIEW:' + encodeURIComponent(flink) + ']');
   });
 
 });

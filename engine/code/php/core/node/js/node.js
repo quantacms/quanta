@@ -6,7 +6,8 @@ $(document).bind('refresh', function() {
             context: 'node_delete',
             widget: 'single',
             components: ['node_delete_form'],
-            node: $(this).attr('data-rel')
+            node: $(this).attr('data-rel'),
+            redirect: $(this).data('redirect')
         });
         e.preventDefault();
 

@@ -31,3 +31,21 @@ function cache_regenerate_json($env, $vars) {
 function cache_boot($env, $vars) {
   $env->tmpdir('cache', CACHE_FOLDER);
 }
+
+/**
+ * Implements hook_clear_cache().
+ *
+ * Clears all cached node paths.
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param array $vars
+ *   An array of variables.
+ */
+function cache_clear_cache($env, $vars) {
+  /** @var Doctor $doctor */
+  $doctor = $vars['doctor'];
+  $doctor->op('Deleting all cached paths...');
+  exec('rm -r ' . $env->dir('cache') . '/*');
+  $doctor->ok('Done!');
+}

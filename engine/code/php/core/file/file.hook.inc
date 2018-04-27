@@ -42,7 +42,7 @@ function file_init($env, $vars) {
   // There is a request to upload a file.
   // TODO: move in actions / factory?
   if (isset($_FILES['upl'])) {
-    File::checkUploads($node);
+    File::checkUploads($env);
     exit();
   }
 

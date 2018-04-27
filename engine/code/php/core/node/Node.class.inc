@@ -213,8 +213,8 @@ class Node extends JSONDataContainer {
       $this->buildContent();
     }
     if ($this->exists && ($this->getTimestamp() == NULL)) {
-      // TODO: Sometimes filemtime returns error.
-      @$this->setTimestamp(filemtime($this->realpath));
+      // TODO: what to do when no timestamp has been set?
+      $this->setTimestamp(time());
     }
   }
 
@@ -577,7 +577,7 @@ class Node extends JSONDataContainer {
    * @return bool|string
    */
   public function getTime() {
-    return date('H:s', $this->getTimestamp());
+    return date('H:i', $this->getTimestamp());
   }
 
   /**
