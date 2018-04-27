@@ -521,9 +521,6 @@ class Environment extends DataContainer {
         }
         die();
       }
-      else {
-        die('404 - File not found');
-      }
     }
   }
 }
