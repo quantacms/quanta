@@ -577,7 +577,7 @@ class Node extends JSONDataContainer {
    * @return bool|string
    */
   public function getTime() {
-    return date('H:s', $this->getTimestamp());
+    return date('H:i', $this->getTimestamp());
   }
 
   /**
