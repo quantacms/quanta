@@ -278,21 +278,14 @@ function qtag_EMPTY($env, $target, $attributes) {
  */
 function qtag_BREADCRUMB($env, $target, $attributes) {
   $node = NodeFactory::current($env);
-  $breadcrumb = array();
+  $node_home = NodeFactory::load($env, 'home');
   // Builds the lineage of the node.
   $node->buildLineage();
-  $lineage = $node->getLineage();
+  // Starts with home node.
+  $breadcrumb = array('home' => $node_home) + $node->getLineage();
 
   if (empty($attributes['include_current'])) {
-    array_pop($lineage);
-  }
-  // Add all nodes in the lineage to the breadcrumb.
-  foreach ($lineage as $n) {
-    /** @var Node $n */
-    // Add only nodes without "breadcrumb_exclude".
-    if (!$n->getAttributeJSON('breadcrumb_exclude')) {
-      $breadcrumb[$n->getName()] = $n;
-    }
+    array_pop($breadcrumb);
   }
 
   // TODO: breadcrumb generation must be done in page.class.
@@ -300,16 +293,16 @@ function qtag_BREADCRUMB($env, $target, $attributes) {
   $env->setData('breadcrumb', $breadcrumb);
   $themed_bc = '';
   // Theme and renders the breadcrumb.
+  $themed_bc = '<ul class="breadcrumb">';
   if (count($breadcrumb) > 0 && $breadcrumb != '') {
-    $themed_bc = '<ul class="breadcrumb">';
-    $themed_bc .= '<li>[LINK|title=Home:home]</li>';
-      foreach ($breadcrumb as $path => $node) {
-        if ($node->isPublished()) {
-          $themed_bc .= '<li>[LINK:'. $path . ']</li>';
-        }
+    foreach ($breadcrumb as $i => $node) {
+      // Add only published nodes without "breadcrumb_exclude".
+      if ($node->isPublished() && !$node->getAttributeJSON('breadcrumb_exclude')) {
+        $themed_bc .= '<li>[LINK:'. $node->getName() . ']</li>';
       }
-    $themed_bc .= '</ul>';
+    }
   }
+  $themed_bc .= '</ul>';
   return $themed_bc;
 }
 
