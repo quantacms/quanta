@@ -92,17 +92,24 @@ function qtag_FILE($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_PREVIEW($env, $target, $attributes) {
+function qtag_FILE_PREVIEW($env, $target, $attributes) {
   $node = empty($attributes['node']) ? NodeFactory::current($env) : NodeFactory::load($env, $attributes['node']);
+
   $file = new File($env, $target, $node);
+
+  $preview = '';
 
   switch($file->getType()) {
     case 'image':
+
       $attributes['150xauto'] = '|test';
-      print qtag_IMGTHUMB($env, $target, $attributes);
+      $preview = qtag_IMGTHUMB($env, $target, $attributes);
       break;
+
 
     default:
       break;
   }
+
+  return '<div class="file-preview-item file-' . $file->getType() . '">' . $preview . '</div>';
 }
