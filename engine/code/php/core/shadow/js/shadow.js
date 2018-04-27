@@ -91,6 +91,5 @@ function submitShadow() {
   });
   var formData = JSON.stringify(form_items);
   $(document).trigger('shadow_submit');
-
   action(formData);
 };

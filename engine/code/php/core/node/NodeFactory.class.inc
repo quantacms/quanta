@@ -325,6 +325,11 @@ class NodeFactory {
     // Check the father of the node.
     $father = ($action == NODE_ACTION_ADD) ? $nodedata['edit-father'] : NULL;
     $node = new Node($env, $path, $father);
+    // Setup the after-save redirect.
+    if (isset($nodedata['redirect'])) {
+      $node->setData('redirect', $nodedata['redirect']);
+    }
+
     switch ($action) {
       case NODE_ACTION_ADD:
       case NODE_ACTION_EDIT:
@@ -334,11 +339,8 @@ class NodeFactory {
           $node->setAuthor($user->getName());
         }
         // TODO complete validation code.
-        if (isset($nodedata['edit-thumbnail'])) {
-          // TODO: TEMP workoround to avoid {redirect...}
-          if (!empty($nodedata['edit-thumbnail'])){
-            $node->setThumbnail(normalizeFilePath($nodedata['edit-thumbnail']));
-          }
+        if (!empty($nodedata['edit-thumbnail'])) {
+          $node->setThumbnail(normalizeFilePath($nodedata['edit-thumbnail']));
         }
 
         // Check if the user can access node add / edit for this node.
@@ -357,10 +359,6 @@ class NodeFactory {
           // Also setup the temporary file directory for the upload.
           if (isset($nodedata['tmp_files_dir'])) {
             $node->setData('tmp_files_dir', $nodedata['tmp_files_dir']);
-          }
-          // Setup the after-save redirect.
-          if (isset($nodedata['redirect'])) {
-            $node->setData('redirect', $nodedata['redirect']);
           }
 
           $vars = array (

@@ -41,13 +41,14 @@ var refreshButtons = function() {
 };
 
 var action = function(dataJson) {
-
     $.ajax({
         type: "POST",
         dataType: 'json',
         url: '/',
         data: {json: dataJson},
-        success: actionSuccess,
+        success: function(data, textStatus, jqXHR) {
+            actionSuccess(data);
+        },
         error: actionError
     });
 };

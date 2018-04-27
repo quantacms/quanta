@@ -16,7 +16,7 @@ class FormItemString extends FormItem {
     // TODO: data items should go in an array and be rendered all together
     // in order to be extendable by subclasses...
 
-    $rendered .= '<input value="' . htmlspecialchars($this->getCurrentValue()) . '" type="' . $this->getHTMLType() . '" ' .
+    $rendered .= '<input value="' . str_replace('"', '&#34;', $this->getCurrentValue()) . '" type="' . $this->getHTMLType() . '" ' .
       ($this->isDisabled() ? 'disabled ' : '') .
       ($this->isRequired() ? 'required ' : '') .
       ('class="' . $this->getClass() . '" ') .
