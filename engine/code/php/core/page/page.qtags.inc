@@ -278,6 +278,13 @@ function qtag_EMPTY($env, $target, $attributes) {
  */
 function qtag_BREADCRUMB($env, $target, $attributes) {
   $node = NodeFactory::current($env);
+
+  // Check if current node id home (main node).
+  if ($node->getName() == 'home'){
+    // Do not show breadcrumb.
+    return;
+  }
+
   $node_home = NodeFactory::load($env, 'home');
   // Builds the lineage of the node.
   $node->buildLineage();
