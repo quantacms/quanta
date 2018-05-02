@@ -521,6 +521,9 @@ class Environment extends DataContainer {
         }
         die();
       }
+      elseif ($filename == 'favicon.ico') {
+        die("No favicon available.");
+      }
     }
   }
 }
