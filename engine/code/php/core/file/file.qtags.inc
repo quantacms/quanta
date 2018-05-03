@@ -102,7 +102,7 @@ function qtag_FILE_PREVIEW($env, $target, $attributes) {
   switch($file->getType()) {
     case 'image':
 
-      $attributes['150xauto'] = '|test';
+      $attributes['150x150'] = TRUE;
       $preview = qtag_IMGTHUMB($env, $target, $attributes);
       break;
 

@@ -14,6 +14,21 @@ function user_boot($env, $vars) {
 }
 
 /**
+ * Implements hook_complete();
+ *
+ * Refresh user's session cookie.
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param array $vars
+ *   Miscellaneous environment / page variables.
+ */
+function user_complete($env, $vars) {
+  $user = UserFactory::current($env);
+  setcookie('user', $user->serializeForSession(), $env->getData('session_lifetime', 86400));
+}
+
+/**
  * Implements hook_load_includes().
  *
  * @param Environment $env

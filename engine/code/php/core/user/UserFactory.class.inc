@@ -144,12 +144,11 @@ class UserFactory {
     }
 
     // Check if there is a logged in user in session.
-    if (!isset($_SESSION['user'])) {
+    if (!isset($_COOKIE['user'])) {
       $user = new User($env, USER_ANONYMOUS);
-      $_SESSION['user'] = serialize($user);
     }
     else {
-      $user = unserialize($_SESSION['user']);
+      $user = unserialize($_COOKIE['user']);
       // Sometimes there is a request to reload the user object.
       if ($reload) {
         $user = new User($env, $user->name);
