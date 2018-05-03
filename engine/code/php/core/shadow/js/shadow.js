@@ -7,7 +7,7 @@ $(document).bind('refresh', function () {
   });
 
   // When some update is done inside the shadow, make shadow aware.
-  var setShadowUpdated = function() {
+  var setShadowUpdated = function () {
     shadowUpdated = true;
   };
 
@@ -15,6 +15,11 @@ $(document).bind('refresh', function () {
   // window closing, and losing of the work.
   $('#shadow-item').find('input,select,textarea').bind('change', setShadowUpdated);
 
+  $('.shadow-submit').bind('click', function () {
+    $(this).unbind();
+    $(this).addClass('shadow-submitted');
+    submitShadow();
+  })
 });
 
 // Close the shadow.
@@ -76,6 +81,7 @@ function openShadow(shadowData) {
  * Submit a shadow form.
  */
 function submitShadow() {
+
   $(document).trigger('shadow_' + shadow.context + '_submit');
   var form_items = {};
   $('#shadow-outside').find('input, textarea, select').each(function () {
@@ -92,4 +98,5 @@ function submitShadow() {
   var formData = JSON.stringify(form_items);
   $(document).trigger('shadow_submit');
   action(formData);
+
 };
