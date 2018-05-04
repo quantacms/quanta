@@ -164,6 +164,7 @@ class File extends DataContainer {
         break;
 
       case 'xls':
+      case 'xlsx':
       case 'xml':
         $type = 'sheet';
         break;
