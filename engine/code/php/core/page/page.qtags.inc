@@ -110,7 +110,7 @@ function qtag_BODYCLASSES($env, $target, $attributes) {
  *   The rendered qtag.
  */
 function qtag_URL($env, $target, $attributes) {
-  return $env->getData('request_url');
+  return $env->getBaseUrl() . '/' . $env->getRequestedPath();
 }
 
 /**
