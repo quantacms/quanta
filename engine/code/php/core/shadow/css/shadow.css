@@ -267,3 +267,9 @@ ul.shadow-titles-list {
 #shadow-extra {
     float: right;
 }
+
+.shadow-submitted {
+    opacity: 0.4 !important;
+    cursor: none !important;
+    pointer-events: none !important;
+}

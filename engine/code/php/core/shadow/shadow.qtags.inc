@@ -35,7 +35,7 @@ function qtag_SHADOW($env, $target, $attributes) {
     case 'buttons':
       $buttons = '<div id="shadow-buttons">';
       foreach ($shadow->getData('buttons') as $action => $button) {
-        $buttons .= '<a onClick="submitShadow()" id="' . $action . '">' . $button . '</a>';
+        $buttons .= '<a class="shadow-submit" id="' . $action . '">' . $button . '</a>';
       }
       $buttons .= '</div>';
       $string = $buttons;

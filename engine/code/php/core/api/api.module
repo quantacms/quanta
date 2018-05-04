@@ -36,6 +36,7 @@ function pwd($pass) {
  */
 function redirect($where) {
   print '<script>top.location.href="' . $where . '";</script>';
+  die();
 }
 
 /**

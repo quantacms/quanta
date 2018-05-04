@@ -203,7 +203,7 @@ $(document).bind('refresh', function () {
 
   $('.file-preview').each(function() {
     var flink = $(this).parent().find('.file-link').attr('href');
-    var qtag ='/qtag/[FILE_PREVIEW|node=prova-prova:' + encodeURIComponent(flink) + ']';
+    var qtag ='/qtag/[FILE_PREVIEW|node=' + $('#edit_path').val() + ':' + encodeURIComponent(flink) + ']';
     $(this).load(qtag);
   });
 
