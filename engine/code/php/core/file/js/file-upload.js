@@ -20,8 +20,9 @@ $(function () {
       // TODO: should use a normal QTAG.
       var tpl = $('' +
         '<li class="working file-list-item list-item-file_admin">' +
-        '<span class="file-preview"></span>' +
+        '<span class="sort-handle"></span>' +
         '<span class="file-link-item">' +
+        '<span class="file-preview"></span>' +
         '<a class="file-link" href="' + (data.files[0].name) + '">' + (data.files[0].name) + "</a>" +
         '<i>(' + formatFileSize(data.files[0].size) + ')</i>' +
         '</span>' +
@@ -126,7 +127,7 @@ var refreshFileActions = function (fileElement) {
     if (!$(this).find('.file-actions').length) {
       // Append file actions to manage files.
       $(this).append('<div class="file-actions">' +
-        '<input type="text" value="[' + tagType + ':' + href + ']" />' +
+        '<input type="text" class="file-qtag" value="[' + tagType + ':' + href + ']" />' +
         '<input type="button" class="set-thumbnail" data-href="' + href + '" value="" />' +
         '<input type="button" class="delete-file" value="delete file" />' +
         '</div>'
@@ -190,8 +191,12 @@ $(document).bind('refresh', function () {
 
   $('.list-file_admin').each(function() {
     $(this).sortable({
-      update: function() {
-
+      handle: '.sort-handle',
+      update: function(e) {
+      },
+      start: function(e) {
+      },
+      stop: function(e) {
       }
     });
   });
