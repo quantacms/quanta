@@ -15,8 +15,7 @@ $(document).bind('refresh', function () {
   // window closing, and losing of the work.
   $('#shadow-item').find('input,select,textarea').bind('change', setShadowUpdated);
 
-  $('.shadow-submit').bind('click', function () {
-    $(this).unbind();
+  $('.shadow-submit').unbind().bind('click', function () {
     $(this).addClass('shadow-submitted');
     submitShadow();
   })

@@ -12,5 +12,6 @@ _sites
 _sites/*
 vendor
 vendor/*
+*.swp
 composer.lock
 composer.phar
