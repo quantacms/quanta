@@ -106,7 +106,6 @@ function qtag_FILE_PREVIEW($env, $target, $attributes) {
       $preview = qtag_IMGTHUMB($env, $target, $attributes);
       break;
 
-
     default:
       break;
   }
