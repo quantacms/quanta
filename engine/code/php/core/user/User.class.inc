@@ -124,7 +124,8 @@ class User extends Node {
   public function logOut() {
     new Message($this->env, 'You logged out', MESSAGE_CONFIRM, MESSAGE_TYPE_SCREEN);
     new Message($this->env, 'User ' . $this->name . ' logged out', MESSAGE_CONFIRM, MESSAGE_TYPE_LOG);
-    setcookie("user", "", time()-3600);
+    unset($_SESSION['user']);
+		setcookie("user", "", time()-3600);
     $response = new StdClass();
     $response->redirect = '/' . $this->env->getRequestedPath();
     $response_json = json_encode($response);
@@ -159,7 +160,8 @@ class User extends Node {
         new Message($this->env, 'User ' . $this->getName() . ' logged in', MESSAGE_CONFIRM, MESSAGE_TYPE_LOG);
         $this->roles += array('logged' => 'logged');
         unset($this->password);
-        setcookie('user', $this->serializeForSession(),time() + $this->env->getData('session_lifetime', 86400));
+        $_SESSION['user'] = $this->serializeForSession();
+        setcookie('user', $this->serializeForSession(),time() + $this->env->getData('session_lifetime', time() + 86400));
 
       }
       else {

@@ -1,5 +1,4 @@
 .file-link-item {
-    padding-left: 22px;
     background-repeat: no-repeat;
     background-position: left center;
 }
@@ -26,22 +25,14 @@
 }
 
 #drop {
-    display: block;
-    background-color: #2E3134;
-    padding: 10px;
+    background-color: #444;
+    padding: 30px;
     margin-bottom: 30px;
-    border: 20px solid rgba(0, 0, 0, 0);
-    border-radius: 3px;
-    border-image: url('../img/border-image.png') 25 repeat;
     text-align: center;
     text-transform: uppercase;
     font-size: 16px;
     font-weight: bold;
-    color: #7f858a;
-    position: absolute;
-    right: 0;
-    top: 0;
-    z-index: 500;
+    color: #bbb;
 }
 
 #drop a {
@@ -52,7 +43,7 @@
     border-radius: 2px;
     cursor: pointer;
     display: inline-block;
-    margin-top: 12px;
+    margin-top: 24px;
     line-height: 1;
     display: block;
 }
@@ -117,57 +108,10 @@ li.list-item {
     color: red;
 }
 
-/* Files edit-files */
-#tzine-download {
-    opacity: 0.9;
-    background-color: #257691;
-    font-size: 11px;
-    text-align: center;
-    text-transform: uppercase;
-    width: 150px;
-    height: 28px;
-    line-height: 28px;
-    text-decoration: none !important;
-
-    display: inline-block;
-    border-radius: 2px;
-    color: #fff !Important;
-    font-weight: bold;
-    box-shadow: 0 -1px 2px #1e5e74 inset;
-
-    border-top: 1px solid #26849c;
-
-    text-shadow: 1px 1px 1px #1e6176;
-    margin-top: 6px;
-}
-
-#tzine-download:hover {
-    opacity: 1;
-}
-
-#tzine-actions {
-    position: absolute;
-    top: 0;
-    width: 500px;
-    right: 50%;
-    margin-right: -420px;
-    text-align: right;
-}
-
-#tzine-actions iframe {
-    display: inline-block;
-    height: 21px;
-    width: 95px;
-    position: relative;
-    float: left;
-    margin-top: 11px;
-}
-
 
 #filelist .list-item-file_admin {
     position:relative;
     padding: 10px 10px 10px 60px;
-    width: 75%;
     background:#f6f6f6;
     margin-bottom:10px;
 }
@@ -193,12 +137,20 @@ li.list-item {
     display:block;
     text-align:center;
 }
+.sort-handle::before{
+    content:"";
+    display:inline-block;
+    height:100%;
+    vertical-align:middle;
+}
 .sort-handle::after{
     content:"\f047"; /* fa-arrows */
     font-family: "FontAwesome";
     font-size:20px;
     line-height:20px;
     color:#333;
+    display: inline-block;
+    vertical-align: middle;    
 }
 .sort-handle:hover, 
 .sort-handle:focus{
@@ -206,7 +158,12 @@ li.list-item {
 }
 
 a.file-link {
+    padding-left: 25px;
+}
+.shadow-content a.file-link {
     display: inline-block;
+    margin:10px;
+    padding:0;
 }
 
 #filelist ul {
@@ -258,20 +215,12 @@ a.file-link {
     padding: 2px;
 }
 
-.delete-file {
-    color: red;
-    text-decoration: none;
-    font-weight: bold;
-    margin-left: 10px;
-}
-
 .file-preview {
     max-width: 150px;
     min-width: 80px;
     height: 80px;
     vertical-align: middle;
     display: inline-block;
-    margin-right: 20px;
     background: #eee;
     text-align: center;
     padding: 0;
@@ -299,5 +248,16 @@ a.file-link {
     display: inline;
 }
 .file-actions {
-    margin-top: 8px;
+    display:inline-block;
+}
+.file-actions .file-qtag {
+    margin:0 10px 0 0;
+}
+.file-actions .set-thumbnail {
+    margin-right:10px;
+}
+.file-actions .delete-file {
+    color: red;
+    text-decoration: none;
+    font-weight: bold;
 }
