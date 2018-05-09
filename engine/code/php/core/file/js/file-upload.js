@@ -16,13 +16,14 @@ $(function () {
     // This function is called when a file is added to the queue;
     // either via the browse button, or via drag/drop:
     add: function (e, data) {
+      var node_name = ($(this).closest('.list').data('node'));
 
       // TODO: should use a normal QTAG.
       var tpl = $('' +
         '<li class="working file-list-item list-item-file_admin">' +
         '<span class="file-preview"></span>' +
         '<span class="file-link-item">' +
-        '<a class="file-link" href="' + (data.files[0].name) + '">' + (data.files[0].name) + "</a>" +
+        '<a class="file-link" target="_blank" data-filename="' + (data.files[0].name) + '" href="/' + node_name + '/' + (data.files[0].name) + '">' + (data.files[0].name) + "</a>" +
         '<i>(' + formatFileSize(data.files[0].size) + ')</i>' +
         '</span>' +
         '<span class="progress-wrapper">' +
@@ -109,9 +110,10 @@ var refreshFileActions = function (fileElement) {
   var tagType = fileElement.find('.file-link-item').hasClass('file-image') ? 'IMG' : 'FILE';
   // The file URL.
   var href = (fileElement.find('.file-link').attr('href'));
+  var filename = (fileElement.find('.file-link').data('filename'));
 
   if (fileElement.find('.file-preview').length) {
-    fileElement.prepend('<input type="hidden" class="file-name" name="uploaded-file-' + href + '" value="' + href + '" >');
+    fileElement.prepend('<input type="hidden" class="file-name" name="uploaded-file-' + filename + '" value="' + filename + '" >');
   }
 
   /**
@@ -127,7 +129,7 @@ var refreshFileActions = function (fileElement) {
       // Append file actions to manage files.
       $(this).append('<div class="file-actions">' +
         '<input type="text" value="[' + tagType + ':' + href + ']" />' +
-        '<input type="button" class="set-thumbnail" data-href="' + href + '" value="" />' +
+        '<input type="button" class="set-thumbnail" data-filename="' + filename + '" value="" />' +
         '<input type="button" class="delete-file" value="delete file" />' +
         '</div>'
       );
@@ -136,7 +138,7 @@ var refreshFileActions = function (fileElement) {
     // Initialize set thumbnail buttons.
     $('.set-thumbnail').on('click', function () {
       if (!($(this).hasClass('selected-thumbnail'))) {
-        $('#edit_thumbnail').val($(this).data('href'));
+        $('#edit_thumbnail').val($(this).data('filename'));
       }
       else {
         $('#edit_thumbnail').val('');
@@ -147,7 +149,7 @@ var refreshFileActions = function (fileElement) {
 
     // Initialize file delete buttons.
     $('.delete-file').on('click', function () {
-      var filepath = $(this).parents('li').find('.file-link').attr('href');
+      var filepath = $(this).parents('li').find('.file-link').data('filename');
       var parent = $(this).closest('li');
       if (confirm('Are you sure you want to delete this file? \n' + filepath)) {
         var node_name = ($(this).closest('.list').data('node'));
@@ -178,7 +180,7 @@ var refreshThumbnail = function() {
   var thumb_href = $('#edit_thumbnail').val();
   $('.set-thumbnail').val('set as thumbnail');
   $('.selected-thumbnail').removeClass('selected-thumbnail');
-  $('a[href="' + thumb_href + '"]').addClass('selected-thumbnail').closest('.list-item-file_admin').find('.set-thumbnail').val('unset as thumbnail').addClass('selected-thumbnail');
+  $('a[data-filename="' + thumb_href + '"]').addClass('selected-thumbnail').closest('.list-item-file_admin').find('.set-thumbnail').val('unset as thumbnail').addClass('selected-thumbnail');
 }
 
 
@@ -197,7 +199,7 @@ $(document).bind('refresh', function () {
   });
 
   $('.file-preview').each(function() {
-    var flink = $(this).parent().find('.file-link').attr('href');
+    var flink = $(this).parent().find('.file-link').data('filename');
     var qtag ='/qtag/[FILE_PREVIEW|node=' + $('#edit_path').val() + ':' + encodeURIComponent(flink) + ']';
     $(this).load(qtag);
   });
