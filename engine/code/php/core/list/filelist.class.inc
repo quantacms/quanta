@@ -62,42 +62,41 @@ class FileList extends ListObject {
    * @return int
    */
   public function sortBy($x, $y) {
-    {
-      // Which field to use for sorting.
-      switch ($this->sort) {
-        case 'name':
-          $check = strcasecmp($x->getName(), $y->getName()) > 0;
-          break;
-        case 'type':
-          $check = strcasecmp($x->getType(), $y->getType()) > 0;
-          break;
-        case 'size':
-          $check = ($x->getFileSize() < $y->getFileSize());
-          break;
 
-        case 'time':
-          $check = ($x->getTimestamp() < $y->getTimestamp());
-          break;
+    // Which field to use for sorting.
+    switch ($this->sort) {
+      case 'name':
+        $check = strcasecmp($x->getName(), $y->getName()) > 0;
+        break;
+      case 'type':
+        $check = strcasecmp($x->getType(), $y->getType()) > 0;
+        break;
+      case 'size':
+        $check = ($x->getFileSize() < $y->getFileSize());
+        break;
 
-        case 'weight':
-          if (!empty($this->getNode()->json->files)) {
-            // Rearrange Files according with what was set in the node json.
-            $files_json = array_flip($this->getNode()->json->files);
-            $check = ($files_json[$x->getName()] > $files_json[$y->getName()]);
-            // Compare files found in the directory with files saved in the json
-            // and reorder them accordingly.
-            // This allows the user to keep the file order he has set via drag&drop.
-          }
-          break;
+      case 'time':
+        $check = ($x->getTimestamp() < $y->getTimestamp());
+        break;
 
-        default:
-          //Sort by Number DESC
-          $check = ($x->getAttributeJSON($this->sort) < $y->getAttributeJSON($this->sort));
-          break;
-      }
+      case 'weight':
+        if (!empty($this->getNode()->json->files)) {
+          // Rearrange Files according with what was set in the node json.
+          $files_json = array_flip($this->getNode()->json->files);
+          $check = ($files_json[$x->getName()] > $files_json[$y->getName()]);
+          // Compare files found in the directory with files saved in the json
+          // and reorder them accordingly.
+          // This allows the user to keep the file order he has set via drag&drop.
+        }
+        break;
 
-      return ($check) ? 1 : -1;
+      default:
+        //Sort by Number DESC
+        $check = ($x->getAttributeJSON($this->sort) < $y->getAttributeJSON($this->sort));
+        break;
     }
+
+    return ($check) ? 1 : -1;
   }
 
 }
