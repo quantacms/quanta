@@ -29,8 +29,9 @@ class Page extends DataContainer {
   public function loadIncludes() {
     if (substr($this->env->request_uri, 0, 7) == '/engine') die();
     // TODO: better way to skip load includes.
-    $this->addData('css', array('<link rel="stylesheet" type="text/css" href="/tmp/css.min.css" />'));
-    $this->addData('js', array('<script type="text/javascript" src="/tmp/js.min.js"></script>'));
+    // TODO: randomized number reloading css and js at every page. Better solutions?
+    $this->addData('css', array('<link rel="stylesheet" type="text/css" href="/tmp/css.min.css?q=[RANDOM]" />'));
+    $this->addData('js', array('<script type="text/javascript" src="/tmp/js.min.js?q=[RANDOM]"></script>'));
   }
 
   /**

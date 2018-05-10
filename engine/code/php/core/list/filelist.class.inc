@@ -88,6 +88,9 @@ class FileList extends ListObject {
             // and reorder them accordingly.
             // This allows the user to keep the file order he has set via drag&drop.
           }
+          else {
+            $check = FALSE;
+          }
           break;
 
         default:
