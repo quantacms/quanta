@@ -179,11 +179,23 @@ class Node extends JSONDataContainer {
    * @return null
    */
   public function getAttributeJSON($attr_name, $normalize = TRUE) {
-    $ret = NULL;
 
-    if (isset($this->json->{$attr_name})) {
-      $ret = ($normalize && is_string($this->json->{$attr_name})) ? string_normalize($this->json->{$attr_name}) : $this->json->{$attr_name};
+    if (!isset($this->json->{$attr_name})) {
+      return NULL;
     }
+
+    $ret = $this->json->{$attr_name};
+    if ($normalize) {
+      if (is_string($ret)) {
+        $ret = string_normalize($ret);
+      }
+      elseif (is_array($ret)) {
+        foreach ($ret as $k => $value) {
+          $ret[$k] = string_normalize($value);
+        }
+      }
+    }
+
     return $ret;
   }
 
