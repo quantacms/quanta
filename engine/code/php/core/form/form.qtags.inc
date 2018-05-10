@@ -21,7 +21,7 @@ function qtag_INPUT($env, $target, $attributes) {
   $rendered = '';
   $form = FormFactory::getForm($env, $target);
   FormFactory::createInputItem($env, $attributes, $form);
-  $rendered .= str_replace('[INPUT|', '[INPUT_RENDER|nowiki|', $attributes['tag_full']);
+  $rendered .= str_replace('[INPUT|', '[INPUT_RENDER|', $attributes['tag_full']);
   return $rendered;
 }
 
