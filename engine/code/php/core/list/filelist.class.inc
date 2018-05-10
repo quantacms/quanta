@@ -68,9 +68,11 @@ class FileList extends ListObject {
       case 'name':
         $check = strcasecmp($x->getName(), $y->getName()) > 0;
         break;
+
       case 'type':
         $check = strcasecmp($x->getType(), $y->getType()) > 0;
         break;
+
       case 'size':
         $check = ($x->getFileSize() < $y->getFileSize());
         break;
@@ -88,8 +90,11 @@ class FileList extends ListObject {
           // and reorder them accordingly.
           // This allows the user to keep the file order he has set via drag&drop.
         }
+        else {
+          $check = FALSE;
+        }
         break;
-
+        
       default:
         //Sort by Number DESC
         $check = ($x->getAttributeJSON($this->sort) < $y->getAttributeJSON($this->sort));
