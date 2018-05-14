@@ -65,6 +65,7 @@ function qtag_THUMBNAIL($env, $target, $attributes) {
  *   The rendered qtag.
  */
 function qtag_IMGTHUMB($env, $target, $attributes) {
+
   $node = isset($attributes['node']) ? NodeFactory::load($env, $attributes['node']) : NodeFactory::current($env);
 
   // Load the image.

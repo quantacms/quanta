@@ -16,7 +16,7 @@ $(function () {
     // This function is called when a file is added to the queue;
     // either via the browse button, or via drag/drop:
     add: function (e, data) {
-      var node_name = ($(this).closest('.list').data('node'));
+      var tmp_files_dir = ($('#tmp_files_dir').val());
 
       // TODO: should use a normal QTAG.
       var tpl = $('' +
@@ -24,14 +24,15 @@ $(function () {
         '<span class="sort-handle"></span>' +
         '<span class="file-link-item">' +
         '<span class="file-preview"></span>' +
-        '<a class="file-link" target="_blank" data-filename="' + (data.files[0].name) + '" href="/' + node_name + '/' + (data.files[0].name) + '">' + (data.files[0].name) + "</a>" +
-        '<i>(' + formatFileSize(data.files[0].size) + ')</i>' +
+        '<a class="file-link" target="_blank" data-filenew="true" data-filename="' + (data.files[0].name) + '" href="/tmp/' + tmp_files_dir + '/' + (data.files[0].name) + '">' + (data.files[0].name) + "</a>" +
         '</span>' +
         '<span class="progress-wrapper">' +
         '<span class="progress"></span>' +
         '<input type="text" value="0" data-width="20" data-height="20"' +
         ' data-fgColor="#0788a5" data-readOnly="1" data-bgColor="#3e4043" />' +
         '</span>' +
+        '<div class="file-qtag"></div>' +
+
         '</li>');
 
 
@@ -125,13 +126,12 @@ var refreshFileActions = function (fileElement) {
       return;
     }
     $(this).addClass('is-editing');
+
     // Create file actions.
     if (!$(this).find('.file-actions').length) {
       // Append file actions to manage files.
       $(this).append('<div class="file-actions">' +
-        '<input type="text" class="file-qtag" value="[' + tagType + ':' + href + ']" />' +
         '<input type="button" class="set-thumbnail" data-filename="' + filename + '" value="" />' +
-
         '<input type="button" class="delete-file" value="delete file" />' +
         '</div>'
       );
@@ -204,11 +204,28 @@ $(document).bind('refresh', function () {
     });
   });
 
+  var node_name = $('#edit_path').val();
+  var tmp_files_dir = ($('#tmp_files_dir').val());
+
   $('.file-preview').each(function() {
-    var flink = $(this).parent().find('.file-link').data('filename');
-    var qtag ='/qtag/[FILE_PREVIEW|node=' + $('#edit_path').val() + ':' + encodeURIComponent(flink) + ']';
+    var filelink = $(this).parent().find('.file-link');
+    var filename = filelink.data('filename');
+    var tag_attr = (filelink.data('filenew') != undefined) ? ('tmp_path=' + tmp_files_dir) : ('node=' + node_name);
+
+    var qtag ='/qtag/[FILE_PREVIEW|' + tag_attr + ':' + encodeURIComponent(filename) + ']';
+    console.log(qtag);
     $(this).load(qtag);
   });
+
+  $('.file-qtag').each(function() {
+    var filelink = $(this).parent().find('.file-link');
+    var filename = filelink.data('filename');
+    var tag_attr = (filelink.data('filenew') != undefined) ? ('tmp_path=' + tmp_files_dir) : ('node=' + node_name);
+    var qtag_suggestion ='/qtag/[FILE_QTAG_SUGGESTION|' + tag_attr + ':' + encodeURIComponent(filename) +']';
+    $(this).load(qtag_suggestion);
+  });
+
+
 
 });
 

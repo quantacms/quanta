@@ -52,7 +52,7 @@ class File extends DataContainer {
     $this->extension = strtolower($exp[count($exp) - 1]);
     $this->name = ($name == NULL) ? $file_path : $name;
     $this->type = File::getFileType($this->extension);
-    $this->exists = is_file($this->node->realpath . '/' . $this->filename);
+    $this->exists = is_file($this->path);
   }
 
   /**
@@ -76,6 +76,7 @@ class File extends DataContainer {
    * @return float
    */
   public function getFileSize() {
+    $this->size = filesize($this->path);
     return $this->size;
   }
 

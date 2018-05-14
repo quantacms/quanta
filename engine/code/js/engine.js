@@ -60,6 +60,8 @@ var action = function(dataJson) {
 var actionSuccess = function(data) {
     if (data.errors) {
         $('.messages').html(data.errors).fadeIn('slow');
+        $('.shadow-submitted').removeClass('shadow-submitted');
+
         setTimeout(function() {
             $('.messages').fadeOut('slow');
         }, 6000);
