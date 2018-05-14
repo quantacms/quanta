@@ -235,6 +235,7 @@ abstract class ListObject extends DataContainer {
           $this->items = array_reverse($this->items);
           break;
         }
+        // TODO: Add default sort by weight.
         // Check list sorting.
         case 'sort':
           $this->sort = $attr;
