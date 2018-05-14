@@ -94,8 +94,13 @@ function qtag_FILE($env, $target, $attributes) {
  */
 function qtag_FILE_PREVIEW($env, $target, $attributes) {
   $node = empty($attributes['node']) ? NodeFactory::current($env) : NodeFactory::load($env, $attributes['node']);
-
-  $file = new File($env, $target, $node);
+  if (isset($attributes['tmp_path'])) {
+    $target = $env->dir['tmp'] . '/files/' . $attributes['tmp_path'] . '/' . $target;
+    $file = new File($env, $target, NODE_NEW);
+  }
+  else {
+    $file = new File($env, $target, $node);
+  }
 
   $preview = '';
 
@@ -112,3 +117,43 @@ function qtag_FILE_PREVIEW($env, $target, $attributes) {
 
   return '<div class="file-preview-item file-' . $file->getType() . '">' . $preview . '</div>';
 }
+
+/**
+ * Implements FILE_QTAG_SUGGESTION qtag.
+ *
+ * Provides a "suggested qtag" for rendering a file.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_FILE_QTAG_SUGGESTION($env, $target, $attributes) {
+  $node = empty($attributes['node']) ? NodeFactory::current($env) : NodeFactory::load($env, $attributes['node']);
+  if (isset($attributes['tmp_path'])) {
+    $file = new File($env, $env->dir['tmp'] . '/files/' . $attributes['tmp_path'] . '/' . $target, NODE_NEW);
+  }
+  else {
+    $file = new File($env, $target, $node);
+  }
+
+  switch($file->getType()) {
+    case 'image':
+      $suggestion = '[IMG|showtag:' . $target . ']';
+      break;
+
+    default:
+      $suggestion = '[FILE|showtag:' . $target . ']';
+      break;
+  }
+
+  return $suggestion;
+}
+
