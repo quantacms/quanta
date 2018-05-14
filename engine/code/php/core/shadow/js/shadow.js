@@ -15,9 +15,11 @@ $(document).bind('refresh', function () {
   // window closing, and losing of the work.
   $('#shadow-item').find('input,select,textarea').bind('change', setShadowUpdated);
 
-  $('.shadow-submit').unbind().bind('click', function () {
-    $(this).addClass('shadow-submitted');
-    submitShadow();
+  $('.shadow-submit').on('click', function () {
+    if (!($(this).hasClass('shadow-submitted'))) {
+      $(this).addClass('shadow-submitted');
+      submitShadow();
+    }
   })
 });
 
