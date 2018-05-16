@@ -19,6 +19,7 @@ class Environment extends DataContainer {
   public $request_json;
   public $request = array();
   private $modules = array();
+  private $modules_loaded = array();
   private $includes = array();
   private $context;
 
@@ -162,12 +163,21 @@ class Environment extends DataContainer {
   }
 
   /**
+ * Get all modules.
+ *
+ * @return array
+ */
+  public function getModules() {
+    return $this->modules;
+  }
+
+  /**
    * Get all loaded modules.
    *
    * @return array
    */
-  public function getModules() {
-    return $this->modules;
+  public function getLoadedModules() {
+    return $this->modules_loaded;
   }
 
   /**
@@ -196,6 +206,7 @@ class Environment extends DataContainer {
     $includes = array('api', 'hook', 'wiki', 'qtags');
     $module_path = $module['path'] . '/' . $module['name'] . '.module';
     require_once($module_path);
+    $this->modules_loaded[] = $module;
 
     /**
      * Check all module's inclusions.
@@ -226,7 +237,8 @@ class Environment extends DataContainer {
       $attributes['type'] = DIR_ALL;
     }
 
-    $dirs = array_diff(scandir($base_dir), array('.', '..'));
+    $dirs = array_diff(scandir($base_dir), array('.', '..', '.git'));
+
     foreach ($dirs as $k => $dir) {
       // Remove inactive if requested.
       if (substr($dir, 0, 1) == $attributes['exclude_dirs']) {
@@ -325,7 +337,7 @@ class Environment extends DataContainer {
    */
   public function hook($function, &$vars = array()) {
     $env = &$this;
-    foreach ($this->getModules() as $module) {
+    foreach ($this->getLoadedModules() as $module) {
       $hook = $module['name'] . '_' . $function;
       if (function_exists($hook)) {
         $hook($env, $vars);
