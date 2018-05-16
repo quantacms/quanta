@@ -1,6 +1,7 @@
 <?php
 define('DOCTOR_MODE_BASH', 'bash');
 define('DOCTOR_MODE_BROWSER', 'browser');
+define('DOCTOR_RECIPE', 'doctor_recipe.txt');
 
 /**
  * Class Doctor
@@ -450,6 +451,10 @@ class Doctor extends DataContainer {
     $vars = array('doctor' => &$this);
     $this->env->hook('doctor', $vars);
     $this->ok();
+    $fop = fopen($this->env->dir['tmp'] . '/' . DOCTOR_RECIPE, 'w+');
+    // TODO: what to write in the recipe?
+    fwrite($fop, 'work in progress!');
+    fclose($fop);
     $this->yahoo('Doctor has finished curing your environment!');
   }
 
