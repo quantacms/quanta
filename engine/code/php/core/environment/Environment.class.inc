@@ -34,7 +34,7 @@ class Environment extends DataContainer {
     if ($request_uri == NULL && !empty($_SERVER['REQUEST_URI'])) {
       // Remove querystring to obtain request uri...
       $exp = explode('?', $_SERVER['REQUEST_URI']);
-      $this->request_uri = (str_replace('/', '', $exp[0]) == '') ? 'home/' : $exp[0];
+      $this->request_uri = (str_replace('/', '', $exp[0]) == '') ? '/home/' : $exp[0];
     }
     else {
       $this->request_uri = $request_uri;
