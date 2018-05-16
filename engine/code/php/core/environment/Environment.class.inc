@@ -206,7 +206,7 @@ class Environment extends DataContainer {
     $includes = array('api', 'hook', 'wiki', 'qtags');
     $module_path = $module['path'] . '/' . $module['name'] . '.module';
     require_once($module_path);
-    $this->modules_loaded[] = $module;
+    $this->modules_loaded[$module['name']] = $module;
 
     /**
      * Check all module's inclusions.
