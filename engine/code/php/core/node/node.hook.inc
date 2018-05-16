@@ -175,10 +175,12 @@ function node_metadata($env, $vars) {
     'content' => $env->getData('request_url'),
   );
 
-  $vars['metadata']['og:image'] = array(
-    'property' => 'og:image',
-    'content' => $env->getData('request_url') . $node->getThumbnail(),
-  );
+  if (!empty($node->getThumbnail())) {
+    $vars['metadata']['og:image'] = array(
+      'property' => 'og:image',
+      'content' => $env->getData('request_url') . $node->getThumbnail(),
+    );
+  }
 
   $vars['metadata']['og:description'] = array(
     'property' => 'og:description',
