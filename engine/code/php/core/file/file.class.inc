@@ -265,7 +265,7 @@ class File extends DataContainer {
         exit;
       }
       // Move the uploaded file to the temporary directory..
-      if (move_uploaded_file($_FILES['upl']['tmp_name'], $upload_dir . '/' . normalizePath($filename) . '.' . $extension)) {
+      if (move_uploaded_file($_FILES['upl']['tmp_name'], $upload_dir . '/' . $filename . '.' . $extension)) {
         echo '{"status":"success"}';
         exit;
       }
