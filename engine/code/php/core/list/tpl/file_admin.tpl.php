@@ -5,6 +5,8 @@
     [FILEATTRIBUTE|name=name|node={LISTNODE}:{LISTITEM}]
   </a>
 </span>
+<span class="file-qtag">[FILE_QTAG_SUGGESTION:{LISTITEM}]</span>
+
 <!-- TODO: add up and down sorting
 <button class="sort-up">up</button>
 <button class="sort-down">down</button>
