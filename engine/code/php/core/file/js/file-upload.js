@@ -31,7 +31,7 @@ $(function () {
         '<input type="text" value="0" data-width="20" data-height="20"' +
         ' data-fgColor="#0788a5" data-readOnly="1" data-bgColor="#3e4043" />' +
         '</span>' +
-        '<div class="file-qtag"></div>' +
+        '<span class="file-qtag"></span>' +
 
         '</li>');
 

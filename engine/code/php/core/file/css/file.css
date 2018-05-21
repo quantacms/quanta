@@ -247,11 +247,11 @@ a.file-link {
     max-height: 100%;
     display: inline;
 }
+.file-qtag {
+    margin:0 10px 0 0;
+}
 .file-actions {
     display:inline-block;
-}
-.file-actions .file-qtag {
-    margin:0 10px 0 0;
 }
 .file-actions .set-thumbnail {
     margin-right:10px;
