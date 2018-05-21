@@ -160,6 +160,7 @@ function node_metadata($env, $vars) {
     'content' => 'Quanta CMS',
   );
 
+  // OG metadata.
   $vars['metadata']['og:title'] = array(
     'property' => 'og:title',
     'content' => $node->getTitle(),
@@ -187,13 +188,16 @@ function node_metadata($env, $vars) {
     'content' => $node->getTeaser(),
   );
 
+  // Twitter metadata.
   $vars['metadata']['twitter:description'] = array(
     'content' => $node->getTeaser(),
   );
 
-  $vars['metadata']['twitter:image'] = array(
-    'content' => $env->getData('request_url') . $node->getThumbnail(),
-  );
+  if (!empty($node->getThumbnail())) {
+    $vars['metadata']['twitter:image'] = array(
+      'content' => $env->getData('request_url') . $node->getThumbnail(),
+    );
+  }
 
   $vars['metadata']['twitter:title'] = array(
     'content' => $node->getTitle(),
