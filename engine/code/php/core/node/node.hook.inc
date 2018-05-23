@@ -149,11 +149,11 @@ function node_metadata($env, $vars) {
   );
 
   $vars['metadata']['description'] = array(
-    'content' => $node->getTeaser(),
+    'content' => filter_xss($node->getTeaser()),
   );
 
   $vars['metadata']['name'] = array(
-    'content' => $author->getTitle(),
+    'content' => filter_xss($author->getTitle()),
   );
 
   $vars['metadata']['application-name'] = array(
@@ -163,7 +163,7 @@ function node_metadata($env, $vars) {
   // OG metadata.
   $vars['metadata']['og:title'] = array(
     'property' => 'og:title',
-    'content' => $node->getTitle(),
+    'content' => filter_xss($node->getTitle()),
   );
 
   $vars['metadata']['og:type'] = array(
@@ -185,12 +185,12 @@ function node_metadata($env, $vars) {
 
   $vars['metadata']['og:description'] = array(
     'property' => 'og:description',
-    'content' => $node->getTeaser(),
+    'content' => filter_xss($node->getTeaser()),
   );
 
   // Twitter metadata.
   $vars['metadata']['twitter:description'] = array(
-    'content' => $node->getTeaser(),
+    'content' => filter_xss($node->getTeaser()),
   );
 
   if (!empty($node->getThumbnail())) {
@@ -200,11 +200,11 @@ function node_metadata($env, $vars) {
   }
 
   $vars['metadata']['twitter:title'] = array(
-    'content' => $node->getTitle(),
+    'content' => filter_xss($node->getTitle()),
   );
 
   $vars['metadata']['twitter:card'] = array(
-    'content' => $node->getTeaser(),
+    'content' => filter_xss($node->getTeaser()),
   );
 
 }
