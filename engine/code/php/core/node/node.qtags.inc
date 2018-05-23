@@ -300,9 +300,10 @@ function qtag_ADD($env, $target, $attributes) {
   if (NodeAccess::check($env, NODE_ACTION_ADD, array('node' => $nodeobj))) {
     $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
     $attributes['class'] .= ' add-link ';
-    $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Add to ' . $nodeobj->getTitle() . '...';
+    $attributes['tooltip'] = filter_xss(isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Add to ' . $nodeobj->getTitle() . '...');
     $attributes['language'] = isset($attributes['language']) ? $attributes['language'] : Localization::getLanguage($env);
-    $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&oplus;';
+    $attributes['title'] = filter_xss(isset($attributes['title']) ? $attributes['title'] : '&oplus;');
+
     $link = qtag_LINK($env, $target, $attributes);
   }
   return $link;
@@ -333,10 +334,10 @@ function qtag_EDIT($env, $target, $attributes) {
     $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
     $attributes['class'] .= ' edit-link';
     $title = empty($nodeobj->getTitle()) ? $nodeobj->getName() : $nodeobj->getTitle();
-    $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Edit ' . $title . '...';
+    $attributes['tooltip'] = filter_xss(isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Edit ' . $title . '...');
     //$attributes['language'] = isset($attributes['language']) ? $attributes['language'] : $env->getLanguage();
 
-    $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&#9998;';
+    $attributes['title'] = filter_xss(isset($attributes['title']) ? $attributes['title'] : '&#9998;');
     $attributes['redirect'] = isset($attributes['redirect']) ? $attributes['redirect'] : '';
 
     $string = qtag_LINK($env, $target, $attributes);
@@ -370,8 +371,9 @@ function qtag_DELETE($env, $target, $attributes) {
 
     $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
     $attributes['class'] .= 'delete-link';
-    $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&ominus;';
-    $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Delete ' . $nodeobj->getTitle() . '...';
+    $attributes['title'] = filter_xss(isset($attributes['title']) ? $attributes['title'] : '&ominus;');
+    $attributes['tooltip'] = filter_xss(isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Delete ' . $nodeobj->getTitle() . '...');
+
     $attributes['redirect'] = isset($attributes['redirect']) ? $attributes['redirect'] : '';
 
     $string = qtag_LINK($env, $target, $attributes);
