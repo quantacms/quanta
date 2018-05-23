@@ -222,7 +222,7 @@ class NodeFactory {
    */
   public static function buildNode($env, $name, $father, $vars = array ()) {
     $node = NodeFactory::buildEmptyNode($env, $father);
-    $node->setName($name);
+    $node->setName(normalizePath($name));
     foreach ($vars as $field_name => $field_value) {
       switch ($field_name) {
         case 'title':

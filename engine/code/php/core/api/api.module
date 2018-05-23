@@ -119,12 +119,17 @@ function string_normalize($string, $nl2br = FALSE) {
  *   The normalized string.
  */
 function normalizePath($s) {
-  $s = trim($s);
   $s = remove_accents($s);
   $s = strtolower($s);
   $s = str_replace(' ', '-', $s);
   $s = str_replace('_', '-', $s);
-  $s = preg_replace('/[^\pL\pN@-]+/', '', $s);
+  $s = preg_replace("/[^A-Za-z0-9\-]/", '', $s);;
+
+  while (strpos($s, '--') > 0) {
+    $s = str_replace('--', '-', $s);
+  }
+  $s = trim($s, '-');
+
   return $s;
 }
 
@@ -139,16 +144,11 @@ function normalizePath($s) {
  *   The normalized file.
  */
 function normalizeFilePath($f) {
-  $fArr = explode('.', $f);
-  $fExt = strtolower(array_pop($fArr));
-  $fName = implode('.', $fArr);
-  $fName = trim($fName);
-  $fName = remove_accents($fName);
-  $fName = strtolower($fName);
-  $fName = str_replace(' ', '-', $fName);
-  $fName = str_replace('_', '-', $fName);
-  $fName = preg_replace('/[^\pL\pN@-]+/', '', $fName);
-  return $fName . '.' . $fExt;  
+  $file_arr = explode('.', $f);
+  $file_ext = strtolower(array_pop($file_arr));
+  $file_name = implode('.', $file_arr);
+  $file_name = normalizePath($file_name);
+  return $file_name . '.' . $file_ext;
 }
 
 
@@ -242,4 +242,11 @@ function minify($env, $file) {
   $command = $env->dir['vendor'] . '/matthiasmullie/minify/bin/minify' . $ext . ' ' . $file;
 	exec($command, $arr);
   return $arr;
+}
+
+/**
+ * Filter a string to make it xss-safe.
+ */
+function filter_xss($string) {
+  return htmlspecialchars($string, ENT_QUOTES,'utf-8');
 }
