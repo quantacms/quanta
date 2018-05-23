@@ -165,7 +165,7 @@ function normalizeFilePath($f) {
  *   Filtered string with replaced "nice" characters.
  */
 function remove_accents($string) {
-  $unwanted_array = array(    '&amp;' => 'and', '&' => 'and', '@' => 'at', '©' => 'c', '®' => 'r',
+  $unwanted_array = array(    
     '̊'=>'','̧'=>'','̨'=>'','̄'=>'','̱'=>'','’' => '',
     'Á'=>'a','á'=>'a','À'=>'a','à'=>'a','Ă'=>'a','ă'=>'a','ắ'=>'a','Ắ'=>'A','Ằ'=>'A',
     'ằ'=>'a','ẵ'=>'a','Ẵ'=>'A','ẳ'=>'a','Ẳ'=>'A','Â'=>'a','â'=>'a','ấ'=>'a','Ấ'=>'A',
