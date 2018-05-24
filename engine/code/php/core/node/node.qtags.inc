@@ -47,7 +47,7 @@ function qtag_BLOCK($env, $target, $attributes) {
     $body = $node->render();
   }
   else {
-    $body = isset($attributes['with-title']) ? ('<h2 class="block-title">' . $node->getTitle() . '</h2>' . $node->getBody()) : $node->getBody();
+    $body = isset($attributes['with-title']) ? ('<h2 class="block-title">' . filter_xss($node->getTitle()) . '</h2>' . $node->getBody()) : $node->getBody();
   }
 
   // Wrap in the inline editor.
@@ -110,7 +110,7 @@ function qtag_ATTRIBUTE($env, $target, $attributes) {
 
     // Node's title.
     case 'title':
-      $string = $node->getTitle();
+      $string = filter_xss($node->getTitle());
       break;
 
     // Node's full rendered content.
@@ -126,7 +126,7 @@ function qtag_ATTRIBUTE($env, $target, $attributes) {
 
     // Node's teaser.
     case 'teaser':
-      $string = $node->getTeaser();
+      $string = filter_xss($node->getTeaser());
       break;
 
     // Node's father node.
@@ -213,7 +213,7 @@ function qtag_LINK($env, $target, $attributes) {
   // Check if the target is a node or an external link.
   if (((substr($target, 0, 4) == 'http') || (substr($target, 0, 4) == 'www.'))) {
     $classes[] = 'link-ext';
-    $title_default = $target;
+    $title_default = filter_xss($target);
     $attributes['rel'] = NULL;
   }
   else {
@@ -224,7 +224,7 @@ function qtag_LINK($env, $target, $attributes) {
     // Allow other modules to change the URL.
     $target = '/' . $node->getName();
     // TODO: loading the full node at each link is not performant.
-    $title_default = $node->getTitle();
+    $title_default = filter_xss($node->getTitle());
     // Add classes...
     $classes[] = 'link-' . string_normalize($node->getName());
     // Check if this node's link is identical to the current node.
@@ -268,7 +268,7 @@ function qtag_LINK($env, $target, $attributes) {
 
   $query = (!empty($querystring)) ? ('?' . implode('&', $querystring)) : '';
 
-  $title = string_normalize((isset($attributes['title']) ? $attributes['title'] : $title_default));
+  $title = isset($attributes['title']) ? $attributes['title'] : $title_default;
   // Create the link HTML.
   $link = '<a ' . implode(' ', $link_data) . ' class="' . implode(' ', $classes) . '" ' . $link_title . ' href="' . $target . $query . '" ' . $link_target . '>' . $title . '</a>';
   return $link;
@@ -300,9 +300,10 @@ function qtag_ADD($env, $target, $attributes) {
   if (NodeAccess::check($env, NODE_ACTION_ADD, array('node' => $nodeobj))) {
     $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
     $attributes['class'] .= ' add-link ';
-    $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Add to ' . $nodeobj->getTitle() . '...';
+    $attributes['tooltip'] = isset($attributes['tooltip']) ? filter_xss($attributes['tooltip']) : 'Add to ' . filter_xss($nodeobj->getTitle()) . '...';
     $attributes['language'] = isset($attributes['language']) ? $attributes['language'] : Localization::getLanguage($env);
-    $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&oplus;';
+    $attributes['title'] = isset($attributes['title']) ? filter_xss($attributes['title']) : '&oplus;';
+
     $link = qtag_LINK($env, $target, $attributes);
   }
   return $link;
@@ -332,11 +333,11 @@ function qtag_EDIT($env, $target, $attributes) {
 
     $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
     $attributes['class'] .= ' edit-link';
-    $title = empty($nodeobj->getTitle()) ? $nodeobj->getName() : $nodeobj->getTitle();
-    $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Edit ' . $title . '...';
+    $title = empty($nodeobj->getTitle()) ? $nodeobj->getName() : filter_xss($nodeobj->getTitle());
+    $attributes['tooltip'] = isset($attributes['tooltip']) ? filter_xss($attributes['tooltip']) : 'Edit ' . $title . '...';
     //$attributes['language'] = isset($attributes['language']) ? $attributes['language'] : $env->getLanguage();
 
-    $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&#9998;';
+    $attributes['title'] = isset($attributes['title']) ? filter_xss($attributes['title']) : '&#9998;';
     $attributes['redirect'] = isset($attributes['redirect']) ? $attributes['redirect'] : '';
 
     $string = qtag_LINK($env, $target, $attributes);
@@ -370,8 +371,9 @@ function qtag_DELETE($env, $target, $attributes) {
 
     $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
     $attributes['class'] .= 'delete-link';
-    $attributes['title'] = isset($attributes['title']) ? $attributes['title'] : '&ominus;';
-    $attributes['tooltip'] = isset($attributes['tooltip']) ? $attributes['tooltip'] : 'Delete ' . $nodeobj->getTitle() . '...';
+    $attributes['title'] = isset($attributes['title']) ? filter_xss($attributes['title']) : '&ominus;';
+    $attributes['tooltip'] = isset($attributes['tooltip']) ? filter_xss($attributes['tooltip']) : 'Delete ' . filter_xss($nodeobj->getTitle()) . '...';
+
     $attributes['redirect'] = isset($attributes['redirect']) ? $attributes['redirect'] : '';
 
     $string = qtag_LINK($env, $target, $attributes);
@@ -495,6 +497,29 @@ function qtag_STATUS($env, $target, $attributes) {
 
 
 /**
+ * Implements qtag TEASER.
+ *
+ * Returns the teaser of a node.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_TEASER($env, $target, $attributes) {
+  $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
+  return filter_xss($node->getTeaser());
+}
+
+
+/**
  * Implements qtag TITLE.
  *
  * Returns the title of a node.
@@ -513,7 +538,7 @@ function qtag_STATUS($env, $target, $attributes) {
  */
 function qtag_TITLE($env, $target, $attributes) {
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
-  return '<h1>' . $node->getTitle() . '</h1>';
+  return filter_xss($node->getTitle());
 }
 
 
@@ -536,6 +561,7 @@ function qtag_TITLE($env, $target, $attributes) {
  */
 function qtag_BODY($env, $target, $attributes) {
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
+  // TODO: add filter_xss.
   return $node->getBody();
 }
 
