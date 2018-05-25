@@ -19,6 +19,7 @@
     $docroot = NULL;
   }
 
+
   // Create a new Environment.
   $env = new Environment($host, $request_uri, $docroot);
 
@@ -30,10 +31,8 @@
 
   // Start the user session.
   $env->startSession();
-
   // Run all system modules.
   $env->runModules();
-
   // Run the boot hook.
   $env->hook('boot');
 
