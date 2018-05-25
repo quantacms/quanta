@@ -19,6 +19,7 @@ class Environment extends DataContainer {
   public $request_json;
   public $request = array();
   private $modules = array();
+  // TODO: maybe we just need modules. Created this var to rearrange them in right order taking care of dependencies.
   private $modules_loaded = array();
   private $includes = array();
   private $context;
