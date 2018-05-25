@@ -1,7 +1,7 @@
 <?php
 /**
- * Class Page
- * This class represents a Page (corrisponding to a rendered html page).
+ * Class Robots
+ * This class represents a Robots.txt handler.
  */
 class Robots extends DataContainer {
   public $html;

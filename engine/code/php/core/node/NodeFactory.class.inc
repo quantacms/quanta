@@ -222,7 +222,7 @@ class NodeFactory {
    */
   public static function buildNode($env, $name, $father, $vars = array ()) {
     $node = NodeFactory::buildEmptyNode($env, $father);
-    $node->setName($name);
+    $node->setName(normalizePath($name));
     foreach ($vars as $field_name => $field_value) {
       switch ($field_name) {
         case 'title':
@@ -398,7 +398,7 @@ class NodeFactory {
           // Delete the node...
           $node->delete();
           // ...and display a confirmation message.
-          new Message($node->env, $node->getName() . ' was deleted correctly');
+          new Message($env, $node->getName() . ' was deleted correctly');
           $response->redirect = !empty($node->getData('redirect')) ? $node->getData('redirect') : ('/' . $node->getFather()->getName() . '/');
         }
 				else {

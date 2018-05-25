@@ -66,6 +66,7 @@ function qtag_THUMBNAIL($env, $target, $attributes) {
  */
 function qtag_IMGTHUMB($env, $target, $attributes) {
 
+  // TODO: redesign using some html wrapping function.
   $node = isset($attributes['node']) ? NodeFactory::load($env, $attributes['node']) : NodeFactory::current($env);
 
   // Load the image.
@@ -116,6 +117,7 @@ function qtag_IMGTHUMB($env, $target, $attributes) {
     $thumb = '<a ' .
       (empty($link_title) ? '' : ('title="' . $link_title . '"')) .
       'class="linked-image ' . (isset($attributes['class']) ? ('linked-image-' . $attributes['class']) : '') .  '"' .
+
     ' href="/' . $link . '">' . $thumb . '</a>';
   }
 
