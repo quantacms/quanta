@@ -515,6 +515,11 @@ class Environment extends DataContainer {
    */
   public function checkFile() {
 
+		// Support for letsencript https certificates.
+		if ($this->request[2] == 'acme-challenge') {
+			readfile('/' . trim($this->dir['docroot'] . implode('/', $this->request), '/'));
+		  die();
+		}
     // TODO: redo the whole shit.
     if (strpos($this->request[count($this->request) - 1], '.') > 0) {
       $filename = $this->request[count($this->request) - 1];
