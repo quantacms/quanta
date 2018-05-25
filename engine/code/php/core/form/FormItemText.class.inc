@@ -34,7 +34,7 @@ class FormItemText extends FormItem {
       ('id="' . $this->getId() . '" ') .
       ($this->isMultiple() ? 'data-multiple ' : ' ') .
       '>' .
-      $this->getDefaultValue() .
+      htmlentities($this->getDefaultValue()) .
       '</textarea>';
 
     return $rendered;

@@ -153,7 +153,6 @@ class UserFactory {
       if ($reload) {
         $user = new User($env, $user->name);
       }
-      $user->env = $env;
     }
     return $user;
   }
