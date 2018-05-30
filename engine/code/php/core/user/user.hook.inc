@@ -11,7 +11,7 @@
 function user_boot($env, $vars) {
   $env->sysdir('users', '_users');
   $env->sysdir('roles', '_roles');
-	setcookie('user', NULL, $env->getData('session_lifetime', time() - 86400));
+	//setcookie('user', NULL, $env->getData('session_lifetime', time() - 86400));
 }
 
 /**
