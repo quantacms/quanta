@@ -65,7 +65,7 @@ function qtag_LANGUAGE_SWITCHER($env, $target, $attributes) {
   $language_switcher_tpl = 'language_switcher';
 
   // We don't want translate links to be considered as editable nodes.
-  $attributes['nowrap'] = TRUE;
+  $attributes['editable'] = 'false';
   $attributes['active_items'] = Localization::getLanguage($env);
   $attributes['symlinks'] = 'no';
 
@@ -104,7 +104,7 @@ function qtag_LANGUAGE_SWITCHER($env, $target, $attributes) {
 function qtag_TRANSLATE_LINKS($env, $target, $attributes) {
   $attributes['active_items'] = Localization::getLanguage($env);
   // We don't want translate links to be considered as editable nodes.
-  $attributes['nowrap'] = TRUE;
+  $attributes['editable'] = 'false';
   $attributes['symlinks'] = 'no';
   $dirlist = new DirList($env, DIR_LANGUAGES, 'translate_links', $attributes, 'localization');
   return $dirlist->render();
