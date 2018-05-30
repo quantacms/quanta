@@ -216,7 +216,7 @@ class Doctor extends DataContainer {
     $homenode = NodeFactory::load($this->env, 'home');
     if (!($homenode->exists)) {
       $this->talk('Not found! Attempting to create Homepage...');
-      NodeFactory::buildNode($this->env, 'home', '_pages', array(
+      NodeFactory::buildNode($this->env, 'home', 'pages', array(
           'title' => 'Your Homepage',
           'body' => 'Welcome in your new QUANTA Homepage. That\'s where everything begins...',
         )
