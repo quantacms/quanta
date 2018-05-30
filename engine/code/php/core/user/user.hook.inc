@@ -214,6 +214,7 @@ function user_action_user_register($env, $vars) {
  *   An array of variables.
  */
 function user_action_logout($env, $vars) {
-  $user = UserFactory::current($env);
+  $user = UserFactory::current($env, TRUE);
+
   exit($user->logOut());
 }
