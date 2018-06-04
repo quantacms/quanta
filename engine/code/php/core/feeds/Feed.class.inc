@@ -57,6 +57,7 @@ class Feed extends DataContainer {
         foreach ($item as $k => $v) {
           $output .= "<" . $k . ">" . $v . "</" . $k . ">\n";
         }
+        $output .= "</item>";
       }
       $output .= "</channel>";
       $output .= "</rss>";
