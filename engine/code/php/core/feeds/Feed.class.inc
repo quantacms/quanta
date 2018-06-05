@@ -55,7 +55,7 @@ class Feed extends DataContainer {
         $vars = array('feed_item' => &$item, 'node' => &$feed_node, 'feed' => &$this);
         $this->env->hook('feed_' . $this->name . '_item', $vars);
         foreach ($item as $k => $v) {
-          $output .= "<" . $k . ">" . $v . "</" . $k . ">\n";
+          $output .= "<" . $k . ">" . htmlspecialchars($v, ENT_XML1 | ENT_COMPAT, 'UTF-8') . "</" . $k . ">\n";
         }
         $output .= "</item>";
       }
