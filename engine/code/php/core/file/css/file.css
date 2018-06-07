@@ -3,12 +3,11 @@
     background-position: left center;
 }
 
-#filelist .progress-wrapper {
+ul.file_admin  .progress-wrapper {
     position: absolute;
     right: -60px;
 }
-
-#filelist .progressBar {
+ul.file_admin .progressBar {
     border: 0;
     display: block;
     width: 45px;
@@ -18,13 +17,13 @@
 
 }
 
-#edit-files {
+.upload-files {
     width: 100%;
     position: relative;
     display: block;
 }
 
-#drop {
+.drop {
     background-color: #444;
     padding: 30px;
     margin-bottom: 30px;
@@ -35,7 +34,7 @@
     color: #bbb;
 }
 
-#drop a {
+.drop a {
     background-color: #007a96;
     padding: 12px 26px;
     color: #fff;
@@ -48,15 +47,15 @@
     display: block;
 }
 
-#drop a:hover {
+.drop a:hover {
     background-color: #0986a3;
 }
 
-#drop input {
+.drop input {
     display: none;
 }
 
-#edit-files ul {
+.upload-files ul {
     list-style: none;
 }
 
@@ -67,29 +66,29 @@ li.list-item {
 }
 
 
-#edit-files ul li p {
+.upload-files ul li p {
     width: 144px;
     white-space: nowrap;
 }
 
-#edit-files ul li i {
+.upload-files ul li i {
     font-weight: normal;
     font-style: normal;
     color: #7f7f7f;
     margin-left: 8px;
 }
 
-#edit-files ul li canvas {
+.upload-files ul li canvas {
     position: absolute;
     top: 4px;
     left: -24px;
 }
 
-#edit-files ul li.worked canvas {
+.upload-files ul li.worked canvas {
     display: none;
 }
 
-#edit-files ul li span {
+.upload-files ul li span {
     width: 15px;
     height: 12px;
     background: url('../img/icons.png') no-repeat;
@@ -99,28 +98,28 @@ li.list-item {
     left: -20px;
 }
 
-#edit-files ul li.working span {
+.upload-files ul li.working span {
     height: 16px;
     background-position: 0 -12px;
 }
 
-#edit-files ul li.error p {
+.upload-files ul li.error p {
     color: red;
 }
 
 
-#filelist .list-item-file_admin {
+.file_admin .list-item-file_admin {
     position:relative;
     padding: 10px 10px 10px 60px;
     background:#f6f6f6;
     margin-bottom:10px;
 }
 
-#filelist .list-item-file_admin:hover {
+.file_admin .list-item-file_admin:hover {
     background-color: #eee;
 }
 
-#filelist .list-item-file_admin a {
+.file_admin .list-item-file_admin a {
     text-decoration: none;
     font-size: 12px;
 }
@@ -166,12 +165,12 @@ a.file-link {
     padding:0;
 }
 
-#filelist ul {
+ul.file_admin {
     margin: 0;
     padding: 0;
 }
 
-#filelist ul li {
+ul.file_admin  li {
     display: block;
     margin-left: 0;
 }
