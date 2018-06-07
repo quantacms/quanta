@@ -31,7 +31,6 @@ class Environment extends DataContainer {
    */
   public function __construct($host = NULL, $request_uri = NULL, $docroot = NULL) {
 
-
     $this->host = (($host == NULL) ? strtolower($_SERVER['HTTP_HOST']) : $host);
     if ($request_uri == NULL && !empty($_SERVER['REQUEST_URI'])) {
       // Remove querystring to obtain request uri...
@@ -69,6 +68,7 @@ class Environment extends DataContainer {
     if (isset($_REQUEST['json'])) {
       $this->request_json = json_decode($_REQUEST['json']);
     }
+    $this->setData('timestamp', time());
   }
 
   /**

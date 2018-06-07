@@ -1,22 +1,26 @@
 $(function () {
-  var ul = $('#filelist ul');
 
-  $('#drop a').click(function () {
+
+  $('.drop a').click(function () {
     // Simulate a click on the file input button
     // to show the file browser dialog
     $(this).parent().find('input').click();
   });
 
   // Initialize the jQuery File Upload plugin
-  $('#edit-files').fileupload({
+  $('.upload-files').fileupload({
 
     // This element will accept file drag/drop uploading
-    dropZone: $('#drop'),
+    dropZone: $(this).find('.drop'),
 
     // This function is called when a file is added to the queue;
     // either via the browse button, or via drag/drop:
     add: function (e, data) {
+
       var tmp_files_dir = ($('#tmp_files_dir').val());
+
+      console.log(data.paramName);
+      var form_name = data.paramName;
 
       // TODO: should use a normal QTAG.
       var tpl = $('' +
@@ -35,6 +39,8 @@ $(function () {
 
         '</li>');
 
+
+      var ul = $(this);
 
       // Add the HTML to the UL element
       data.context = tpl.appendTo(ul);
@@ -108,14 +114,10 @@ $(function () {
 
 // Initialize button events for file table admin.
 var refreshFileActions = function (fileElement) {
-  // The file Type.
-  var tagType = fileElement.find('.file-link-item').hasClass('file-image') ? 'IMG' : 'FILE';
-  // The file URL.
-  var href = (fileElement.find('.file-link').attr('href'));
-  var filename = (fileElement.find('.file-link').data('filename'));
-
+  var filename = fileElement.find('.file-link').data('filename');
+  var formname = fileElement.closest('.shadow-content').find('form').attr('id');
   if (fileElement.find('.file-preview').length) {
-    fileElement.prepend('<input type="hidden" class="file-name" name="uploaded-file-' + filename + '" value="' + filename + '" >');
+    fileElement.prepend('<input type="hidden" class="file-name" name="uploaded_file' + '-' + formname + '-' + filename + '" value="' + filename + '" >');
   }
 
   /**
@@ -211,9 +213,8 @@ $(document).bind('refresh', function () {
     var filelink = $(this).parent().find('.file-link');
     var filename = filelink.data('filename');
     var tag_attr = (filelink.data('filenew') != undefined) ? ('tmp_path=' + tmp_files_dir) : ('node=' + node_name);
-
     var qtag ='/qtag/[FILE_PREVIEW|' + tag_attr + ':' + encodeURIComponent(filename) + ']';
-    console.log(qtag);
+
     $(this).load(qtag);
   });
 

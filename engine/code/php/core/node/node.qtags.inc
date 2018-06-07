@@ -146,6 +146,7 @@ function qtag_ATTRIBUTE($env, $target, $attributes) {
 
     // Node edit screen's temporary file upload directory.
     case 'tmp_files_dir':
+      print $node->getName();
       $string = $node->getData('tmp_files_dir');
       $perm = NODE_ACTION_EDIT;
       break;
@@ -179,6 +180,8 @@ function qtag_ATTRIBUTE($env, $target, $attributes) {
     new Message($env, 'Error: trying to fetch the invalid attribute ' . $attributes['name'], MESSAGE_WARNING);
       break;
   }
+
+  // TODO check permission ($perm).
 
   return $string;
 }
@@ -333,7 +336,8 @@ function qtag_EDIT($env, $target, $attributes) {
 
     $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
     $attributes['class'] .= ' edit-link';
-    $title = empty($nodeobj->getTitle()) ? $nodeobj->getName() : filter_xss($nodeobj->getTitle());
+    $title = filter_xss(empty($nodeobj->getTitle()) ? $nodeobj->getName() : $nodeobj->getTitle());
+
     $attributes['tooltip'] = isset($attributes['tooltip']) ? filter_xss($attributes['tooltip']) : 'Edit ' . $title . '...';
     //$attributes['language'] = isset($attributes['language']) ? $attributes['language'] : $env->getLanguage();
 
