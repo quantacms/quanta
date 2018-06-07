@@ -9,6 +9,15 @@
  */
 class FileList extends ListObject {
   protected $scantype = DIR_FILES;
+  /** @var string $filename */
+  public $filefield = 'files';
+
+  public function start() {
+    if (!empty($this->getAttribute('file_field'))) {
+      $this->filefield = $this->getAttribute('file_field');
+    }
+
+  }
 
   /**
    * Construct a FileList object.
@@ -20,16 +29,19 @@ class FileList extends ListObject {
   public function generateList() {
 
     $file_types = $this->getAttribute('file_types');
+
     $i = 0;
     $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
 
     foreach ($this->items as $file) {
       /** @var File $file */
       $i++;
+
+      // Check that this file is not excluded by parameters.
       if (!empty($this->exclude) && !isset($this->exclude[$i])) {
         continue;
       }
-
+      // Check that this file is included, if specified.
       if (!empty($this->include) && isset($this->include[$i])) {
         continue;
       }
@@ -82,10 +94,16 @@ class FileList extends ListObject {
         break;
 
       case 'weight':
-        if (!empty($this->getNode()->json->files)) {
+        if (!empty($this->getNode()->json->{$this->filefield})) {
           // Rearrange Files according with what was set in the node json.
-          $files_json = array_flip($this->getNode()->json->files);
-          $check = ($files_json[$x->getName()] > $files_json[$y->getName()]);
+          $files_json = array_flip($this->getNode()->json->{$this->filefield});
+
+          if (isset($files_json[$x->getName()]) && isset($files_json[$y->getName()])) {
+            $check = ($files_json[$x->getName()] > $files_json[$y->getName()]);
+          }
+          else {
+            $check = TRUE;
+          }
           // Compare files found in the directory with files saved in the json
           // and reorder them accordingly.
           // This allows the user to keep the file order he has set via drag&drop.
@@ -104,4 +122,11 @@ class FileList extends ListObject {
     return ($check) ? 1 : -1;
   }
 
+  public function addItem($file) {
+     $node_files = array_flip($this->getNode()->getAttributeJSON($this->filefield));
+    // Check that this file belongs to the file field as in json.
+    if (isset($node_files[$file->getPath()])) {
+      $this->items[] = $file;
+    }
+  }
 }

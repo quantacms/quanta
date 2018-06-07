@@ -140,7 +140,7 @@ class UserFactory {
 
     static $user;
     // If user has been created already, don't redo the logic.
-    if (!empty($user)) {
+    if (!empty($user) && !$reload) {
       return $user;
     }
 
