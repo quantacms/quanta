@@ -180,6 +180,8 @@ function qtag_ATTRIBUTE($env, $target, $attributes) {
       break;
   }
 
+  // TODO check permission ($perm).
+
   return $string;
 }
 
@@ -333,7 +335,8 @@ function qtag_EDIT($env, $target, $attributes) {
 
     $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
     $attributes['class'] .= ' edit-link';
-    $title = empty($nodeobj->getTitle()) ? $nodeobj->getName() : filter_xss($nodeobj->getTitle());
+    $title = filter_xss(empty($nodeobj->getTitle()) ? $nodeobj->getName() : $nodeobj->getTitle());
+
     $attributes['tooltip'] = isset($attributes['tooltip']) ? filter_xss($attributes['tooltip']) : 'Edit ' . $title . '...';
     //$attributes['language'] = isset($attributes['language']) ? $attributes['language'] : $env->getLanguage();
 

@@ -8,6 +8,10 @@
 class DirList extends ListObject {
   protected $scantype = DIR_DIRS;
 
+  public function start() {
+    return;
+  }
+
   /**
    * Generate the html of the list.
    */
@@ -112,5 +116,10 @@ class DirList extends ListObject {
 
       return ($check) ? 1 : -1;
     }
+  }
+
+  // TODO: desc.
+  public function addItem($node) {
+    $this->items[$node->getName()] = $node;
   }
 }
