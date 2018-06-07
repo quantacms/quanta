@@ -15,7 +15,7 @@ class FormItemFile extends FormItem {
     switch($this->getData('plugin')) {
       case 'drop':
       default:
-        $rendered = '<input type="text" name="tmp_upload_dir" value="[ATTRIBUTE|name=tmp_files_dir]" />' . '<div class="upload-files"><div class="drop">Drop here files<a>or press here</a><input type="file" name="' . $this->getName() . '" id="' . $this->getData('id') . '" multiple /></div></div>';
+        $rendered = '<input type="hidden" name="tmp_upload_dir" value="[ATTRIBUTE|name=tmp_files_dir]" />' . '<div class="upload-files"><div class="drop">Drop here files<a>or press here</a><input type="file" name="' . $this->getName() . '" id="' . $this->getData('id') . '" multiple /></div></div>';
         break;
     }
     return $rendered;
