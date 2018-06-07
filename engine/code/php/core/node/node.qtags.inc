@@ -146,7 +146,6 @@ function qtag_ATTRIBUTE($env, $target, $attributes) {
 
     // Node edit screen's temporary file upload directory.
     case 'tmp_files_dir':
-      print $node->getName();
       $string = $node->getData('tmp_files_dir');
       $perm = NODE_ACTION_EDIT;
       break;
