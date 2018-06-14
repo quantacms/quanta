@@ -12,8 +12,8 @@ function fontawesome_page_init($env, $vars) {
   /** @var Page $page */
   $page = $vars['page'];
 
-  // Setup body classes per each item in the current node lineage.
-  $page->addData('css', array(
-    '<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />',
-  ));
+  if (Shadow::isOpen($env)) {
+    // Include the codemirror lib.
+    $page->addCSS('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css');
+  }
 }
