@@ -6,7 +6,7 @@
 class Page extends DataContainer {
   public $html;
   public $includes;
-  public $file;
+  public $index_file;
 
   /**
    * Constructs the page object.
@@ -18,9 +18,9 @@ class Page extends DataContainer {
    *   The page file.
    *
    */
-  public function __construct(&$env, $file = 'index.html') {
+  public function __construct(&$env, $index_file = 'index.html') {
     $this->env = $env;
-    $this->file = $file;
+    $this->index_file = $index_file;
   }
 
   /**
@@ -30,8 +30,44 @@ class Page extends DataContainer {
     if (substr($this->env->request_uri, 0, 7) == '/engine') die();
     // TODO: better way to skip load includes.
     // TODO: using last run of doctor as token. Better solutions?
-    $this->addData('css', array('<link rel="stylesheet" type="text/css" href="/tmp/css.min.css?q=[DOCTOR_TIMESTAMP]" />'));
-    $this->addData('js', array('<script type="text/javascript" src="/tmp/js.min.js?q=[DOCTOR_TIMESTAMP]"></script>'));
+    $this->addCSS($this->env->dir['tmp_files'] . '/css.min.css');
+    $this->addJS($this->env->dir['tmp_files'] . '/js.min.js');
+  }
+
+  /**
+   * Adds a CSS to the page.
+   *
+   * @param mixed $css
+   *   Could be the css code itself (if inline), or a link to the file.
+   *
+   * @param string $mode
+   *   Can be file or inline.
+   */
+  public function addCSS($css, $mode = 'file') {
+    if ($mode == 'inline') {
+      $this->addData('css_inline', array($css));
+    }
+    else {
+      $this->addData('css', array($css));
+    }
+  }
+
+  /**
+   * Adds a JS to the page.
+   *
+   * @param mixed $js
+   *   Could be the js code itself (if inline), or a link to the file.
+   *
+   * @param string $mode
+   *   Can be file or inline.
+   */
+  public function addJS($js, $mode = 'file') {
+    if ($mode == 'inline') {
+      $this->addData('js_inline', array($js));
+    }
+    else {
+      $this->addData('js', array($js));
+    }
   }
 
   /**
@@ -48,8 +84,8 @@ class Page extends DataContainer {
     }
 
     // This is an actual HTML page request. Commonly index.html.
-    elseif ($this->file != NULL) {
-      $this->html = file_get_contents($this->env->dir['docroot'] . '/' . $this->file);
+    elseif (!empty($this->getIndexFile())) {
+      $this->html = file_get_contents($this->env->dir['docroot'] . '/' . $this->getIndexFile());
     }
 
     // This is a special request, i.e. Shadow node edit.
@@ -79,4 +115,23 @@ class Page extends DataContainer {
     return $this->html;
   }
 
+  /**
+   * Sets the path of the html file to be used as a page template.
+   *
+   * @param string
+   *   The html file to use for the page rendering.
+   */
+  public function setIndexFile($index_file) {
+    $this->index_file = $index_file;
+  }
+
+  /**
+   * Gets the path of the html file to be used as a page template.
+   *
+   * @return string
+   *   The html file to use for the page rendering.
+   */
+  public function getIndexFile() {
+    return $this->index_file;
+  }
 }

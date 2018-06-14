@@ -20,12 +20,18 @@
  *   All the qtags in the html.
  *
  */
-function checkCodeTags(&$env, $html, $options = 'U') {
+function checkCodeTags(&$env, $html, $options = array(), $regex_options = 'U') {
   $replacing = array();
-  $regexs = array(
-    ('/\{(.*)\}/' . $options) => array('{', '}', '|'),
-    ('/\[(.*)\]/' . $options) => array('[', ']', '|'),
-  );
+  // Find all qtags using regular expressions (both { and [ bracket types are valid).
+  $regexs = array();
+
+  $qtag_delimiters = isset($options['qtag_delimiters']) ? $options['qtag_delimiters'] : array('[]', '{}');
+  foreach ($qtag_delimiters as $qtag_delimiter) {
+    $qtag_del_open = substr($qtag_delimiter, 0, 1);
+    $qtag_del_close = substr($qtag_delimiter, 1, 1);
+
+    $regexs['/\\' . $qtag_del_open . '(.*)\\' . $qtag_del_close . '/' . $regex_options] = array($qtag_del_open, $qtag_del_close, '|');
+  }
 
   foreach ($regexs as $regex => $delimiters) {
     preg_match_all($regex, $html, $matches);
@@ -48,6 +54,7 @@ function checkCodeTags(&$env, $html, $options = 'U') {
         $tag_destination .= ':' . $tag[$i];
       }
 
+      // Load the attributes of the qtag.
       $attributes = explode($delimiters[2], $tag[0]);
       $tag_name = $attributes[0];
       $attr_arr = array();
@@ -73,12 +80,16 @@ function checkCodeTags(&$env, $html, $options = 'U') {
         }
       }
 
-      // when the showtag attribute is used, don't render the tab but just display it.
+      // When the showtag attribute is used, don't render the tab but just display it.
       if (!empty($attr_arr['showtag'])) {
         $replacing[$tag_full] =  string_normalize(str_replace('|showtag', '', $tag_full));
       }
+      // When the showtag attribute is used, don't render the tab but just display it.
+      elseif (!empty($attr_arr['runlast']) && empty($options['runlast'])) {
+        continue;
+      }
       else {
-        // New function using qtag.
+        // Check if the requested qtag is defined by any function.
         if ($tag_name == strtoupper($tag_name) && function_exists('qtag_' . $tag_name)) {
           $func = 'qtag_' . $tag_name;
           if (function_exists($func)) {
@@ -103,9 +114,10 @@ function checkCodeTags(&$env, $html, $options = 'U') {
 
               // Run the qtag.
               $tag_html = $func($env, !empty($tag_destination) ? $tag_destination : NULL, $attr_arr);
+
               $qtag[$tag_full] = $tag_html;
 
-              // Let other module hook into the rendered qtag.
+              // Let other modules hook into the rendered qtag.
               $env->hook('qtag', $vars);
 
               $tag_content = $qtag[$tag_full];
@@ -139,24 +151,23 @@ function checkCodeTags(&$env, $html, $options = 'U') {
  * @param $html
  * @return mixed
  */
-function transformCodeTags(&$env, $html) {
+function transformCodeTags(&$env, $html, $options = array()) {
 // After rendering all tags in a page, the result could be containing other tags.
   // For this reason, keep looping until all tags are rendered.
   while (TRUE) {
 
-    $replaces = (checkCodeTags($env, $html));
+    $replaces = (checkCodeTags($env, $html, $options));
 
     if (empty($replaces)) {
       break;
     }
     foreach ($replaces as $k => $replace) {
-
       if (is_array($replace)) {
         $replace = implode(GLOBAL_SEPARATOR, $replace);
       }
-
       $html = str_replace($k, $replace, $html);
     }
+
   }
   return $html;
 }

@@ -2,8 +2,9 @@
 /**
  * Implements qtag HEAD.
  *
+ * @deprecated Use JS and CSS instead.
+ *
  * Automatically generated header data.
- * TODO: discontinue. Use JS and CSS instead.
  *
  * @param Environment $env
  *   The Environment.
@@ -40,9 +41,33 @@ function qtag_HEAD($env, $target, $attributes) {
  */
 function qtag_CSS($env, $target, $attributes) {
   $page = $env->getData('page');
-  $css = $page->getData('css');
-  return implode('
-  ', $css);
+  $css_code = '<style>';
+
+  // If target is specified, include the css file directly.
+  if (isset($target)) {
+    if (isset($attributes['module'])) {
+      $target = $env->getModule($attributes['module'])['path'] . '/' . $target;
+    }
+    $css = array($target);
+  }
+  else {
+    // If no target specified, assume loading of all page includes.
+    $css = $page->getData('css');
+    $inline_css = $page->getData('css_inline');
+  }
+
+  // TODO: converting all inclusions into inline stylesheets. Faster, but is it good?
+  foreach ($css as $css_file) {
+    $css_code .= file_get_contents($css_file);
+  }
+
+  if (!empty($inline_css)) {
+    foreach ($inline_css as $inline_css_code) {
+      $css_code .= $inline_css_code . "\n";
+    }
+  }
+  $css_code .= '</style>';
+  return $css_code;
 }
 
 /**
@@ -64,9 +89,26 @@ function qtag_CSS($env, $target, $attributes) {
  */
 function qtag_JS($env, $target, $attributes) {
   $page = $env->getData('page');
-  $js = $page->getData('js');
-  return implode('
-  ', $js);
+  $js_code = '';
+
+  // If target is specified, include the css file directly.
+  if (isset($target)) {
+    if (isset($attributes['module'])) {
+      $target = $env->getModule($attributes['module'])['path'] . '/' . $target;
+    }
+    $js = array($target);
+  }
+  else {
+    // If no target specified, assume loading of all page includes.
+    $js = $page->getData('js');
+  }
+
+  // TODO: converting all inclusions into inline stylesheets. Faster, but is it good?
+  foreach ($js as $js_file) {
+    $js_code .= '<script type="text/javascript" src="' . $js_file . '"></script>';
+  }
+
+  return $js_code;
 }
 
 /**
