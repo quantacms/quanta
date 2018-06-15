@@ -48,6 +48,9 @@ function qtag_CSS($env, $target, $attributes) {
     if (isset($attributes['module'])) {
       $target = $env->getModule($attributes['module'])['path'] . '/' . $target;
     }
+    else {
+      $target = $env->dir['docroot'] . '/' . $target;
+    }
     $css = array($target);
   }
   else {
@@ -95,6 +98,9 @@ function qtag_JS($env, $target, $attributes) {
   if (isset($target)) {
     if (isset($attributes['module'])) {
       $target = $env->getModule($attributes['module'])['path'] . '/' . $target;
+    }
+    else {
+      $target = $env->dir['docroot'] . '/' . $target;
     }
     $js = array($target);
   }
