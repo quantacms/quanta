@@ -217,8 +217,11 @@ function qtag_LINK($env, $target, $attributes) {
     $classes[] = 'link-ext';
     $title_default = filter_xss($target);
     $attributes['rel'] = NULL;
+    $attributes['external'] = TRUE;
   }
   else {
+    $attributes['external'] = FALSE;
+
     // Load the target node.
     $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
     // Retrieve main link attributes.
@@ -236,7 +239,7 @@ function qtag_LINK($env, $target, $attributes) {
     $attributes['rel'] = $node->getName();
   }
 
-  $vars = array('target' => $target, 'attributes' => $attributes, 'link_data' => &$link_data);
+  $vars = array('target' => &$target, 'attributes' => &$attributes, 'link_data' => &$link_data);
   $env->hook('link_alter', $vars);
 
   // Add custom classes to the link.
@@ -269,6 +272,7 @@ function qtag_LINK($env, $target, $attributes) {
   }
 
   $query = (!empty($querystring)) ? ('?' . implode('&', $querystring)) : '';
+
 
   $title = isset($attributes['title']) ? $attributes['title'] : $title_default;
   // Create the link HTML.
