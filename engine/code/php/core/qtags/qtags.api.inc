@@ -37,7 +37,7 @@ function checkCodeTags(&$env, $html, $options = array(), $regex_options = 'U') {
     preg_match_all($regex, $html, $matches);
     foreach ($matches[1] as $tag_value) {
       $tag_full = $delimiters[0] . $tag_value . $delimiters[1];
-      $replaces = checkCodeTags($env, $tag_value);
+      $replaces = checkCodeTags($env, $tag_value, $options);
       foreach ($replaces as $tag => $val) {
         if (is_array($val)) {
           $val = implode(GLOBAL_SEPARATOR, $val);
@@ -86,9 +86,11 @@ function checkCodeTags(&$env, $html, $options = array(), $regex_options = 'U') {
       }
       // When the showtag attribute is used, don't render the tab but just display it.
       elseif (!empty($attr_arr['runlast']) && empty($options['runlast'])) {
+
         continue;
       }
       else {
+
         // Check if the requested qtag is defined by any function.
         if ($tag_name == strtoupper($tag_name) && function_exists('qtag_' . $tag_name)) {
           $func = 'qtag_' . $tag_name;
