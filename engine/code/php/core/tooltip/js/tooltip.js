@@ -8,7 +8,7 @@ $(document).bind('refresh', function () {
 	dataTooltip.on('mouseover', function () {
   var tooltip = $('#tooltip');
 		// Generate the tooltip's html.
-    tooltip.html($(this).attr('data-tooltip')).show();
+    tooltip.html(quanta_html_escape($(this).data('tooltip'))).show();
     tooltip.css('color', $(this).css('color'));
     $(document).off('mousemove').on('mousemove', function (e) {
       var tipLeft = (e.pageX > ($(window).width() / 2)) ? (e.pageX - tooltip.innerWidth()) : (e.pageX + 10);

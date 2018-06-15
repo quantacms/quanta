@@ -152,6 +152,8 @@ abstract class ListObject extends DataContainer {
       return FALSE;
     }
 
+    $this->start();
+
     $symlinks = $this->getAttribute('symlinks');
 
     // TODO: discontinue.
@@ -186,14 +188,13 @@ abstract class ListObject extends DataContainer {
       if ($this->scantype == DIR_DIRS) {
         $node = NodeFactory::load($this->env, $item_name);
         if ($node->exists && $this->validateStatus($node)) {
-
-          $this->items[$item_name] = $node;
+          $this->addItem($node);
         }
       }
       elseif (($this->scantype == DIR_FILES) && $this->node != NULL) {
 				$file = new File($this->env, $item_name, $this->node);
         if ($file->isPublic()) {
-          $this->items[] = $file;
+          $this->addItem($file);
         }
       }
     }
@@ -204,6 +205,9 @@ abstract class ListObject extends DataContainer {
 
   }
 
+  public abstract function start();
+
+  public abstract function addItem($item);
 
   /**
    * Check if a node has a status that can be displayed in the list.

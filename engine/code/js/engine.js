@@ -84,6 +84,14 @@ var actionError = function(err, exception) {
     alert(exception);
 };
 
+var quanta_html_escape = function(str) {
+return str.replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+};
+
 // Inizializza.
 $(document).ready(function() {
     $(document).trigger('refresh');

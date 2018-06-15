@@ -248,5 +248,6 @@ function minify($env, $file) {
  * Filter a string to make it xss-safe.
  */
 function filter_xss($string) {
-  return htmlspecialchars($string, ENT_QUOTES,'utf-8');
+  $filtered_string = htmlspecialchars($string, ENT_QUOTES,'utf-8');
+  return $filtered_string;
 }

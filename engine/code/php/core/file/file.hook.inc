@@ -41,7 +41,7 @@ function file_init($env, $vars) {
   $node = NodeFactory::current($env);
   // There is a request to upload a file.
   // TODO: move in actions / factory?
-  if (isset($_FILES['upl'])) {
+  if (!empty($_FILES)) {
     File::checkUploads($env);
     exit();
   }
@@ -71,15 +71,21 @@ function file_node_presave($env, $vars) {
   /** @var Node $node */
   $node = $vars['node'];
   $data = $vars['data'];
-  $files = array();
+  $uploaded_files = [];
+  // Walk through uploaded files.
   foreach ($data as $label => $name) {
-
-    if (substr($label,0, 13) == 'uploaded-file') {
-      $file = substr($label, 14);
-      $files[] = normalizeFilePath($file);
+    $exp = explode('-', $label);
+    if (array_shift($exp) == 'uploaded_file') {
+      $form_name = array_shift($exp);
+      $file = implode('-', $exp);
+      $uploaded_files[$form_name][] = normalizeFilePath($file);
     }
   }
-  $node->json->files = $files;
+
+  foreach ($uploaded_files as $form_name => $uploaded_file_list) {
+    // Save list of uploaded files for this file field in json.
+    $node->json->{$form_name} = $uploaded_file_list;
+  }
 }
 
 /**
@@ -93,6 +99,7 @@ function file_node_presave($env, $vars) {
  *   An array of variables.
  */
 function file_node_after_save($env, $vars) {
+
   // TODO: move in File or create FileFactory module.
   /** @var Node $node */
   $node = $vars['node'];
@@ -101,7 +108,9 @@ function file_node_after_save($env, $vars) {
   if (is_dir($tmp_dir)) {
     $tmp_files = $env->scanDirectory($tmp_dir);
     foreach ($tmp_files as $file) {
+
       $tmp_file_path = $tmp_dir . '/' . $file;
+
       $fileobj = new File($env, $tmp_file_path, $node);
       // Check that uploaded files are valid.
       if (!$fileobj->isPublic()) {
@@ -136,6 +145,6 @@ function file_node_load($env, $vars) {
     $node->setData('tmp_files_dir', array_pop($json->tmp_files_dir));
   }
   else {
-    $node->setData('tmp_files_dir', $node->getName() . '-' . time() . '-' . rand(0, 1000));
+    $node->setData('tmp_files_dir', $node->getName() . '-' . $env->getData('timestamp'));
   }
 }
