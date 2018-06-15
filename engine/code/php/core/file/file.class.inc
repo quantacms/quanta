@@ -8,8 +8,6 @@ define('FILE_RENDER_PATH', 'file_render_path');
  * This class represents a Page (corrisponding to a rendered html page).
  */
 class File extends DataContainer {
-  /** @var Environment $env */
-  public $env;
   /** @var string $name */
   public $name;
   /** @var string $filename */
@@ -250,26 +248,29 @@ class File extends DataContainer {
     );
 
     // Create a temporary upload directory.
-    $upload_dir = ($env->dir['tmp_files'] . '/' . $_REQUEST['tmp_files_dir']);
+    $upload_dir = ($env->dir['tmp_files'] . '/' . $_REQUEST['tmp_upload_dir']);
 
     if (!is_dir($upload_dir)) {
       mkdir($upload_dir);
     }
 
-    // Check all the uploaded files.
-    if (isset($_FILES['upl']) && $_FILES['upl']['error'] == 0) {
-      $filename = pathinfo($_FILES['upl']['name'], PATHINFO_FILENAME);
-      $extension = pathinfo($_FILES['upl']['name'], PATHINFO_EXTENSION);
-      if (!in_array(strtolower($extension), $allowed)) {
-        echo '{"status":"error"}';
-        exit;
-      }
-      // Move the uploaded file to the temporary directory..
-      if (move_uploaded_file($_FILES['upl']['tmp_name'], $upload_dir . '/' . $filename . '.' . $extension)) {
-        echo '{"status":"success"}';
-        exit;
+    foreach ($_FILES as $uploaded_file_name => $uploaded_file) {
+      // Check all the uploaded files.
+      if ($uploaded_file['error'] == 0) {
+        $filename = pathinfo($uploaded_file['name'], PATHINFO_FILENAME);
+        $extension = pathinfo($uploaded_file['name'], PATHINFO_EXTENSION);
+        if (!in_array(strtolower($extension), $allowed)) {
+          echo '{"status":"error"}';
+          exit;
+        }
+        // Move the uploaded file to the temporary directory..
+        if (move_uploaded_file($uploaded_file['tmp_name'], $upload_dir . '/' . $filename . '.' . $extension)) {
+          echo '{"status":"success"}';
+          exit;
+        }
       }
     }
+
     echo '{"status":"error"}';
     exit;
   }

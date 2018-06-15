@@ -8,14 +8,14 @@ class FormItemFile extends FormItem {
 
 
   /**
-   * Renders the input item.
+   * Renders the file input item.
    * @return mixed
    */
   function render() {
     switch($this->getData('plugin')) {
       case 'drop':
       default:
-        $rendered = '<div id="drop">Drop here files<a>or press here</a><input type="file" name="upl" id="' . $this->getData('id') . '" multiple /></div>';
+        $rendered = '<input type="hidden" name="tmp_upload_dir" value="[ATTRIBUTE|name=tmp_files_dir]" />' . '<div class="upload-files"><div class="drop">Drop here files<a>or press here</a><input type="file" name="' . $this->getName() . '" id="' . $this->getData('id') . '" multiple /></div></div>';
         break;
     }
     return $rendered;
