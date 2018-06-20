@@ -41,35 +41,39 @@ function qtag_HEAD($env, $target, $attributes) {
  */
 function qtag_CSS($env, $target, $attributes) {
   $page = $env->getData('page');
-  $css_code = '<style>';
+
 
   // If target is specified, include the css file directly.
   if (isset($target)) {
     if (isset($attributes['module'])) {
       $target = $env->getModule($attributes['module'])['path'] . '/' . $target;
     }
-    else {
-      $target = $env->dir['docroot'] . '/' . $target;
-    }
     $css = array($target);
   }
+
   else {
     // If no target specified, assume loading of all page includes.
     $css = $page->getData('css');
     $inline_css = $page->getData('css_inline');
   }
 
-  // TODO: converting all inclusions into inline stylesheets. Faster, but is it good?
-  foreach ($css as $css_file) {
-    $css_code .= file_get_contents($css_file);
-  }
-
-  if (!empty($inline_css)) {
-    foreach ($inline_css as $inline_css_code) {
-      $css_code .= $inline_css_code . "\n";
+  if (empty($attributes['external'])) {
+    $css_code = '<style>';
+    // TODO: converting all inclusions into inline stylesheets. Faster, but is it good?
+    foreach ($css as $css_file) {
+      $css_code .= file_get_contents($css_file);
     }
+
+    if (!empty($inline_css)) {
+      foreach ($inline_css as $inline_css_code) {
+        $css_code .= $inline_css_code . "\n";
+      }
+    }
+    $css_code .= '</style>';
   }
-  $css_code .= '</style>';
+  else {
+    $css_code = '<link rel="stylesheet" href="' . $target . '" >';
+  }
   return $css_code;
 }
 
@@ -111,7 +115,13 @@ function qtag_JS($env, $target, $attributes) {
 
   // TODO: converting all inclusions into inline stylesheets. Faster, but is it good?
   foreach ($js as $js_file) {
-    $js_code .= '<script type="text/javascript" src="' . $js_file . '"></script>';
+    if (isset($attributes['inline'])) {
+      $js_code .= '<script type="text/javascript">' . file_get_contents($js_file) . '</script>';
+
+    }
+    else {
+      $js_code .= '<script type="text/javascript" src="' . $js_file . '"></script>';
+    }
   }
 
   return $js_code;
