@@ -215,6 +215,6 @@ function user_action_user_register($env, $vars) {
  */
 function user_action_logout($env, $vars) {
   $user = UserFactory::current($env, TRUE);
-  $user->logOut();
-  exit;
+  $logout = $user->logOut();
+  exit($logout);
 }

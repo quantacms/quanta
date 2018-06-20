@@ -154,7 +154,9 @@ function checkCodeTags(&$env, $html, $options = array(), $regex_options = 'U') {
  * @return mixed
  */
 function transformCodeTags(&$env, $html, $options = array()) {
-// After rendering all tags in a page, the result could be containing other tags.
+
+  // After rendering all tags in a page, the result could be containing other tags.
+
   // For this reason, keep looping until all tags are rendered.
   while (TRUE) {
 
@@ -173,3 +175,14 @@ function transformCodeTags(&$env, $html, $options = array()) {
   }
   return $html;
 }
+
+
+/**
+ * Remove all qtags elements from the string (all [elements] within brackets).
+ * @param $string
+ * @return string
+ */
+function stripQTags($string) {
+  return preg_replace('/\[.*?\]/', '', $string);
+}
+  

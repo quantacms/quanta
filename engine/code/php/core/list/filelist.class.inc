@@ -34,6 +34,7 @@ class FileList extends ListObject {
     $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
 
     foreach ($this->items as $file) {
+
       /** @var File $file */
       $i++;
 
@@ -122,11 +123,20 @@ class FileList extends ListObject {
     return ($check) ? 1 : -1;
   }
 
+  /**
+   * Adds a file to the list queue.
+   *
+   * @param File $file
+   *   The file to be added.
+   */
   public function addItem($file) {
-     $node_files = array_flip($this->getNode()->getAttributeJSON($this->filefield));
     // Check that this file belongs to the file field as in json.
-    if (isset($node_files[$file->getPath()])) {
-      $this->items[] = $file;
-    }
+    // TODO: why this was done?.
+    //      $node_files = array_flip($this->getNode()->getAttributeJSON($this->filefield));.
+    // if (!isset($node_files[$file->getPath()])) {
+    //  new Message($this->env, 'File absent from JSON file: ' . $file->getName() . '. Please re-save this node to fix the problem.');
+    // }
+    $this->items[] = $file;
+
   }
 }
