@@ -125,6 +125,7 @@ class Image extends File {
 
     // Get the File path for the image
     $thumbRoot = $env->dir['thumbs'];
+
     $sImagePath = $this->getRealPath();
     $thumbImagePath = $thumbRoot . '/' . $thumbfile;
 
