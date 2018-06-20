@@ -23,7 +23,7 @@ function qtags_page_complete($env, $vars) {
  * @param $vars
  *   An array of variables.
  */
-function qtags_boot($env, $vars) {
+function qtags_init($env, $vars) {
   if ($env->request[1] == 'qtag') {
     print transformCodeTags($env, urldecode($env->request[2]));
     exit;
