@@ -89,7 +89,7 @@ class Image extends File {
     $style = (count($this->css) > 0) ? 'style="' . implode(';', $this->css) . '" ' : '';
     $class = (count($this->class) > 0) ?  implode(' ', $this->class) : '';
     
-		$img = '<img alt="' . $this->getTitle() . '" class="innerimg ' . $class . '" src="' . $this->path . '" ' . $style . " />";
+		$img = '<img width="' . $this->width . '" height="' . $this->height . '" alt="' . $this->getTitle() . '" class="innerimg ' . $class . '" src="' . $this->path . '" ' . $style . " />";
     if (!empty($this->link)) {
 		  $img = '<a href="#">' . $img . '</a>';
 		} 
@@ -417,6 +417,9 @@ class Image extends File {
       } else if ($sExtension == 'gif') {
         imagegif($img, $thumbImagePath);
       }
+
+      $this->width = $iThumbnailWidth;
+      $this->height = $iThumbnailHeight;
     }
     return $thumbfile;
   }
