@@ -27,7 +27,7 @@ class Image extends File {
     foreach($attributes as $attname => $attribute) {
 
       // Check forced size.
-      if (preg_match_all('/[0-9]x[0-9]/', $attname, $matches)) {
+      if (preg_match_all('/[0-9|auto]x[0-9|auto]/', $attname, $matches)) {
         $size = explode('x', $attname);
         $this->width = $size[0];
         $this->height = $size[1];
@@ -108,6 +108,13 @@ class Image extends File {
    * @param int $compression
    */
   public function generateThumbnail($env, $thumbfile, $maxw = NULL, $maxh = NULL, $sType = 'crop', $compression = 60, $fallback) {
+
+    if ($maxw == 'auto') {
+      $maxw = 0;
+    }
+    if ($maxh == 'auto') {
+      $maxh = 0;
+    }
 
     if (!(intval($maxw) > 0)) {
       $maxw = 999999;
@@ -418,8 +425,6 @@ class Image extends File {
         imagegif($img, $thumbImagePath);
       }
 
-      $this->width = $iThumbnailWidth;
-      $this->height = $iThumbnailHeight;
     }
     return $thumbfile;
   }
