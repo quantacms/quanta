@@ -23,4 +23,4 @@
 [JS|inline|runlast|module=wysiwyg:froala/js/froala-quanta.js]
 [CSS|runlast|module=wysiwyg:css/wysiwyg.css]
 [CSS:https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css]
-[CSS|external:https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"]
+[CSS|external:https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css]
