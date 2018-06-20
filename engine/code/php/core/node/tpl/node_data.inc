@@ -4,8 +4,8 @@
 [INPUT|id=tmp_files_dir|type=hidden|required|name=tmp_files_dir|value={ATTRIBUTE|name=tmp_files_dir|no_qtags}:node-data-form]
 [FORM:node-data-form]
 <!-- File plugin -->
-[JS|inline|runlast|module=file|refresh:js/jquery.fileupload.js]
-[JS|inline|runlast|module=file|refresh:js/file-upload.js]
+[JS|inline|module=file|refresh:js/jquery.fileupload.js]
+[JS|inline|module=file|refresh:js/file-upload.js]
 <!-- Froala plugin -->
 [CSS|runlast|module=wysiwyg:froala/css/froala_style.min.css]
 [CSS|runlast|module=wysiwyg:froala/css/froala_editor.min.css]
