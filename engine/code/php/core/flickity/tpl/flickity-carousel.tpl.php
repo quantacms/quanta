@@ -7,5 +7,5 @@
       </div>
     </div>
   </div>
-  <div class="slide-img" style=""><a class="flickity-link" href="/[LISTITEM]">[IMGTHUMB|node=[LISTITEM]|1000x0:{ATTRIBUTE|name=thumbnail:[LISTITEM]}]</a></div>
+  <div class="slide-img"><a class="flickity-link" href="/[LISTITEM]">[IMGTHUMB|node=[LISTITEM]|1000x0:{ATTRIBUTE|name=thumbnail:[LISTITEM]}]</a></div>
 </div>

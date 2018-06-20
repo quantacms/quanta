@@ -20,6 +20,13 @@ define('CAROUSEL_DIRS', 'carousel_dirs');
  *   The rendered qtag.
  */
 function qtag_CAROUSEL($env, $target, $attributes) {
+  /** @var Page $page */
+  $page = $env->getData('page');
+  $module_path = $env->getModule('flickity')['path'];
+  $page->addJS($module_path . '/js/flickity.pkgd.min.js');
+  $page->addCSS($module_path . '/css/flickity.min.css');
+  $page->addCSS($module_path . '/css/flickity-quanta.css');
+
   // TODO: create a class for the carousel.
   $module = isset($attributes['module']) ? $attributes['module'] : 'flickity';
   if (empty($attributes['carousel-type'])) {

@@ -1,9 +1,10 @@
 <?php
-  require_once('Box.class.inc');
+require_once('Box.class.inc');
 define('BOX_NON_EDITABLE', 'box_non_editable');
 define('BOX_FLAT', 'box_flat');
 
 date_default_timezone_set('UTC');
+
 /**
  * Class Box
  * This class creates a wrapper div for an inserted tag.
@@ -27,6 +28,7 @@ class Box extends DataContainer {
    * @param null $attributes
    */
   public function __construct(&$env, $w = NULL, $h = NULL, $attributes = NULL) {
+    $this->env = $env;
     // Class for the div
     $this->setData('class', array('box'));
     // Style for the div
@@ -177,7 +179,7 @@ class Box extends DataContainer {
   public function setHeight($h) {
     $this->h = $h;
     if ($h != NULL) {
-    $this->addData('class', array('h-' . $h));
+      $this->addData('class', array('h-' . $h));
     }
   }
 
@@ -194,10 +196,10 @@ class Box extends DataContainer {
   public function setWidth($w) {
     $this->w = $w;
     if ($w != NULL) {
-    $this->addData('class', array('w-' . $w));
-    if (is_numeric($w) && $w > 0) {
-      $this->addData('style', array('width:' . $w . '%'));
-    }
+      $this->addData('class', array('w-' . $w));
+      if (is_numeric($w) && $w > 0) {
+        $this->addData('style', array('width:' . $w . '%'));
+      }
     }
   }
 
@@ -240,17 +242,42 @@ class Box extends DataContainer {
       return '';
     }
     else {
+      $box_counter = Box::counter();
+      $this->addData('class', array('box-' . $box_counter));
       $box_content = $this->getHtml();
+      // Check if the box has a setup title.
       if (!empty($this->getData('title'))) {
         $box_content = '<h3>' . @array_pop($this->getData('title')) . '</h3>' . $box_content;
       }
-
+      // Check if the box is flat (has no "inner" containers).
       if (!$this->isFlat()) {
-        $box_content = '<div class="inner" style="' . implode(';', $this->getData('inner_style')) . '" >' . $box_content . '</div>';
+        $box_content = '<div class="inner">' . $box_content . '</div>';
       }
-      $box_content = '<div id="' . $this->getData('id') . '" class="' . implode(' ', $this->getData('class')) . '" style="' . implode(';', $this->getData('style')) . '">' . $box_content . '</div>';
+      $box_content = '<div id="' . $this->getData('id') . '" class="' . implode(' ', $this->getData('class')) . '" data-box-counter="' . $box_counter .  '">' . $box_content . '</div>';
+
+      $this->env->getData('page')->addCSS('.box-' . $box_counter . ' {' . implode(';', $this->getData('style')) . ';}.box-' . $box_counter . ' .inner {' . implode(';', $this->getData('inner_style')) . ';}', 'inline');
+
       return $box_content;
     }
 
+  }
+
+  /**
+   * Static counter function, used to create unique references to boxes.
+   *
+   * @return int
+   */
+  public static function counter() {
+
+    static $box_count;
+    if (!isset($box_count)) {
+      $box_count = 1;
+    }
+    else {
+      $box_count++;
+    }
+    return $box_count;
 }
+
+
 }

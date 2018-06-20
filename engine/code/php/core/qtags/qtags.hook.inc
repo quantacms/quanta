@@ -8,7 +8,10 @@
  *   An array of variables.
  */
 function qtags_page_complete($env, $vars) {
-  $vars['page']->html = transformCodeTags($env, $vars['page']->html);
+  $html = transformCodeTags($env, $vars['page']->html);
+  $html = transformCodeTags($env, $html, array('runlast' => TRUE));
+
+  $vars['page']->html = $html;
 }
 
 /**

@@ -108,7 +108,7 @@ function qtag_IMGTHUMB($env, $target, $attributes) {
   }
   else {
     // Generate the HTML of the thumbnail.
-    $thumb = '<img alt="' . $alt . '" class="image ' . (isset($attributes['class']) ? $attributes['class'] : '') .  '" ' . 'alt="' . $filename . '" ' . $tooltip . 'src="' . $src . '" />';
+    $thumb = '<img width="' . $image->width . '" height="' . $image->height . '" alt="' . $alt . '" class="image ' . (isset($attributes['class']) ? $attributes['class'] : '') .  '" ' . 'alt="' . $filename . '" ' . $tooltip . 'src="' . $src . '" />';
   }
 
   // If a link is set, wrap the image in the link.

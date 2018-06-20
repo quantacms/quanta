@@ -166,4 +166,13 @@ class Shadow extends Page {
     return $this->node;
   }
 
+  /**
+   * Check if there is an open shadow.
+   *
+   * @return bool
+   *   True if there is an open shadow request.
+   */
+  public static function isOpen($env) {
+    return !empty($env->getData('shadow'));
+  }
 }
