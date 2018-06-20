@@ -72,7 +72,7 @@ function qtag_CSS($env, $target, $attributes) {
     $css_code .= '</style>';
   }
   else {
-    $css_code = '<link rel="stylesheet" href="' . $target . '" >';
+    $css_code = '<link rel="stylesheet" href="' . $target . '" type="text/css" />';
   }
   return $css_code;
 }

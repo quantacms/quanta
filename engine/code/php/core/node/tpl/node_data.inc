@@ -4,8 +4,9 @@
 [INPUT|id=tmp_files_dir|type=hidden|required|name=tmp_files_dir|value={ATTRIBUTE|name=tmp_files_dir|no_qtags}:node-data-form]
 [FORM:node-data-form]
 <!-- File plugin -->
-[JS|inline|runlast|module=file|refresh:js/jquery.fileupload.js]
-[JS|inline|runlast|module=file|refresh:js/file-upload.js]
+<script src="/engine/code/php/core/file/js/jquery.fileupload.js?refresh=[DOCTOR_TIMESTAMP]"></script>
+<script src="/engine/code/php/core/file/js/file-upload.js?refresh=[DOCTOR_TIMESTAMP]"></script>
+
 <!-- Froala plugin -->
 [CSS|runlast|module=wysiwyg:froala/css/froala_style.min.css]
 [CSS|runlast|module=wysiwyg:froala/css/froala_editor.min.css]
@@ -22,5 +23,4 @@
 [JS|inline|runlast|module=wysiwyg:froala/plugins/url.min.js]
 [JS|inline|runlast|module=wysiwyg:froala/js/froala-quanta.js]
 [CSS|runlast|module=wysiwyg:css/wysiwyg.css]
-[CSS:https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css]
 [CSS|external:https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css]
