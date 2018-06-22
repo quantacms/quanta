@@ -12,8 +12,8 @@ define('IMAGE_RENDER_FULL', 'image_full');
  */
 class Image extends File {
 
-  public $width = 'auto';
-  public $height = 'auto';
+  public $width = '';
+  public $height = '';
   public $css = array();
   public $class = array();
   public $linkto = NULL;
@@ -88,8 +88,9 @@ class Image extends File {
   public function render($mode = IMAGE_RENDER_FULL) {
     $style = (count($this->css) > 0) ? 'style="' . implode(';', $this->css) . '" ' : '';
     $class = (count($this->class) > 0) ?  implode(' ', $this->class) : '';
-    
-		$img = '<img width="' . $this->width . '" height="' . $this->height . '" alt="' . $this->getTitle() . '" class="innerimg ' . $class . '" src="' . $this->path . '" ' . $style . " />";
+    $width = ($this->width > 0) ? 'width="' . $this->width . '"' : '';
+    $height = ($this->height > 0) ? 'height="' . $this->height . '"' : '';
+		$img = '<img ' . $width . ' ' . $height . ' alt="' . $this->getTitle() . '" class="innerimg ' . $class . '" src="' . $this->path . '" ' . $style . " />";
     if (!empty($this->link)) {
 		  $img = '<a href="#">' . $img . '</a>';
 		} 
