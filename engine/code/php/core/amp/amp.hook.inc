@@ -41,7 +41,7 @@ function amp_qtag($env, $vars) {
 function amp_page_complete($env, $vars) {
   if (Amp::isActive($env)) {
     $vars['page']->html = preg_replace('/style=\\"[^\\"]*\\"/', '', $vars['page']->html);
-    $vars['page']->html = str_replace('<img', '<amp-img layout="flex-item"', $vars['page']->html);
+    $vars['page']->html = str_replace('<img', '<amp-img layout="intrinsic"', $vars['page']->html);
     $vars['page']->html = str_replace('<style>', '<style amp-custom>', $vars['page']->html);
     $vars['page']->html = str_replace('!important', '', $vars['page']->html);
   }
