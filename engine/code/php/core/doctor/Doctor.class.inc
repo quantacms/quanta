@@ -562,4 +562,8 @@ class Doctor extends DataContainer {
   public static function recipe() {
 
   }
+
+	public static function timestamp($env) {
+	  return filemtime($env->dir['tmp'] . '/' . DOCTOR_RECIPE);
+	}
 }

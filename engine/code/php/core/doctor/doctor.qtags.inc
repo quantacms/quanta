@@ -17,5 +17,5 @@
  *   The rendered qtag.
  */
 function qtag_DOCTOR_TIMESTAMP($env, $target, $attributes) {
-  return filemtime($env->dir['tmp'] . '/' . DOCTOR_RECIPE);
+	return Doctor::timestamp($env);
 }

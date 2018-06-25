@@ -31,7 +31,7 @@ class Page extends DataContainer {
     // TODO: better way to skip load includes.
     // TODO: using last run of doctor as token. Better solutions?
     $this->addCSS($this->env->dir['tmp_files'] . '/css.min.css');
-    $this->addJS($this->env->dir['tmp_files'] . '/js.min.js');
+    $this->addJS('/tmp/js.min.js');
   }
 
   /**

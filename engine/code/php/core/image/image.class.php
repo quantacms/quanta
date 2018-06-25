@@ -62,6 +62,13 @@ class Image extends File {
     if (empty($this->getTitle())) {
       $this->setTitle($this->getFileName());
     }
+
+		// If width or height are not specified, get it from img directly. (Slow).
+		if (empty($this->width) || empty($this->height)) {
+		  $get_size = getimagesize($this->getRealPath());
+			$this->width = $get_size[0];
+			$this->height = $get_size[1];	
+		}
   }
 
   /**
@@ -86,11 +93,12 @@ class Image extends File {
    * @return string
    */
   public function render($mode = IMAGE_RENDER_FULL) {
-    $style = (count($this->css) > 0) ? 'style="' . implode(';', $this->css) . '" ' : '';
+    $imgurl = (strpos($this->path, '/') !== FALSE) ? $this->path : '/' . $this->node->getName() . '/' . $this->path;
+		$style = (count($this->css) > 0) ? 'style="' . implode(';', $this->css) . '" ' : '';
     $class = (count($this->class) > 0) ?  implode(' ', $this->class) : '';
     $width = ($this->width > 0) ? 'width="' . $this->width . '"' : '';
     $height = ($this->height > 0) ? 'height="' . $this->height . '"' : '';
-		$img = '<img ' . $width . ' ' . $height . ' alt="' . $this->getTitle() . '" class="innerimg ' . $class . '" src="' . $this->path . '" ' . $style . " />";
+		$img = '<img ' . $width . ' ' . $height . ' alt="' . $this->getTitle() . '" class="innerimg ' . $class . '" src="' . $imgurl . '" ' . $style . " />";
     if (!empty($this->link)) {
 		  $img = '<a href="#">' . $img . '</a>';
 		} 
