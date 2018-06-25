@@ -120,7 +120,7 @@ function qtag_JS($env, $target, $attributes) {
 
     }
     else {
-      $js_code .= '<script type="text/javascript" src="' . $js_file . '"></script>';
+      $js_code .= '<script type="text/javascript" src="' . $js_file . '?' . Doctor::timestamp($env) . '"></script>';
     }
   }
 
