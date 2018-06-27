@@ -11,12 +11,7 @@ function froala() {
     pluginsEnabled: null  	
   });
 
-  $('.wysiwyg').each(function() {
-      if (!$(this).hasClass('froala-quanta-loaded')) {
-        $(this).addClass('froala-quanta-loaded');
-        $(this).bind('froalaEditor.contentChanged', function (e, editor, touchstartEvent) {
-          $('#shadow-item').trigger('froalaChanged');
-        });
-      }
-    });
+  $('.wysiwyg').bind('froalaEditor.contentChanged', function (e, editor, touchstartEvent) {
+    $('#shadow-item').trigger('froalaChanged');
+  });
 }

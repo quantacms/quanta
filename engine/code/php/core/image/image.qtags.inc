@@ -91,6 +91,7 @@ function qtag_IMGTHUMB($env, $target, $attributes) {
   // Setup operations to run on the image.
   $op = isset($attributes['operation']) ? $attributes['operation'] : 'scale';
 
+  $thumbfile = 'thumb-' . str_replace(' ', '-', str_replace('/', '-', $node->getName() . '-' . $image->width . 'x' . $image->height . '-' . $target));
   preg_replace("/[^A-Za-z0-9 ]/", '', $thumbfile);
 	$filearr = explode('/', $target);
 	$filename = $filearr[count($filearr) - 1];
