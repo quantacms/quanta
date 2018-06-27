@@ -57,7 +57,7 @@ function file_init($env, $vars) {
 }
 
 /**
- * Implements hook_node_save().
+ * Implements hook_node_presave().
  *
  * Saves all files uploaded on the node.
  *
