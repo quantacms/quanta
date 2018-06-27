@@ -121,7 +121,7 @@ function qtag_ATTRIBUTE($env, $target, $attributes) {
 
     // Node's body.
     case 'body':
-      $string = $node->getBody();
+      $string = filter_xss($node->getBody());
       break;
 
     // Node's teaser.
