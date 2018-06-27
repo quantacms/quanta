@@ -96,7 +96,9 @@ function qtag_CSS($env, $target, $attributes) {
  */
 function qtag_JS($env, $target, $attributes) {
   $page = $env->getData('page');
+
   $js_code = '';
+  $refresh =  isset($attributes['refresh']) ? ('?' . Doctor::timestamp($env)) : '';
 
   // If target is specified, include the css file directly.
   if (isset($target)) {
@@ -120,7 +122,7 @@ function qtag_JS($env, $target, $attributes) {
 
     }
     else {
-      $js_code .= '<script type="text/javascript" src="' . $js_file . '?' . Doctor::timestamp($env) . '"></script>';
+      $js_code .= '<script type="text/javascript" src="' . $js_file . $refresh . '"></script>';
     }
   }
 
