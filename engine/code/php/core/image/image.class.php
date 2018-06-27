@@ -68,7 +68,13 @@ class Image extends File {
 		  $get_size = getimagesize($this->getRealPath());
 			$this->width = $get_size[0];
 			$this->height = $get_size[1];	
+		if (isset($_GET['test'])) {
+		  print_r($get_size);
+			print 'ok';
+			print $this->getRealPath() . ':' . $this->width . 'x' . $this->height . 'is empty: ' . empty($this->width);
 		}
+		}
+
   }
 
   /**

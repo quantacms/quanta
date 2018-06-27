@@ -22,6 +22,10 @@ class Form extends DataContainer {
    */
   public $method;
   /**
+   * @var string $target
+   */
+  public $target;
+  /**
    * @var string $action
    */
   public $action;
@@ -188,6 +192,25 @@ class Form extends DataContainer {
   public function setRedirect($redirect) {
     $this->setData('redirect', $redirect);
   }
+  
+	/**
+   * Gets the form target.
+   *
+   * @return mixed
+   */
+  public function getTarget() {
+    return $this->target;
+  }
+
+  /**
+   * Sets the form target.
+   *
+   * @param string $target
+	 *   The form target.
+   */
+  public function setTarget($target) {
+    $this->target = $target;
+  }
 
   /**
    * Gets the form action (page).
@@ -265,7 +288,7 @@ class Form extends DataContainer {
    */
   public function renderFormOpen() {
    $rendered = '<a name="' . $this->getId() . '"></a>';
-    $rendered .= '<form action="' . $this->getAction() .
+    $rendered .= '<form target="' . $this->getTarget() . '" action="' . $this->getAction() .
      '#' . $this->getAnchor() .'" method="' . $this->getMethod() .
      '" id="' . $this->getId() . '">';
     // TODO: why two fields? check shadow...
@@ -278,6 +301,7 @@ class Form extends DataContainer {
 
 
   /**
+	 * Close the form.
    * @return string
    */
   public function renderFormClose() {
@@ -291,7 +315,8 @@ class Form extends DataContainer {
    */
   public function loadAttributes($attributes) {
     $this->setType((isset($attributes['type'])) ? $attributes['type'] : 'form');
-    $this->setAction((isset($attributes['action'])) ? '/' . $attributes['action'] : '?');
+    $this->setAction((isset($attributes['action'])) ? '/' . ($attributes['action']) : '?');
+    $this->setTarget((isset($attributes['target'])) ? '/' . ($attributes['target']) : '_top');
     $this->setMethod((isset($attributes['method'])) ? $attributes['method'] : FORM_METHOD_POST);
     $this->setOkMessage((isset($attributes['ok_message'])) ? $attributes['ok_message'] : 'Your form has been submitted.');
     $this->setAnchor((isset($attributes['anchor'])) ? $attributes['anchor'] : $this->getId());
