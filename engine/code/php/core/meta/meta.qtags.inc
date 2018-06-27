@@ -25,7 +25,7 @@ function qtag_META_DATA($env, $target, $attributes) {
     foreach ($meta_content as $type => $value) {
       $properties[] = $type . '="' . $value . '"';
     }
-    $metatags[] = '<meta name="' . $meta_name . '" ' . implode(' ', $properties) . ' />';
+    $metatags[] = '<meta name="' . $meta_name . '" ' . str_replace("\n"," ",implode(' ', $properties)) . ' />';
   }
 
     return implode("\n", $metatags);
