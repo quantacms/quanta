@@ -168,7 +168,10 @@ function qtag_BODYCLASSES($env, $target, $attributes) {
  *   The rendered qtag.
  */
 function qtag_URL($env, $target, $attributes) {
-  return $env->getBaseUrl() . '/' . $env->getRequestedPath();
+  if (empty($target)) {
+	  $target = $env->getRequestedPath();
+	}
+	return $env->getBaseUrl() . '/' . $target;
 }
 
 /**
