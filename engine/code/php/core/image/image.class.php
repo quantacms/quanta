@@ -140,13 +140,15 @@ class Image extends File {
 
     // Get the File path for the image
     $thumbRoot = $env->dir['thumbs'];
+    if (empty($thumbfile)) {
+      $thumbfile = 'thumb-' . str_replace(' ', '-', str_replace('/', '-', $this->node->getName() . '-' . $this->width . 'x' . $this->height . '-' . $this->getName()));
+      $thumbfile =   preg_replace("/[^A-Za-z0-9 ]/", '', $thumbfile);
 
+    }
     $sImagePath = $this->getRealPath();
     $thumbImagePath = $thumbRoot . '/' . $thumbfile;
 
-    if (empty($thumbfile)) {
-      $thumbfile = 'thumb-' . str_replace(' ', '-', str_replace('/', '-', $node->getName() . '-' . $image->width . 'x' . $image->height . '-' . $target));
-    }
+
     // TODO: a better cache system (refresh cache when image changes, also with same filename)
     // If thumbnail exists, use it.
     if (is_file($thumbImagePath)) {

@@ -91,12 +91,11 @@ function qtag_IMGTHUMB($env, $target, $attributes) {
   // Setup operations to run on the image.
   $op = isset($attributes['operation']) ? $attributes['operation'] : 'scale';
 
-  preg_replace("/[^A-Za-z0-9 ]/", '', $thumbfile);
 	$filearr = explode('/', $target);
 	$filename = $filearr[count($filearr) - 1];
 
 	// Generate the thumbnail of the requested image.
-  $newthumbfile = $image->generateThumbnail($env, $thumbfile, $image->width, $image->height, $op, $compression, $fallback);
+  $newthumbfile = $image->generateThumbnail($env, NULL, $image->width, $image->height, $op, $compression, $fallback);
 
   // TODO: stupid way to get to the tmp folder...
   $src = '/thumbs/' . $newthumbfile;
