@@ -122,7 +122,7 @@ function qtag_JS($env, $target, $attributes) {
 
     }
     else {
-      $js_code .= '<script type="text/javascript" src="' . $js_file . $refresh . '"></script>';
+      $js_code .= '<script src="' . $js_file . $refresh . '"></script>';
     }
   }
 
@@ -170,7 +170,10 @@ function qtag_BODYCLASSES($env, $target, $attributes) {
  *   The rendered qtag.
  */
 function qtag_URL($env, $target, $attributes) {
-  return $env->getBaseUrl() . '/' . $env->getRequestedPath();
+  if (empty($target)) {
+	  $target = $env->getRequestedPath();
+	}
+	return $env->getBaseUrl() . '/' . $target;
 }
 
 /**
