@@ -122,7 +122,7 @@ function qtag_JS($env, $target, $attributes) {
 
     }
     else {
-      $js_code .= '<script type="text/javascript" src="' . $js_file . $refresh . '"></script>';
+      $js_code .= '<script src="' . $js_file . $refresh . '"></script>';
     }
   }
 
