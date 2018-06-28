@@ -73,6 +73,10 @@ function qtag_IMGTHUMB($env, $target, $attributes) {
   $image = new Image($env, $target, $node);
   $image->loadAttributes($attributes);
 
+	if (isset($_GET['test'])) {
+	  print $target  . $image->width . 'x';
+		print $image->height;
+	}
   // Setup tooltip.
   $tooltip = isset($attributes['tooltip']) ? (' data-tooltip="' . $attributes['tooltip'] . '"') : NULL;
 
@@ -82,8 +86,15 @@ function qtag_IMGTHUMB($env, $target, $attributes) {
   // Setup fallback image.
   $fallback = isset($attributes['fallback']) ? $attributes['fallback'] : NULL;
 
+	
+	if (isset($attributes['alt'])) {
+	  $alt = $attributes['alt'];
+	}
+	else {
+    $split_target = explode('.', $target);
+    $alt = str_replace('-', ' ', $split_target[0]);
+	}
   // Setup alt for the image.
-  $alt = isset($attributes['alt']) ? $attributes['alt'] : $target;
 
   // Setup title for the image link (if present).
   $link_title = isset($attributes['link_title']) ? $attributes['link_title'] : NULL;
@@ -106,7 +117,7 @@ function qtag_IMGTHUMB($env, $target, $attributes) {
   }
   else {
     // Generate the HTML of the thumbnail.
-    $thumb = '<img width="' . $image->width . '" height="' . $image->height . '" alt="' . $alt . '" class="image ' . (isset($attributes['class']) ? $attributes['class'] : '') .  '" ' . 'alt="' . $filename . '" ' . $tooltip . 'src="' . $src . '" />';
+    $thumb = '<img width="' . $image->width . '" height="' . $image->height . '" alt="' . $alt . '" class="image ' . (isset($attributes['class']) ? $attributes['class'] : '') .  '" ' . $tooltip . ' src="' . $src . '" />';
   }
 
   // If a link is set, wrap the image in the link.

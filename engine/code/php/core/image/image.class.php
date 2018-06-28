@@ -31,8 +31,6 @@ class Image extends File {
         $size = explode('x', $attname);
         $this->width = $size[0];
         $this->height = $size[1];
-        $this->css[] = 'width:' . $this->width . ((strpos($this->width, '%') > 0) ? '' : 'px');
-        $this->css[] = 'height:' . $this->height . ((strpos($this->height, '%') > 0) ? '' : 'px');
       }
 
       else switch(strtolower($attname)) {
@@ -68,11 +66,6 @@ class Image extends File {
 		  $get_size = getimagesize($this->getRealPath());
 			$this->width = $get_size[0];
 			$this->height = $get_size[1];	
-		if (isset($_GET['test'])) {
-		  print_r($get_size);
-			print 'ok';
-			print $this->getRealPath() . ':' . $this->width . 'x' . $this->height . 'is empty: ' . empty($this->width);
-		}
 		}
 
   }
@@ -152,7 +145,7 @@ class Image extends File {
     // TODO: a better cache system (refresh cache when image changes, also with same filename)
     // If thumbnail exists, use it.
     if (is_file($thumbImagePath)) {
-      return $thumbfile;
+			return $thumbfile;
     }
     
     // If the image file is broken, use the default broken image.
