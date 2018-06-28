@@ -9,7 +9,6 @@ $(document).bind('refresh', function () {
   // When some update is done inside the shadow, make shadow aware.
   var setShadowUpdated = function () {
     shadowUpdated = true;
-    console.log('content changed');
   };
 
   // If users have updated anything, make shadow aware, to prevent accidental
