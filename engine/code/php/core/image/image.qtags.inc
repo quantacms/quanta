@@ -106,7 +106,7 @@ function qtag_IMGTHUMB($env, $target, $attributes) {
 	$filename = $filearr[count($filearr) - 1];
 
 	// Generate the thumbnail of the requested image.
-  $newthumbfile = $image->generateThumbnail($env, NULL, $image->width, $image->height, $op, $compression, $fallback);
+  $newthumbfile = $image->generateThumbnail($env, $image->width, $image->height, $op, $compression, $fallback);
 
   // TODO: stupid way to get to the tmp folder...
   $src = '/thumbs/' . $newthumbfile;
