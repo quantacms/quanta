@@ -31,8 +31,6 @@ class Image extends File {
         $size = explode('x', $attname);
         $this->width = $size[0];
         $this->height = $size[1];
-        $this->css[] = 'width:' . $this->width . ((strpos($this->width, '%') > 0) ? '' : 'px');
-        $this->css[] = 'height:' . $this->height . ((strpos($this->height, '%') > 0) ? '' : 'px');
       }
 
       else switch(strtolower($attname)) {
