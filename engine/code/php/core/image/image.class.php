@@ -115,7 +115,7 @@ class Image extends File {
    * @param string $sType
    * @param int $compression
    */
-  public function generateThumbnail($env, $thumbfile, $maxw = NULL, $maxh = NULL, $sType = 'crop', $compression = 60, $fallback) {
+  public function generateThumbnail($env, $maxw = NULL, $maxh = NULL, $sType = 'crop', $compression = 60, $fallback) {
 
     if ($maxw == 'auto') {
       $maxw = 0;
@@ -133,9 +133,11 @@ class Image extends File {
 
     // Get the File path for the image
     $thumbRoot = $env->dir['thumbs'];
+    $thumbfile = 'thumb-' . str_replace(' ', '-', str_replace('/', '-', $this->node->getName() . '-' . $this->width . 'x' . $this->height . '-' . $this->getName()));
 
     $sImagePath = $this->getRealPath();
     $thumbImagePath = $thumbRoot . '/' . $thumbfile;
+
 
     // TODO: a better cache system (refresh cache when image changes, also with same filename)
     // If thumbnail exists, use it.
