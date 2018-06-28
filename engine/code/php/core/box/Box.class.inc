@@ -18,6 +18,7 @@ class Box extends DataContainer {
   private $margin;
   private $padding;
   private $border;
+  private $title_tag = 'h2';
   private $name;
 
   /**
@@ -45,7 +46,6 @@ class Box extends DataContainer {
     $this->setName($name);
     $this->addData('class', array('box-' . $name));
 
-
     $id = isset($attributes['id']) ? $attributes['id'] : $this->getName();
     // Set ID.
     $this->setData('id', $id);
@@ -56,8 +56,13 @@ class Box extends DataContainer {
     }
 
     // Set custom classes.
-    if (isset($attributes['title'])) {
-      $this->addData('title', array($attributes['title']));
+    if (isset($attributes['box_title_tag'])) {
+      $this->setTitleTag($attributes['box_title_tag']);
+    }
+
+    // Set custom classes.
+    if (isset($attributes['box_title'])) {
+      $this->setData('box_title', $attributes['box_title']);
     }
 
     // Clear non-floating box.
@@ -110,6 +115,20 @@ class Box extends DataContainer {
    */
   public function getHtml() {
     return $this->html;
+  }
+
+  /**
+   * @param $html
+   */
+  public function setTitleTag($title_tag) {
+    $this->title_tag = $title_tag;
+  }
+
+  /**
+   * @return mixed
+   */
+  public function getTitleTag() {
+    return $this->title_tag;
   }
 
   /**
@@ -246,8 +265,8 @@ class Box extends DataContainer {
       $this->addData('class', array('box-' . $box_counter));
       $box_content = $this->getHtml();
       // Check if the box has a setup title.
-      if (!empty($this->getData('title'))) {
-        $box_content = '<h3>' . @array_pop($this->getData('title')) . '</h3>' . $box_content;
+      if (!empty($this->getData('box_title'))) {
+        $box_content = '<' . $this->getTitleTag() . '>' . $this->getData('box_title') . '</' . $this->getTitleTag() . '>' . $box_content;
       }
       // Check if the box is flat (has no "inner" containers).
       if (!$this->isFlat()) {
