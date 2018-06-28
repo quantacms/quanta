@@ -115,7 +115,7 @@ class Image extends File {
    * @param string $sType
    * @param int $compression
    */
-  public function generateThumbnail($env, $thumbfile = NULL, $maxw = NULL, $maxh = NULL, $sType = 'crop', $compression = 60, $fallback) {
+  public function generateThumbnail($env, $maxw = NULL, $maxh = NULL, $sType = 'crop', $compression = 60, $fallback) {
 
     if ($maxw == 'auto') {
       $maxw = 0;
@@ -133,11 +133,8 @@ class Image extends File {
 
     // Get the File path for the image
     $thumbRoot = $env->dir['thumbs'];
-    if (empty($thumbfile)) {
-      $thumbfile = 'thumb-' . str_replace(' ', '-', str_replace('/', '-', $this->node->getName() . '-' . $this->width . 'x' . $this->height . '-' . $this->getName()));
-      $thumbfile =   preg_replace("/[^A-Za-z0-9 ]/", '', $thumbfile);
+    $thumbfile = 'thumb-' . str_replace(' ', '-', str_replace('/', '-', $this->node->getName() . '-' . $this->width . 'x' . $this->height . '-' . $this->getName()));
 
-    }
     $sImagePath = $this->getRealPath();
     $thumbImagePath = $thumbRoot . '/' . $thumbfile;
 
