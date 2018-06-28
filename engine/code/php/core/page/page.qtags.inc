@@ -117,9 +117,10 @@ function qtag_JS($env, $target, $attributes) {
 
   // TODO: converting all inclusions into inline stylesheets. Faster, but is it good?
   foreach ($js as $js_file) {
-    if (isset($attributes['inline'])) {
-      $js_code .= '<script type="text/javascript">' . file_get_contents($js_file) . '</script>';
-
+		$async = !empty($attributes['async']) ? ' async ' : '';
+    // TODO: support per file async.
+		if (isset($attributes['inline'])) {
+			$js_code .= '<script>' . file_get_contents($js_file) . '</script>';
     }
     else {
       $js_code .= '<script src="' . $js_file . $refresh . '"></script>';
