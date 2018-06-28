@@ -10,7 +10,8 @@ function froala() {
     toolbarButtonsXS: ['bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', 'fontFamily', 'fontSize', '|', 'specialCharacters', 'color', 'emoticons', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', '-', 'quote', 'insertHR', 'insertLink', 'insertImage', 'insertVideo', 'insertFile', 'insertTable', '|', 'undo', 'redo', 'clearFormatting', 'selectAll', 'html', 'applyFormat', 'removeFormat', 'fullscreen', 'print', 'help'],
     pluginsEnabled: null
 
-  }
+  });
+
   $('.wysiwyg').bind('froalaEditor.contentChanged', function (e, editor, touchstartEvent) {
     $('#shadow-item').trigger('froalaChanged');
   });
