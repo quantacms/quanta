@@ -5,8 +5,6 @@
     height="225"
     layout="fill"
     alt="[TITLE:[LISTITEM]]">
-    <div class="caption">
-      [LINK:[LISTITEM]]
-    </div>    
+    <div class="caption">[LINK:[LISTITEM]]</div>    
   </amp-img>
 </div>
