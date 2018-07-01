@@ -90,19 +90,19 @@ function qtag_AMP_CAROUSEL($env, $target, $attributes) {
       break;
   }
 
-  $carousel_attributes = array(
+  $carousel_attributes_defaults = array(
     // TODO: Extend to all options.
     'width' => '400',
-    'height' => '275', // 400:225 = 16:9 --> + 50 height amp-fit-text
+    'height' => '225', // 400:225 = 16:9
     'layout' => 'responsive', // responsive / fixed-height
     'type' => 'slides',
-    'autoplay' => 'true',
-    'delay' => '3000',
+    'autoplay' => 'false',
+    'delay' => '3000', // used when autoplay is active
   );
 
-  $carousel_attributes_arr = array();
-  foreach ($carousel_attributes as $k => $attr) {
-    $carousel_attributes_arr[] = $k . ':' . (isset($attributes[$k]) ? $attributes[$k] : $attr);
+  $carousel_attributes = array();
+  foreach ($carousel_attributes_defaults as $k => $attr) {
+    $carousel_attributes[$k] = (isset($attributes[$k]) ? $attributes[$k] : $attr);
   }
 
   $rand_class = rand(0, 99999999);
@@ -111,7 +111,7 @@ function qtag_AMP_CAROUSEL($env, $target, $attributes) {
   $html .= ' height="' . $carousel_attributes['height'] . '"';
   $html .= ' layout="' . $carousel_attributes['layout'] . '"';
   $html .= ' type="' . $carousel_attributes['type'] . '"';
-  $html .= ($carousel_attributes['autoplay'] ? ' autoplay' : '');
+  $html .= ($carousel_attributes['autoplay'] == 'true' ? ' autoplay' : '');
   $html .= ' delay="' . $carousel_attributes['delay'] . '"';
   $html .= '>' . $list->render() . '</amp-carousel>';
 
