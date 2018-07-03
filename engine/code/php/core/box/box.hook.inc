@@ -9,7 +9,7 @@
  *   An array of variables.
  */
 function box_load_includes($env, $vars) {
-  $env->addInclude('engine/code/php/core/box/js/box.js');
+  //$env->addInclude('engine/code/php/core/box/js/box.js');
   $env->addInclude('engine/code/php/core/box/css/box.css');
 }
 

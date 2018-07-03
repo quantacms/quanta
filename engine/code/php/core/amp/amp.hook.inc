@@ -17,6 +17,18 @@ function amp_init($env, $vars) {
 
 
 /**
+ * Implements hook_load_includes().
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param $vars
+ *   An array of variables.
+ */
+function amp_load_includes($env, $vars) {
+  $env->addInclude('engine/code/php/core/amp/css/amp.css');
+}
+
+/**
  * Implements hook_html_alter().
  *
  * @param Environment $env
