@@ -1,0 +1,16 @@
+amp-carousel .slide .cover img{
+  object-fit: cover;
+}
+amp-carousel .slide .align-top img{
+  object-position: 50% 0; /* center top */
+}
+amp-carousel .slide .caption {
+  position: absolute;
+  z-index: 1;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+}
