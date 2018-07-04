@@ -4,11 +4,11 @@
 [INPUT|id=tmp_files_dir|type=hidden|required|name=tmp_files_dir|value={ATTRIBUTE|name=tmp_files_dir|no_qtags}:node-data-form]
 [FORM:node-data-form]
 <!-- File plugin -->
-<script src="/engine/modules/php/core/file/js/jquery.knob.js?refresh=[DOCTOR_TIMESTAMP]"></script>
-<script src="/engine/modules/php/core/file/js/jquery.iframe-transport.js?refresh=[DOCTOR_TIMESTAMP]"></script>
-<script src="/engine/modules/php/core/file/js/jquery.fileupload.js?refresh=[DOCTOR_TIMESTAMP]"></script>
-<script src="/engine/modules/php/core/file/js/file-upload.js?refresh=[DOCTOR_TIMESTAMP]"></script>
-
+<script src="/engine/modules/core/file/js/jquery.knob.js?refresh=[DOCTOR_TIMESTAMP]"></script>
+<script src="/engine/modules/core/file/js/jquery.iframe-transport.js?refresh=[DOCTOR_TIMESTAMP]"></script>
+<script src="/engine/modules/core/file/js/jquery.fileupload.js?refresh=[DOCTOR_TIMESTAMP]"></script>
+<script src="/engine/modules/core/file/js/file-upload.js?refresh=[DOCTOR_TIMESTAMP]"></script>
+test
 <!-- Froala plugin -->
 [CSS|runlast|module=wysiwyg:froala/css/froala_style.min.css]
 [CSS|runlast|module=wysiwyg:froala/css/froala_editor.min.css]
