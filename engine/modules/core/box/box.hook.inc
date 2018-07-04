@@ -9,9 +9,13 @@
  *   An array of variables.
  */
 function box_load_includes($env, $vars) {
+<<<<<<< HEAD:engine/modules/core/box/box.hook.inc
   $module_path = $env->getModulePath('box');
 
   $env->addInclude($module_path . '/css/box.css');
+=======
+  $env->addInclude('engine/code/php/core/box/css/box.css');
+>>>>>>> dario-dev:engine/code/php/core/box/box.hook.inc
 }
 
 /**
