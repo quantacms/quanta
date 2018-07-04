@@ -68,6 +68,7 @@ class Shadow extends Page {
         break;
       
       default:
+
         $this->addTab('temporary form', file_get_contents($this->env->getModulePath('node') . '/tpl/node_data.inc'), 1);
         $this->addButton('edit-save', 'Save');         
         break;
