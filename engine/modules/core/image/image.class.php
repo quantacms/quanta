@@ -159,7 +159,7 @@ class Image extends File {
         $thumbImagePath = $thumbRoot . '/' . $thumbfile;
       } else {
         // Set Quanta default fallback image.
-        $sImagePath = '/var/www/quanta/engine/code/php/core/image/assets/broken-img.jpg';
+        $sImagePath = $this->env->getModulePath('image') . '/assets/broken-img.jpg';
       }
     }
 
