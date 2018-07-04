@@ -9,6 +9,7 @@
  *   An array of variables.
  */
 function cookiebar_load_includes($env, $vars) {
-  $env->addInclude('engine/code/php/contrib/cookiebar/css/jquery.cookiebar.css');
-  $env->addInclude('engine/code/php/contrib/cookiebar/js/jquery.cookiebar.js');
+  $module_path = $env->getModulePath('cookiebar');
+  $env->addInclude($module_path . '/js/jquery.cookiebar.js');
+  $env->addInclude($module_path . '/css/jquery.cookiebar.css');
 }

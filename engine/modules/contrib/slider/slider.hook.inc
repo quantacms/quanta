@@ -9,6 +9,7 @@
  *   An array of variables.
  */
 function slider_load_includes($env, $vars) {
-  $vars['env']->addInclude('engine/code/php/core/slider/js/slider.js');
-  $vars['env']->addInclude('engine/code/php/core/slider/css/slider.css');
+  $module_path = $env->getModulePath('slider');
+  $env->addInclude($module_path . '/js/slider.js');
+  $env->addInclude($module_path . '/css/slider.css');  
 }

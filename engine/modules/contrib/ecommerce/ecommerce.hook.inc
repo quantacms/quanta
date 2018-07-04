@@ -17,18 +17,20 @@ function ecommerce_shadow_product_form($env, $vars) {
   $vars['shadow']->addTab('product information', file_get_contents('core/ecommerce/tpl/ecommerce_form.inc'), 2);
 }
 
+
 /**
- * Implements hook_init().
+ * Implements hook_load_includes().
  *
  * @param Environment $env
  *   The Environment.
  *
- * @param array $vars
- *   Misc parameters.
+ * @param $vars
+ *   An array of variables.
  */
-function ecommerce_init($env, $vars) {
-  $vars['env']->addInclude('engine/code/php/contrib/ecommerce/js/ecommerce.js');
-  $vars['env']->addInclude('engine/code/php/contrib/ecommerce/css/ecommerce.css');
+function ecommerce_load_includes($env, $vars) {
+  $module_path = $env->getModulePath('ecommerce');
+  $env->addInclude($module_path . '/js/ecommerce.js');
+  $env->addInclude($module_path . '/css/ecommerce.css');
 }
 
 /**
