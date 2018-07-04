@@ -1,6 +1,6 @@
 <?php
 /**
- * Implements hook_init().
+ * Implements hook_load_includes().
  *
  * @param Environment $env
  *   The Environment.
@@ -8,8 +8,9 @@
  * @param $vars
  *   An array of variables.
  */
-function captcha_init($env, $vars) {
-  $env->addInclude('engine/code/php/contrib/captcha/css/captcha.css');
+function captcha_load_includes($env, $vars) {
+  $module_path = $env->getModulePath('captcha');
+  $env->addInclude($module_path . '/css/captcha.css');  
 }
 
 /**

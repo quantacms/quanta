@@ -9,8 +9,9 @@
  *   An array of variables.
  */
 function foundation_load_includes($env, $vars) {
-  $env->addInclude('engine/code/php/contrib/foundation/js/foundation.min.js');
-  $env->addInclude('engine/code/php/contrib/foundation/css/foundation.min.css');
+  $module_path = $env->getModulePath('foundation');
+  $env->addInclude($module_path . '/js/foundation.min.js');
+  $env->addInclude($module_path . '/css/foundation.min.css');
 }
 
 /**
