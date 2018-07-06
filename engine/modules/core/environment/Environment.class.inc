@@ -31,7 +31,9 @@ class Environment extends DataContainer {
    */
   public function __construct($host = NULL, $request_uri = NULL, $docroot = NULL) {
 
-    $this->host = (($host == NULL) ? strtolower($_SERVER['HTTP_HOST']) : $host);
+    $full_host = strtolower($_SERVER['HTTP_HOST']);
+    $this->host = (($host == NULL) ? explode(':', $full_host)[0] : $host);
+
     if ($request_uri == NULL && !empty($_SERVER['REQUEST_URI'])) {
       // Remove querystring to obtain request uri...
       $exp = explode('?', $_SERVER['REQUEST_URI']);
@@ -42,7 +44,10 @@ class Environment extends DataContainer {
     }
     if ($this->request_uri != NULL) {
       $this->request = explode('/', $this->request_uri);
-      $this->request_path = $this->request[count($this->request) - 2];
+      if (empty($this->request[count($this->request) - 1])) {
+        unset ($this->request[count($this->request) - 1]);
+      }
+      $this->request_path = $this->request[count($this->request) - 1];
     }
 
     if ($docroot == NULL) {

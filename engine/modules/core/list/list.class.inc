@@ -102,7 +102,7 @@ abstract class ListObject extends DataContainer {
    * Render the list and make it print-ready.
    * Must be extended.
    */
-  public function render() {
+  public function render($attributes = array()) {
 
     // Check if the list was already generated. If not, generate it.
     if (!($this->generated)) {

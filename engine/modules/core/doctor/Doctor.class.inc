@@ -96,7 +96,7 @@ class Doctor extends DataContainer {
       );
     }
     else {
-      mkdir($dir) or die('Fatal error - could not create directory ' . $dir . ' and something went wrong in checking its permissions. Aborting.');
+      mkdir($dir, 0755, TRUE) or die('Fatal error - could not create directory ' . $dir . ' and something went wrong in checking its permissions. Aborting.');
     }
   }
 

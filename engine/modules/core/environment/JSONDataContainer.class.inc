@@ -30,7 +30,7 @@ abstract class JSONDataContainer extends DataContainer {
    */
   protected function saveJSON($ignore = array()) {
     if (!is_dir($this->realpath)) {
-      mkdir($this->realpath) or die('Error. Cannot create dir: ' . $this->realpath);
+      mkdir($this->realpath, 0755, TRUE) or die('Error. Cannot create dir: ' . $this->realpath);
     }
 
     $language = empty($this->getLanguage()) ? Localization::getLanguage($this->env) : $this->getLanguage();

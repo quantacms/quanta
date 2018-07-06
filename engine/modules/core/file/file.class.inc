@@ -251,7 +251,7 @@ class File extends DataContainer {
     $upload_dir = ($env->dir['tmp_files'] . '/' . $_REQUEST['tmp_upload_dir']);
 
     if (!is_dir($upload_dir)) {
-      mkdir($upload_dir);
+      mkdir($upload_dir, 0755, TRUE);
     }
 
     foreach ($_FILES as $uploaded_file_name => $uploaded_file) {
