@@ -10,10 +10,10 @@ Its structure is not pre-defined or bound to any special rule.
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
     <!-- Import CSS, JS files from the platform and its modules. -->
-    [HEAD]
     [META_DATA]
-    <link rel="stylesheet" type="text/css" href="/assets/css/style.css"/>
-    <title>QuantaCMS example - [ATTRIBUTE|name=title]</title>
+    [CSS|runlast]
+    [CSS|external:/assets/css/style.css]
+    <title>[TITLE] - QuantaCMS example</title>
 </head>
 
 <!-- Body -->
@@ -36,5 +36,6 @@ Its structure is not pre-defined or bound to any special rule.
 </div>
 <!-- General page load info and statistics -->
 <!-- [STATS|box=100xauto] -->
+    [JS|runlast]
 </body>
 </html>

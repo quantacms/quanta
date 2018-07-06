@@ -1,0 +1,16 @@
+.row {
+  display: flex;
+  justify-content: space-between;
+}
+.col {
+  flex: 1;
+}
+
+
+
+
+@media (max-width: 400px) {
+  .row {
+    display: block;
+  }
+}
