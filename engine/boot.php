@@ -1,4 +1,6 @@
 <?php
+  phpinfo();
+  die();
   // Include the Environment module.
   require_once('modules/core/environment/environment.module');
 
