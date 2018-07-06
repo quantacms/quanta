@@ -119,7 +119,7 @@ class Cache extends DataContainer {
       $char = substr($node_name, $i, 1);
       $cache_folder = $cache_folder . '/' . $char;
       if ($build && !is_dir($cache_folder)) {
-        mkdir($cache_folder);
+        mkdir($cache_folder, 0755, TRUE);
       }
     }
     return $cache_folder;

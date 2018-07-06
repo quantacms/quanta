@@ -23,6 +23,7 @@ class NodeFactory {
       $language = Localization::getLanguage($env);
     }
     $node = new Node($env, $node_name, NULL, $language);
+
     $vars = array('node' => &$node);
     $env->hook('node_open', $vars);
     return $node;
@@ -407,7 +408,7 @@ class NodeFactory {
           $response->redirect = !empty($node->getData('redirect')) ? $node->getData('redirect') : ('/' . $node->getFather()->getName() . '/');
         }
 				else {
-					print "ACCESS DENIED";
+          $response->redirect = '/403';
 				}
         break;
     }
