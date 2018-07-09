@@ -30,10 +30,11 @@ class Environment extends DataContainer {
    * @param string $request_uri
    */
   public function __construct($host = NULL, $request_uri = NULL, $docroot = NULL) {
-
-    $full_host = strtolower($_SERVER['HTTP_HOST']);
-    $this->host = (($host == NULL) ? explode(':', $full_host)[0] : $host);
-
+    if (empty($host)) {
+      $full_host = strtolower($_SERVER['HTTP_HOST']);
+      $host = explode(':', $full_host)[0];
+    }
+    $this->host = $host;
     if ($request_uri == NULL && !empty($_SERVER['REQUEST_URI'])) {
       // Remove querystring to obtain request uri...
       $exp = explode('?', $_SERVER['REQUEST_URI']);
