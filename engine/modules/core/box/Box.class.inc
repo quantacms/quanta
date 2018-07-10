@@ -210,15 +210,32 @@ class Box extends DataContainer {
   }
 
   /**
+   * Sets the box width, and add the classes accordingly.
+   *
    * @param $w
+   *   The box width.
    */
   public function setWidth($w) {
     $this->w = $w;
     if ($w != NULL) {
-      $this->addData('class', array('w-' . $w));
       if (is_numeric($w) && $w > 0) {
         $this->addData('style', array('width:' . $w . '%'));
       }
+      if ($w <= 25) {
+        $w_range = '0-25';
+      }
+      elseif ($w <= 50) {
+        $w_range = '25-50';
+      }
+      elseif ($w <= 75) {
+        $w_range = '50-75';
+      }
+      elseif ($w <= 100) {
+        $w_range = '75-100';
+      }
+
+      $this->addData('class', array('w-' . $w, 'w-' . $w_range));
+
     }
   }
 

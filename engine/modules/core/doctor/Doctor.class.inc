@@ -29,14 +29,21 @@ class Doctor extends DataContainer {
   public $mode;
 
   /**
+   * @var string $command
+   *   The command given to the doctor.
+   */
+  public $command;
+
+  /**
    * Doctor constructor.
    *
    * @param Environment $env
    *   The Environment.
    */
-  public function __construct($env, $mode = DOCTOR_MODE_BASH) {
+  public function __construct($env, $command, $mode = DOCTOR_MODE_BASH) {
     $this->env = $env;
     $this->mode = $mode;
+    $this->command = $command;
     $this->env->setData('doctor', $this);
   }
 
@@ -173,7 +180,7 @@ class Doctor extends DataContainer {
     }
     if (count($unfixable_links) > 0) {
       $this->ko("Could not fix those " . count($unfixable_links) . " wrong links. Maybe they were deleted?");
-      $this->talk(implode('\n', $unfixable_links));
+      $this->talk(implode("\n", $unfixable_links));
     }
   }
 
@@ -186,7 +193,7 @@ class Doctor extends DataContainer {
     if (!is_file($this->env->dir['docroot'] . '/index.html')) {
       $this->talk('Not Found');
       // TODO: what to use as default for newly installed sites? Create templates folder.
-      $template_folder = $this->env->dir['quanta'] . '/_examples/_example2/*';
+      $template_folder = $this->env->dir['quanta'] . '/_examples/_example1/*';
       // TODO: do only on install hook
       $this->execute('cp -R ' . $template_folder . ' ' . $this->env->dir['docroot']);
       $this->ok('Imported from ' . $template_folder);
@@ -195,15 +202,6 @@ class Doctor extends DataContainer {
       $this->ok('Found');
     }
 
-  }
-
-  /**
-   * Clear all the system cache.
-   */
-  public function clearCache() {
-    $this->op('Clearing Cache');
-    Cache::clear($this->env);
-    $this->ok('Done!');
   }
 
   /**
@@ -355,66 +353,6 @@ class Doctor extends DataContainer {
     }
   }
 
-  function checkComposer() {
-    // TODO.
-  }
-
-  /**
-   * This functions clears the caches (thumbnails, node paths, etc.).
-   */
-  public function runClearCache() {
-    $this->op('Running clear cache hooks...');
-    // Run all setup hooks.
-    $vars = array('doctor' => &$this);
-    $this->env->hook('clear_cache', $vars);
-    $this->ok();
-  }
-
-  /**
-   * This functions runs the setup of the site - used at the first install,
-   * or whenever something goes seriously wrong with the application settings.
-   */
-  public function runSetup() {
-    $this->op('Starting Quanta installation. Good luck!');
-
-    // Check that all system paths do exist.
-    $this->checkCurrentUnixUser();
-
-    // Check that all system paths do exist.
-    $this->checkApacheModules();
-
-    // Check that all system paths do exist.
-    $this->checkApacheUser();
-
-    $this->ok('Current user: ' . $this->unix_user);
-    $this->ok('Apache user: ' . $this->apache_user);
-
-    $user_is_correct = $this->ask('Are those users correct? (y/n)');
-    if ($user_is_correct == 'n') {
-      $this->stop('Aborting.');
-    }
-
-    // Check that all system paths do exist.
-    $this->checkSystemPaths();
-
-    // Clear all cache (for existing applications).
-    $this->clearCache();
-
-    $this->op('Running setup hooks...');
-    // Run all setup hooks.
-    $vars = array('doctor' => &$this);
-    $this->env->hook('setup', $vars);
-    $this->ok();
-
-    // TODO: move in modules - out of doctor.
-    $this->checkExistingIndex();
-    $this->checkExistingHome();
-    $this->checkAdminUser();
-    $this->runDoctor();
-
-    $this->checkApacheVsUnixUser();
-  }
-
   /**
    * When the doctor needs to know something...
    *
@@ -443,19 +381,24 @@ class Doctor extends DataContainer {
    * This functions runs the non-setup related doctor tasks
    * as implemented by other modules.
    */
-  public function runDoctor() {
-    // TODO: move in modules - out of doctor.
-    $this->checkBrokenLinks();
-    $this->op('Running doctor hooks...');
-    // Run all doctor hooks.
+  public function cure($command = NULL) {
+    // Run a custom command, or use the one specified in the command line.
+    if (empty($command)) {
+      $command = $this->command;
+    }
+    $doctor_hook_name = $command == 'check' ? 'doctor' : 'doctor_' . $command;
+    $this->op('Running doctor hooks:  ' . $doctor_hook_name . '(...)');
+
     $vars = array('doctor' => &$this);
-    $this->env->hook('doctor', $vars);
-    $this->ok();
+    if (!($this->env->hook($doctor_hook_name, $vars))) {
+      $this->ko("Wrong doctor command. Available doctor commands are: check, setup, clear-cache (i.e. doctor mysite.com check)\n");
+    }
+
+
     $fop = fopen($this->env->dir['tmp'] . '/' . DOCTOR_RECIPE, 'w+');
     // TODO: what to write in the recipe?
     fwrite($fop, 'work in progress!');
     fclose($fop);
-    $this->yahoo('Doctor has finished curing your environment!');
   }
 
   /**
@@ -525,23 +468,6 @@ class Doctor extends DataContainer {
   }
 
   /**
-   * @deprecated
-   *
-   * When the doctor finishes, and wants to go home.
-   *
-   * @param string $destination
-   *   Where to redirect after doctor finishes running.
-   *
-   * @param int $delay
-   *   Some seconds of delay, just in case...
-   */
-  public function redirect($destination, $delay = 5) {
-    $this->talk('Redirecting you to ' . $destination . ' in ' . $delay . ' seconds...');
-    sleep($delay);
-    print '<script>window.location.href="' . $destination . '";</script>';
-  }
-
-  /**
    * Check if the doctor is curing (if we are in a Doctor page).
    *
    * @param Environment $env
@@ -559,11 +485,27 @@ class Doctor extends DataContainer {
    * After curing, the doctor gives hints to the user on those things
    * that could not be instantly cured.
    */
-  public static function recipe() {
-
+  public function recipe() {
+    // TODO.
   }
 
-	public static function timestamp($env) {
+  /**
+   * After curing, the doctor goes home.
+   */
+  public function goHome() {
+    $this->yahoo('Doctor has finished curing your environment!');
+  }
+
+  /**
+   * Return the timestamp of the last doctor run.
+   *
+   * @param $env
+   *   The Environment.
+   *
+   * @return int
+   *   The timestamp of the last doctor run.
+   */
+  public static function timestamp($env) {
 	  return filemtime($env->dir['tmp'] . '/' . DOCTOR_RECIPE);
 	}
 }

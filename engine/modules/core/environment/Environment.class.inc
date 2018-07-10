@@ -355,13 +355,15 @@ class Environment extends DataContainer {
    */
   public function hook($function, &$vars = array()) {
     $env = &$this;
+    $hooked = FALSE;
     foreach ($this->getLoadedModules() as $module) {
       $hook = $module['name'] . '_' . $function;
       if (function_exists($hook)) {
         $hook($env, $vars);
+        $hooked = TRUE;
       }
     }
-    return TRUE;
+    return $hooked;
   }
 
 

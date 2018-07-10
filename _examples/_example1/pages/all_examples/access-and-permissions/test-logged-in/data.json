@@ -1,1 +1,0 @@
-{"permissions":{"node_add":"admin","node_edit":"admin","node_delete":"admin","node_view":"logged"},"name":"test-logged-in","teaser":"You are a logged in user, and therefore you can see this! Try to [LOGIN]!","author":"admin","body":"<p>You are a logged in user, and therefore you can see this! Try to [LOGIN]!<\/p>","title":"Block for logged in","thumbnail":""}
