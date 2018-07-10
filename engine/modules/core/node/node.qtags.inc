@@ -17,7 +17,7 @@
  *   The rendered qtag.
  */
 function qtag_AUTHOR($env, $target, $attributes) {
-  $node = NodeFactory::current($env);
+  $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $author = $node->getAuthor();
   return qtag_LINK($env, $author, $attributes);
 }

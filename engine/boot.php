@@ -50,34 +50,11 @@
     $page->loadIncludes();
   }
 
-  // TODO: determine when to run setup.
-  if (isset($doctor_cmd) && $doctor_cmd == 'setup') {
-    // Create the doctor.
-    $doctor = new Doctor($env);
-    // Run the setup.
-    $doctor->runSetup();
-    exit;
-  }
-
-  // TODO: determine when to run doctor.
+  // Initialize doctor, if there is a request to do so.
   if (isset($doctor_cmd)) {
-    $doctor = new Doctor($env);
-    switch ($doctor_cmd) {
-      case 'clear-cache':
-        $doctor->runClearCache();
-        break;
-
-      case 'setup':
-        $doctor->runSetup();
-        $doctor->runDoctor();
-
-        break;
-
-      case 'check':
-      default:
-        $doctor->runDoctor();
-        break;
-    }
+    $doctor = new Doctor($env, $doctor_cmd);
+    $doctor->cure();
+    $doctor->goHome();
     exit;
   }
 

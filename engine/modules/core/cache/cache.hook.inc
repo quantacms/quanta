@@ -42,9 +42,10 @@ function cache_boot($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function cache_clear_cache($env, $vars) {
+function cache_doctor_clear_cache($env, $vars) {
   /** @var Doctor $doctor */
   $doctor = $vars['doctor'];
+  $doctor->op('Running clear cache hooks...');
   $doctor->op('Deleting all cached paths...');
   exec('rm -r ' . $env->dir('cache') . '/*');
   $doctor->ok('Done!');

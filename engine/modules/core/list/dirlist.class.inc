@@ -46,7 +46,7 @@ class DirList extends ListObject {
         break;
       }
       // Setup standard classes.
-      $classes = array('dir-list-item', 'list-' . $this->getTpl() . '-item', 'list-item-' . $i);
+      $classes = array('dir-list-item', 'list-' . $this->getTpl() . '-item', 'list-item-' . $i, (($i % 2) == 0) ? 'list-item-even' : 'list-item-odd');
 
       // Check if the list item is the current / active one.
       if ($node->isCurrent() || ($this->getAttribute('active_items') == $node->getName())) {
