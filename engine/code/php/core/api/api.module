@@ -145,7 +145,7 @@ function normalizePath($s) {
  */
 function normalizeFilePath($f) {
   $file_arr = explode('.', $f);
-  $file_ext = strtolower(array_pop($file_arr));
+  $file_ext = array_pop($file_arr);
   $file_name = implode('.', $file_arr);
   $file_name = normalizePath($file_name);
   return $file_name . '.' . $file_ext;
