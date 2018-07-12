@@ -40,7 +40,7 @@ $(function () {
         '</li>');
 
 
-      var ul = $(this);
+      var ul = $(this).closest('.shadow-content').find('ul');
 
       // Add the HTML to the UL element
       data.context = tpl.appendTo(ul);
@@ -215,6 +215,7 @@ $(document).bind('refresh', function () {
     var tag_attr = (filelink.data('filenew') != undefined) ? ('tmp_path=' + tmp_files_dir) : ('node=' + node_name);
     var qtag ='/qtag/[FILE_PREVIEW|' + tag_attr + ':' + encodeURIComponent(filename) + ']';
 
+    alert(qtag);
     $(this).load(qtag);
   });
 

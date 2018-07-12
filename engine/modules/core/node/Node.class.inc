@@ -708,7 +708,7 @@ class Node extends JSONDataContainer {
    * @return mixed
    */
   public function renderMetadataForm() {
-    $metadata_form = file_get_contents('core/node/tpl/metadata_form.inc');
+    $metadata_form = file_get_contents($this->env->getModulePath('node') . '/tpl/metadata_form.inc');
     return $metadata_form;
   }
 
@@ -717,7 +717,7 @@ class Node extends JSONDataContainer {
    * @return mixed
    */
   public function renderDeleteForm() {
-    $edit_node = file_get_contents('core/node/tpl/node_delete.inc');
+    $edit_node = file_get_contents($this->env->getModulePath('node') . '/tpl/node_delete.inc');
     return $edit_node;
   }
 
