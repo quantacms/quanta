@@ -1,6 +1,6 @@
 Options +FollowSymlinks
 Options -Indexes
-DirectoryIndex engine/code/php/boot.php
+DirectoryIndex engine/boot.php
 RewriteEngine on
 RewriteBase /
 
@@ -23,7 +23,7 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^(.*)(engine)/([\/0-9a-zA-Z-\.\_]+) engine/$3
 
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^([0-9a-zA-Z-]+) engine/code/php/boot.php [L,QSA]
+RewriteRule ^([0-9a-zA-Z-]+) engine/boot.php [L,QSA]
 
 # Serve resources with far-future expires headers.
 #
