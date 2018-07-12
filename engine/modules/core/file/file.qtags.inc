@@ -96,18 +96,15 @@ function qtag_FILE_PREVIEW($env, $target, $attributes) {
   $node = empty($attributes['node']) ? NodeFactory::current($env) : NodeFactory::load($env, $attributes['node']);
   if (isset($attributes['tmp_path'])) {
     $target = $env->dir['tmp'] . '/files/' . $attributes['tmp_path'] . '/' . $target;
-    $file = new File($env, $target, NODE_NEW);
-  }
-  else {
-    $file = new File($env, $target, $node);
+    $node->setName(NODE_NEW);
   }
 
+  $file = new File($env, $target, NODE_NEW);
   $preview = '';
-
   switch($file->getType()) {
     case 'image':
-
       $attributes['150x150'] = TRUE;
+      $attributes['node'] = $node->getName();
       $preview = qtag_IMGTHUMB($env, $target, $attributes);
       break;
 

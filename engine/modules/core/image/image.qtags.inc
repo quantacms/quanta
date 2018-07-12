@@ -73,10 +73,6 @@ function qtag_IMGTHUMB($env, $target, $attributes) {
   $image = new Image($env, $target, $node);
   $image->loadAttributes($attributes);
 
-	if (isset($_GET['test'])) {
-	  print $target  . $image->width . 'x';
-		print $image->height;
-	}
   // Setup tooltip.
   $tooltip = isset($attributes['tooltip']) ? (' data-tooltip="' . $attributes['tooltip'] . '"') : NULL;
 
