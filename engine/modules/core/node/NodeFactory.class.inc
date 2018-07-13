@@ -280,6 +280,10 @@ class NodeFactory {
     if ($env->getContext() == NODE_ACTION_ADD) {
       $current_node = NodeFactory::buildEmptyNode($env, $env->getRequestedPath());
     }
+		elseif ($env->getContext() == 'qtag') {
+      $current_node = NodeFactory::buildEmptyNode($env, NULL);
+		
+		}
     // We need to load the current node just once.
     else if (!isset($current_node)) {
       $tpl = isset($_REQUEST['tpl']) ? $_REQUEST['tpl'] : NULL;
