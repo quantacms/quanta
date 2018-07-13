@@ -291,7 +291,7 @@ class Box extends DataContainer {
       }
       $box_content = '<div id="' . $this->getData('id') . '" class="' . implode(' ', $this->getData('class')) . '" data-box-counter="' . $box_counter .  '">' . $box_content . '</div>';
 
-      $this->env->getData('page')->addCSS('.box-' . $box_counter . ' {' . implode(';', $this->getData('style')) . ';}.box-' . $box_counter . ' .inner {' . implode(';', $this->getData('inner_style')) . ';}', 'inline');
+      $this->env->getData('page')->addCSS('.box-' . $box_counter . ' {' . implode(';', $this->getData('style')) . ';}.box-' . $box_counter . ' > .inner {' . implode(';', $this->getData('inner_style')) . ';}', 'inline');
 
       return $box_content;
     }
