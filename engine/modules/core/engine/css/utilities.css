@@ -1,0 +1,25 @@
+/* UTILITIES */
+
+nav.menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+nav.menu li {
+  display: inline-block;
+  margin-left: 15px;
+}
+nav.menu a {
+  display: block;
+}
+nav.menu.menu-vertical li {
+  margin-left: 0;
+  display: block;
+}
+nav.menu.menu-vertical li + li {
+  margin-top: 10px;
+}
+nav.menu.menu-vertical a {
+  display: initial;
+}
