@@ -112,6 +112,12 @@ abstract class ListObject extends DataContainer {
 
     $separator = empty($this->getAttribute('separator')) ? '' : $this->getAttribute('separator');
     $output = implode($separator, $this->rendered_items);
+    $classes = array();
+
+    if (!empty($this->getAttribute('grid-list'))) {
+      $classes[] = 'grid';
+      $classes[] = $this->getAttribute('grid-list');
+    }
 
     $ajax = (!empty($this->getAttribute('ajax'))) ? ' rel= ' . $this->getAttribute('ajax') : '';
     $this->setData('list_html_tag', !empty($this->getAttribute('ordered')) ? 'ol' : 'ul');
@@ -124,7 +130,7 @@ abstract class ListObject extends DataContainer {
 
     // If the "clean" attribute is not present, add some wrapping html.
     if (empty($this->getAttribute('clean')))  {
-      $output = '<' . $this->getData('list_html_tag') . ' '  . $ajax . $tpl . ' class="list ' . $this->getTpl() . ' list-' . $this->getTpl() . ' list-' . $this->node->getName() . '" data-node="' . $this->node->getName() . '">' . $output . '</' . $this->getData('list_html_tag') . '>';
+      $output = '<' . $this->getData('list_html_tag') . ' '  . $ajax . $tpl . ' class="list ' . $this->getTpl() . ' list-' . $this->getTpl() . ' list-' . $this->node->getName() . ' ' . implode(' ', $classes) . '" data-node="' . $this->node->getName() . '">' . $output . '</' . $this->getData('list_html_tag') . '>';
     }
 
     // If the "nolinks" attribute is present, remove links from output.

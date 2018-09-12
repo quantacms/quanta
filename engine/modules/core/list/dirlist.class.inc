@@ -64,6 +64,8 @@ class DirList extends ListObject {
       $vars = array(
         'list' => &$this,
         'list_item' => &$list_item,
+        'list_item_counter' => $i,
+        'list_item_classes' => &$classes,
       );
       $this->env->hook('list_item', $vars);
 
