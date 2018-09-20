@@ -24,7 +24,6 @@ function localization_load_includes($env, $vars) {
  *   An array of variables.
  */
 function localization_boot($env, $vars) {
-
   $env->sysdir('languages', DIR_LANGUAGES);
   if (isset($_GET['lang'])) {
     Localization::switchLanguage($env, $_GET['lang']);
@@ -43,6 +42,7 @@ function localization_boot($env, $vars) {
 function localization_setup($env, $vars) {
   /** @var Doctor $doctor */
   $doctor = $vars['doctor'];
+
   $enabled_languages = Localization::getEnabledLanguages($env);
   $doctor->talk('Looking for enabled languages...');
 

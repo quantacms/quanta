@@ -92,7 +92,12 @@ class Form extends DataContainer {
         $this->env->hook('form_submit', $vars);
         $this->env->hook('form_type_' . $this->getType() . '_submit', $vars);
         $this->env->hook($this->getId() . '_form_submit', $vars);
-        return $this->getOkMessage();
+        if (empty($this->getRedirect())) {
+          return $this->getOkMessage();
+        }
+        else {
+          redirect($this->getRedirect());
+        }
       }
     }
     // If the form has not been submitted, it can not been validated.
@@ -135,6 +140,16 @@ class Form extends DataContainer {
    */
   public function getItem($name) {
     return (isset($this->items[$name]) ? $this->items[$name] : NULL);
+  }
+
+  public function getFormValues() {
+
+    $items = $this->getItems();
+    $values = array();
+    foreach ($items as $key => $item) {
+      $values[$key] = $item->getValue();
+    }
+    return $values;
   }
 
   /**
@@ -320,7 +335,6 @@ class Form extends DataContainer {
     $this->setMethod((isset($attributes['method'])) ? $attributes['method'] : FORM_METHOD_POST);
     $this->setOkMessage((isset($attributes['ok_message'])) ? $attributes['ok_message'] : 'Your form has been submitted.');
     $this->setAnchor((isset($attributes['anchor'])) ? $attributes['anchor'] : $this->getId());
-    //$this->setRedirect((isset($attributes['redirect'])) ? $attributes['redirect'] : NULL);
 
   }
 

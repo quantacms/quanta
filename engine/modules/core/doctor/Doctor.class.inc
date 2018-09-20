@@ -17,10 +17,10 @@ class Doctor extends DataContainer {
   public $unix_user;
 
   /**
-   * @var string $apache_user
+   * @var string $web_server_user
    *   The apache user.
    */
-  public $apache_user;
+  public $web_server_user;
 
   /**
    * @var string $mode
@@ -275,7 +275,7 @@ class Doctor extends DataContainer {
   /**
    * Check the apache modules.
    */
-  public function checkApacheModules() {
+  public function checkWebServerModules() {
     $this->op('Checking Apache modules...');
 
     $modules = array(
@@ -309,11 +309,11 @@ class Doctor extends DataContainer {
 
 
   /**
-   * Check the apache user.
+   * Check the web Server user.
    *
    * Doctor will try to automatically fetch the apache username. If impossible, it will ask the client to provide one name.
    */
-  public function checkApacheUser() {
+  public function checkWebServerUser() {
     $this->op('Checking Apache user...');
 
     $candidate_users = array(
@@ -324,32 +324,32 @@ class Doctor extends DataContainer {
     foreach ($candidate_users as $candidate_user) {
       $results_arr = $this->execute('id -u ' . $candidate_user);
       if (!empty($results_arr)) {
-        $this->apache_user = $candidate_user;
+        $this->web_server_user = $candidate_user;
         break;
       }
     }
 
-    if (!empty($this->apache_user)) {
-      $this->talk('Apache user detected: ' . $this->apache_user);
-      $is_apache_user_ok = str_replace("\n", "", $this->ask('Please press enter if OK, or enter your apache user name here: '));
-      if (!empty($is_apache_user_ok)) {
-        $this->apache_user = $is_apache_user_ok;
+    if (!empty($this->web_server_user)) {
+      $this->talk('Web Server user detected: ' . $this->web_server_user);
+      $is_web_server_user_ok = str_replace("\n", "", $this->ask('Please press enter if OK, or enter your apache user name here: '));
+      if (!empty($is_web_server_user_ok)) {
+        $this->web_server_user = $is_web_server_user_ok;
       }
     }
     else {
-      $this->talk('We could not detect an apache username.');
-      $is_apache_user_ok = $this->ask('Please enter your apache username (i.e. www-data):');
+      $this->talk('We could not detect a web server username.');
+      $is_web_server_user_ok = $this->ask('Please enter your web server username (i.e. www-data):');
     }
   }
 
   /**
-   * If current user is not the same as apache user, manual chown commands have to be run
-   * in order for Apache to be able to access Quanta folders.
+   * If current user is not the same as web server user, manual chown commands have to be run
+   * in order for Web Server to be able to access Quanta folders.
    */
-  function checkApacheVsUnixUser() {
-    if ($this->apache_user != $this->unix_user) {
-      $this->op('IMPORTANT: as the current user (' . $this->unix_user . ') is different from your apache user (' . $this->apache_user . '), in order to allow Apache accessing those folders and use Quanta, you have to run this command manually:');
-      $this->op('sudo chown -R ' . $this->apache_user . ' "' . $this->env->dir['docroot'] . '"; sudo chown -R ' . $this->apache_user . ' "' . $this->env->dir['tmp'] . '"');
+  function checkWebServerVsUnixUser() {
+    if ($this->web_server_user != $this->unix_user) {
+      $this->op('IMPORTANT: as the current user (' . $this->unix_user . ') is different from your webserver user (' . $this->web_server_user . '), in order to allow your WebServer accessing those folders and use Quanta, you have to run this command manually:');
+      $this->op('sudo chown -R ' . $this->web_server_user . ' "' . $this->env->dir['docroot'] . '"; sudo chown -R ' . $this->web_server_user . ' "' . $this->env->dir['tmp'] . '"');
     }
   }
 
