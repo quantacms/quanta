@@ -27,6 +27,11 @@ html > .grid > * {
   padding: 0;
 }
 
+ul.grid {
+  margin: 0;
+  padding: 0;
+}
+
 
 .grid-centered-items {
   /* GRID 1x1 */

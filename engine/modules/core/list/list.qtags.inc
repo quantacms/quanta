@@ -18,7 +18,7 @@
  *   The rendered qtag.
  */
 function qtag_LIST($env, $target, $attributes) {
-  $dirlist = new DirList($env, $target, 'dir', $attributes);
+  $dirlist = new DirList($env, $target, 'dir', $attributes, 'list');
   $render = $dirlist->render();
   return $render;
 }
