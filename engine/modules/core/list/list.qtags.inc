@@ -18,7 +18,7 @@
  *   The rendered qtag.
  */
 function qtag_LIST($env, $target, $attributes) {
-  $dirlist = new DirList($env, $target, 'dir', $attributes);
+  $dirlist = new DirList($env, $target, 'dir', $attributes, 'list');
   $render = $dirlist->render();
   return $render;
 }
@@ -86,7 +86,6 @@ function qtag_FILES($env, $target, $attributes) {
  *   The rendered qtag.
  */
 function qtag_FILES_ADMIN($env, $target, $attributes) {
-  $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $filelist = new FileList($env, $target, 'file_admin', $attributes);
 
   // TODO: not optimal, but we don't want default files from father node on node add...

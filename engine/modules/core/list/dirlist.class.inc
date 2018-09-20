@@ -36,7 +36,7 @@ class DirList extends ListObject {
       }
 
       // Check if there is a filter set, and if it allows the item.
-      if (!empty($this->list_filter) && !_access_filter($this->env, $this->list_filter, $node)) {
+      if (!empty($this->getData('list_filter')) && !_access_filter($this->env, $this->getData('list_filter'), $node)) {
         continue;
       }
       $i++;

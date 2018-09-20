@@ -52,7 +52,6 @@ function form_boot($env, $vars) {
   // TODO: object oriented, using templates, etc. etc.
   if ($env->getRequestedPath() == 'autocomplete') {
     $autocomplete_results = search($env, $_GET['search_string'], NodeFactory::load($env, $_GET['search_node']), array('title'), SEARCH_OUTPUT_MATCH);
-
     header("Content-type: application/json");
     $results = array();
     foreach ($autocomplete_results as $autocomplete_result) {

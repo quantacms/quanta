@@ -1,6 +1,5 @@
 <?php
-
-  // Include the Environment module.
+// Include the Environment module.
   require_once('modules/core/environment/environment.module');
 
   // Include the Cache module.
