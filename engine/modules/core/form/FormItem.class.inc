@@ -461,7 +461,8 @@ abstract class FormItem extends DataContainer {
    *   Returns true if the submitted form has validation errors.
    */
   public function hasValidationErrors() {
-    return !empty($this->getValidationErrors());
+    $has_validation_errors = !empty($this->getValidationErrors());
+    return $has_validation_errors;
   }
 
   /**

@@ -20,6 +20,13 @@
 function qtag_USERATTRIBUTE($env, $target, $attributes) {
   $user = ($target == NULL) ? UserFactory::current($env) : new User($env, $target);
   switch ($attributes['name']) {
+    case 'username':
+      $string = $user->getName();
+      break;
+    // Node's path.
+    case 'last_name':
+      $string = $user->getLastName();
+      break;
     // Node's name (aka name of the folder).
     case 'email':
       $string = $user->getEmail();

@@ -93,8 +93,14 @@ function user_body_classes($env, $vars) {
  *   An array of variables.
  */
 function user_action_login($env, $vars) {
+  $username = array_pop($vars['data']['username']);
+  // We allow also using email for logging in.
+  if (valid_email($username)) {
+    $username = UserFactory::getUserFromField($env, 'email', $username);
+  }
+
   // Initialize an user object.
-  $tmp_user = new User($env, array_pop($vars['data']['username']));
+  $tmp_user = new User($env, $username);
   // Attempt to log in the user.
   $login = $tmp_user->logIn(array_pop($vars['data']['password']));
   exit($login);

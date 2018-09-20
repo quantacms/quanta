@@ -104,20 +104,31 @@ function access_qtag_preload($env, $vars) {
  */
 function _access_filter($env, $criteria, $node, $user = NULL) {
 
-  if ($user == NULL) {
-    $user = new User($env, $node->getAuthor());
-  }
+
   // Explode the criteria values.
   $filter = explode(',', $criteria);
 
   // Make matching false by default.
   $filter_match = FALSE;
 
+  if ($user == NULL) {
+    $user = UserFactory::load($env, $node->getName());
+  }
+
   // Check all filters.
   foreach ($filter as $filter_item) {
     $exp = explode('@', $filter_item);
     $filter_type = $exp[0];
+    if (substr($filter_type, 0, 12) == 'current_user') {
+      $filter_type = str_replace('current_user', 'user', $filter_type);
+      $user = UserFactory::current($env);
+    }
+    if (substr($filter_type, 0, 12) == 'node_author') {
+      $filter_type = str_replace('node_author', 'user', $filter_type);
+      $user = new User($env, $node->getAuthor());
+    }
     $filter_values = explode(';', $exp[1]);
+
     $filter_match = FALSE;
     $break = FALSE;
     $one_match = FALSE;
@@ -137,11 +148,11 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
         $filter_check = array($node->getFather()->getName());
         break;
       // Filter by current user's name.
-      case 'user':
+      case 'user_name':
         $filter_check = array($user->getName());
         break;
       // Filter by current user's role.
-      case 'role':
+      case 'user_role':
         $filter_check = $user->getRoles();
         break;
       // Filter by node's lineage (father, grandfather, and all ancestors!).
@@ -174,6 +185,7 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
     }
 
     if (!empty($filter_check)) {
+
       // Check if the filtered item corresponds to the user input.
       foreach ($filter_check as $check) {
 
@@ -217,6 +229,9 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
       if (!$filter_match) {
         break;
       }
+    }
+    else {
+      $filter_match = TRUE;
     }
 
   }

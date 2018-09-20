@@ -14,6 +14,8 @@ define("USER_ACTION_LOGIN", "user_login");
 define("USER_ACTION_EDIT", "user_edit");
 define("USER_ACTION_EDIT_OWN", "user_edit_own");
 define("USER_ACTION_REGISTER", "user_register");
+define("USER_VALIDATE", "user_validate");
+
 define("USER_VALIDATION_ERROR", "validation_error");
 
 /**
@@ -22,12 +24,8 @@ define("USER_VALIDATION_ERROR", "validation_error");
  * AKA a folder + json file inside.
  */
 class User extends Node {
-  /** @var string $email */
-  public $email;
   /** @var array $roles */
   public $roles = array();
-  /** @var string $password */
-  public $password;
 
   /**
    * Check if the user entered a correct password.
@@ -67,10 +65,10 @@ class User extends Node {
       }
 
       if (isset($this->json->password)) {
-        $this->password = $this->json->password;
+        $this->setData('password', $this->json->password);
       }
       if (isset($this->json->email)) {
-        $this->email = $this->json->email;
+        $this->setEmail($this->json->email);
       }
       if (isset($this->json->data)) {
         $this->data = (array)$this->json->data;
@@ -116,6 +114,16 @@ class User extends Node {
   }
 
   /**
+   * Sets all the roles of the user.
+   *
+   * @param array
+   *   All the User's roles.
+   */
+  public function setRoles($roles) {
+    $this->roles = $roles;
+  }
+
+  /**
    * Log out the user.
    *
    * @return mixed $response_json
@@ -145,10 +153,10 @@ class User extends Node {
    * @return string
    *   A JSON encrypted response to the login action.
    */
-  public function logIn($password, $success_message = NULL) {
+  public function logIn($password, $success_message = NULL, $force_login = FALSE) {
     // Create a default success message.
     if (!isset($success_message)) {
-      $success_message = 'Welcome ' . $this->getName() . '! You logged in';
+      $success_message = 'Welcome ' . $this->getTitle() . '! You logged in';
     }
     // If user dir doesn't exist.
     if (!($this->exists)) {
@@ -156,11 +164,10 @@ class User extends Node {
       new Message($this->env, 'Someone tried to login with wrong username: ' . $this->name, MESSAGE_WARNING, MESSAGE_TYPE_LOG);
     }
     else {
-      if ($this->checkPassword($password)) {
+      if ($this->checkPassword($password) || $force_login) {
         new Message($this->env, $success_message, MESSAGE_CONFIRM, MESSAGE_TYPE_SCREEN);
         new Message($this->env, 'User ' . $this->getName() . ' logged in', MESSAGE_CONFIRM, MESSAGE_TYPE_LOG);
         $this->roles += array('logged' => 'logged');
-        unset($this->password);
         $_SESSION['user'] = $this->serializeForSession();
         // TODO: adapt cookies.
         // setcookie('user', $this->serializeForSession(),time() + $this->env->getData('session_lifetime', time() + 86400));
@@ -201,9 +208,10 @@ class User extends Node {
     if (empty($this->realpath)) {
       $this->realpath = $this->env->dir['users'] . '/' . $this->getName();
     }
-
     $vars = array('user' => $this);
     $this->env->hook('user_save', $vars);
+    $this->env->hook($this->env->getContext(), $vars);
+
     // Reload the node JSON.
     $this->updateJSON();
     // Save the node json (excluding some fields such as path.)
@@ -217,8 +225,6 @@ class User extends Node {
     return TRUE;
   }
 
-  // TODO: maybe just rely on node for saving, no need for all this customization.
-
   /**
    * Action to register or update an existing user.
    *
@@ -231,64 +237,18 @@ class User extends Node {
    * @return bool
    *   TRUE if the user is valid and the process went smooth.
    */
-  public function update($form_data, $action) {
-    foreach ($form_data as $field => $value) {
-      // Load the user object from form fields.
-      switch ($field) {
-        case 'name':
-        case 'action':
-        case 'context':
-        case 'password':
-        case 'password_rp':
-          break;
-        case 'email':
-          $this->email = $value;
-          break;
-        // TODO
-        case 'roles':
-          break;
-        default:
-          $this->setData($field, $value);
-          break;
-      }
-    }
+  public function update() {
     // Create a default title for the user node, if it's not set.
-    $this->title = $this->getData('first_name') . ' ' . $this->getData('last_name');
-
-    // Validate the user form.
-    if ($valid = $this->validate($form_data)) {
-      if (strlen($form_data['password']) > 0) {
-        $this->password = pwd($form_data['password']);
-      }
-      $valid = $this->save();
-    }
-    if ($valid) {
-      switch ($action) {
-        case USER_ACTION_REGISTER:
-          // What to do after registering a new user.
-          $this->exists = TRUE;
-          // TODO: customize.
-          $message = 'Welcome ' . $this->getData('first_name') . '! You have successfully registered to the site.';
-          // After registering the user to the site, log him in.
-          // TODO: will be reworked when enabling 2 level (i.e. email confirmation) security.
-          $this->logIn($this->password, $message);
-          break;
-
-        case USER_ACTION_EDIT:
-        case USER_ACTION_EDIT_OWN:
-          // What to do after editing an existing user.
-          new Message($this->env, 'User ' . $this->name . ' was updated correctly!', MESSAGE_CONFIRM, MESSAGE_TYPE_SCREEN, 'user');
-          break;
-
-        default:
-          break;
-      }
-    }
+    $this->setTitle($this->getData('first_name') . ' ' . $this->getData('last_name'));
+    $this->setPassword(pwd($this->getPassword()));
+    $valid = $this->save();
     return $valid;
   }
 
   /**
    * Validate the user as a valid user.
+   *
+   * TODO: start moving validations in hooks only. Take out of class itself.
    *
    * @param array $form_data
    *   The data to use to build the user object.
@@ -296,49 +256,46 @@ class User extends Node {
    * @return bool
    *   Returns true if the constructed user is valid.
    */
-  public function validate($form_data = array()) {
-    $valid = FALSE;
-    $existing_user = UserFactory::load($this->env, $this->name);
+  public function validate() {
+    $check_password = !$this->exists || strlen($this->getPassword()) > 0;
+    // Check if some user has the same email as the current one.
+    exec('grep -r -i -o --include \*.json "\"email\"\:\"' . $this->getEmail() . '\"" ' . $this->env->dir['users'], $mail_exists);
+    $mail_exists = UserFactory::getUserFromField($this->env, 'email', $this->getEmail());
 
-    $check_password = !$this->exists || strlen($form_data['password']) > 0;
-
-    exec('grep -r -i -o --include \*.json "\"email\"\:\"' . $form_data['email'] . '\"" ' . $this->env->dir['users'], $mail_exists);
+    // Allow skipping standard user validation using a hook.
+    $vars = array('user' => $this, 'skip_validate' => array());
+    $this->env->hook('user_validate', $vars);
 
     // TODO: check also special characters.
     if (strlen($this->name) < USER_MIN_NAME_LENGTH) {
-      new Message($this->env, 'Your username should have at least ' . USER_MIN_NAME_LENGTH . ' characters', MESSAGE_WARNING);
+      $this->addData('validation_errors', array('name' => 'Your username should have at least ' . USER_MIN_NAME_LENGTH . ' characters'));
     }
-    elseif (!is_alphanumeric($this->name)) {
-      new Message($this->env, 'Please use only letters and numbers for your username', MESSAGE_WARNING);
+    if (!is_alphanumeric($this->name) && empty($vars['skip_validate']['username_alphanumeric'])) {
+      $this->addData('validation_errors', array('name' => 'Please use only letters and numbers for your username'));
     }
     // For register, check that no user with the same username already exists.
-    elseif ($this->exists && $form_data['action'] == USER_ACTION_REGISTER) {
-      new Message($this->env, 'Username ' . $this->name . ' already exists!', MESSAGE_WARNING);
+    if ($this->exists && $this->env->getContext() == USER_ACTION_REGISTER) {
+      $this->addData('validation_errors', array('name' => 'Username ' . $this->name . ' already exists!'));
+    }
+    if ($mail_exists && ($this->env->getContext() == USER_ACTION_REGISTER)) {
+      $this->addData('validation_errors', array('email' => 'Email ' . $this->getEmail() . ' already exists!'));
+    }
+    if (!valid_email($this->getEmail())) {
+      $this->addData('validation_errors', array('email' => 'Please enter a valid E-mail address!'));
+    }
+    if ($check_password && $this->exists && (!empty($this->getData('old_password'))) && ($this->getPassword() != pwd($this->getData('old_password')))) {
+      $this->addData('validation_errors', array('old_password' => 'The old password you entered is not valid. Please try again.'));
+    }
+    if ($check_password && strlen($this->getPassword()) < USER_PASSWORD_MIN_LENGTH) {
+      $this->addData('validation_errors', array('password' => 'Password should be at least ' . USER_PASSWORD_MIN_LENGTH . ' characters long.'));
+    }
+    if ($check_password && pwd($this->getData('password_rp')) != pwd($this->getData('password'))) {
+      $this->addData('validation_errors', array('password_rp' => 'Password fields are not the same.'));
     }
 
-    elseif ($mail_exists && (!$this->exists || ($this->email != $existing_user->email))) {
-      new Message($this->env, 'Email ' . $this->email . ' already exists!', MESSAGE_WARNING);
-    }
-    elseif (!valid_email($this->email)) {
-      new Message($this->env, 'Please enter a valid E-mail address!', MESSAGE_WARNING);
-    }
-    elseif ($check_password && $this->exists && ($this->password != pwd($form_data['old_password']))) {
-      new Message($this->env, 'The old password you entered is not valid. Please try again.', MESSAGE_WARNING);
-    }
-    elseif ($check_password && strlen($form_data['password']) < USER_PASSWORD_MIN_LENGTH) {
-      new Message($this->env, 'Password should be at least ' . USER_PASSWORD_MIN_LENGTH . ' characters long.', MESSAGE_WARNING);
-    }
-    elseif ($check_password && pwd($form_data['password_rp']) != pwd($form_data['password'])) {
-      new Message($this->env, 'Password fields are not the same.', MESSAGE_WARNING);
-    }
-    else {
-      $vars = array('user' => $this, 'form_data' => $form_data);
-      $this->env->hook('user_validate', $vars);
+    print_r($this->getData('validation_errors'));
 
-      $valid = !($this->env->getData(USER_VALIDATION_ERROR));
-    }
-    return $valid;
-
+    return empty($this->getData('validation_errors'));
   }
 
   /**
@@ -348,7 +305,7 @@ class User extends Node {
    *   The email of this user.
    */
   public function getEmail() {
-    return $this->email;
+    return $this->getData('email');
   }
 
   /**
@@ -358,7 +315,7 @@ class User extends Node {
    *   The email to be set.
    */
   public function setEmail($email) {
-    $this->email = $email;
+    $this->setData('email', $email);
   }
 
   /**
@@ -409,7 +366,7 @@ class User extends Node {
    *   The encrypted password of this user.
    */
   public function getPassword() {
-    return $this->password;
+    return $this->getData('password');
   }
 
   /**
@@ -419,7 +376,7 @@ class User extends Node {
    *   The encrypted password to be set.
    */
   public function setPassword($password) {
-    $this->password = $password;
+    $this->setData('password', $password);
   }
 
   /**

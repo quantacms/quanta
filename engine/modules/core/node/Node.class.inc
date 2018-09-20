@@ -96,17 +96,17 @@ class Node extends JSONDataContainer {
   public function loadJSON() {
     // Look for a language version.
     if (is_file($this->path . '/data_' . $this->getLanguage() . '.json')) {
-      $json_path = ($this->path . '/data_' . $this->getLanguage() . '.json');
+      $this->jsonpath = ($this->path . '/data_' . $this->getLanguage() . '.json');
     } // Look for a language neutral version.
     elseif (is_file($this->path . '/data.json')) {
-      $json_path = ($this->path . '/data.json');
+      $this->jsonpath = ($this->path . '/data.json');
     } // Impossible to load json. Error or empty Node.
     else {
       $this->json = new StdClass;
       return;
     }
 
-    $this->json = (object)json_decode(file_get_contents($json_path));
+    $this->json = (object)json_decode(file_get_contents($this->jsonpath));
 
 
     // Load the node teaser from JSON.
@@ -334,6 +334,7 @@ class Node extends JSONDataContainer {
 
   /**
    * Returns the body of a node.
+   *
    * @return string
    */
   public function getBody() {
@@ -342,7 +343,9 @@ class Node extends JSONDataContainer {
 
   /**
    * Sets the body of a node.
+   *
    * @param $body
+   *   The body of the node.
    */
   public function setBody($body) {
     $this->body = $body;
@@ -350,7 +353,9 @@ class Node extends JSONDataContainer {
 
   /**
    * Gets the status of a node.
-   * @return mixed
+   *
+   * @return string
+   *   The node status.
    */
   public function getStatus() {
     return $this->status;
@@ -358,7 +363,9 @@ class Node extends JSONDataContainer {
 
   /**
    * Sets the status of a node.
-   * @param $status
+   *
+   * @param string $status
+   *   The node status.
    */
   public function setStatus($status) {
     $this->status = $status;
@@ -366,8 +373,9 @@ class Node extends JSONDataContainer {
 
   /**
    * Returns the teaser of the node. Normalized and with tags excluded.
-   * @return mixed
-   * @internal param int $maxlength
+   *
+   * @return string
+   *   The node teaser.
    */
   public function getTeaser() {
     $teaser = (strlen(trim($this->teaser)) > 0) ? preg_replace('/\[[^>]*\]/', '', strip_tags($this->teaser)) : NULL;
@@ -377,7 +385,7 @@ class Node extends JSONDataContainer {
   /**
    * Return the node's title.
    *
-   * @return string title
+   * @return string
    *   The Node's title.
    */
   public function getTitle() {
@@ -404,14 +412,16 @@ class Node extends JSONDataContainer {
 
   /**
    * Gets the author of a node.
+   *
    * @return string
+   *   The node's author.
    */
   public function getAuthor() {
     return ($this->author == NULL) ? USER_ANONYMOUS : $this->author;
   }
 
   /**
-   * Delete this node and disable it by adding __ to the folder.
+   * Delete this node by adding a __ prefix to the folder.
    */
   public function delete() {
     $np = explode('/', $this->realpath);
@@ -442,7 +452,9 @@ class Node extends JSONDataContainer {
 
   /**
    * Set the node's teaser.
-   * @param $teaser
+   *
+   * @param string $teaser
+   *   The teaser.
    */
   public function setTeaser($teaser) {
     $this->teaser = strip_tags($teaser);
