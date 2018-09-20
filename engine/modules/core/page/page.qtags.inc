@@ -397,3 +397,48 @@ function qtag_BREADCRUMB($env, $target, $attributes) {
 function qtag_JSON($env, $target, $attributes) {
   return json_encode($target);
 }
+
+
+
+/**
+ * Implements qtag HEADER.
+ *
+ * Helper qtag to create an header.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_HEADER($env, $target, $attributes) {
+  return '<header>' . qtag_BLOCK($env, $target, $attributes) . '</header>';
+}
+
+
+/**
+ * Implements qtag FOOTER.
+ *
+ * Helper qtag to create a footer.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_FOOTER($env, $target, $attributes) {
+  return '<footer>' . qtag_BLOCK($env, $target, $attributes) . '</footer>';
+}

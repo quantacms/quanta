@@ -1,0 +1,74 @@
+.actionbutton.flickity-carousel {
+  position: relative;
+  color: #fff;
+  height: 0;
+  padding-bottom: 56.25%;
+  overflow-y: hidden;
+}
+.actionbutton .flickity-viewport {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+.actionbutton .flickity-slider,
+.actionbutton .node-item {
+  height: 100%;
+}
+
+
+.actionbutton .slide {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+.actionbutton .slide-img {
+  position: absolute;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+}
+.actionbutton .slide-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.actionbutton .slide-img::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  opacity: 0.2;
+}
+
+.actionbutton .slide-title {
+}
+
+.actionbutton .slide-content {
+  color: #fff;
+  margin: 20px 0 0;
+}
+
+.actionbutton .slide-text strong {
+  color: var(--color-brand);
+}
+
+.actionbutton .slide-link {
+  display: inline-block;
+  color: #fff;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  border: 2px solid #fff;
+  border-radius: 3px;
+  margin-top: 20px;
+  transition: all 0.3s;
+}
+
+.actionbutton .slide-link:hover {
+  background: #fff;
+  color: #333;
+}

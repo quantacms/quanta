@@ -71,11 +71,12 @@ abstract class ListObject extends DataContainer {
       $this->realpath = $this->getNode()->realpath;
     }
 
-    $this->tag = 'li';
-
     foreach ($attr_arr as $attr_key => $attr_val) {
       $this->setAttribute($attr_key, $attr_val);
     }
+
+    $this->setData('list_html_tag', !empty($this->getAttribute('list_html_tag')) ? $this->getAttribute('list_html_tag') : 'ul');
+    $this->setData('list_item_html_tag', !empty($this->getAttribute('list_item_html_tag')) ? $this->getAttribute('list_item_html_tag') : 'li');
 
     $this->load();
   }
@@ -120,8 +121,6 @@ abstract class ListObject extends DataContainer {
     }
 
     $ajax = (!empty($this->getAttribute('ajax'))) ? ' rel= ' . $this->getAttribute('ajax') : '';
-    $this->setData('list_html_tag', !empty($this->getAttribute('ordered')) ? 'ol' : 'ul');
-
     $tpl = (!empty($this->getAttribute('tpl'))) ? ' tpl= ' . $this->getAttribute('tpl') : '';
 
     if (!empty($this->getAttribute('empty_message')) && (count($this->rendered_items) == 0)) {
