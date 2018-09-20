@@ -59,7 +59,7 @@ class FileList extends ListObject {
         // If "clean" mode is set don't add wrapping li tags.
         if (empty($this->getAttribute('clean'))) {
           $classes = array('file-list-item', 'list-item-' . $this->getTpl(), 'list-item-' . $i);
-          $list_item = '<li class="' . implode(' ', $classes) . '" data-index="' . $i . '">' . $list_item . '</li>';
+          $list_item = '<' . $this->getData('list_item_html_tag') . ' class="' . implode(' ', $classes) . '" data-index="' . $i . '">' . $list_item . '</' . $this->getData('list_item_html_tag') . '>';
         }
 
         $this->rendered_items[$file->getName()] = $list_item;

@@ -27,6 +27,13 @@ function qtag_CAROUSEL($env, $target, $attributes) {
   $page->addCSS($module_path . '/css/flickity.min.css');
   $page->addCSS($module_path . '/css/flickity-quanta.css');
 
+  // Setup Flickity look & feel by using predefined theme (whitestripe).
+  $flickity_theme = isset($attributes['flickity_theme']) ? $attributes['flickity_theme'] : 'whitestripe';
+  
+  if (is_file($module_path . '/css/themes/' . $flickity_theme . '.css')) {
+    $page->addCSS($module_path . '/css/themes/' . $flickity_theme . '.css');
+  }
+
   // TODO: create a class for the carousel.
   $module = isset($attributes['module']) ? $attributes['module'] : 'flickity';
   if (empty($attributes['carousel-type'])) {
