@@ -2,4 +2,6 @@
 $this->dependsFrom('page');
 $this->dependsFrom('node');
 $this->dependsFrom('form');
+$this->dependsFrom('localization');
+
 require_once('shadow.class.inc');

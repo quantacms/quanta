@@ -27,8 +27,6 @@ abstract class ListObject extends DataContainer {
   protected $generated = FALSE;
   // Filter by status. TODO: discontinue.
   protected $status = array();
-  // Filter
-  protected $list_filter;
   protected $sort;
 
   /**
@@ -161,8 +159,9 @@ abstract class ListObject extends DataContainer {
       $this->status = array_flip(explode(',', $this->getAttribute('status')));
     }
 
+    // Attribute used for applying filtering to a list's results.
     if (!empty($this->getAttribute('list_filter'))) {
-      $this->list_filter = $this->getAttribute('list_filter');
+      $this->setData('list_filter', $this->getAttribute('list_filter'));
     }
 
     if ($this->getAttribute('level') == 'leaf' || $this->getAttribute('level') == 'tree') {
@@ -187,6 +186,7 @@ abstract class ListObject extends DataContainer {
 
       if ($this->scantype == DIR_DIRS) {
         $node = NodeFactory::load($this->env, $item_name);
+
         if ($node->exists && $this->validateStatus($node)) {
           $this->addItem($node);
         }
