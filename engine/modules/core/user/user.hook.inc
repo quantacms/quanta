@@ -45,7 +45,7 @@ function user_load_includes($env, $vars) {
 }
 
 /**
- * Implements hook_setup.
+ * Implements hook_doctor_setup().
  * Main setup of users.
  *
  * @param Environment $env
@@ -53,7 +53,7 @@ function user_load_includes($env, $vars) {
  * @param array $vars
  *   Miscellaneous environment / page variables.
  */
-function user_setup($env, $vars) {
+function user_doctor_setup($env, $vars) {
   // Create the basic roles.
   $basic_roles = array(
     'anonymous' => array('title' => 'Anonymous'),
