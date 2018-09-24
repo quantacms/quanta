@@ -31,7 +31,8 @@ function localization_boot($env, $vars) {
 }
 
 /**
- * Implements hook_setup().
+ * Implements hook_doctor_setup().
+ *
  * Main setup of languages.
  *
  * @param Environment $env
@@ -39,7 +40,7 @@ function localization_boot($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function localization_setup($env, $vars) {
+function localization_doctor_setup($env, $vars) {
   /** @var Doctor $doctor */
   $doctor = $vars['doctor'];
 
