@@ -1,6 +1,5 @@
 <?php
-
-  // Include the Environment module.
+// Include the Environment module.
   require_once('modules/core/environment/environment.module');
 
   // Include the Cache module.
@@ -19,7 +18,6 @@
   if (!isset($docroot)) {
     $docroot = NULL;
   }
-
 
   // Create a new Environment.
   $env = new Environment($host, $request_uri, $docroot);

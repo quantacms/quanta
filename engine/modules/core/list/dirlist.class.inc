@@ -36,7 +36,7 @@ class DirList extends ListObject {
       }
 
       // Check if there is a filter set, and if it allows the item.
-      if (!empty($this->list_filter) && !_access_filter($this->env, $this->list_filter, $node)) {
+      if (!empty($this->getData('list_filter')) && !_access_filter($this->env, $this->getData('list_filter'), $node)) {
         continue;
       }
       $i++;
@@ -64,6 +64,8 @@ class DirList extends ListObject {
       $vars = array(
         'list' => &$this,
         'list_item' => &$list_item,
+        'list_item_counter' => $i,
+        'list_item_classes' => &$classes,
       );
       $this->env->hook('list_item', $vars);
 
@@ -77,7 +79,7 @@ class DirList extends ListObject {
       // If the "clean" attribute is not present, add some wrapping html.
       // Check if output should be list item or plain.
       if (empty($this->getAttribute('clean'))) {
-        $list_item = '<li class="' . implode(' ', $classes) . '">' . $list_item . '</li>';
+        $list_item = '<' . $this->getData('list_item_html_tag') . ' class="' . implode(' ', $classes) . '">' . $list_item . '</' . $this->getData('list_item_html_tag') . '>';
       }
 
       $this->rendered_items[] = $list_item;

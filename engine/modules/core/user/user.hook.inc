@@ -45,7 +45,7 @@ function user_load_includes($env, $vars) {
 }
 
 /**
- * Implements hook_setup.
+ * Implements hook_doctor_setup().
  * Main setup of users.
  *
  * @param Environment $env
@@ -53,7 +53,7 @@ function user_load_includes($env, $vars) {
  * @param array $vars
  *   Miscellaneous environment / page variables.
  */
-function user_setup($env, $vars) {
+function user_doctor_setup($env, $vars) {
   // Create the basic roles.
   $basic_roles = array(
     'anonymous' => array('title' => 'Anonymous'),
@@ -93,8 +93,14 @@ function user_body_classes($env, $vars) {
  *   An array of variables.
  */
 function user_action_login($env, $vars) {
+  $username = array_pop($vars['data']['username']);
+  // We allow also using email for logging in.
+  if (valid_email($username)) {
+    $username = UserFactory::getUserFromField($env, 'email', $username);
+  }
+
   // Initialize an user object.
-  $tmp_user = new User($env, array_pop($vars['data']['username']));
+  $tmp_user = new User($env, $username);
   // Attempt to log in the user.
   $login = $tmp_user->logIn(array_pop($vars['data']['password']));
   exit($login);

@@ -18,13 +18,13 @@ function doctor_doctor_setup($env, $vars) {
   $doctor->checkCurrentUnixUser();
 
   // Check that all system paths do exist.
-  $doctor->checkApacheModules();
+  $doctor->checkWebServerModules();
 
   // Check that all system paths do exist.
-  $doctor->checkApacheUser();
+  $doctor->checkWebServerUser();
 
   $doctor->ok('Current user: ' . $doctor->unix_user);
-  $doctor->ok('Apache user: ' . $doctor->apache_user);
+  $doctor->ok('Web Server user: ' . $doctor->web_server_user);
 
   $user_is_correct = $doctor->ask('Are those users correct? (y/n)');
   if ($user_is_correct == 'n') {
@@ -45,7 +45,7 @@ function doctor_doctor_setup($env, $vars) {
   $doctor->checkAdminUser();
   $doctor->cure('check');
 
-  $doctor->checkApacheVsUnixUser();
+  $doctor->checkWebServerVsUnixUser();
 }
 
 /**

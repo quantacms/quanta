@@ -59,6 +59,7 @@ function qtag_INPUT_RENDER($env, $target, $attributes) {
         $rendered .= $form->renderFormClose();
     }
   }
+
   return $rendered;
 }
 
