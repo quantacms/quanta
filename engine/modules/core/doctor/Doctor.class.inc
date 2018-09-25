@@ -390,7 +390,7 @@ class Doctor extends DataContainer {
     $this->op('Running doctor hooks:  ' . $doctor_hook_name . '(...)');
 
     $vars = array('doctor' => &$this);
-    if (!($this->env->hook($doctor_hook_name, $vars))) {
+    if (!($this->env->hook(str_replace('-', '_', $doctor_hook_name), $vars))) {
       $this->ko("Wrong doctor command. Available doctor commands are: check, setup, clear-cache (i.e. doctor mysite.com check)\n");
     }
 
