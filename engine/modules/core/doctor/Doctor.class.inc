@@ -386,7 +386,7 @@ class Doctor extends DataContainer {
     if (empty($command)) {
       $command = $this->command;
     }
-    $doctor_hook_name = $command == 'check' ? 'doctor' : 'doctor_' . $command;
+    $doctor_hook_name = ($command == 'check') ? 'doctor' : 'doctor_' . $command;
     $this->op('Running doctor hooks:  ' . $doctor_hook_name . '(...)');
 
     $vars = array('doctor' => &$this);

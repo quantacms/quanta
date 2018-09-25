@@ -8,12 +8,11 @@
  *   An array of variables.
  */
 function workflow_shadow_node_form($env, $vars) {
-
   $vars['shadow']->addTab('manage status', file_get_contents($env->getModulePath('workflow') . '/tpl/status_form.html'), 2);
 }
 
 /**
- * Implements hook_setup().
+ * Implements hook_doctor_setup().
  *
  * Create all default statuses if they don't exist yet.
  *
@@ -22,7 +21,7 @@ function workflow_shadow_node_form($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function workflow_setup($env, $vars) {
+function workflow_doctor_setup($env, $vars) {
   // Initialize default statuses.
   $basic_statuses = array(
     NODE_STATUS_DRAFT => array('title' => 'Draft'),

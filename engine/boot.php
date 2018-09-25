@@ -19,7 +19,6 @@
     $docroot = NULL;
   }
 
-
   // Create a new Environment.
   $env = new Environment($host, $request_uri, $docroot);
 
