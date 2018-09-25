@@ -57,7 +57,7 @@ function page_boot($env, $vars) {
 
 
 /**
- * Implements hook_setup.
+ * Implements hook_doctor_setup.
  * Main setup of users.
  *
  * @param Environment $env
@@ -65,7 +65,7 @@ function page_boot($env, $vars) {
  * @param array $vars
  *   Miscellaneous environment / page variables.
  */
-function page_setup($env, $vars) {
+function page_doctor_setup($env, $vars) {
   // Create the basic roles.
   $basic_pages = array(
     '403' => array('title' => '403 - Forbidden'),
