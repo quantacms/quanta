@@ -14,6 +14,8 @@ class UserFactory {
    *
    * @param string $username
    *   The name of the user.
+   * @param $language
+   *   In which language to load the user.
    *
    * @return User
    *   The User.
@@ -29,28 +31,16 @@ class UserFactory {
   }
 
   /**
-   * Create an empty user.
-   *
+   * Create an user with basic values.
    * @param Environment $env
    *   The Environment.
-   *
-   * @return User
-   *   The empty User.
-   *
-   * @deprecated not used anywhere.
-   */
-  public static function buildEmptyUser($env) {
-    $user = new User($env, USER_ANONYMOUS);
-    return $user;
-  }
-
-  /**
-   * Create an user with basic values.
-   * @param $env
-   * @param $name
+   * @param string $name
+   *   The user name.
    * @param array $vars
+   *   An array of variables.
+   *
    * @return User
-   * @internal param $node
+   *   The constructed user object.
    */
   public static function buildUser($env, $name, $vars = array()) {
     $user = new User($env, NODE_NEW);
@@ -79,6 +69,24 @@ class UserFactory {
     return $user;
   }
 
+  /**
+   * Retrieves an User from a parameter.
+   *
+   * @param Environment $env
+   *   The Environment.
+   * @param string $name
+   *   The user name.
+   * @param array $vars
+   *   An array of variables.
+   *
+   * @return User
+   *   The constructed user object.
+   */
+  public static function getUserFromField($env, $field, $value) {
+    exec('grep -r -i -o --include \*.json "\"' . $field . '\"\:\"' . $value . '\"" ' . $env->dir['users'], $results);
+    $explode = explode('/', array_pop($results));
+    return $explode[count($explode) - 2];
+  }
 
   /**
    * Request performing an user action: login, logout, register, etc.
@@ -92,20 +100,18 @@ class UserFactory {
    * @return string
    */
   public static function requestAction($env, $action, $form_data) {
+    $user = new User($env, array_pop($form_data['name']), '_users');
+    $env->setContext($action);
     // TODO: this shit is needed with new approach.
     foreach ($form_data as $k => $v) {
       if (is_array($form_data[$k]) && (count($form_data[$k]) == 1)) {
-        $form_data[$k] = array_pop($v);
+        $v = array_pop($v);
       }
+      $user->setData($k, $v);
     }
-    // This variable is used to check eventual errors in the user save process.
-    $valid = FALSE;
-    $curr_user = UserFactory::current($env);
-    $response = new StdClass();
+
     // Check if the current user is allowed to perform the action.
     $can_edit = UserAccess::check($env, $action);
-    $user = new User($env, $form_data['name'], '_users');
-    $vars = array('user' => $user, 'form_data' => $form_data);
 
     // If user does not have the permission, show an error message.
     if (!$can_edit) {
@@ -113,21 +119,26 @@ class UserFactory {
     }
     // If user has the permission, perform the requested action.
     else {
-      $env->hook($action, $vars);
-      $valid = $user->update($form_data, $action);
-    }
+      switch ($action) {
+        case USER_ACTION_REGISTER:
+          if ($user->validate()) {
+            $user->update();
+          }
+          break;
+        case USER_ACTION_EDIT:
+        case USER_ACTION_EDIT_OWN:
 
-    // If the newly built user object is valid, rebuild the session to keep it updated.
-    if ($valid && isset($user)) {
-      $response->redirect = '/' . $env->getRequestedPath();
-      $user->rebuildSession();
+        // If the newly built user object is valid, rebuild the session to keep it updated.
+        if ($user->update()) {
+          $user->rebuildSession();
+        }
+        break;
+
+        default:
+          break;
+      }
     }
-    // If the newly built user object is not valid, show errors.
-    else {
-      $response->errors = Message::burnMessages();
-    }
-    $response_json = json_encode($response);
-    return $response_json;
+    return $user;
   }
 
   /**
@@ -146,7 +157,6 @@ class UserFactory {
 
     // Check if there is a logged in user in session.
     if (!isset($_SESSION['user'])) {
-
       $user = new User($env, USER_ANONYMOUS);
     }
     else {

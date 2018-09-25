@@ -1,28 +1,5 @@
 <?php
 /**
- * Implements qtag HEAD.
- *
- * @deprecated Use JS and CSS instead.
- *
- * Automatically generated header data.
- *
- * @param Environment $env
- *   The Environment.
- *
- * @param string $target
- *   The qtag's target.
- *
- * @param array $attributes
- *   The qtag's attributes.
- *
- * @return string
- *   The rendered qtag.
- */
-function qtag_HEAD($env, $target, $attributes) {
-  return qtag_CSS($env, $target, $attributes) . qtag_JS($env, $target, $attributes);
-}
-
-/**
  * Implements qtag CSS.
  *
  * Automatically generated css data.
@@ -154,132 +131,6 @@ function qtag_BODYCLASSES($env, $target, $attributes) {
 }
 
 /**
- * Implements qtag URL.
- *
- * Renders the current site URL.
- *
- * @param Environment $env
- *   The Environment.
- *
- * @param string $target
- *   The qtag's target.
- *
- * @param array $attributes
- *   The qtag's attributes.
- *
- * @return string
- *   The rendered qtag.
- */
-function qtag_URL($env, $target, $attributes) {
-  if (empty($target)) {
-	  $target = $env->getRequestedPath();
-	}
-	return $env->getBaseUrl() . '/' . $target;
-}
-
-/**
- * Implements qtag STRING.
- *
- * Renders a simple text / string.
- *
- * @param Environment $env
- *   The Environment.
- *
- * @param string $target
- *   The qtag's target.
- *
- * @param array $attributes
- *   The qtag's attributes.
- *
- * @return string
- *   The rendered qtag.
- */
-function qtag_STRING($env, $target, $attributes) {
-  return $target;
-}
-
-/**
- * Implements qtag DATE.
- *
- * Renders a formatted date.
- *
- * @param Environment $env
- *   The Environment.
- *
- * @param string $target
- *   The qtag's target.
- *
- * @param array $attributes
- *   The qtag's attributes.
- *
- * @return string
- *   The rendered qtag.
- */
-function qtag_DATE($env, $target, $attributes) {
-  $date = new DateTime($target);
-  if (isset($attributes['format'])) {
-    $formatted_date = $date->format($attributes['format']);
-  }
-  else {
-    $formatted_date = $target;
-  }
-  return $formatted_date;
-}
-
-/**
- * Implements qtag EMAIL.
- *
- * Renders a clickable email address.
- *
- * @param Environment $env
- *   The Environment.
- *
- * @param string $target
- *   The qtag's target.
- *
- * @param array $attributes
- *   The qtag's attributes.
- *
- * @return string
- *   The rendered qtag.
- */
-function qtag_EMAIL($env, $target, $attributes) {
-  $string = '';
-  if (valid_email($target)) {
-    $string = '<a class="mail" href="mailto:' . $target . '">' . (isset($attributes['title']) ? $attributes['title'] : $target)  . '</a>';
-  }
-  return $string;
-}
-
-/**
- * Implements qtag PHONE.
- *
- * Renders a phone number.
- *
- * @param Environment $env
- *   The Environment.
- *
- * @param string $target
- *   The qtag's target.
- *
- * @param array $attributes
- *   The qtag's attributes.
- *
- * @return string
- *   The rendered qtag.
- */
-function qtag_PHONE($env, $target, $attributes) {
-  if (isset($attributes['class'])){
-    $attributes['class'] .= ' tel';
-  }
-  else {
-    $attributes['class'] = ' tel';
-  }
-  
-	return '<a class="phone" href="tel:' . $target . '">' . $target . '</a>';
-}
-
-/**
  * Implements qtag CONTEXT.
  *
  * Renders the current context.
@@ -396,4 +247,49 @@ function qtag_BREADCRUMB($env, $target, $attributes) {
  */
 function qtag_JSON($env, $target, $attributes) {
   return json_encode($target);
+}
+
+
+
+/**
+ * Implements qtag HEADER.
+ *
+ * Helper qtag to create an header.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_HEADER($env, $target, $attributes) {
+  return '<header>' . qtag_BLOCK($env, $target, $attributes) . '</header>';
+}
+
+
+/**
+ * Implements qtag FOOTER.
+ *
+ * Helper qtag to create a footer.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_FOOTER($env, $target, $attributes) {
+  return '<footer>' . qtag_BLOCK($env, $target, $attributes) . '</footer>';
 }

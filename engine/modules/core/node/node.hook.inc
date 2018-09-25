@@ -128,7 +128,7 @@ function node_shadow_node_delete_form($env, $vars) {
     new Message($env, 'User attempted to delete a node without access', MESSAGE_WARNING, MESSAGE_TYPE_LOG, 'node');
   }
   else {
-    $shadow->addTab('Delete', $node->renderDeleteForm(), 1);
+    $shadow->addTab('Confirm Delete', $node->renderDeleteForm(), 1);
   }
   $shadow->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Delete');
 

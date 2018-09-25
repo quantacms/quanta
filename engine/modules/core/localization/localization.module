@@ -1,2 +1,16 @@
 <?php
 require_once("Localization.class.inc");
+
+/**
+ * Returns a translated version of a string.
+ *
+ * @param $string
+ *   The translatable string.
+ *
+ * @return mixed
+ *   The translated string.
+ */
+function t($string) {
+  // TODO: multilanguage strings implementation.
+  return $string;
+}
