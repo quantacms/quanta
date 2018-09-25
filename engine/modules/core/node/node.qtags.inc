@@ -23,42 +23,6 @@ function qtag_AUTHOR($env, $target, $attributes) {
 }
 
 /**
- * Implements qtag BLOCK.
- *
- * Renders a node as a block that can be embedded elsewhere.
- *
- * @param Environment $env
- *   The Environment.
- *
- * @param string $target
- *   The qtag's target.
- *
- * @param array $attributes
- *   The qtag's attributes.
- *
- * @return string
- *   The rendered qtag.
- */
-function qtag_BLOCK($env, $target, $attributes) {
-  $node = NodeFactory::load($env, $target);
-
-  if (isset($attributes['rendered'])) {
-    $node->buildTemplate();
-    $body = $node->render();
-  }
-  else {
-    $body = isset($attributes['with-title']) ? ('<h2 class="block-title">' . filter_xss($node->getTitle()) . '</h2>' . $node->getBody()) : $node->getBody();
-  }
-
-  // Wrap in the inline editor.
-  if (empty($attributes['editable']) || $attributes['editable'] == 'true') {
-    $body = $node->wrap($body);
-  }
-  // If user can't see the node, don't display it.
-  return $node->isForbidden() ? '' : $body;
-}
-
-/**
  * Implements of qtag ATTRIBUTE.
  *
  * Very important tag that allows retrieving every standard attribute of a node.
