@@ -122,3 +122,28 @@ function qtag_TREE($env, $target, $attributes) {
   $render = $dirlist->render();
   return $render;
 }
+
+
+
+
+/**
+ * Implements BLOCKS qtag.
+ *
+ * Renders a list of rendered blocks (1st level nodes into selected folder).
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_BLOCKS($env, $target, $attributes) {
+  $dirlist = new DirList($env, $target, 'blocks', array('sort' => 'time') + $attributes, 'list');
+  return $dirlist->render();
+}

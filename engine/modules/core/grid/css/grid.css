@@ -49,7 +49,7 @@ ul.grid {
 } 
 
 
-.grid img {
+.grid > img {
   width: 100%;
 }
 

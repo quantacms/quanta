@@ -113,9 +113,9 @@ abstract class ListObject extends DataContainer {
     $output = implode($separator, $this->rendered_items);
     $classes = array();
 
-    if (!empty($this->getAttribute('grid-list'))) {
+    if (!empty($this->getAttribute('grid_list'))) {
       $classes[] = 'grid';
-      $classes[] = $this->getAttribute('grid-list');
+      $classes[] = $this->getAttribute('grid_list');
     }
 
     $ajax = (!empty($this->getAttribute('ajax'))) ? ' rel= ' . $this->getAttribute('ajax') : '';
