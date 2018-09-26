@@ -3,6 +3,10 @@
 	display: none;
 }
 
+.list-dir {
+	padding: 0;
+}
+
 .dir-list-item {
 	margin:0;
   padding: 0;
@@ -11,4 +15,43 @@
 
 .list-tree .dir-list-item {
 	display: list-item;
+}
+
+.list-item-image-cover {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+}
+.list-item-image-cover img {
+	display: block;
+	height: 100%;
+	width: 100%;
+	object-fit: cover;
+}
+
+.list-item-title-overlay::before {
+	content: '';
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	background: #000;
+	transition: 0.3s all;
+	opacity: 0; /* init */	
+}
+.list-item-title-overlay h1 {
+	position: absolute;
+	padding: 15px;
+	color: #fff;
+	transition: 0.3s all;
+	transform: scale(0.8); /* init */
+	opacity: 0; /* init */	
+}
+.list-item-title-overlay:hover::before {
+	opacity: 0.5;
+}
+.list-item-title-overlay:hover h1 {
+	transform: scale(1);
+	opacity: 1;
 }
