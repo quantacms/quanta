@@ -145,6 +145,6 @@ function qtag_TREE($env, $target, $attributes) {
  *   The rendered qtag.
  */
 function qtag_BLOCKS($env, $target, $attributes) {
-  $dirlist = new DirList($env, $target, 'blocks', array('sort' => 'time') + $attributes, 'list');
+  $dirlist = new DirList($env, $target, 'blocks', $attributes, 'list');
   return $dirlist->render();
 }
