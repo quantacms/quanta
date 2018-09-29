@@ -32,6 +32,9 @@ ul.grid {
   padding: 0;
 }
 
+.grid-dense {
+  grid-auto-flow: dense;
+}
 
 .grid-centered-items {
   /* GRID 1x1 */
