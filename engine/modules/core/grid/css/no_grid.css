@@ -9,6 +9,7 @@ body.grid {
   flex-wrap: nowrap;
   flex-direction: column;
   align-items: stretch;
+  justify-content: initial;
 }
 #grid-main {
   display: flex;
@@ -32,6 +33,7 @@ footer,
 .grid {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;  
 }
 /*
 .grid > *:not(header):not(footer) {
