@@ -1,1 +1,1 @@
-[BLOCK|rendered:[LISTITEM]]
+[CONTENT:[LISTITEM]]
