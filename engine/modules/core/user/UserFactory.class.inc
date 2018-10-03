@@ -86,10 +86,9 @@ class UserFactory {
     $command = 'grep -r -i -o --include \*.json "\"' . $field . '\"\:\"' . $value . '\"" ' . $env->dir['users'];
     exec($command, $results);
     $explode = explode('/', array_pop($results));
-    print $command;
-    print_r($explode);
-
-    return $explode[count($explode) - 2];
+    if (count($explode) > 2) {
+      return $explode[count($explode) - 2];
+    }
   }
 
   /**
@@ -119,7 +118,7 @@ class UserFactory {
 
     // If user does not have the permission, show an error message.
     if (!$can_edit) {
-      new Message($env, 'Sorry, you don\'t have the permissions to perform this action: ' . $action, MESSAGE_WARNING, MESSAGE_TYPE_SCREEN);
+      new Message($env, t('Sorry, you don\'t have the permissions to perform this action: ' . $action), MESSAGE_WARNING, MESSAGE_TYPE_SCREEN);
     }
     // If user has the permission, perform the requested action.
     else {
