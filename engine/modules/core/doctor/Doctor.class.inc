@@ -189,75 +189,8 @@ class Doctor extends DataContainer {
    * from the example site.
    */
   public function checkExistingIndex() {
-    $this->op('Looking for index.html...');
-    if (!is_file($this->env->dir['docroot'] . '/index.html')) {
-      $this->talk('Not Found');
-      // TODO: what to use as default for newly installed sites? Create templates folder.
-      $template_folder = $this->env->dir['quanta'] . '/_examples/_example1/*';
-      // TODO: do only on install hook
-      $this->execute('cp -R ' . $template_folder . ' ' . $this->env->dir['docroot']);
-      $this->ok('Imported from ' . $template_folder);
-    }
-    else {
-      $this->ok('Found');
-    }
 
   }
-
-  /**
-   * Check that there is an existing homepage node.
-   * If there is not, create a simple one, as this is the
-   * default / main page for Quanta sites.
-   */
-  public function checkExistingHome() {
-    $this->op('Looking for Home node');
-    $homenode = NodeFactory::load($this->env, 'home');
-    if (!($homenode->exists)) {
-      $this->talk('Not found! Attempting to create Homepage...');
-      NodeFactory::buildNode($this->env, 'home', 'pages', array(
-          'title' => 'Your Homepage',
-          'body' => 'Welcome in your new QUANTA Homepage. That\'s where everything begins...',
-        )
-      );
-    }
-    else {
-      $this->ok('Found at ' . $homenode->realpath . '!');
-    }
-  }
-
-  /**
-   * Check that the administrator user exists. Create it if it doesn't exist.
-   */
-  public function checkAdminUser() {
-    $this->op('Looking for Admin user');
-    $adminuser = UserFactory::load($this->env, 'administrator');
-    if (!($adminuser->exists)) {
-      $this->talk('Not found! Attempting to create Admin User...');
-      $password = 'pass';
-      $password_repeat = 'pass_repeat';
-
-      while ($password != $password_repeat) {
-        $password = $this->ask('Please enter a password for the administrator user', TRUE);
-        $password_repeat = $this->ask('Please repeat your password', TRUE);
-        if ($password != $password_repeat) {
-          Doctor::ko('The two passwords are not matching. Please try again!');
-        }
-      }
-      UserFactory::buildUser($this->env, 'administrator', array(
-        'title' => 'Administrator',
-        'password' => $password,
-        'roles' => array('admin'),
-        'email' => 'admin@changeme.com',
-        'first_name' => 'John',
-        'last_name' => 'Doe',
-      ));
-      $this->ok('Done!');
-    }
-    else {
-      $this->ok('Found!');
-    }
-  }
-
 
   /**
    * Check the current user.
@@ -388,8 +321,11 @@ class Doctor extends DataContainer {
     }
     $doctor_hook_name = ($command == 'check') ? 'doctor' : 'doctor_' . $command;
     $this->op('Running doctor hooks:  ' . $doctor_hook_name . '(...)');
-
     $vars = array('doctor' => &$this);
+    // Run pre setup.
+    if ($doctor_hook_name == 'doctor_setup') {
+      $this->env->hook('doctor_pre_setup', $vars);
+    }
     if (!($this->env->hook(str_replace('-', '_', $doctor_hook_name), $vars))) {
       $this->ko("Wrong doctor command. Available doctor commands are: check, setup, clear-cache (i.e. doctor mysite.com check)\n");
     }

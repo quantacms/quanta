@@ -83,8 +83,12 @@ class UserFactory {
    *   The constructed user object.
    */
   public static function getUserFromField($env, $field, $value) {
-    exec('grep -r -i -o --include \*.json "\"' . $field . '\"\:\"' . $value . '\"" ' . $env->dir['users'], $results);
+    $command = 'grep -r -i -o --include \*.json "\"' . $field . '\"\:\"' . $value . '\"" ' . $env->dir['users'];
+    exec($command, $results);
     $explode = explode('/', array_pop($results));
+    print $command;
+    print_r($explode);
+
     return $explode[count($explode) - 2];
   }
 
