@@ -1,7 +1,7 @@
 $(document).ready(function(){
   // Workaround for flexbox to emulate grid-col-start:
   // create a div with span outside "cells" but inside the wrapper.
-/*
+
   var flex_span_class, match_array, span, order_class = '';
   var class_keyword = 'grid-start-';
   var class_prefix = 'grid-span-';
@@ -32,5 +32,5 @@ $(document).ready(function(){
 
     $(this).parent().prepend('<div class="' + flex_span_class + ' ' + order_class + '"><div>');
   });
-*/
+
 });
