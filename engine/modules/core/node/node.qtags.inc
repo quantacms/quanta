@@ -188,20 +188,27 @@ function qtag_LINK($env, $target, $attributes) {
     $attributes['external'] = FALSE;
 
     // Load the target node.
-    $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
-    // Retrieve main link attributes.
-    // TODO: use something to get the real url...
-    // Allow other modules to change the URL.
-    $target = '/' . $node->getName();
-    // TODO: loading the full node at each link is not performant.
-    $title_default = filter_xss($node->getTitle());
-    // Add classes...
-    $classes[] = 'link-' . string_normalize($node->getName());
-    // Check if this node's link is identical to the current node.
-    if (($target . '/') == $env->request_uri) {
-      $classes[] = 'link-active';
+    if (empty($target)) {
+      // Set empty href for link.
+      $target = '#';
+    } else {
+      // Load the node.
+      $node = NodeFactory::load($env, $target);
+    
+      // Retrieve main link attributes.
+      // TODO: use something to get the real url...
+      // Allow other modules to change the URL.
+      $target = '/' . $node->getName();
+      // TODO: loading the full node at each link is not performant.
+      $title_default = filter_xss($node->getTitle());
+      // Add classes...
+      $classes[] = 'link-' . string_normalize($node->getName());
+      // Check if this node's link is identical to the current node.
+      if (($target . '/') == $env->request_uri) {
+        $classes[] = 'link-active';
+      }
+      $attributes['rel'] = $node->getName();    
     }
-    $attributes['rel'] = $node->getName();
   }
 
   $vars = array('target' => &$target, 'attributes' => &$attributes, 'link_data' => &$link_data);
