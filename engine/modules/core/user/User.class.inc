@@ -293,8 +293,6 @@ class User extends Node {
       $this->addData('validation_errors', array('password_rp' => 'Password fields are not the same.'));
     }
 
-    print_r($this->getData('validation_errors'));
-
     return empty($this->getData('validation_errors'));
   }
 
