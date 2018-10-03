@@ -37,7 +37,7 @@ function grid_page_init($env, $vars) {
     $page->addCSS($module_path . '/css/no_grid.css');
   }
 
-  $env->addInclude($module_path . '/css/utilities.css');
+  $page->addCSS($module_path . '/css/utilities.css');
 }
 
 
