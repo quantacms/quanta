@@ -1,0 +1,197 @@
+/* NO GRID SUPPORT: FLEXBOX FALLBACK */
+
+
+/* FLEXBOX in page TPL: header + #grid-main(max-height) + footer */
+
+body.grid {
+  min-height: 100%;
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: initial;
+}
+#grid-main {
+  display: flex;
+  flex-grow: 1;
+}
+header,
+footer,
+#grid-main {
+  flex-shrink: 0;
+}
+/*
+#grid-main:before {
+  content:'12 cols ref';
+  text-transform: uppercase;
+  flex-basis: 100%;
+  background:darkviolet;
+  color:#fff;
+  padding:15px;
+}*/
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;  
+}
+/*
+.grid > *:not(header):not(footer) {
+  flex-shrink: 0;
+  max-width: 100%;
+}*/
+
+.grid > *:not([class*='grid-span-']) {
+  width: 100%;
+  /*flex-grow: 12; /* default 12 cols -> full width */
+}
+
+html > .grid > * {
+  padding: var(--gap-size);
+}
+.grid-container > .grid {
+  padding: var(--gap-size);
+}
+.grid.grid-container {
+  padding: 0;
+}
+
+
+
+
+
+
+
+/* RESPONSIVE */
+
+/* MOBILE FIRST */
+.grid-span-1 {
+  flex-basis: var(--size-1-col);
+}
+.grid-span-2 {
+  flex-basis: var(--size-2-col);
+}
+.grid-span-3 {
+  flex-basis: var(--size-3-col);
+}
+.grid-span-4 {
+  flex-basis: var(--size-4-col);
+}
+.grid-span-5 {
+  flex-basis: var(--size-5-col);
+}
+.grid-span-6 {
+  flex-basis: var(--size-6-col);
+}
+.grid-span-7 {
+  flex-basis: var(--size-7-col);
+}
+.grid-span-8 {
+  flex-basis: var(--size-8-col);
+}
+.grid-span-9 {
+  flex-basis: var(--size-9-col);
+}
+.grid-span-10 {
+  flex-basis: var(--size-10-col);
+}
+.grid-span-11 {
+  flex-basis: var(--size-11-col);
+}
+.grid-span-12 {
+  flex-basis: var(--size-12-col);
+}
+
+
+
+/* md: Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) {
+  .grid-span-md-1 {
+    flex-basis: var(--size-1-col);
+  }
+  .grid-span-md-2 {
+    flex-basis: var(--size-2-col);
+  }
+  .grid-span-md-3 {
+    flex-basis: var(--size-3-col);
+  }
+  .grid-span-md-4 {
+    flex-basis: var(--size-4-col);
+  }
+  .grid-span-md-5 {
+    flex-basis: var(--size-5-col);
+  }
+  .grid-span-md-6 {
+    flex-basis: var(--size-6-col);
+  }
+  .grid-span-md-7 {
+    flex-basis: var(--size-7-col);
+  }
+  .grid-span-md-8 {
+    flex-basis: var(--size-8-col);
+  }
+  .grid-span-md-9 {
+    flex-basis: var(--size-9-col);
+  }
+  .grid-span-md-10 {
+    flex-basis: var(--size-10-col);
+  }
+  .grid-span-md-11 {
+    flex-basis: var(--size-11-col);
+  }
+  .grid-span-md-12 {
+    flex-basis: var(--size-12-col);
+  }
+
+}
+
+/* lg: Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+
+  .grid-span-lg-1 {
+    flex-basis: var(--size-1-col);
+  }
+  .grid-span-lg-2 {
+    flex-basis: var(--size-2-col);
+  }
+  .grid-span-lg-3 {
+    flex-basis: var(--size-3-col);
+  }
+  .grid-span-lg-4 {
+    flex-basis: var(--size-4-col);
+  }
+  .grid-span-lg-5 {
+    flex-basis: var(--size-5-col);
+  }
+  .grid-span-lg-6 {
+    flex-basis: var(--size-6-col);
+  }
+  .grid-span-lg-7 {
+    flex-basis: var(--size-7-col);
+  }
+  .grid-span-lg-8 {
+    flex-basis: var(--size-8-col);
+  }
+  .grid-span-lg-9 {
+    flex-basis: var(--size-9-col);
+  }
+  .grid-span-lg-10 {
+    flex-basis: var(--size-10-col);
+  }
+  .grid-span-lg-11 {
+    flex-basis: var(--size-11-col);
+  }
+  .grid-span-lg-12 {
+    flex-basis: var(--size-12-col);
+  }
+}
+
+
+
+/* xl: Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+}
+
+/* xxl: XXL devices (very large desktops, 1440px and up) */
+@media (min-width: 1440px) {
+}
