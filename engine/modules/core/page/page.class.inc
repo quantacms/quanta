@@ -82,15 +82,17 @@ class Page extends DataContainer {
       $node->buildTemplate();
       $this->html = $node->render();
     }
-
     // This is an actual HTML page request. Commonly index.html.
     elseif (!empty($this->getIndexFile())) {
       $this->html = file_get_contents($this->env->dir['docroot'] . '/' . $this->getIndexFile());
     }
 
     // This is a special request, i.e. Shadow node edit.
-    else {
+    elseif (!empty($this->getData('content'))) {
       $this->html = $this->getData('content');
+    }
+    elseif (!is_file($this->env->dir['docroot'] . '/' . $this->getIndexFile())) {
+      $this->html = t('Hello! Quanta seems not installed (yet) in your system. Please follow the <a href="https://www.quantacms.com/installation-instructions">Installation Instructions</a><br /><br />Reason: file not found(' . $this->getIndexFile() . ')');
     }
 
     $vars = array('page' => &$this);

@@ -54,6 +54,11 @@ function user_load_includes($env, $vars) {
  *   Miscellaneous environment / page variables.
  */
 function user_doctor_setup($env, $vars) {
+  /** @var Doctor $doctor */
+  $doctor = $vars['doctor'];
+
+  $doctor->op('Creating basic roles');
+
   // Create the basic roles.
   $basic_roles = array(
     'anonymous' => array('title' => 'Anonymous'),
@@ -64,6 +69,35 @@ function user_doctor_setup($env, $vars) {
     if (!is_dir($env->dir['roles'] . '/' . $role)) {
       NodeFactory::buildNode($env, $role, '_roles', $roledata);
     }
+  }
+
+  $doctor->op('Looking for Admin user');
+  $adminuser = UserFactory::load($env, 'administrator');
+  if (!($adminuser->exists)) {
+    $doctor->talk('Not found! Attempting to create Admin User...');
+    $password = 'pass';
+    $password_repeat = 'pass_repeat';
+
+    while ($password != $password_repeat) {
+      $password = $doctor->ask('Please enter a password for the administrator user', TRUE);
+      $password_repeat = $doctor->ask('Please repeat your password', TRUE);
+      if ($password != $password_repeat) {
+        Doctor::ko('The two passwords are not matching. Please try again!');
+      }
+    }
+    UserFactory::buildUser($env, 'administrator', array(
+      'title' => 'Administrator',
+      'password' => $password,
+      'roles' => array('admin'),
+      'email' => 'admin@changeme.com',
+      'first_name' => 'John',
+      'last_name' => 'Doe',
+      'language' => LANGUAGE_NEUTRAL,
+    ));
+    $doctor->ok('Done!');
+  }
+  else {
+    $doctor->ok('Found!');
   }
 }
 
@@ -206,7 +240,24 @@ function user_action_user_edit_own($env, $vars) {
  *   An array of variables.
  */
 function user_action_user_register($env, $vars) {
-  $response_json = UserFactory::requestAction($env, $vars['data']['action'], $vars['data']);
+  // Prepare the response object.
+  $response = new StdClass();
+
+  $user = UserFactory::requestAction($env, $vars['data']['action'], $vars['data']);
+  // TODO: broken process. Fix it. @urgent
+  if (!empty($user->getData('validation_errors'))) {
+    foreach ($user->getData('validation_errors') as $error) {
+      new Message($env, $error, MESSAGE_WARNING);
+    }
+    $response->errors = Message::burnMessages();
+  }
+  else {
+    $response->redirect = 'home';
+  }
+
+  // Encode the response JSON code.
+  $response_json = json_encode($response);
+
   exit($response_json);
 }
 
