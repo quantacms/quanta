@@ -2,7 +2,7 @@
 
 
 /* FLEXBOX in page TPL: header + #grid-main(max-height) + footer */
-
+/*
 body.grid {
   min-height: 100%;
   display: flex;
@@ -11,15 +11,14 @@ body.grid {
   align-items: stretch;
   justify-content: initial;
 }
+body.grid > * {
+  flex-shrink: 0;
+}*/
 #grid-main {
   display: flex;
-  flex-grow: 1;
+  /*flex-grow: 1;*/
 }
-header,
-footer,
-#grid-main {
-  flex-shrink: 0;
-}
+
 /*
 #grid-main:before {
   content:'12 cols ref';

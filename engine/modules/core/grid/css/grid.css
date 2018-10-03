@@ -1,9 +1,10 @@
 /* GRID in page TPL: header + #grid-main(max-height) + footer */
-
+/*
 body {
   grid-template-rows: auto 1fr auto;
-}
+}*/
 #grid-main {
+  display: grid;
   grid-auto-rows: min-content;
   grid-row-gap: 0;
 }
