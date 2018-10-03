@@ -19,7 +19,7 @@ function grid_load_includes($env, $vars) {
   }
   else {
     $env->addInclude($module_path . '/css/no_grid.css');
-    $env->addInclude($module_path . '/js/no_grid.js');
+    //$env->addInclude($module_path . '/js/no_grid.js');
   }
   
   $env->addInclude($module_path . '/css/utilities.css');
