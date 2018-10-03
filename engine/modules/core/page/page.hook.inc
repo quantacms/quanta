@@ -66,18 +66,46 @@ function page_boot($env, $vars) {
  *   Miscellaneous environment / page variables.
  */
 function page_doctor_setup($env, $vars) {
+  /** @var Doctor $doctor */
+  $doctor = $vars['doctor'];
+  $doctor->op('Installing basic pages!');
+
+  // Create the index.html file.
+  $doctor->op('Looking for index.html...');
+  if (!is_file($env->dir['docroot'] . '/index.html')) {
+    $doctor->talk('Not Found');
+    // TODO: what to use as default for newly installed sites? Create templates folder.
+    $template_folder = $env->dir['quanta'] . '/_examples/_example1/*';
+    $doctor->execute('cp -R ' . $template_folder . ' ' . $doctor->env->dir['docroot']);
+    $doctor->ok('Imported from ' . $template_folder);
+  }
+  else {
+    $this->ok('Found');
+  }
+
   // Create the basic roles.
   $basic_pages = array(
-    '403' => array('title' => '403 - Forbidden'),
-    '404' => array('title' => '404 - File not found'),
+    '403' => array(
+      'title' => '403 - Forbidden',
+      'father' => '_system',
+    ),
+    '404' => array(
+      'title' => '404 - File not found',
+      'father' => '_system',
+    ),
+    'home' => array(
+      'title' => 'Your Homepage',
+      'father' => 'pages',
+      'body' => 'Welcome in your new QUANTA Homepage. That\'s where everything begins...',
+    ),
   );
 
   foreach ($basic_pages as $page => $pagedata) {
-    if (!is_dir($env->dir['system'] . '/' . $page)) {
-      NodeFactory::buildNode($env, $page, '_system', $pagedata);
+    $check_exists = NodeFactory::load($env, $page);
+    if (!$check_exists->exists) {
+      NodeFactory::buildNode($env, $page, $pagedata['father'], $pagedata);
     }
   }
-
 }
 
 /**
