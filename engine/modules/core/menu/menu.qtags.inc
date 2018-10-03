@@ -19,6 +19,7 @@
 function qtag_MENU($env, $target, $attributes) {
   $links_html = array();
   $menu_class = isset($attributes['menu_class']) ? $attributes['menu_class'] : '';
+  $menu_list_class = isset($attributes['menu_list_class']) ? $attributes['menu_list_class'] : '';
 
   if (isset($attributes['links'])) {
     // Get links directly.
@@ -34,6 +35,6 @@ function qtag_MENU($env, $target, $attributes) {
     $links_html[] = '<li>' . $link . '</li>';
   }
 
-  return '<nav' . (!empty($menu_class) ? ' class="' . $menu_class . '"' : '') . '><ul>' . implode($links_html) . '</ul></nav>';
+  return '<nav' . (!empty($menu_class) ? ' class="' . $menu_class . '"' : '') . '><ul' . (!empty($menu_list_class) ? ' class="' . $menu_list_class . '"' : '') . '>' . implode($links_html) . '</ul></nav>';
 
 }
