@@ -9,7 +9,7 @@
  * @param array $vars
  *   An array of variables.
  */
-function doctor_doctor_setup($env, $vars) {
+function doctor_doctor_pre_setup($env, $vars) {
   /** @var Doctor $doctor */
   $doctor = $vars['doctor'];
   $doctor->op('Starting Quanta installation. Good luck!');
@@ -40,9 +40,6 @@ function doctor_doctor_setup($env, $vars) {
   $doctor->ok();
 
   // TODO: move in modules - out of doctor.
-  $doctor->checkExistingIndex();
-  $doctor->checkExistingHome();
-  $doctor->checkAdminUser();
   $doctor->cure('check');
 
   $doctor->checkWebServerVsUnixUser();

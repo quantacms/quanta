@@ -16,7 +16,8 @@ function grid_load_includes($env, $vars) {
 
   if (supportsGrid()) {
     $env->addInclude($module_path . '/css/grid.css');
-  } else {
+  }
+  else {
     $env->addInclude($module_path . '/css/no_grid.css');
     $env->addInclude($module_path . '/js/no_grid.js');
   }
