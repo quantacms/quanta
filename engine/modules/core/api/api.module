@@ -18,7 +18,8 @@ function parsetag($string, $tag) {
 }
 
 /**
- * Generate a password
+ * Generate a password.
+ *
  * @param $pass
  * @return bool|string
  */
@@ -262,7 +263,10 @@ function filter_xss($string) {
  *   array with user agent info.
  */
 function getBrowser() { 
-  $u_agent = $_SERVER['HTTP_USER_AGENT']; 
+  $u_agent = !empty($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : NULL;
+  if (empty($u_agent)) {
+    return NULL;
+  }
   $bname = 'Unknown';
   $platform = 'Unknown';
   $version= "";
