@@ -240,8 +240,24 @@ function user_action_user_edit_own($env, $vars) {
  *   An array of variables.
  */
 function user_action_user_register($env, $vars) {
+  // Prepare the response object.
+  $response = new StdClass();
+
   $user = UserFactory::requestAction($env, $vars['data']['action'], $vars['data']);
   // TODO: broken process. Fix it. @urgent
+  if (!empty($user->getData('validation_errors'))) {
+    foreach ($user->getData('validation_errors') as $error) {
+      new Message($env, $error, MESSAGE_WARNING);
+    }
+    $response->errors = Message::burnMessages();
+  }
+  else {
+    $response->redirect = 'home';
+  }
+
+  // Encode the response JSON code.
+  $response_json = json_encode($response);
+
   exit($response_json);
 }
 
