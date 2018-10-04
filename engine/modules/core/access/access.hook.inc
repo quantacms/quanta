@@ -179,6 +179,10 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
         }
         break;
 
+      case 'status':
+        $filter_check = array($node->getStatus());
+        break;
+
       default:
 
         break;
