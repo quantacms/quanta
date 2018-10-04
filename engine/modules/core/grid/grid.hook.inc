@@ -10,21 +10,34 @@
  */
 function grid_load_includes($env, $vars) {
   $module_path = $env->getModulePath('grid');
-
   $env->addInclude($module_path . '/css/reset.css');
   $env->addInclude($module_path . '/css/grid_all.css');
-
-  if (supportsGrid()) {
-    $env->addInclude($module_path . '/css/grid.css');
-  }
-  else {
-    $env->addInclude($module_path . '/css/no_grid.css');
-    //$env->addInclude($module_path . '/js/no_grid.js');
-  }
-  
-  $env->addInclude($module_path . '/css/utilities.css');
 }
 
+
+/**
+ * Implements hook_page_init().
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param array $vars
+ *   An array of variables.
+ */
+function grid_page_init($env, $vars) {
+  /** @var Page $page */
+  $page = $vars['page'];
+
+  $module_path = $env->getModulePath('grid');
+
+  if (supportsGrid()) {
+    $page->addCSS($module_path . '/css/grid.css');
+  }
+  else {
+    $page->addCSS($module_path . '/css/no_grid.css');
+  }
+
+  $page->addCSS($module_path . '/css/utilities.css');
+}
 
 
 /**
