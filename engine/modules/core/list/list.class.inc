@@ -226,11 +226,12 @@ abstract class ListObject extends DataContainer {
    * TODO: deprecate and move as status filter.
    */
   public function validateStatus($node) {
-    if (!empty($this->status)) {
+     
+		if (!empty($this->status)) {
       return (isset($this->status['all'])) || (isset ($this->status[$node->getStatus()]));
     }
     else {
-      return $node->isPublished();
+      return TRUE;
     }
   }
 

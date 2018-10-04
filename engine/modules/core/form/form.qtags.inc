@@ -113,5 +113,5 @@ function qtag_LIST_VALUES($env, $target, $attributes) {
   $attributes['clean'] = TRUE;
   $attributes['separator'] = ',';
   $dirlist = new DirList($env, $target, 'list-values', $attributes, 'form');
-  return $dirlist->render();
+	return $dirlist->render();
 }

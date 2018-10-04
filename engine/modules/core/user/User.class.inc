@@ -154,7 +154,7 @@ class User extends Node {
    *   A JSON encrypted response to the login action.
    */
   public function logIn($password, $success_message = NULL, $force_login = FALSE) {
-    // Create a default success message.
+		// Create a default success message.
     if (!isset($success_message)) {
       $success_message = 'Welcome ' . $this->getTitle() . '! You logged in';
     }
@@ -165,11 +165,12 @@ class User extends Node {
     }
     else {
       if ($this->checkPassword($password) || $force_login) {
-        new Message($this->env, $success_message, MESSAGE_CONFIRM, MESSAGE_TYPE_SCREEN);
+				new Message($this->env, $success_message, MESSAGE_CONFIRM, MESSAGE_TYPE_SCREEN);
         new Message($this->env, 'User ' . $this->getName() . ' logged in', MESSAGE_CONFIRM, MESSAGE_TYPE_LOG);
         $this->roles += array('logged' => 'logged');
         $_SESSION['user'] = $this->serializeForSession();
-        // TODO: adapt cookies.
+        
+				// TODO: adapt cookies.
         // setcookie('user', $this->serializeForSession(),time() + $this->env->getData('session_lifetime', time() + 86400));
 
       }
@@ -185,7 +186,8 @@ class User extends Node {
     $response->redirect = '/' . $this->env->getRequestedPath();
     $response_json = json_encode($response);
     return $response_json;
-  }
+	}
+
 
   /**
    * Checks if the user is the current user.
