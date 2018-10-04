@@ -166,9 +166,7 @@ class UserFactory {
       $user = new User($env, USER_ANONYMOUS);
     }
     else {
-
       $user = unserialize($_SESSION['user']);
-
       // Sometimes there is a request to reload the user object.
       if ($reload) {
         $user = new User($env, $user->name);
