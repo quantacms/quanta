@@ -94,6 +94,18 @@ class DirList extends ListObject {
     unset($this->items[$dir]);
   }
 
+  /**
+   * Compare nodes using custom criterias.
+   *
+   * @param Node $x
+   *   The first node.
+   *
+   * @param Node $y
+   *   The second node.
+   *
+   * @return int
+   *   Returns 1 if first node is bigger than second. -1 otherwise.
+   */
   public function sortBy($x, $y) {
     {
       // Which field to use for sorting.
@@ -120,7 +132,12 @@ class DirList extends ListObject {
     }
   }
 
-  // TODO: desc.
+  /**
+   * Adds a node item to the list.
+   *
+   * @param Node $node
+   *   The node to be added to the list.
+   */
   public function addItem($node) {
     $this->items[$node->getName()] = $node;
   }

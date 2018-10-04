@@ -196,8 +196,8 @@ function qtag_BREADCRUMB($env, $target, $attributes) {
 
   // Check if current node id home (main node).
   if ($node->getName() == 'home'){
-    // Do not show breadcrumb.
-    return;
+    // Do not show breadcrumb in homepage.
+    return '';
   }
 
   $node_home = NodeFactory::load($env, 'home');

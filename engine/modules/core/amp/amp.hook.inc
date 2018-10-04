@@ -31,20 +31,6 @@ function amp_load_includes($env, $vars) {
 }
 
 /**
- * Implements hook_html_alter().
- *
- * @param Environment $env
- *   The Environment.
- * @param array $vars
- *   An array of variables.
- */
-function amp_qtag($env, $vars) {
-  if (Amp::isActive($env)) {
-
-  }
-}
-
-/**
  * Implements hook_page_complete()
  *
  * @param Environment $env
