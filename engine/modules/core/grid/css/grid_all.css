@@ -20,14 +20,31 @@
 }
 
 
-/* GRID */
 
+/* MAIN PAGE structure: header + #grid-main(max-height) + footer ( + others...) */
+
+body.grid {
+  min-height: 100%;
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: initial;
+}
+body.grid > * {
+  flex-shrink: 0;
+}
+#grid-main {
+  flex-grow: 1;
+}
+
+
+/* GRID */
 
 ul.grid {
   margin: 0;
   padding: 0;
 }
-
 
 .grid > img {
   width: 100%;

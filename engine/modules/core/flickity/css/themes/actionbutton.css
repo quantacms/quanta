@@ -48,7 +48,6 @@
 
 .actionbutton .slide-content {
   color: #fff;
-  margin: 20px 0 0;
 }
 
 .actionbutton .slide-text strong {
@@ -76,8 +75,29 @@
 
 
 
+/* PAGE DOTS */
+.actionbutton .flickity-page-dots {
+  bottom: 15px;
+}
 
-/* PAGE RESPONSIVE */
+.actionbutton .flickity-page-dots .dot {
+  background: #fff;
+  opacity: 0.5;
+}
+.actionbutton .flickity-page-dots .dot.is-selected {
+  opacity: 1;
+}
+
+
+
+/* RESPONSIVE */
+
+/* MOBILE FIRST */
+
+.actionbutton .flickity-button {
+  display:none;
+}
+
 
 /* Medium devices (tablets, 768px and up) */
 @media (min-width: 768px) {
@@ -96,6 +116,10 @@
     font-size: 25px;
     line-height: 30px;
     padding: 15px 25px;
+  }
+
+  .actionbutton .flickity-button {
+    display:block;
   }
 }
 
