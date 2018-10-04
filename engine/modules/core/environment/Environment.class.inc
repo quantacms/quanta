@@ -223,8 +223,10 @@ class Environment extends DataContainer {
   public function runModule($module) {
     $includes = array('api', 'hook', 'wiki', 'qtags');
     $module_path = $module['path'] . '/' . $module['name'] . '.module';
-    require_once($module_path);
-    $this->modules_loaded[$module['name']] = $module;
+    if (is_file($module_path)) {
+      require_once($module_path);
+      $this->modules_loaded[$module['name']] = $module;
+    }
 
     /**
      * Check all module's inclusions.
@@ -482,7 +484,8 @@ class Environment extends DataContainer {
    *   The path of the node.
    */
   public function nodePath($folder, $link = FALSE) {
-    if ($nodepath = Cache::getStoredNodePath($this, $folder)) {
+    $nodepath = Cache::getStoredNodePath($this, $folder);
+    if (!empty($nodepath)) {
       return readlink($nodepath);
     }
     // Use find to locate the node's directory in the file system.
@@ -520,7 +523,12 @@ class Environment extends DataContainer {
 
   /**
    * Given a link, returns the system path of the related node (folder).
+   *
    * @param bool $link
+   *   The link to a node.
+   *
+   * @return $string
+   *   The name of the related node.
    */
   public function linkToNode($link) {
     // Find the link target.

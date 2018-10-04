@@ -5,9 +5,9 @@ define('NODE_ACTION_EDIT', 'node_edit');
 define('NODE_ACTION_EDIT_TPL', 'node_edit_tpl');
 define('NODE_ACTION_DELETE', 'node_delete');
 define('NODE_ACTION_DELETE_FILE', 'file_delete');
-define('NODE_STATUS_DRAFT', 'node_status_draft');
-define('NODE_STATUS_PUBLISHED', 'node_status_published');
-define('NODE_STATUS_UNPUBLISHED', 'node_status_unpublished');
+define('NODE_STATUS_DRAFT', 'node-status-draft');
+define('NODE_STATUS_PUBLISHED', 'node-status-published');
+define('NODE_STATUS_UNPUBLISHED', 'node-status-unpublished');
 define('NODE_PERMISSION_INHERIT', 'inherit');
 define('NODE_NEW', '__NEW__');
 
@@ -126,7 +126,7 @@ class Node extends JSONDataContainer {
       $this->setStatus($this->json->status);
     } // Use published as a fallback. TODO: is this correct?
     else {
-      $this->setStatus(NODE_STATUS_PUBLISHED);
+      $this->setStatus(NODE_STATUS_UNPUBLISHED);
     }
     // Load the node title from json.
     if (isset($this->json->title)) {

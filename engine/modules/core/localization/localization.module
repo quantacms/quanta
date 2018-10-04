@@ -10,7 +10,11 @@ require_once("Localization.class.inc");
  * @return mixed
  *   The translated string.
  */
-function t($string) {
+function t($string, $replace = array()) {
   // TODO: multilanguage strings implementation.
+  foreach ($replace as $k => $replacement) {
+    $string = str_replace($k, $replacement, $string);
+  }
   return $string;
+
 }
