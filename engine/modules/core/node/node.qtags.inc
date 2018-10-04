@@ -273,6 +273,7 @@ function qtag_LINK($env, $target, $attributes) {
  */
 function qtag_ADD($env, $target, $attributes) {
   $nodeobj = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
+  $target = $nodeobj->getName();
   $link = '';
   // Check if the user has the permission to add a node.
   if (NodeAccess::check($env, NODE_ACTION_ADD, array('node' => $nodeobj))) {
@@ -306,6 +307,7 @@ function qtag_ADD($env, $target, $attributes) {
  */
 function qtag_EDIT($env, $target, $attributes) {
   $nodeobj = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
+  $target = $nodeobj->getName();
   $string = '';
   if (NodeAccess::check($env, NODE_ACTION_EDIT, array('node' => $nodeobj))) {
 
@@ -345,6 +347,7 @@ function qtag_EDIT($env, $target, $attributes) {
  */
 function qtag_DELETE($env, $target, $attributes) {
   $nodeobj = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
+  $target = $nodeobj->getName();
   $string = '';
   if (NodeAccess::check($env, NODE_ACTION_DELETE, array('node' => $nodeobj))) {
 
