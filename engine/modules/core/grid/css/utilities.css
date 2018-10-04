@@ -1,5 +1,10 @@
 /* UTILITIES */
 
+main {
+  text-align: left;
+}
+
+
 nav.menu ul {
   list-style: none;
   margin: 0;
