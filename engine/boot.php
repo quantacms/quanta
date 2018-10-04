@@ -30,6 +30,11 @@
 
   // Start the user session.
   $env->startSession();
+	if (isset($_GET['test'])) {
+	print $_SESSION['aldo'];
+	$_SESSION['aldo'] = 'ciao';
+	print 'and' .  $_SESSION['aldo'];
+	}
   // Run all system modules.
   $env->runModules();
   // Run the boot hook.
