@@ -25,7 +25,6 @@ class DirList extends ListObject {
     if ($node_current->exists) {
       $node_father = $node_current->getFather();
     }
-
     // Cycle the subdirectories.
     foreach ($this->items as $dir_url => $node) {
 
@@ -81,7 +80,6 @@ class DirList extends ListObject {
       if (empty($this->getAttribute('clean'))) {
         $list_item = '<' . $this->getData('list_item_html_tag') . ' class="' . implode(' ', $classes) . '">' . $list_item . '</' . $this->getData('list_item_html_tag') . '>';
       }
-
       $this->rendered_items[] = $list_item;
     }
   }
@@ -139,6 +137,6 @@ class DirList extends ListObject {
    *   The node to be added to the list.
    */
   public function addItem($node) {
-    $this->items[$node->getName()] = $node;
+		$this->items[$node->getName()] = $node;
   }
 }
