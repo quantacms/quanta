@@ -12,7 +12,6 @@ function grid_load_includes($env, $vars) {
   $module_path = $env->getModulePath('grid');
   $env->addInclude($module_path . '/css/reset.css');
   $env->addInclude($module_path . '/css/grid_all.css');
-
 }
 
 

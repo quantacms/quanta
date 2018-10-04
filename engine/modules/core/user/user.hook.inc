@@ -82,7 +82,7 @@ function user_doctor_setup($env, $vars) {
       $password = $doctor->ask('Please enter a password for the administrator user', TRUE);
       $password_repeat = $doctor->ask('Please repeat your password', TRUE);
       if ($password != $password_repeat) {
-        Doctor::ko('The two passwords are not matching. Please try again!');
+        $doctor->ko('The two passwords are not matching. Please try again!');
       }
     }
     UserFactory::buildUser($env, 'administrator', array(
@@ -227,7 +227,7 @@ function user_action_user_edit($env, $vars) {
  *   An array of variables.
  */
 function user_action_user_edit_own($env, $vars) {
-  return user_action_user_edit($env, $vars);
+  user_action_user_edit($env, $vars);
 }
 
 /**
@@ -242,9 +242,8 @@ function user_action_user_edit_own($env, $vars) {
 function user_action_user_register($env, $vars) {
   // Prepare the response object.
   $response = new StdClass();
-
   $user = UserFactory::requestAction($env, $vars['data']['action'], $vars['data']);
-  // TODO: broken process. Fix it. @urgent
+  // Check if there are validation errors.
   if (!empty($user->getData('validation_errors'))) {
     foreach ($user->getData('validation_errors') as $error) {
       new Message($env, $error, MESSAGE_WARNING);
@@ -252,7 +251,10 @@ function user_action_user_register($env, $vars) {
     $response->errors = Message::burnMessages();
   }
   else {
-    $response->redirect = 'home';
+    $username = array_pop($vars['data']['name']);
+    $user = UserFactory::load($env, $username);
+    $user->login(NULL, t('Hello %user, thank you for signing up. You are now a registered member.', array('%user' => $username)), TRUE);
+    $response->redirect = NodeFactory::current($env)->getName();
   }
 
   // Encode the response JSON code.

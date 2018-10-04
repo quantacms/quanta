@@ -89,6 +89,9 @@ class UserFactory {
     if (count($explode) > 2) {
       return $explode[count($explode) - 2];
     }
+    else {
+      return NULL;
+    }
   }
 
   /**
