@@ -20,26 +20,23 @@
 function qtag_USERATTRIBUTE($env, $target, $attributes) {
   $user = ($target == NULL) ? UserFactory::current($env) : new User($env, $target);
   switch ($attributes['name']) {
+
+    // User's login name.
     case 'username':
       $string = $user->getName();
       break;
-    // Node's path.
+    // User's last name.
     case 'last_name':
       $string = $user->getLastName();
       break;
-    // Node's name (aka name of the folder).
+    // User's email.
     case 'email':
       $string = $user->getEmail();
       break;
 
-    // Author's name (aka name of the author's node)
+    // User's first name.
     case 'first_name':
       $string = $user->getFirstName();
-      break;
-
-    // Node's path.
-    case 'last_name':
-      $string = $user->getLastName();
       break;
 
     default:
@@ -102,6 +99,9 @@ function qtag_REGISTER($env, $target, $attributes) {
     $title = isset($attributes['title']) ? $attributes['title'] : 'Sign up';
     return $user->exists ? '' : '[LINK|title=' . $title . '|class=register-link]';
   }
+  else {
+    return '';
+  }
 }
 
 /**
@@ -127,6 +127,9 @@ function qtag_USER_EDIT($env, $target, $attributes) {
     $title = isset($attributes['title']) ? $attributes['title'] : 'Edit profile';
     return $user->exists ? '[LINK|title=' . $title . '|class=user-edit-link]' : $target;
   }
+  else {
+    return '';
+  }
 }
 
 /**
@@ -151,5 +154,8 @@ function qtag_USER_EDIT_OWN($env, $target, $attributes) {
   if (UserAccess::check($env, USER_ACTION_EDIT, array('user' => $user))) {
     $title = isset($attributes['title']) ? $attributes['title'] : 'Edit your profile';
     return $user->exists ? '[LINK|title=' . $title . '|class=user-edit-own-link]' : $target;
+  }
+  else {
+    return '';
   }
 }

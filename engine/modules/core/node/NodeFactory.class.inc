@@ -111,7 +111,8 @@ class NodeFactory {
     else {
       try {
         unlink($symlink_folder_node->realpath . '/' . $symlink_name);
-      } catch (Exception $ex) {
+      }
+      catch (Exception $ex) {
         new Message($vars['env'], 'Error: could not unlink ' . $symlink_name . ' from ' . $symlink_folder, MESSAGE_ERROR);
       }
     }

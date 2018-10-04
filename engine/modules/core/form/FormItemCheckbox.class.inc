@@ -59,8 +59,8 @@ class FormItemCheckbox extends FormItem {
     if (empty($this->getInputAttr('label'))) {
       return NULL;
     }
+    return $this->getInputAttr('label');
   }
-
 
   /**
    * Return the checked value of a form item.

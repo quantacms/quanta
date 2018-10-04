@@ -142,6 +142,12 @@ class Form extends DataContainer {
     return (isset($this->items[$name]) ? $this->items[$name] : NULL);
   }
 
+  /**
+   * Gets the values of the items in the form.
+   *
+   * @return mixed
+   *   The values of the items in the form.
+   */
   public function getFormValues() {
 
     $items = $this->getItems();
@@ -153,21 +159,30 @@ class Form extends DataContainer {
   }
 
   /**
+   * Gets the method of the form.
+   *
    * @return mixed
+   *   The method of the form.
    */
   public function getMethod() {
     return $this->method;
   }
 
   /**
+   * Sets the method of the form.
+   *
    * @param $method
+   *   The method of the form.
    */
   public function setMethod($method) {
     $this->method = $method;
   }
 
   /**
-   * @return mixed
+   * Gets the id of the form.
+   *
+   * @return string
+   *   The id of the form.
    */
   public function getId() {
     return $this->id;
