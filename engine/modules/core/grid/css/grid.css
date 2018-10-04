@@ -1,8 +1,5 @@
 /* GRID in page TPL: header + #grid-main(max-height) + footer */
-/*
-body {
-  grid-template-rows: auto 1fr auto;
-}*/
+
 #grid-main {
   display: grid;
   grid-auto-rows: min-content;
@@ -36,21 +33,6 @@ html > .grid > * {
 .grid-dense {
   grid-auto-flow: dense;
 }
-
-.grid-centered-items {
-  /* GRID 1x1 */
-  display: grid;
-}
-.grid-centered-items > * {
-  grid-row-start: 1;
-  grid-column-start: 1;
-  align-self: center;
-  justify-self: center;
-  text-align: center;
-}
-.grid-centered-items > *:not(img) {
-  padding: var(--gap-size);
-} 
 
 .grid-no-gap {
   grid-gap: 0;
