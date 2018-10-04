@@ -2,47 +2,20 @@
 
 
 /* FLEXBOX in page TPL: header + #grid-main(max-height) + footer */
-/*
-body.grid {
-  min-height: 100%;
-  display: flex;
-  flex-wrap: nowrap;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: initial;
-}
-body.grid > * {
-  flex-shrink: 0;
-}*/
+
 #grid-main {
   display: flex;
   /*flex-grow: 1;*/
 }
-
-/*
-#grid-main:before {
-  content:'12 cols ref';
-  text-transform: uppercase;
-  flex-basis: 100%;
-  background:darkviolet;
-  color:#fff;
-  padding:15px;
-}*/
 
 .grid {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;  
 }
-/*
-.grid > *:not(header):not(footer) {
-  flex-shrink: 0;
-  max-width: 100%;
-}*/
 
 .grid > *:not([class*='grid-span-']) {
   width: 100%;
-  /*flex-grow: 12; /* default 12 cols -> full width */
 }
 
 html > .grid > * {

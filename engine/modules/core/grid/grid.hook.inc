@@ -11,8 +11,8 @@
 function grid_load_includes($env, $vars) {
   $module_path = $env->getModulePath('grid');
   $env->addInclude($module_path . '/css/reset.css');
+  $env->addInclude($module_path . '/css/utilities.css');
   $env->addInclude($module_path . '/css/grid_all.css');
-
 }
 
 
@@ -32,12 +32,9 @@ function grid_page_init($env, $vars) {
 
   if (supportsGrid()) {
     $page->addCSS($module_path . '/css/grid.css');
-  }
-  else {
+  } else {
     $page->addCSS($module_path . '/css/no_grid.css');
   }
-
-  $page->addCSS($module_path . '/css/utilities.css');
 }
 
 

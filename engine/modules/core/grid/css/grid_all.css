@@ -41,12 +41,10 @@ body.grid > * {
 
 /* GRID */
 
-
 ul.grid {
   margin: 0;
   padding: 0;
 }
-
 
 .grid > img {
   width: 100%;
