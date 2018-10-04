@@ -126,7 +126,7 @@ class Node extends JSONDataContainer {
       $this->setStatus($this->json->status);
     } // Use published as a fallback. TODO: is this correct?
     else {
-      $this->setStatus(NODE_STATUS_UNPUBLISHED);
+      $this->setStatus(NODE_STATUS_PUBLISHED);
     }
     // Load the node title from json.
     if (isset($this->json->title)) {
