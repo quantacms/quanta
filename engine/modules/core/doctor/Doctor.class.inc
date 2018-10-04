@@ -86,9 +86,11 @@ class Doctor extends DataContainer {
   }
 
   /**
-   * Create a directory.
+   * Create a Directory.
    *
-   * @param $dir
+   * @param string $dir
+   *   The directory.
+   *
    */
   public function createDir($dir) {
     $dir_exp = explode('/', $dir);
@@ -110,7 +112,11 @@ class Doctor extends DataContainer {
   /**
    * Execute an UNIX command.
    *
-   * @param $command
+   * @param string $command
+   *   The command to run.
+   *
+   * @return mixed
+   *   The results of the command.
    */
   public function execute($command) {
     exec($command, $results_arr);

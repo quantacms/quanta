@@ -91,7 +91,7 @@ function valid_url($url) {
  */
 function string_normalize($string, $nl2br = FALSE) {
   if (!is_string($string)) {
-	  return;
+	  return '';
 	}
 	$string = str_replace('[', '&lbrack;', $string);
   $string = str_replace(']', '&rbrack;', $string);
@@ -194,7 +194,7 @@ function remove_accents($string) {
     'Ồ'=>'O','ổ'=>'o','Ổ'=>'O','Ǒ'=>'o','ǒ'=>'o','Ö'=>'o','ö'=>'o','Ő'=>'o','ő'=>'o','Õ'=>'o','õ'=>'o',
     'Ø'=>'o','ø'=>'o','Ǿ'=>'o','ǿ'=>'o','Ǫ'=>'O','ǫ'=>'o','Ǭ'=>'O','ǭ'=>'o','Ō'=>'o','ō'=>'o','ỏ'=>'o',
     'Ỏ'=>'O','Ơ'=>'o','ơ'=>'o','ớ'=>'o','Ớ'=>'O','ờ'=>'o','Ờ'=>'O','ở'=>'o','Ở'=>'O','ợ'=>'o','Ợ'=>'O',
-    'ọ'=>'o','Ọ'=>'O','ọ'=>'o','Ọ'=>'O','ộ'=>'o','Ộ'=>'O','ỗ'=>'o','Ỗ'=>'O','ỡ'=>'o','Ỡ'=>'O',
+    'ọ'=>'o','Ọ'=>'O','ộ'=>'o','Ộ'=>'O','ỗ'=>'o','Ỗ'=>'O','ỡ'=>'o','Ỡ'=>'O',
     'Œ'=>'oe','œ'=>'oe',
     'ĸ'=>'k',
     'Ŕ'=>'r','ŕ'=>'r','Ř'=>'r','ř'=>'r','ṙ'=>'r','Ŗ'=>'r','ŗ'=>'r','Ṛ'=>'R','ṛ'=>'r','Ṟ'=>'R','ṟ'=>'r',
@@ -312,6 +312,7 @@ function getBrowser() {
     ')[/|: ]+(?<version>[0-9.|a-zA-Z.]*)#';
   if (!preg_match_all($pattern, $u_agent, $matches)) {
     // we have no matching number just continue
+    // TODO: useless condition?
   }
 
   // see how many we have

@@ -25,15 +25,16 @@ class FormItemSubmit extends FormItem {
     // TODO: Implement loadAttributes() method.
   }
 
-  // For checkboxes we don't want to default title as label.
-
   /**
+   * Gets the label for the submit button.
    * @return null
    */
   public function getLabel() {
     if (empty($this->getInputAttr('label'))) {
       return NULL;
     }
+    return $this->getInputAttr('label');
   }
+
 
 }

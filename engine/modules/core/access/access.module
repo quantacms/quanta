@@ -1,4 +1,5 @@
 <?php
+  require_once('AccessChecker.interface.inc');
   require_once('Access.class.inc');
   require_once('NodeAccess.class.inc');
   require_once('UserAccess.class.inc');

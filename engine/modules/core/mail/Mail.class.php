@@ -18,14 +18,12 @@ class Mail extends Node {
     $smtp = $this->env->dir['vendor'] . '/phpmailer/phpmailer/src/SMTP.php';
     $exception = $this->env->dir['vendor'] . '/phpmailer/phpmailer/src/Exception.php';
 		
-		
 		require_once($exception);
 		require_once($phpmailer);
 		require_once($smtp);
-    // SMTPDebug information (for testing)
-    // 1 = errors and messages
-    // 2 = messages only
-		
+    // SMTPDebug information (for testing).
+    // 1 = errors and messages.
+    // 2 = messages only.
     $mail = new PHPMailer(true);
     $mail->isSMTP();
     $mail->Host = $this->getData('host');
@@ -46,12 +44,13 @@ class Mail extends Node {
       $mail->AddReplyTo($this->getData('reply_to'), '');    
     }
     try {
-    $mail->send();
-		$this->delete();
+      // Send the email.
+      $mail->send();
+		  $this->delete();
 		}
 		catch(Exception $ex) {
+      // Catch any errors.
       new Message($this->env, 'Mailer Error: ' . $mail->ErrorInfo, MESSAGE_ERROR);
-		
 		}
   }
 } 
