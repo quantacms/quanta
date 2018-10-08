@@ -1,4 +1,0 @@
-<?php
-require_once('Points.class.inc');
-require_once('points.hook.inc');
-require_once('points.wiki.inc');

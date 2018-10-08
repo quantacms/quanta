@@ -13,8 +13,11 @@
  * @param string $html
  *   The html to analyze.
  *
- * @param string $options
+ * @param array $options
  *   Options for qtags.
+ *
+ * @param string $regex_options
+ *   Options for the regex closure.
  *
  * @return array
  *   All the qtags in the html.
@@ -22,10 +25,11 @@
  */
 function checkCodeTags(&$env, $html, $options = array(), $regex_options = 'U') {
   $replacing = array();
-  // Find all qtags using regular expressions (both { and [ bracket types are valid).
+  // Find all qtags using regular expressions (both { and [ bracket types are valid for now).
+  // TODO: allow more qtag open / close characters, for advanced nesting.
   $regexs = array();
 
-  $qtag_delimiters = isset($options['qtag_delimiters']) ? $options['qtag_delimiters'] : array('[]', '{}');
+  $qtag_delimiters = isset($options['qtag_delimiters']) ? $options['qtag_delimiters'] : array('[]', '{}', '');
   foreach ($qtag_delimiters as $qtag_delimiter) {
     $qtag_del_open = substr($qtag_delimiter, 0, 1);
     $qtag_del_close = substr($qtag_delimiter, 1, 1);
@@ -33,6 +37,7 @@ function checkCodeTags(&$env, $html, $options = array(), $regex_options = 'U') {
     $regexs['/\\' . $qtag_del_open . '(.*)\\' . $qtag_del_close . '/' . $regex_options] = array($qtag_del_open, $qtag_del_close, '|');
   }
 
+  // Run the regular expression: find all the qtags in the page.
   foreach ($regexs as $regex => $delimiters) {
     preg_match_all($regex, $html, $matches);
     foreach ($matches[1] as $tag_value) {
@@ -137,6 +142,7 @@ function checkCodeTags(&$env, $html, $options = array(), $regex_options = 'U') {
                 $tag_content = string_normalize($tag_content);
               }
 
+              // Add the rendered qtag to the replacements.
               $replacing[$tag_full] = $tag_content;
             }
           }
@@ -149,9 +155,19 @@ function checkCodeTags(&$env, $html, $options = array(), $regex_options = 'U') {
 }
 
 /**
- * @param $env
- * @param $html
+ * Replace all the qTags in the page into their HTML equivalent.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $html
+ *   The current HTML
+ *
+ * @param array $options
+ *   Other options.
+ *
  * @return mixed
+ *   The HTML with all qTags transformed.
  */
 function transformCodeTags(&$env, $html, $options = array()) {
 
@@ -179,8 +195,12 @@ function transformCodeTags(&$env, $html, $options = array()) {
 
 /**
  * Remove all qtags elements from the string (all [elements] within brackets).
- * @param $string
+ *
+ * @param string $string
+ *   The string to be stripped.
+ *
  * @return string
+ *   The stripped string.
  */
 function stripQTags($string) {
   return preg_replace('/\[.*?\]/', '', $string);

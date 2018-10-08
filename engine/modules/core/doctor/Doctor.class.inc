@@ -39,6 +39,12 @@ class Doctor extends DataContainer {
    *
    * @param Environment $env
    *   The Environment.
+   *
+   * @param string $command
+   *   The doctor command being ran.
+   *
+   * @param string $mode
+   *   The doctor mode (Bash by default).
    */
   public function __construct($env, $command, $mode = DOCTOR_MODE_BASH) {
     $this->env = $env;
@@ -54,15 +60,16 @@ class Doctor extends DataContainer {
   public function checkSystemPaths() {
     $this->op("Checking system paths.");
 
-    if (!is_dir($this->env->dir['docroot'])) {
-      $this->op('Creating docroot directory...');
-      $this->createDir($this->env->dir['docroot']);
-      $this->ok();
-    }
-
     if (!is_dir($this->env->dir['sites'])) {
       $this->op('Creating sites directory...');
       $this->createDir($this->env->dir['sites']);
+      $this->ok();
+    }
+
+
+    if (!is_dir($this->env->dir['docroot'])) {
+      $this->op('Creating docroot directory...');
+      $this->createDir($this->env->dir['docroot']);
       $this->ok();
     }
 
@@ -97,12 +104,9 @@ class Doctor extends DataContainer {
     unset($dir_exp[count($dir_exp) - 1]);
     $father_dir = implode('/', $dir_exp);
     if (!is_writable($father_dir)) {
-      $this->stop(array(
-          'Sorry, we can\'t continue with the setup because the current user has no privileges to create directories in: ',
-          $father_dir,
-          'Suggested solution (unix): chown -R www-data ' . $dir,
-        )
-      );
+      $this->stop(
+        t("Sorry, we can't continue with the setup because the current user has no privileges to create directories in: %father_dir.\nSuggested solution (unix): chown -R www-data %dir",
+        array('%father_dir' => $father_dir, '%dir' => $dir)));
     }
     else {
       mkdir($dir, 0755, TRUE) or die('Fatal error - could not create directory ' . $dir . ' and something went wrong in checking its permissions. Aborting.');
@@ -271,13 +275,13 @@ class Doctor extends DataContainer {
     if (!empty($this->web_server_user)) {
       $this->talk('Web Server user detected: ' . $this->web_server_user);
       $is_web_server_user_ok = str_replace("\n", "", $this->ask('Please press enter if OK, or enter your apache user name here: '));
-      if (!empty($is_web_server_user_ok)) {
-        $this->web_server_user = $is_web_server_user_ok;
-      }
     }
     else {
       $this->talk('We could not detect a web server username.');
       $is_web_server_user_ok = $this->ask('Please enter your web server username (i.e. www-data):');
+    }
+    if (!empty($is_web_server_user_ok)) {
+      $this->web_server_user = $is_web_server_user_ok;
     }
   }
 
@@ -317,8 +321,10 @@ class Doctor extends DataContainer {
   }
 
   /**
-   * This functions runs the non-setup related doctor tasks
-   * as implemented by other modules.
+   * This function runs the doctor tasks via hooks, as implemented by other modules.
+   *
+   * @param string $command
+   *   The doctor command being ran.
    */
   public function cure($command = NULL) {
     // Run a custom command, or use the one specified in the command line.
@@ -345,8 +351,12 @@ class Doctor extends DataContainer {
 
   /**
    * When the doctor says something.
+   *
    * @param string $phrase
-   * @param string $style
+   *   The message of the doctor.
+   *
+   * @param mixed $style
+   *   The visual style of the message.
    */
   public function talk($phrase, $style = array('bash-color' => '0;37', 'browser-style' => 'color:#fff')) {
     // Support arrays for multiline phrases.
@@ -368,7 +378,9 @@ class Doctor extends DataContainer {
 
   /**
    * When the doctor starts an operation.
+   *
    * @param string $phrase
+   *   The operation being performed by the doctor.
    */
   public function op($phrase) {
     $this->talk($phrase, array('browser-style' => 'color:#fff;font-weight:bold;', 'bash-color' => '1;33'));
@@ -377,7 +389,9 @@ class Doctor extends DataContainer {
 
   /**
    * When the doctor says "no no!".
+   *
    * @param string $phrase
+   *   The stopping phrase of the doctor.
    */
   public function stop($phrase) {
     $this->ko($phrase);
@@ -387,7 +401,9 @@ class Doctor extends DataContainer {
 
   /**
    * When the doctor says "Ok!".
+   *
    * @param string $phrase
+   *   The OK phrase of the doctor.
    */
   public function ok($phrase = 'OK') {
     $this->talk($phrase, array('browser-style' => 'color:#0f0', 'bash-color' => '0;32'));
@@ -395,7 +411,9 @@ class Doctor extends DataContainer {
 
   /**
    * When the doctor says something is going wrong.
+   *
    * @param string $phrase
+   *   The KO phrase of the doctor.
    */
   public function ko($phrase = 'KO') {
     $this->talk($phrase, array('browser-style' => 'color:#f00', 'bash-color' => '0;31'));
@@ -403,7 +421,9 @@ class Doctor extends DataContainer {
 
   /**
    * When the doctor says "Yahoo!".
+   *
    * @param string $phrase
+   *   The enthusiastic phrase of the doctor.
    */
   public function yahoo($phrase = 'OK') {
     $this->talk($phrase, array('browser-style' => 'background:#333;padding:3px;text-transform:uppercase;font-weight:bold;font-size:1.3em;color:#ff3', 'bash-color' => '0;42'));

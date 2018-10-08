@@ -74,13 +74,13 @@ class UserFactory {
    *
    * @param Environment $env
    *   The Environment.
-   * @param string $name
-   *   The user name.
-   * @param array $vars
-   *   An array of variables.
+   * @param string $field
+   *   The name of the field.
+   * @param string $value
+   *   An value of the field.
    *
    * @return User
-   *   The constructed user object.
+   *   The retrieved user object.
    */
   public static function getUserFromField($env, $field, $value) {
     $command = 'grep -r -i -o --include \*.json "\"' . $field . '\"\:\"' . $value . '\"" ' . $env->dir['users'];

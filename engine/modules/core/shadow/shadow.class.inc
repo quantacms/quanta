@@ -145,7 +145,7 @@ class Shadow extends Page {
    * Get the tabs of the shadow.
    *
    * @return array
-   *   Al the tabs of the shadow.
+   *   All the tabs of the shadow.
    */
   public function getTabs() {
     return $this->tabs;
@@ -153,7 +153,9 @@ class Shadow extends Page {
 
   /**
    * Get the widget used for the shadow.
+   *
    * @return mixed
+   *   The widget of the shadow.
    */
   public function getWidget() {
     return $this->widget;
@@ -161,7 +163,9 @@ class Shadow extends Page {
 
   /**
    * Get the node related to the shadow.
-   * @return \Node
+   *
+   * @return Node
+   *   The node for which the shadow has been opened.
    */
   public function getNode() {
     return $this->node;
@@ -169,6 +173,9 @@ class Shadow extends Page {
 
   /**
    * Check if there is an open shadow.
+   *
+   * @param Environment $env
+   *   The Environment.
    *
    * @return bool
    *   True if there is an open shadow request.

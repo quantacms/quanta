@@ -370,11 +370,15 @@ class Form extends DataContainer {
 
   /**
    * Throw a validation error in the form.
-   * @param $input
-   * @param $error
+   *
+   * @param FormItem $form_item
+   *   The form item.
+   *
+   * @param string $error
+   *   The error to throw.
    */
-  public function validationError($input, $error) {
-    $this->addData('validation_errors', array($input->getName() => $error));
+  public function validationError($form_item, $error) {
+    $this->addData('validation_errors', array($form_item->getName() => $error));
   }
 
 }

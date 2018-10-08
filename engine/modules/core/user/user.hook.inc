@@ -26,7 +26,7 @@ function user_boot($env, $vars) {
  */
 function user_init($env, $vars) {
   $user = UserFactory::current($env);
-  
+  // TODO: fix cookies.
 	//setcookie('user', NULL, $env->getData('session_lifetime', 86400));
 }
 
@@ -177,6 +177,7 @@ function user_shadow_user_edit_form($env, $vars) {
       $title = 'Edit your profile';
       break;
     case 'user_edit':
+    default:
       $title = 'Edit user: ' . $user->getName();
       break;
   }
@@ -241,7 +242,7 @@ function user_action_user_edit_own($env, $vars) {
  */
 function user_action_user_register($env, $vars) {
   // Prepare the response object.
-  $response = new StdClass();
+  $response = new stdClass();
   $user = UserFactory::requestAction($env, $vars['data']['action'], $vars['data']);
   // Check if there are validation errors.
   if (!empty($user->getData('validation_errors'))) {
@@ -253,7 +254,7 @@ function user_action_user_register($env, $vars) {
   else {
     $username = array_pop($vars['data']['name']);
     $user = UserFactory::load($env, $username);
-    $user->login(NULL, t('Hello %user, thank you for signing up. You are now a registered member.', array('%user' => $username)), TRUE);
+    $user->logIn(NULL, t('Hello %user, thank you for signing up. You are now a registered member.', array('%user' => $username)), TRUE);
     $response->redirect = NodeFactory::current($env)->getName();
   }
 
