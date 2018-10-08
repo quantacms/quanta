@@ -26,8 +26,15 @@ class Environment extends DataContainer {
 
   /**
    * Environment constructor.
+   *
    * @param string $host
+   *   The host the Environment is running into.
+   *
    * @param string $request_uri
+   *   The current request URI.
+   *
+   * @param string $docroot
+   *   The current document root.
    */
   public function __construct($host = NULL, $request_uri = NULL, $docroot = NULL) {
     if (empty($host)) {
@@ -68,7 +75,6 @@ class Environment extends DataContainer {
     // TODO: move to files module.
     $this->dir['tmp_files'] = $this->dir['tmp'] . '/files';
     $this->dir['log'] = $this->dir['tmp'] . '/log';
-    // TODO: move to user module.
     // TODO: generation to be done in user and node modules.
     $this->dir['statuses'] = $this->dir['docroot'] . '/_statuses';
 
@@ -459,8 +465,12 @@ class Environment extends DataContainer {
 
   /**
    * Helper function to retrieve the system path of a node (folder).
-   * @param $folder
-   * @return $results
+   *
+   * @param string $folder
+   *   The folder name (node name) to retrieve.
+   *
+   * @return mixed $results
+   *   The result of the node search.
    */
   private function findNodePath($folder) {
 
@@ -527,8 +537,8 @@ class Environment extends DataContainer {
    * @param bool $link
    *   The link to a node.
    *
-   * @return $string
-   *   The name of the related node.
+   * @return array
+   *   The array containing system path(s) to the node.
    */
   public function linkToNode($link) {
     // Find the link target.

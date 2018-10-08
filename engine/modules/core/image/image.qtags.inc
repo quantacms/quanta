@@ -97,9 +97,6 @@ function qtag_IMGTHUMB($env, $target, $attributes) {
   // Setup operations to run on the image.
   $op = isset($attributes['operation']) ? $attributes['operation'] : 'scale';
 
-	$filearr = explode('/', $target);
-	$filename = $filearr[count($filearr) - 1];
-
 	// Generate the thumbnail of the requested image.
   $newthumbfile = $image->generateThumbnail($env, $image->width, $image->height, $op, $compression, $fallback);
 
@@ -120,9 +117,8 @@ function qtag_IMGTHUMB($env, $target, $attributes) {
     $link = empty($attributes['link']) ? ($node->name . '/' . $target) : $attributes['link'];
     $thumb = '<a ' .
       (empty($link_title) ? '' : ('title="' . $link_title . '"')) .
-      'class="linked-image ' . (isset($attributes['class']) ? ('linked-image-' . $attributes['class']) : '') .  '"' .
-
-    ' href="/' . $link . '">' . $thumb . '</a>';
+      ' class="linked-image ' . (isset($attributes['class']) ? ('linked-image-' . $attributes['class']) : '') .  '"' .
+      ' href="/' . $link . '">' . $thumb . '</a>';
   }
 
   return $thumb;

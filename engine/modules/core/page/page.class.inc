@@ -14,7 +14,7 @@ class Page extends DataContainer {
    * @param $env Environment
    *   The Environment.
    *
-   * @param $file
+   * @param $index_file
    *   The page file.
    *
    */
@@ -111,7 +111,8 @@ class Page extends DataContainer {
 
   /**
    * Returns the rendered HTML page.
-   * @return $string.
+   *
+   * @return string
    */
   public function render() {
     return $this->html;

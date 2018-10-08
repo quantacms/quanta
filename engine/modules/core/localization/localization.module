@@ -4,10 +4,13 @@ require_once("Localization.class.inc");
 /**
  * Returns a translated version of a string.
  *
- * @param $string
+ * @param string $string
  *   The translatable string.
  *
- * @return mixed
+ * @param array $replace
+ *   An array of replacements to perform in the string.
+ *
+ * @return string
  *   The translated string.
  */
 function t($string, $replace = array()) {
@@ -16,5 +19,4 @@ function t($string, $replace = array()) {
     $string = str_replace($k, $replacement, $string);
   }
   return $string;
-
 }

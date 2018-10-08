@@ -58,28 +58,43 @@ function grid_qtag($env, $vars) {
 }
 
 
-
+/**
+ * Adds grid wrappers to a list item, when grid parameters are specified.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param $vars
+ *   An array of variables.
+ */
 function grid_list_item($env, $vars) {
-  $is_grouped = !empty($vars['list']->getAttribute('grid_list_item_group'));
+  /** @var ListObject $list */
+  $list = $list;
+  
+  $is_grouped = !empty($list->getAttribute('grid_list_item_group'));
 
   if ($is_grouped) {
-    $group_counter = $vars['list_item_counter'] % $vars['list']->getAttribute('grid_list_item_group');
+    $group_counter = $vars['list_item_counter'] % $list->getAttribute('grid_list_item_group');
   }
 
-  if (!empty($vars['list']->getAttribute('grid_list_item_' . $vars['list_item_counter']))) {
+  if (!empty($list->getAttribute('grid_list_item_' . $vars['list_item_counter']))) {
     // Specific item.
-    $vars['list_item_classes'][] = $vars['list']->getAttribute('grid_list_item_' . $vars['list_item_counter']);
-  } elseif($is_grouped && !empty($vars['list']->getAttribute('grid_list_item_group_' . $group_counter))) {
+    $vars['list_item_classes'][] = $list->getAttribute('grid_list_item_' . $vars['list_item_counter']);
+  }
+  elseif($is_grouped && !empty($list->getAttribute('grid_list_item_group_' . $group_counter))) {
     // Specific item in the interval.
-    $vars['list_item_classes'][] = $vars['list']->getAttribute('grid_list_item_group_' . $group_counter);
-  } elseif(!empty($vars['list']->getAttribute('grid_list_item_odd') && ($vars['list_item_counter'] % 2 == 1))) {
+    $vars['list_item_classes'][] = $list->getAttribute('grid_list_item_group_' . $group_counter);
+  }
+  elseif(!empty($list->getAttribute('grid_list_item_odd') && ($vars['list_item_counter'] % 2 == 1))) {
     // Odd items.
-    $vars['list_item_classes'][] = $vars['list']->getAttribute('grid_list_item_odd');
-  } elseif(!empty($vars['list']->getAttribute('grid_list_item_even') && ($vars['list_item_counter'] % 2 == 0))) {
+    $vars['list_item_classes'][] = $list->getAttribute('grid_list_item_odd');
+  }
+  elseif(!empty($list->getAttribute('grid_list_item_even') && ($vars['list_item_counter'] % 2 == 0))) {
     // Even items.
-    $vars['list_item_classes'][] = $vars['list']->getAttribute('grid_list_item_even');
-  } elseif(!empty($vars['list']->getAttribute('grid_list_item'))) {
+    $vars['list_item_classes'][] = $list->getAttribute('grid_list_item_even');
+  }
+  elseif(!empty($list->getAttribute('grid_list_item'))) {
     // Default items.
-    $vars['list_item_classes'][] = $vars['list']->getAttribute('grid_list_item');
+    $vars['list_item_classes'][] = $list->getAttribute('grid_list_item');
   }
 }

@@ -17,14 +17,17 @@
  *   The rendered qtag.
  */
 function qtag_MENU($env, $target, $attributes) {
+  $links = array();
   $links_html = array();
+
   $menu_class = isset($attributes['menu_class']) ? $attributes['menu_class'] : '';
   $menu_list_class = isset($attributes['menu_list_class']) ? $attributes['menu_list_class'] : '';
 
   if (isset($attributes['links'])) {
     // Get links directly.
     $links = explode('---', $attributes['links']);
-  } elseif(!empty($target)) {
+  }
+  elseif(!empty($target)) {
     // Get links from target node.
     $node = NodeFactory::load($env, $target);
     $node->buildTemplate();
@@ -32,9 +35,10 @@ function qtag_MENU($env, $target, $attributes) {
   }
 
   foreach ($links as $link) {
-    $links_html[] = '<li>' . $link . '</li>';
+    $links_html[] = '<li class="menu-link-item">' . $link . '</li>';
   }
 
+  // Return the full nav.
   return '<nav' . (!empty($menu_class) ? ' class="' . $menu_class . '"' : '') . '><ul' . (!empty($menu_list_class) ? ' class="' . $menu_list_class . '"' : '') . '>' . implode($links_html) . '</ul></nav>';
 
 }

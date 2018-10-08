@@ -53,7 +53,7 @@ class FileList extends ListObject {
       if ((($file_types == FALSE) || $file_types == $file->getType()) && $file->isPublic()) {
 
         $list_item = preg_replace("/\{LISTITEM\}/is", string_normalize($file->getPath()), $tpl);
-        $list_item = preg_replace("/\{LISTNODE\}/is", string_normalize($this->node->getName()), $list_item);
+        $list_item = preg_replace("/\{LISTNODE\}/is", string_normalize($this->getNode()->getName()), $list_item);
         $list_item = transformCodeTags($this->env, $list_item);
 
         // If "clean" mode is set don't add wrapping li tags.
@@ -78,9 +78,7 @@ class FileList extends ListObject {
 
     // Which field to use for sorting.
     switch ($this->sort) {
-      case 'name':
-        $check = strcasecmp($x->getName(), $y->getName()) > 0;
-        break;
+
 
       case 'type':
         $check = strcasecmp($x->getType(), $y->getType()) > 0;
@@ -88,10 +86,6 @@ class FileList extends ListObject {
 
       case 'size':
         $check = ($x->getFileSize() < $y->getFileSize());
-        break;
-
-      case 'time':
-        $check = ($x->getTimestamp() < $y->getTimestamp());
         break;
 
       case 'weight':
@@ -114,9 +108,9 @@ class FileList extends ListObject {
         }
         break;
         
+      case 'name':
       default:
-        //Sort by Number DESC
-        $check = ($x->getAttributeJSON($this->sort) < $y->getAttributeJSON($this->sort));
+      $check = strcasecmp($x->getName(), $y->getName()) > 0;
         break;
     }
 
