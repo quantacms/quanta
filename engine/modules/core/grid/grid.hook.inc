@@ -69,7 +69,7 @@ function grid_qtag($env, $vars) {
  */
 function grid_list_item($env, $vars) {
   /** @var ListObject $list */
-  $list = $list;
+  $list = $vars['list'];
   
   $is_grouped = !empty($list->getAttribute('grid_list_item_group'));
 
