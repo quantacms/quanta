@@ -55,7 +55,8 @@ abstract class DataContainer {
       $sum = ($before) ? ($value . $curr) : ($curr . $value);
     }
     else {
-      print "UNKNOWN DATA TYPE: " . $value;
+      "UNKNOWN DATA TYPE: " . $value;
+      $sum = NULL;
     }
     $this->setData($key, $sum);
   }

@@ -134,8 +134,7 @@ class User extends Node {
     new Message($this->env, 'User ' . $this->name . ' logged out', MESSAGE_CONFIRM, MESSAGE_TYPE_LOG);
     unset($_SESSION['user']);
     // TODO: adapt cookies.
-    // setcookie("user", "", time()-3600);
-    $response = new StdClass();
+    $response = new stdClass();
     $response->redirect = '/' . $this->env->getRequestedPath();
     $response_json = json_encode($response);
     return $response_json;
@@ -144,11 +143,14 @@ class User extends Node {
   /**
    * Perform a login action on an user object.
    *
-   * @param $password
+   * @param string $password
    *   The password inserted by the user.
    *
-   * @param $success_message
+   * @param string $success_message
    *   A custom success message to show.
+   *
+   * @param bool $force_login
+   *   If true, bypass login/password check.
    *
    * @return string
    *   A JSON encrypted response to the login action.
@@ -182,7 +184,7 @@ class User extends Node {
         new Message($this->env, 'User ' . $this->name . ' tried to login with wrong username or password', MESSAGE_WARNING, MESSAGE_TYPE_LOG);
       }
     }
-    $response = new StdClass();
+    $response = new SstdClass();
     $response->redirect = '/' . $this->env->getRequestedPath();
     $response_json = json_encode($response);
     return $response_json;
@@ -230,12 +232,6 @@ class User extends Node {
   /**
    * Action to register or update an existing user.
    *
-   * @param array $form_data
-   *   The user data coming from the edit / registration form.
-   *
-   * @param $action
-   *   The action that is being performed.
-   *
    * @return bool
    *   TRUE if the user is valid and the process went smooth.
    */
@@ -251,9 +247,6 @@ class User extends Node {
    * Validate the user as a valid user.
    *
    * TODO: start moving validations in hooks only. Take out of class itself.
-   *
-   * @param array $form_data
-   *   The data to use to build the user object.
    *
    * @return bool
    *   Returns true if the constructed user is valid.
@@ -272,6 +265,7 @@ class User extends Node {
     if (strlen($this->name) < USER_MIN_NAME_LENGTH) {
       $this->addData('validation_errors', array('name' => 'Your username should have at least ' . USER_MIN_NAME_LENGTH . ' characters'));
     }
+    // Checks that username is alphanumeric.
     if (!is_alphanumeric($this->name) && empty($vars['skip_validate']['username_alphanumeric'])) {
       $this->addData('validation_errors', array('name' => 'Please use only letters and numbers for your username'));
     }
@@ -279,18 +273,24 @@ class User extends Node {
     if ($this->exists && $this->env->getContext() == USER_ACTION_REGISTER) {
       $this->addData('validation_errors', array('name' => 'Username ' . $this->name . ' already exists!'));
     }
+    // Checks that email is not used by other users.
     if ($mail_exists && ($this->env->getContext() == USER_ACTION_REGISTER)) {
       $this->addData('validation_errors', array('email' => 'Email ' . $this->getEmail() . ' already exists!'));
     }
+    // Checks that email is in a valid format.
     if (!valid_email($this->getEmail())) {
       $this->addData('validation_errors', array('email' => 'Please enter a valid E-mail address!'));
     }
+    // Checks that old password matches new.
     if ($check_password && $this->exists && (!empty($this->getData('old_password'))) && ($this->getPassword() != pwd($this->getData('old_password')))) {
       $this->addData('validation_errors', array('old_password' => 'The old password you entered is not valid. Please try again.'));
     }
+    // Checks password length.
+    // TODO: make customizable in hooks.
     if ($check_password && strlen($this->getPassword()) < USER_PASSWORD_MIN_LENGTH) {
       $this->addData('validation_errors', array('password' => 'Password should be at least ' . USER_PASSWORD_MIN_LENGTH . ' characters long.'));
     }
+    // Checks that the repeated password matches the original.
     if ($check_password && pwd($this->getData('password_rp')) != pwd($this->getData('password'))) {
       $this->addData('validation_errors', array('password_rp' => 'Password fields are not the same.'));
     }

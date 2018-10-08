@@ -107,15 +107,30 @@ class Image extends File {
 
 
   /**
-   * Generate a thumbnail of an image
-   * @param $env
-   * @param $thumbfile
-   * @param null $maxw
-   * @param null $maxh
-   * @param string $sType
+   * Generate a thumbnail of an image.
+   *
+   * @param Environment $env
+   *   The Environment.
+   *
+   * @param int $maxw
+   *   The maximum width of the thumbnail.
+   *
+   * @param int $maxh
+   *   The maximum height of the thumbnail.
+   *
+   * @param string $image_action
+   *   The type of action to perform.
+   *
    * @param int $compression
+   *   The compression level of the thumbnail.
+   *
+   * @param int $fallback
+   *   A fallback image to use if the image can not be loaded.
+   *
+   * @return string
+   *   The url of the generated thumbnail.
    */
-  public function generateThumbnail($env, $maxw = NULL, $maxh = NULL, $sType = 'crop', $compression = 60, $fallback) {
+  public function generateThumbnail($env, $maxw = NULL, $maxh = NULL, $image_action = 'crop', $compression = 60, $fallback) {
 
     if ($maxw == 'auto') {
       $maxw = 0;
@@ -231,7 +246,7 @@ class Image extends File {
       $iOrigWidth = imagesx($img);
       $iOrigHeight = imagesy($img);
 
-      if ($sType == 'scale') {
+      if ($image_action == 'scale') {
 
         // Get scale ratio
 
@@ -300,7 +315,7 @@ class Image extends File {
           imagesavealpha($img,true);
         }
 
-      } else if ($sType == "crop") {
+      } else if ($image_action == "crop") {
 
         // Get scale ratio
 

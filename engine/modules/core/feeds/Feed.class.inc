@@ -5,6 +5,8 @@ define("FEED_FORMAT_RSS", "rss");
  * This class represents a Feed (i.e. RSS).
  */
 class Feed extends DataContainer {
+  // TODO: this class is very useful, but needs a complete checkup.
+
   private $name;
   public $title;
   public $format;

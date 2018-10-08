@@ -48,7 +48,6 @@ function qtag_ATTRIBUTE($env, $target, $attributes) {
     $node->buildTemplate();
   }
 
-  $perm = NODE_ACTION_VIEW;
   switch ($attributes['name']) {
     // Node's name (aka name of the folder).
     case 'name':
@@ -111,7 +110,6 @@ function qtag_ATTRIBUTE($env, $target, $attributes) {
     // Node edit screen's temporary file upload directory.
     case 'tmp_files_dir':
       $string = $node->getData('tmp_files_dir');
-      $perm = NODE_ACTION_EDIT;
       break;
 
     // Node's thumbnail file.
@@ -127,14 +125,12 @@ function qtag_ATTRIBUTE($env, $target, $attributes) {
     // Node's template file.
     case 'tpl_file':
       $node->buildTemplate();
-      $perm = NODE_ACTION_EDIT_TPL;
       $string = $node->getData('tpl_file');
       break;
 
     // Node's template file.
     case 'tpl':
       $node->buildTemplate();
-      $perm = NODE_ACTION_EDIT_TPL;
       $string = (!empty($node->getData('tpl_file'))) ? file_get_contents($node->getData('tpl_file')) : '';
       break;
 
@@ -172,6 +168,7 @@ function qtag_LINK($env, $target, $attributes) {
   $querystring = array();
   $link_title = '';
   $link_target = '';
+  $title_default = '';
   $link_data = array();
   $link_id = isset($attributes['link_id']) ? $attributes['link_id'] : '';
 

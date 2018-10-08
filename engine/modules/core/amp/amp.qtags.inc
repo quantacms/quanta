@@ -65,8 +65,6 @@ function qtag_CANONICAL_LINK($env, $target, $attributes) {
  *   The rendered qtag.
  */
 function qtag_AMP_CAROUSEL($env, $target, $attributes) {
-  /** @var Page $page */
-  $page = $env->getData('page');
 
   $module = isset($attributes['module']) ? $attributes['module'] : 'amp';
   if (empty($attributes['carousel-type'])) {

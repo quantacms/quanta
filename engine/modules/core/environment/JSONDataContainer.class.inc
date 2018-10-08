@@ -21,7 +21,6 @@ abstract class JSONDataContainer extends DataContainer {
   /**
    *  This is meant only to be extended.
    * @param array $ignore
-   * @return
    */
   abstract function updateJSON($ignore = array());
 

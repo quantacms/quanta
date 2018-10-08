@@ -1,5 +1,5 @@
 <?php
-// Include the Environment module.
+  // Include the Environment module.
   require_once('modules/core/environment/environment.module');
 
   // Include the Cache module.
@@ -33,13 +33,13 @@
 
   // Run all system modules.
   $env->runModules();
+
   // Run the boot hook.
   $env->hook('boot');
 
   // Start page's standard index.html.
   $page = new Page($env);
   $vars = array('page' => &$page);
-
   $env->setData('page', $vars['page']);
 
   // Run the init hook.
@@ -72,5 +72,5 @@
   // Run the complete hook.
   $env->hook('complete');
 
-  // End the bootstrap.
+  // Complete the boot process.
   exit();

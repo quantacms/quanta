@@ -32,7 +32,12 @@ abstract class Access implements AccessChecker {
    *
    * @param Environment $env
    *   The Environment.
+   *
+   * @param string $action
+   *   The action for which the access is being check.
+   *
    * @param array $vars
+   *   Mixed variables.
    */
   public function __construct(&$env, $action, $vars) {
     $this->env = $env;

@@ -86,6 +86,9 @@ function valid_url($url) {
  * @param string $string
  *   The string to normalize.
  *
+ * @param bool $nl2br
+ *   If true, convert newlines to br in the string.
+ *
  * @return string
  *   The normalized string.
  */
@@ -247,20 +250,23 @@ function minify($env, $file) {
 
 /**
  * Filter a string to make it xss-safe.
+ *
+ * @param string $string
+ *   The String to check.
+ *
+ * @return string
+ *   The filtered string.
  */
 function filter_xss($string) {
   $filtered_string = htmlspecialchars($string, ENT_QUOTES,'utf-8');
   return $filtered_string;
 }
 
-
-
-
 /**
  * Get Browser (user agent) info.
  *
- * @return array
- *   array with user agent info.
+ * @return mixed
+ *   Array with user agent info.
  */
 function getBrowser() { 
   $u_agent = !empty($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : NULL;
@@ -269,7 +275,6 @@ function getBrowser() {
   }
   $bname = 'Unknown';
   $platform = 'Unknown';
-  $version= "";
 
   //First get the platform?
   if (preg_match('/linux/i', $u_agent)) {
@@ -280,6 +285,7 @@ function getBrowser() {
     $platform = 'windows';
   }
 
+  // TODO: use an array and a cycle, instead of a long if... elseif queue.
   // Next get the name of the useragent yes seperately and for good reason
   if(preg_match('/MSIE/i',$u_agent) && !preg_match('/Opera/i',$u_agent)) { 
     $bname = 'Internet Explorer'; 
@@ -303,17 +309,16 @@ function getBrowser() {
   } elseif(preg_match('/Netscape/i',$u_agent)) { 
     $bname = 'Netscape'; 
     $ub = "Netscape"; 
-  } 
+  } else {
+    $ub = "Unknown";
+  }
   
-  // finally get the correct version number
+  // Finally get the correct version number
   // Added "|:"
   $known = array('Version', $ub, 'other');
   $pattern = '#(?<browser>' . join('|', $known) .
     ')[/|: ]+(?<version>[0-9.|a-zA-Z.]*)#';
-  if (!preg_match_all($pattern, $u_agent, $matches)) {
-    // we have no matching number just continue
-    // TODO: useless condition?
-  }
+  preg_match_all($pattern, $u_agent, $matches);
 
   // see how many we have
   $i = count($matches['browser']);
