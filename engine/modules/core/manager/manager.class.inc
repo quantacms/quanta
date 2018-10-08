@@ -2,17 +2,20 @@
 
 /**
  * Class Manager
- * This class represents a Manager for categorizing nodes.
+ * This class represents a Node Manager used for categorizing nodes
+ * and symlinking them via a dedicated UI.
  */
-class Manager {
+class Manager extends DataContainer {
   /** @var Node $node */
   public $node;
 
   /**
-   * Constructs a manager object.
-   * @param $env
-   * @param null $node
-   * @internal param $name
+   * Constructs a Node manager object.
+   *
+   * @param Environment $env
+   *   The Environment.
+   * @param Node $node
+   *   The Node to manage.
    */
   public function __construct(&$env, $node = NULL) {
     $this->env = $env;
@@ -20,8 +23,13 @@ class Manager {
   }
 
   /**
+   * Render the node manager tree.
+   *
    * @param string $path
+   *   The path.
+   *
    * @return string
+   *   The rendered node manager tree.
    */
   public function renderTree($path = 'root') {
     $list = new DirList($this->env, $path, 'simple', array('symlinks' => 'no'));

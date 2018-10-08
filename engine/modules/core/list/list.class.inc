@@ -6,27 +6,48 @@ define('LIST_ROOT', 'root');
  * render the files and folders contained into it.
  */
 abstract class ListObject extends DataContainer {
-  public $loaded = FALSE;
-  protected $realpath;
-  /**
-   * @var Environment $env
-   */
+
+  /** @var Node $node */
   protected $node;
+
+  /** @var string $tpl */
   protected $tpl;
+
+  /** @var int $limit */
   protected $limit;
-  /** @var array */
+
+  /** @var string $realpath */
+  protected $realpath;
+
+  /** @var array $protected_items */
   protected $items = array();
-  /** @var array */
+
+  /** @var array $rendered_items */
   public $rendered_items = array();
-  /** @var array */
+
+  /** @var array $attributes */
   private $attributes = array();
-  /** @var array */
+
+  /** @var array $replacements */
   protected $replacements = array();
+
+  /** @var string $scantype */
   protected $scantype = DIR_ALL;
+
+  /** @var string $module */
   protected $module = 'list';
+
+  /** @var bool $generated */
   protected $generated = FALSE;
+
+  /** @var bool $loaded */
+  public $loaded = FALSE;
+
   // Filter by status. TODO: discontinue.
+  /** @var array $status */
   protected $status = array();
+
+  /** @var string $sort */
   protected $sort;
 
   /**
@@ -100,6 +121,12 @@ abstract class ListObject extends DataContainer {
   /**
    * Render the list and make it print-ready.
    * Must be extended.
+   *
+   * @param $attributes
+   *   Attributes of the list.
+   *
+   * @return string
+   *   The rendered HTML list.
    */
   public function render($attributes = array()) {
 
@@ -151,7 +178,9 @@ abstract class ListObject extends DataContainer {
     if (!is_dir($this->realpath)) {
       // Attempt to run a list on an invalid node.
       $this->loaded = TRUE;
-      new Message($this->env, $this->node->name . ' is not a valid page. Full path: ' . $this->realpath, MESSAGE_ERROR);
+      new Message($this->env, t('%node is not a valid page. Full path: %fullpath',
+        array('%node' => $this->node->getName(), '%fullpath' =>  $this->realpath)
+      ), MESSAGE_ERROR);
       return FALSE;
     }
 
@@ -210,8 +239,17 @@ abstract class ListObject extends DataContainer {
 
   }
 
+  /**
+   * Start the list generation.
+   */
   public abstract function start();
 
+  /**
+   * Add an item to the list.
+   *
+   * @param $item
+   *   The item to be added to the list.
+   */
   public abstract function addItem($item);
 
   /**
@@ -268,22 +306,37 @@ abstract class ListObject extends DataContainer {
 	}
 
   /**
-   * Replace a function.
+   * Replace function.
+   * Adds automatic replacements in the list.
+   *
+   * @param $string
+   *   The string to replace.
+   *
+   * @param $replacement
+   *   The replacement for that string.
    */
 	public function replace($string, $replacement) {
 	  $this->replacements[$string] = $replacement;
   }
 
   /**
+   * Gets the attributes of the list.
+   *
    * @return array
+   *   The attributes of the list.
    */
   public function getAttributes() {
     return $this->attributes;
   }
 
   /**
+   * Gets a specific attribute of the list.
+   *
    * @param $attr_name
-   * @return bool|mixed
+   *   The attribute to get.
+   *
+   * @return mixed
+   *   The attribute.
    */
   public function getAttribute($attr_name) {
 
@@ -357,7 +410,10 @@ abstract class ListObject extends DataContainer {
   }
 
   /**
-   * Gets a loaded list item.
+   * Gets a loaded list item at a specific index.
+   *
+   * @param $index
+   *   The specific index.
    *
    * @return mixed
    *   The list item.

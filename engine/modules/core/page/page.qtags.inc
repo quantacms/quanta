@@ -94,7 +94,6 @@ function qtag_JS($env, $target, $attributes) {
 
   // TODO: converting all inclusions into inline stylesheets. Faster, but is it good?
   foreach ($js as $js_file) {
-		$async = !empty($attributes['async']) ? ' async ' : '';
     // TODO: support per file async.
 		if (isset($attributes['inline'])) {
 			$js_code .= '<script>' . file_get_contents($js_file) . '</script>';
@@ -213,7 +212,6 @@ function qtag_BREADCRUMB($env, $target, $attributes) {
   // TODO: breadcrumb generation must be done in page.class.
 
   $env->setData('breadcrumb', $breadcrumb);
-  $themed_bc = '';
   // Theme and renders the breadcrumb.
   $themed_bc = '<ul class="breadcrumb">';
   if (count($breadcrumb) > 0 && $breadcrumb != '') {

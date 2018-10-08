@@ -80,7 +80,7 @@ function page_doctor_setup($env, $vars) {
     $doctor->ok('Imported from ' . $template_folder);
   }
   else {
-    $this->ok('Found');
+    $doctor->ok('Found');
   }
 
   // Create the basic roles.
@@ -165,13 +165,12 @@ function page_doctor($env, $vars) {
   // TODO: is double step necessary?
   $minify_css = minify($env, $temp_css_path);
   $fop_mini = fopen($temp_css_path_mini, 'w+');
-  fwrite($fop_mini, implode($minify_css));
+  fwrite($fop_mini, $minify_css);
   fclose($fop_mini);
   
-  // TODO: is double step necessary?
   $minify_js = minify($env, $temp_js_path);
   $fop_mini = fopen($temp_js_path_mini, 'w+');
-  fwrite($fop_mini, implode($minify_js));
+  fwrite($fop_mini, $minify_js);
   fclose($fop_mini);
 
   unlink($temp_css_path);

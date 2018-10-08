@@ -46,7 +46,7 @@ function doctor_doctor_pre_setup($env, $vars) {
 }
 
 /**
- * Implements hook_doctor_setup().
+ * Implements hook_doctor_doctor().
  *
  * Setup a Quanta site.
  *

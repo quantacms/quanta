@@ -28,11 +28,19 @@ class File extends DataContainer {
   // Construct the File object.
 
   /**
-   * File constructor.
-   * @param $env
-   * @param $file_path
-   * @param null $node
-   * @param null $name
+   * File object constructor.
+   *
+   * @param Environment $env
+   *   The Environment.
+   *
+   * @param string $file_path
+   *   The file path.
+   *
+   * @param Node $node
+   *   The node containing the file.
+   *
+   * @param string $name
+   *   An optional custom name to assign to the file.
    */
   public function __construct(&$env, $file_path, $node = NULL, $name = NULL) {
     $this->env = $env;
@@ -60,7 +68,7 @@ class File extends DataContainer {
    *   Returns true if the file can be viewed / downloaded.
    */
   public function isPublic() {
-    // TODO: can be better.
+    // TODO: implement real "public" check for the files.
     $is_public =
       ($this->getType() != 'swap') &&
       ($this->extension != 'html') &&
@@ -71,7 +79,10 @@ class File extends DataContainer {
 
 
   /**
+   * Get the file's size.
+   *
    * @return float
+   *   The file's size.
    */
   public function getFileSize() {
     $this->size = filesize($this->path);
@@ -79,35 +90,50 @@ class File extends DataContainer {
   }
 
   /**
+   * Gets the file's type.
+   *
    * @return string
+   *   The file's type.
    */
   public function getType() {
     return $this->type;
   }
 
   /**
+   * Gets the file's path.
+   *
    * @return string
+   *   The file's path.
    */
   public function getPath() {
     return $this->path;
   }
 
   /**
+   * Get the file's "real" system path.
+   *
    * @return string
+   *   The file full system path.
    */
   public function getRealPath() {
     return $this->node->realpath . '/' . $this->getPath();
   }
 
   /**
+   * Gets the file's relative system path.
+   *
    * @return string
+   *   The full file's relative system path..
    */
   public function getFullPath() {
 	  return '/' . $this->node->name . '/' . $this->getPath();
 	}
 
   /**
+   * Gets the file's extension.
+   *
    * @return string
+   *   The file's extension.
    */
   public function getExtension() {
     return $this->extension;
@@ -115,8 +141,12 @@ class File extends DataContainer {
 
   /**
    * Determine the file "type" from its extension.
-   * @param $extension String
+   *
+   * @param string $extension
+   *   The file's extension.
+   *
    * @return string
+   *   The file type.
    */
   static function getFileType($extension) {
     switch ($extension) {
@@ -189,8 +219,13 @@ class File extends DataContainer {
   }
 
   /**
+   * Renders the file as HTML.
+   *
    * @param string $mode
-   * @return null|string
+   *   The rendering mode.
+   *
+   * @return string
+   *   The rendered HTML version of the file.
    */
   public function render($mode = FILE_RENDER_LINK) {
     switch ($mode) {
@@ -212,7 +247,10 @@ class File extends DataContainer {
   }
 
   /**
-   * @return null|string
+   * Gets the file's name.
+   *
+   * @return string
+   *   The file's name.
    */
   public function getName() {
     return $this->name;
@@ -222,7 +260,8 @@ class File extends DataContainer {
    * Check the uploads being made to a node.
    * TODO: move access check in access hook.
    *
-   * @param $node
+   * @param Environment $env
+   *   The Environment.
    */
   public static function checkUploads($env) {
     // TODO: restore some kind of access check.

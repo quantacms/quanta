@@ -41,7 +41,7 @@ class Mail extends Node {
     $mail->Body    = $this->getBody();
     $mail->AltBody = $this->getBody();
     if (!empty($this->getData('reply_to'))){
-      $mail->AddReplyTo($this->getData('reply_to'), '');    
+      $mail->addReplyTo($this->getData('reply_to'), '');
     }
     try {
       // Send the email.

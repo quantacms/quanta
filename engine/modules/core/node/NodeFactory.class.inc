@@ -123,13 +123,18 @@ class NodeFactory {
    *
    * @param Environment $env
    *   The Environment.
+   *
    * @param $source_node
+   *   The source node.
+   *
    * @param $symlink_folder
+   *   The folder to link to.
+   *
    * @param array $vars
    *   Mixed variables
-   * @internal param $from The Node to be linked*   The Node to be linked
-   * @internal param $folder The Folder where we place the symlink*   The Folder where we place the symlink
-   * @internal param $to The name of the symlink*   The name of the symlink
+   *
+   * @return bool
+   *   True if the linking process was OK.
    */
   public static function linkNodes($env, $source_node, $symlink_folder, $vars = array ()) {
     // If no name is set for the symlink, use the source node name as default.
@@ -314,7 +319,7 @@ class NodeFactory {
     }
 
     // Prepare the response object.
-    $response = new StdClass();
+    $response = new stdClass();
 
     // TODO: circular dependency to user.
     $user = UserFactory::current($env);

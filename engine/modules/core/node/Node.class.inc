@@ -61,7 +61,8 @@ class Node extends JSONDataContainer {
 
       // TODO: language!
       // Load node from cache (RAM) if it has been already loaded.
-      if ($cached = Cache::get($this->env, 'node', $this->name)) {
+      $cached = Cache::get($this->env, 'node', $this->name);
+      if ($cached) {
         foreach (get_object_vars($cached) as $key => $value) {
           $this->{$key} = $value;
         }
@@ -102,7 +103,7 @@ class Node extends JSONDataContainer {
       $this->jsonpath = ($this->path . '/data.json');
     } // Impossible to load json. Error or empty Node.
     else {
-      $this->json = new StdClass;
+      $this->json = new stdClass;
       return;
     }
 
@@ -172,11 +173,14 @@ class Node extends JSONDataContainer {
   }
 
   /**
-   * Temporary function.
-   * TODO: better evaluation of JSON.
+   * Gets an attribute from the node's json metadata.
+   * TODO: better evaluation of JSON data.
    *
-   * @param $attr_name
-   * @return null
+   * @param string $attr_name
+   *   The attribute to fetch.
+   *
+   * @return mixed
+   *   The JSON attribute.
    */
   public function getAttributeJSON($attr_name, $normalize = TRUE) {
 
@@ -302,11 +306,11 @@ class Node extends JSONDataContainer {
     $author = new User($this->env, $this->getAuthor());
 
     if ($this->getTitle() == '') {
-      new Message($this->env, 'Node title can not be empty.', MESSAGE_WARNING);
+      new Message($this->env, t('Node title can not be empty.'), MESSAGE_WARNING);
       $valid = FALSE;
     }
     if (!$author->exists && $author->getName() != USER_ANONYMOUS) {
-      new Message($this->env, 'User ' . $this->getAuthor() . ' is not a valid user!', MESSAGE_WARNING);
+      new Message($this->env, t('User %author' . $this->getAuthor() . ' is not a valid user!'), MESSAGE_WARNING);
       $valid = FALSE;
     }
 
@@ -607,8 +611,8 @@ class Node extends JSONDataContainer {
   /**
    * Render the node.
    *
-   * @return
-   *   The rendered node.
+   * @return string
+   *   The rendered node in HTML.
    */
   public function render() {
     return $this->tpl;
@@ -671,7 +675,11 @@ class Node extends JSONDataContainer {
 
   /**
    * TODO: move in access module.
-   * Attempting finding permissions for this node using its lineage.
+   * @param $permission
+   *   Loads a node permission from its lineage.
+   *
+   * @return mixed
+   *   The calculated permission.
    */
   private function loadPermissionFromLineage($permission) {
     $this->buildLineage();
