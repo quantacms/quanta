@@ -29,7 +29,7 @@ function checkCodeTags(&$env, $html, $options = array(), $regex_options = 'U') {
   // TODO: allow more qtag open / close characters, for advanced nesting.
   $regexs = array();
 
-  $qtag_delimiters = isset($options['qtag_delimiters']) ? $options['qtag_delimiters'] : array('[]', '{}', '');
+  $qtag_delimiters = isset($options['qtag_delimiters']) ? $options['qtag_delimiters'] : array('[]', '{}');
   foreach ($qtag_delimiters as $qtag_delimiter) {
     $qtag_del_open = substr($qtag_delimiter, 0, 1);
     $qtag_del_close = substr($qtag_delimiter, 1, 1);
