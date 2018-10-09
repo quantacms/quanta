@@ -17,11 +17,25 @@
  *   The rendered qtag.
  */
 function qtag_GRID_CAROUSEL($env, $target, $attributes) {
-	$attributes['module'] = 'grid';
-  $attributes['tpl'] = 'grid';
-  $attributes['flickity_theme'] = 'actionbutton';
-  $attributes['pageDots'] = 'true';
-  $attributes['editable'] = 'false';
-    
-	return qtag_CAROUSEL($env, $target, $attributes);
+
+  if (Amp::isActive($env)) {
+    // Google AMP carousel.
+    $attributes['module'] = 'grid';
+    $attributes['tpl'] = 'grid-slide-amp';
+    $attributes['width'] = '400';
+    $attributes['height'] = '260';
+    $attributes['autoplay'] = 'true';
+    return qtag_AMP_CAROUSEL($env, $target, $attributes);
+
+  } else {
+    // Classic flickity carousel.
+    $attributes['module'] = 'grid';
+    $attributes['tpl'] = 'grid-slide';
+    $attributes['flickity_theme'] = 'actionbutton';
+    $attributes['pageDots'] = 'true';
+    $attributes['editable'] = 'false';	  
+
+    return qtag_CAROUSEL($env, $target, $attributes);
+  }
+
 }
