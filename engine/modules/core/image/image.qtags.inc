@@ -65,8 +65,6 @@ function qtag_THUMBNAIL($env, $target, $attributes) {
  *   The rendered qtag.
  */
 function qtag_IMGTHUMB($env, $target, $attributes) {
-
-  // TODO: redesign using some html wrapping function.
   $node = isset($attributes['node']) ? NodeFactory::load($env, $attributes['node']) : NodeFactory::current($env);
 
   // Load the image.
@@ -80,7 +78,6 @@ function qtag_IMGTHUMB($env, $target, $attributes) {
 
   // Setup fallback image.
   $fallback = isset($attributes['fallback']) ? $attributes['fallback'] : NULL;
-
 	
 	if (isset($attributes['alt'])) {
 	  $alt = $attributes['alt'];
@@ -97,8 +94,16 @@ function qtag_IMGTHUMB($env, $target, $attributes) {
   // Setup operations to run on the image.
   $op = isset($attributes['operation']) ? $attributes['operation'] : 'scale';
 
+  // Build array of variables.
+  $vars = array(
+    'w_max' => $image->width,
+    'h_max' => $image->height,
+    'image_action' => $op,
+    'compression' => $compression,
+    'fallback' => $fallback,
+  );
 	// Generate the thumbnail of the requested image.
-  $newthumbfile = $image->generateThumbnail($env, $image->width, $image->height, $op, $compression, $fallback);
+  $newthumbfile = $image->generateThumbnail($env, $vars);
 
   // TODO: stupid way to get to the tmp folder...
   $src = '/thumbs/' . $newthumbfile;

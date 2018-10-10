@@ -41,7 +41,7 @@ abstract class DataContainer {
       return;
     }
     if (gettype($value) != gettype($curr)) {
-      print "ERROR: different value type for setdata. " . var_export($curr, 1) . ' and ' . var_export($value, 1) . ' have different data types!';
+      new Message($this->env,t('ERROR: different value type for setdata. %first and %second have different data types!', array('%first' => var_export($curr, 1), '%second' => var_export($value, 1))), MESSAGE_ERROR);
     }
 
     if (is_array($value)) {
@@ -55,7 +55,7 @@ abstract class DataContainer {
       $sum = ($before) ? ($value . $curr) : ($curr . $value);
     }
     else {
-      "UNKNOWN DATA TYPE: " . $value;
+      new Message($this->env, "UNKNOWN DATA TYPE: %value", array('%value' => $value), MESSAGE_ERROR);
       $sum = NULL;
     }
     $this->setData($key, $sum);
@@ -66,7 +66,6 @@ abstract class DataContainer {
    * @return mixed
    */
   public function getLanguage() {
-
     return $this->language;
   }
 

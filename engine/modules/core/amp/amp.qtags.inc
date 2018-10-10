@@ -76,12 +76,14 @@ function qtag_AMP_CAROUSEL($env, $target, $attributes) {
 
     case CAROUSEL_DIRS:
       $tpl = isset($attributes['tpl']) ? $attributes['tpl'] : 'amp-carousel';
-      $list = new DirList($env, $target, $tpl, array('clean' => true, 'class' => 'amp-carousel') + $attributes, $module);
+      $attributes = array('clean' => true, 'class' => 'amp-carousel') + $attributes;
+      $list = new DirList($env, $target, $tpl, $attributes, $module);
       break;
 
     case CAROUSEL_FILES:
       $tpl = isset($attributes['tpl']) ? $attributes['tpl'] : 'amp-file-carousel';
-      $list = new FileList($env, $target, $tpl, array('clean' => true, 'class' => 'amp-carousel') + $attributes, $module);
+      $attributes = array('clean' => true, 'class' => 'amp-carousel') + $attributes;
+      $list = new FileList($env, $target, $tpl, $attributes, $module);
       break;
 
     default:
