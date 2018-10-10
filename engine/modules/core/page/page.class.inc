@@ -43,7 +43,7 @@ class Page extends DataContainer {
    * @param string $mode
    *   Can be file or inline.
    */
-  public function addCSS($css, $mode = 'file') {
+  public function addCSS($css, $mode = 'FileObject') {
     if ($mode == 'inline') {
       $this->addData('css_inline', array($css));
     }
@@ -61,7 +61,7 @@ class Page extends DataContainer {
    * @param string $mode
    *   Can be file or inline.
    */
-  public function addJS($js, $mode = 'file') {
+  public function addJS($js, $mode = 'FileObject') {
     if ($mode == 'inline') {
       $this->addData('js_inline', array($js));
     }

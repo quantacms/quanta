@@ -74,8 +74,31 @@ function page_doctor_setup($env, $vars) {
   $doctor->op('Looking for index.html...');
   if (!is_file($env->dir['docroot'] . '/index.html')) {
     $doctor->talk('Not Found');
-    // TODO: what to use as default for newly installed sites? Create templates folder.
-    $template_folder = $env->dir['quanta'] . '/_examples/_example1/*';
+
+    // Choose an installation profile for Quanta.
+    $profiles = $env->scanDirectory($env->dir['profiles'], array('type' => DIR_DIRS));
+    sort($profiles);
+    $profiles_choice = array();
+    $profile_chosen = NULL;
+    // List available installation profiles.
+    foreach ($profiles as $k => $profile) {
+      $profile_path = $env->dir['profiles'] . '/' . $profile . '/_profile_info';
+      $profile_node = NodeFactory::loadFromRealPath($env, $profile_path);
+      $profiles_choice[] = $k . ') ' . $profile_node->getTitle() . ', ' . $profile_node->getTeaser();
+    }
+    while (!isset($profile_chosen)) {
+      if (isset($choice)) {
+        $doctor->ko(t('Invalid choice.'));
+      }
+      $choice = $doctor->ask(t("Please choose an install profile from the following:\n%profiles", array("%profiles" => implode("\n", $profiles_choice))));
+      if (isset($profiles[$choice])) {
+        $profile_chosen = $profiles[$choice];
+      }
+    }
+    $doctor->op(t('Installing profile: %profile', array('%profile' => $profile_chosen)));
+
+    $template_folder = $env->dir['profiles'] . '/' . $profile_chosen . '/*';
+
     $doctor->execute('cp -R ' . $template_folder . ' ' . $doctor->env->dir['docroot']);
     $doctor->ok('Imported from ' . $template_folder);
   }

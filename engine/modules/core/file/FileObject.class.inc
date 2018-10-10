@@ -7,7 +7,7 @@ define('FILE_RENDER_PATH', 'file_render_path');
  * Class File
  * This class represents a Page (corrisponding to a rendered html page).
  */
-class File extends DataContainer {
+class FileObject extends DataContainer {
   /** @var string $name */
   public $name;
   /** @var string $filename */
@@ -57,7 +57,7 @@ class File extends DataContainer {
     $exp = explode('.', $file_path);
     $this->extension = strtolower($exp[count($exp) - 1]);
     $this->name = ($name == NULL) ? $file_path : $name;
-    $this->type = File::getFileType($this->extension);
+    $this->type = FileObject::getFileType($this->extension);
     $this->exists = is_file($this->path);
   }
 
@@ -116,7 +116,7 @@ class File extends DataContainer {
    *   The file full system path.
    */
   public function getRealPath() {
-    return $this->node->realpath . '/' . $this->getPath();
+    return $this->node->path . '/' . $this->getPath();
   }
 
   /**
@@ -339,7 +339,7 @@ class File extends DataContainer {
     if (!NodeAccess::check($node->env, NODE_ACTION_EDIT, array('node' => $node))) {
       new Message($node->env, 'Error: you have no permissions to delete files in this node', MESSAGE_ERROR);
     }
-    unlink($node->realpath . '/' . $file);
+    unlink($node->path . '/' . $file);
   }
 
 }

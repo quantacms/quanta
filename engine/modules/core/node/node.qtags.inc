@@ -66,11 +66,6 @@ function qtag_ATTRIBUTE($env, $target, $attributes) {
       }
       break;
 
-    // Node's path.
-    case 'path':
-      $string = $node->path;
-      break;
-
     // Node's title.
     case 'title':
       $string = filter_xss($node->getTitle());
@@ -444,7 +439,7 @@ function qtag_COUNT($env, $target, $attributes) {
   else {
     $depth .= ' -mindepth 1';
   }
-  $count_cmd = 'find ' . $nodeobj->realpath . ' ' . $depth . ' -type d | wc -l';
+  $count_cmd = 'find ' . $nodeobj->path . ' ' . $depth . ' -type d | wc -l';
   exec($count_cmd, $results_arr);
   return array_pop($results_arr);
 }

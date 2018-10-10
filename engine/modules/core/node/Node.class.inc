@@ -41,7 +41,7 @@ class Node extends JSONDataContainer {
    * @param string $father
    * @param string $language
    */
-  public function __construct(&$env, $name, $father = NULL, $language = NULL) {
+  public function __construct(&$env, $name, $father = NULL, $language = NULL, $path = NULL) {
 
     $this->env = $env;
     $this->json = new stdClass();
@@ -70,12 +70,17 @@ class Node extends JSONDataContainer {
         $vars = array('node' => &$this);
         $this->env->hook('node_load_cache', $vars);
         $this->exists = TRUE;
-      } // If node is not in cache, load it from file system.
+      }
+      elseif (isset($path)) {
+        $this->path = $path;
+        $this->exists = file_exists($path);
+      }
+
+      // If node is not in cache, load it from file system.
       else {
         $result = $this->env->nodePath($this->getName());
-        // TODO: unify path and realpath.
+        // TODO: unify path and path.
         $this->path = $result;
-        $this->realpath = $result;
         $this->exists = $result != NULL;
       }
 
@@ -268,9 +273,9 @@ class Node extends JSONDataContainer {
    * @return bool
    */
   public function hasChildren() {
-    $scan = $this->env->scanDirectory($this->realpath);
+    $scan = $this->env->scanDirectory($this->path);
     foreach ($scan as $dir) {
-      if (is_dir($this->realpath . '/' . $dir)) {
+      if (is_dir($this->path . '/' . $dir)) {
         return TRUE;
       }
     }
@@ -284,7 +289,7 @@ class Node extends JSONDataContainer {
    */
   public function hasChild($name) {
 
-    return (empty($name) ? FALSE : is_dir($this->realpath . '/' . $name));
+    return (empty($name) ? FALSE : is_dir($this->path . '/' . $name));
   }
 
   /**
@@ -321,9 +326,9 @@ class Node extends JSONDataContainer {
    * Save this node on the file system.
    */
   public function save() {
-    // If realpath has not been set (i.e. new node) create it based on father node.
-    if (empty($this->realpath)) {
-      $this->realpath = $this->getFather()->realpath . '/' . $this->getName();
+    // If path has not been set (i.e. new node) create it based on father node.
+    if (empty($this->path)) {
+      $this->path = $this->getFather()->path . '/' . $this->getName();
     }
     $vars = array('node' => &$this);
 
@@ -332,7 +337,7 @@ class Node extends JSONDataContainer {
     // Reload the node JSON.
     $this->updateJSON();
     // Save the node json (excluding some fields such as path.)
-    $this->saveJSON(array('path', 'exists', 'realpath', 'father', 'data'));
+    $this->saveJSON(array('path', 'exists', 'path', 'father', 'data'));
     $this->env->hook('node_after_save', $vars);
   }
 
@@ -428,13 +433,13 @@ class Node extends JSONDataContainer {
    * Delete this node by adding a __ prefix to the folder.
    */
   public function delete() {
-    $np = explode('/', $this->realpath);
+    $np = explode('/', $this->path);
     $rmname = '__' . $np[count($np) - 1] . '_' . time();
     $np[count($np) - 1] = $rmname;
     // Delete file is indeed not an immediate deletion: it adds __ to folder name.
     // This is useful in order to recover a node that was accidentally deleted.
     //unlink($this->path);
-    rename($this->realpath, implode('/', $np));
+    rename($this->path, implode('/', $np));
     new Message($this->env, 'user deleted this page: ' . $this->name . '.', MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
   }
 
@@ -477,7 +482,7 @@ class Node extends JSONDataContainer {
       return;
     }
 
-    $fullpath = str_replace($this->env->dir['docroot'], '', $this->realpath);
+    $fullpath = str_replace($this->env->dir['docroot'], '', $this->path);
     $bca = explode('/', $fullpath);
     foreach ($bca as $bread_node) {
       if ($bread_node == '') {
@@ -506,8 +511,8 @@ class Node extends JSONDataContainer {
     $tpl_level = 0;
 
     // a template in the same directory has always priority.
-    if (is_file($this->realpath . '/tpl.html')) {
-      $this->setData('tpl_file', $this->realpath . '/tpl.html');
+    if (is_file($this->path . '/tpl.html')) {
+      $this->setData('tpl_file', $this->path . '/tpl.html');
     }
     else {
       foreach ($this->lineage as $lineage) {
@@ -761,7 +766,7 @@ class Node extends JSONDataContainer {
    */
   public function buildFather() {
     if (!isset($this->father) && $this->exists) {
-      $rpath_arr = explode('/', $this->realpath);
+      $rpath_arr = explode('/', $this->path);
       // Look for the node's father.
       if (count($rpath_arr) >= 2) {
         $fatherpath = ($rpath_arr[count($rpath_arr) - 2]);
@@ -790,13 +795,13 @@ class Node extends JSONDataContainer {
     $categories = array();
     if ($node != NULL) {
       $catnode = NodeFactory::load($this->env, $node);
-      $root = $catnode->realpath;
+      $root = $catnode->path;
     }
     else {
       $root = $this->env->dir['docroot'];
     }
     // Run a find command to search for all symlinks refering to this node.
-    $cmd = 'find -L ' . $root . ' -samefile ' . $this->realpath;
+    $cmd = 'find -L ' . $root . ' -samefile ' . $this->path;
     exec($cmd, $categories_url);
 
     // Build the nodes that contain the symlink.
@@ -868,7 +873,7 @@ class Node extends JSONDataContainer {
    *   True if the translation exists in that language.
    */
   public function hasTranslation($language) {
-    return is_file($this->realpath . '/data_' . $language . '.json');
+    return is_file($this->path . '/data_' . $language . '.json');
   }
 
 }
