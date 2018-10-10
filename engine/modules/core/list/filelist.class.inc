@@ -35,7 +35,7 @@ class FileList extends ListObject {
 
     foreach ($this->items as $file) {
 
-      /** @var File $file */
+      /** @var FileObject $file */
       $i++;
 
       // Check that this file is not excluded by parameters.
@@ -70,8 +70,8 @@ class FileList extends ListObject {
   /**
    * Sort the file list.
    *
-   * @param File $x
-   * @param File $y
+   * @param FileObject $x
+   * @param FileObject $y
    * @return int
    */
   public function sortBy($x, $y) {
@@ -120,7 +120,7 @@ class FileList extends ListObject {
   /**
    * Adds a file to the list queue.
    *
-   * @param File $file
+   * @param FileObject $file
    *   The file to be added.
    */
   public function addItem($file) {

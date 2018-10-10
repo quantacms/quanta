@@ -63,7 +63,8 @@ function qtag_RANDOM($env, $target, $attributes) {
 function qtag_EMAIL($env, $target, $attributes) {
   $string = '';
   if (valid_email($target)) {
-    $string = '<a class="mail" href="mailto:' . $target . '">' . (isset($attributes['title']) ? $attributes['title'] : $target)  . '</a>';
+    $title = (isset($attributes['title']) ? $attributes['title'] : $target);
+    $string = '<a class="mail" href="mailto:' . $target . '">' . $title  . '</a>';
   }
   return $string;
 }

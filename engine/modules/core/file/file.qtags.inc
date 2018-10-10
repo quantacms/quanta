@@ -18,7 +18,7 @@
  */
 function qtag_FILEATTRIBUTE($env, $target, $attributes) {
   $node = empty($attributes['node']) ? NodeFactory::current($env) : NodeFactory::load($env, $attributes['node']);
-  $file = new File($env, $target, $node);
+  $file = new FileObject($env, $target, $node);
   $string = NULL;
 
   // Check which file attribute is requested, and provide it.
@@ -64,7 +64,7 @@ function qtag_FILEATTRIBUTE($env, $target, $attributes) {
 function qtag_FILE($env, $target, $attributes) {
   $node = empty($attributes['node']) ? NodeFactory::current($env) : NodeFactory::load($env, $attributes['node']);
 
-  $file = new File($env, $target, $node, $attributes['title']);
+  $file = new FileObject($env, $target, $node, $attributes['title']);
   // Return the rendered file, if exists.
   if ($file->exists) {
     return $file->render();
@@ -99,7 +99,7 @@ function qtag_FILE_PREVIEW($env, $target, $attributes) {
     $node->setName(NODE_NEW);
   }
 
-  $file = new File($env, $target, NODE_NEW);
+  $file = new FileObject($env, $target, NODE_NEW);
   $preview = '';
   switch($file->getType()) {
     case 'image':
@@ -135,10 +135,10 @@ function qtag_FILE_PREVIEW($env, $target, $attributes) {
 function qtag_FILE_QTAG_SUGGESTION($env, $target, $attributes) {
   $node = empty($attributes['node']) ? NodeFactory::current($env) : NodeFactory::load($env, $attributes['node']);
   if (isset($attributes['tmp_path'])) {
-    $file = new File($env, $env->dir['tmp'] . '/files/' . $attributes['tmp_path'] . '/' . $target, NODE_NEW);
+    $file = new FileObject($env, $env->dir['tmp'] . '/files/' . $attributes['tmp_path'] . '/' . $target, NODE_NEW);
   }
   else {
-    $file = new File($env, $target, $node);
+    $file = new FileObject($env, $target, $node);
   }
 
   switch($file->getType()) {

@@ -63,7 +63,7 @@ class UserFactory {
     $pass = (isset($vars['password'])) ? pwd($vars['password']) : pwd($name . rand(1, 1000000));
     $user->setPassword($pass);
     $user->roles = (isset($vars['roles'])) ? $vars['roles'] : array();
-    $user->realpath = $env->dir['users'] . '/' . $name;
+    $user->path = $env->dir['users'] . '/' . $name;
     $env->hook('user_presave', $vars);
     $user->save();
     return $user;
