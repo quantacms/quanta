@@ -97,7 +97,7 @@ class Image extends FileObject {
     $class = (count($this->class) > 0) ?  implode(' ', $this->class) : '';
     $width = ($this->width > 0) ? 'width="' . $this->width . '"' : '';
     $height = ($this->height > 0) ? 'height="' . $this->height . '"' : '';
-		$img = '<img ' . $width . ' ' . $height . ' alt="' . $this->getTitle() . '" class="innerimg ' . $class . '" src="' . $imgurl . '" ' . $style . " />";
+		$img = '<img ' . $width . ' ' . $height . ' alt="' . $this->getTitle() . '" class="image ' . $class . '" src="' . $imgurl . '" ' . $style . " />";
     if (!empty($this->link)) {
 		  $img = '<a href="#">' . $img . '</a>';
 		} 

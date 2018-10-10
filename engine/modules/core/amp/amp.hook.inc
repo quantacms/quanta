@@ -52,7 +52,7 @@ function amp_page_complete($env, $vars) {
 /**
  * Implements hook_qtag().
  *
- * Remove all no_amp items.
+ * Filter items by amp attributes.
  *
  * @see Box.class.inc
  *
@@ -63,6 +63,11 @@ function amp_page_complete($env, $vars) {
  */
 function amp_qtag_preload($env, $vars) {
   if (Amp::isActive($env) && !empty($vars['attributes']['no_amp'])) {
+    // AMP is active: remove all no_amp items.
+    $vars['access'] = FALSE;
+  } 
+  elseif (!Amp::isActive($env) && !empty($vars['attributes']['amp_only'])) {
+    // AMP is not active: remove all amp_only items.
     $vars['access'] = FALSE;
   }
 }
