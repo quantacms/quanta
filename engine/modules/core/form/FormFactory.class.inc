@@ -64,7 +64,7 @@ class FormFactory {
     }
     switch($input['type']) {
 
-      case 'file':
+      case 'FileObject':
         $formitem = new FormItemFile($env, $input);
         break;
 

@@ -11,7 +11,9 @@
 function access_shadow_node_form($env, $vars) {
   /** @var Shadow $shadow */
   $shadow = &$vars['shadow'];
-  $shadow->addTab('manage permissions', file_get_contents($env->getModulePath('access') . '/tpl/permissions_form.html'), 5);
+  $module_path = $env->getModulePath('access');
+  $tab_contents =  file_get_contents($module_path . '/tpl/permissions_form.html');
+  $shadow->addTab('manage permissions',$tab_contents, 5);
 }
 
 /**

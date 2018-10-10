@@ -16,8 +16,8 @@ abstract class ListObject extends DataContainer {
   /** @var int $limit */
   protected $limit;
 
-  /** @var string $realpath */
-  protected $realpath;
+  /** @var string $path */
+  protected $path;
 
   /** @var array $protected_items */
   protected $items = array();
@@ -74,20 +74,20 @@ abstract class ListObject extends DataContainer {
 
     // Support for "root" list.
     if ($path == LIST_ROOT) {
-      $this->realpath = $env->dir['docroot'];
+      $this->path = $env->dir['docroot'];
       $this->setNode(NULL);
       }
     elseif ($path == NODE_NEW) {
-      $this->realpath = NULL;
+      $this->path = NULL;
       $this->setNode(NULL);
     }
     elseif ($path == NULL) {
       $this->setNode(NodeFactory::current($this->env));
-      $this->realpath = $this->getNode()->realpath;
+      $this->path = $this->getNode()->path;
     }
     else {
       $this->setNode(NodeFactory::load($this->env, $path));
-      $this->realpath = $this->getNode()->realpath;
+      $this->path = $this->getNode()->path;
     }
 
     foreach ($attr_arr as $attr_key => $attr_val) {
@@ -170,16 +170,16 @@ abstract class ListObject extends DataContainer {
    * @return bool
    */
   public function load() {
-    // Empty realpath. Usually happens with a new node, that has no path yet.
-    if (empty($this->realpath)) {
+    // Empty path. Usually happens with a new node, that has no path yet.
+    if (empty($this->path)) {
       $this->loaded = TRUE;
       return FALSE;
     }
-    if (!is_dir($this->realpath)) {
+    if (!is_dir($this->path)) {
       // Attempt to run a list on an invalid node.
       $this->loaded = TRUE;
       new Message($this->env, t('%node is not a valid page. Full path: %fullpath',
-        array('%node' => $this->node->getName(), '%fullpath' =>  $this->realpath)
+        array('%node' => $this->node->getName(), '%fullpath' =>  $this->path)
       ), MESSAGE_ERROR);
       return FALSE;
     }
@@ -199,7 +199,7 @@ abstract class ListObject extends DataContainer {
     }
 
     if ($this->getAttribute('level') == 'leaf' || $this->getAttribute('level') == 'tree') {
-      $list_pages = $this->env->scanDirectoryDeep($this->realpath, '', array(), array(
+      $list_pages = $this->env->scanDirectoryDeep($this->path, '', array(), array(
         'exclude_dirs' => DIR_INACTIVE,
         'symlinks' => $symlinks,
         $this->scantype,
@@ -207,7 +207,7 @@ abstract class ListObject extends DataContainer {
       ));
     }
     else {
-      $list_pages = $this->env->scanDirectory($this->realpath, array(
+      $list_pages = $this->env->scanDirectory($this->path, array(
         'exclude_dirs' => DIR_INACTIVE,
         'type' => $this->scantype,
         'symlinks' => $symlinks
@@ -226,7 +226,7 @@ abstract class ListObject extends DataContainer {
         }
       }
       elseif (($this->scantype == DIR_FILES) && $this->node != NULL) {
-				$file = new File($this->env, $item_name, $this->node);
+				$file = new FileObject($this->env, $item_name, $this->node);
         if ($file->isPublic()) {
           $this->addItem($file);
         }

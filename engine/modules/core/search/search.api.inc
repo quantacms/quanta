@@ -20,7 +20,7 @@ define("SEARCH_OUTPUT_MATCH_FILENAME", 'match_filename');
  * @return array
  */
 function search($env, $search_string = NULL, $search_in_node = NULL, $search_fields = array('body'), $search_output = SEARCH_OUTPUT_MATCH_FILENAME) {
-  $search_dir = ($search_in_node == NULL) ? $env->dir['docroot'] : $search_in_node->realpath;
+  $search_dir = ($search_in_node == NULL) ? $env->dir['docroot'] : $search_in_node->path;
   $results_arr = array();
   if (empty($search_string)) {
     $search_string = $_REQUEST['search'];

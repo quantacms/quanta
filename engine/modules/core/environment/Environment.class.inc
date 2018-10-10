@@ -66,6 +66,8 @@ class Environment extends DataContainer {
     $this->dir['quanta'] = $docroot;
     $this->dir['sites'] = $this->dir['quanta'] . '/sites';
     $this->dir['engine'] = $this->dir['quanta'] . '/engine';
+    $this->dir['profiles'] = $this->dir['quanta'] . '/profiles';
+
     $this->dir['docroot'] = $this->dir['sites'] . '/' . $this->host;
     $this->dir['tmp'] = $this->dir['engine'] . '/tmp/' . $this->host;
     $this->dir['vendor'] = $this->dir['quanta'] . '/vendor';
@@ -277,7 +279,6 @@ class Environment extends DataContainer {
       else if (isset($attributes['symlinks']) && $attributes['symlinks'] == 'only' && !is_link($base_dir . '/' . $dir)) {
         unset ($dirs[$k]);
       }
-
 
       if ($attributes['type'] == DIR_DIRS && !is_dir($base_dir . '/' . $dir)) {
         unset ($dirs[$k]);

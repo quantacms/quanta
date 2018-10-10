@@ -184,7 +184,7 @@ class User extends Node {
         new Message($this->env, 'User ' . $this->name . ' tried to login with wrong username or password', MESSAGE_WARNING, MESSAGE_TYPE_LOG);
       }
     }
-    $response = new SstdClass();
+    $response = new stdClass();
     $response->redirect = '/' . $this->env->getRequestedPath();
     $response_json = json_encode($response);
     return $response_json;
@@ -209,8 +209,8 @@ class User extends Node {
    *   Returns true if the save action was completed without errors.
    */
   public function save() {
-    if (empty($this->realpath)) {
-      $this->realpath = $this->env->dir['users'] . '/' . $this->getName();
+    if (empty($this->path)) {
+      $this->path = $this->env->dir['users'] . '/' . $this->getName();
     }
     $vars = array('user' => $this);
     $this->env->hook('user_save', $vars);
