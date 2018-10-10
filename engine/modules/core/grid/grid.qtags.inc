@@ -21,7 +21,7 @@ function qtag_GRID_CAROUSEL($env, $target, $attributes) {
   if (Amp::isActive($env)) {
     // Google AMP carousel.
     $attributes['module'] = 'grid';
-    $attributes['tpl'] = 'grid-slide-amp';
+    $attributes['tpl'] = 'grid-carousel-amp';
     $attributes['width'] = '400';
     $attributes['height'] = '260';
     $attributes['autoplay'] = 'true';
@@ -30,7 +30,7 @@ function qtag_GRID_CAROUSEL($env, $target, $attributes) {
   } else {
     // Classic flickity carousel.
     $attributes['module'] = 'grid';
-    $attributes['tpl'] = 'grid-slide';
+    $attributes['tpl'] = 'grid-carousel';
     $attributes['flickity_theme'] = 'actionbutton';
     $attributes['pageDots'] = 'true';
     $attributes['editable'] = 'false';	  

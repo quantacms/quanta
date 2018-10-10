@@ -1,3 +1,6 @@
+amp-carousel {
+  margin-bottom: -17px !important; /* workaround for padding bottom */
+}
 amp-carousel .slide .cover img{
   object-fit: cover;
 }
@@ -12,5 +15,8 @@ amp-carousel .slide .caption {
   right: 0;
   padding: 10px;
   background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+}
+amp-carousel .slide .caption a {
   color: #fff;
 }
