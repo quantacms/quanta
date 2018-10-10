@@ -47,19 +47,28 @@ class NodeFactory {
   }
 
   /**
-   * Load a node from its realpath.
+   * Load a node from its path.
    *
    * @param Environment $env
    *   The Environment.
-   * @param $realpath
+   * @param $path
    *   The real system path of the node.
    *
    * @return Node
    *   The built node object.
    */
-  public static function loadFromRealPath(Environment $env, $realpath) {
-    $exp = explode('/', $realpath);
-    return NodeFactory::load($env, $exp[count($exp) - 2]);
+  public static function loadFromRealPath(Environment $env, $path, $language = NULL) {
+    $exp = explode('/', $path);
+    $node_name = $exp[count($exp) - 2];
+    if (empty($language)) {
+      $language = Localization::getLanguage($env);
+    }
+    $node = new Node($env, $node_name, NULL, $language, $path);
+
+    $vars = array('node' => &$node);
+    $env->hook('node_open', $vars);
+    return $node;
+
   }
 
   /**
@@ -98,7 +107,7 @@ class NodeFactory {
     if (!$symlink_folder_node->exists) {
       new Message($env, 'Error: could not unlink ' . $symlink_name . ' from ' . $symlink_folder . '. ' . $symlink_folder . ' doesn\'t exist', MESSAGE_ERROR);
     }
-    elseif (!is_link($symlink_folder_node->realpath . '/' . $symlink_name)) {
+    elseif (!is_link($symlink_folder_node->path . '/' . $symlink_name)) {
       switch ($if_not_exists) {
         case 'error':
           new Message($env, 'Error: could not unlink ' . $symlink_name . ' from ' . $symlink_folder . '. ' . $symlink_folder . '/' . $symlink_name . ' doesn\'t exist', MESSAGE_ERROR);
@@ -110,7 +119,7 @@ class NodeFactory {
     }
     else {
       try {
-        unlink($symlink_folder_node->realpath . '/' . $symlink_name);
+        unlink($symlink_folder_node->path . '/' . $symlink_name);
       }
       catch (Exception $ex) {
         new Message($vars['env'], 'Error: could not unlink ' . $symlink_name . ' from ' . $symlink_folder, MESSAGE_ERROR);
@@ -158,7 +167,7 @@ class NodeFactory {
       new Message($env, 'Error: could not link ' . $source_node . ' into ' . $symlink_folder . '. ' . $symlink_folder . ' doesn\'t exist', MESSAGE_ERROR);
     }
     // What to do if the symlink exists already.
-    elseif (is_link($symlink_folder_node->realpath . '/' . $symlink_name)) {
+    elseif (is_link($symlink_folder_node->path . '/' . $symlink_name)) {
 
       switch ($if_exists) {
         case 'error':
@@ -169,7 +178,7 @@ class NodeFactory {
           break;
 
         case 'override':
-          unlink($symlink_folder_node->realpath . '/' . $symlink_name);
+          unlink($symlink_folder_node->path . '/' . $symlink_name);
           $create_link = TRUE;
           break;
       }
@@ -182,7 +191,7 @@ class NodeFactory {
     // All circumnstances are good to create the symlink. Try it.
     if ($create_link) {
       try {
-        symlink($from_node->realpath, $symlink_folder_node->realpath . '/' . $symlink_name);
+        symlink($from_node->path, $symlink_folder_node->path . '/' . $symlink_name);
         $linked_ok = TRUE;
       }
       catch (Exception $ex) {
@@ -351,7 +360,7 @@ class NodeFactory {
       case NODE_ACTION_EDIT:
         if ($action == NODE_ACTION_ADD) {
           // Setup the path of the node to be created / updated.
-          $node->realpath = $node->father->realpath . '/' . $path;
+          $node->path = $node->father->path . '/' . $path;
           $node->setAuthor($user->getName());
         }
         // TODO complete validation code.
