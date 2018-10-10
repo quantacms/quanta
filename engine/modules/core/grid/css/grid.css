@@ -17,10 +17,10 @@
 .grid > * {
   grid-column: auto / span 12;
 }
-html > .grid {
+body.grid {
   grid-row-gap: 0;
 }
-html > .grid > * {
+body.grid > * {
   padding: var(--gap-size);
 }
 .grid-container > .grid {

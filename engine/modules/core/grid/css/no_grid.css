@@ -18,7 +18,7 @@
   width: 100%;
 }
 
-html > .grid > * {
+body.grid > * {
   padding: var(--gap-size);
 }
 .grid-container > .grid {
