@@ -64,7 +64,7 @@ function qtag_FILETABLE($env, $target, $attributes) {
  *   The rendered qtag.
  */
 function qtag_FILES($env, $target, $attributes) {
-  $filelist = new FileList($env, $target, 'file', $attributes);
+  $filelist = new FileList($env, $target, 'FileObject', $attributes);
   return $filelist->render();
 }
 

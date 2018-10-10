@@ -17,7 +17,9 @@ class Shadow extends Page {
    * Construct the Shadow.
    *
    * @param Environment $env
+   *   The Environment.
    * @param object $data
+   *   The shadow data.
    */
   public function __construct($env, $data = NULL) {
     $this->env = $env;
@@ -37,7 +39,6 @@ class Shadow extends Page {
     }
 
     // TODO: urgently refactor.
-
     if (isset($data->manager)) {
       $this->setData('manager', $data->manager);
     }

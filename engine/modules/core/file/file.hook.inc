@@ -43,7 +43,7 @@ function file_init($env, $vars) {
   // There is a request to upload a file.
   // TODO: move in actions / factory?
   if (!empty($_FILES)) {
-    File::checkUploads($env);
+    FileObject::checkUploads($env);
     exit();
   }
 
@@ -51,10 +51,9 @@ function file_init($env, $vars) {
   // TODO: move in actions / factory?
   if (isset($_REQUEST[NODE_ACTION_DELETE_FILE])) {
     $split_file_to_delete = explode('/', $_REQUEST[NODE_ACTION_DELETE_FILE]);
-    File::deleteFile($node, $split_file_to_delete[count($split_file_to_delete) - 1]);
+    FileObject::deleteFile($node, $split_file_to_delete[count($split_file_to_delete) - 1]);
     exit();
   }
-
 }
 
 /**
@@ -112,13 +111,13 @@ function file_node_after_save($env, $vars) {
 
       $tmp_file_path = $tmp_dir . '/' . $file;
 
-      $fileobj = new File($env, $tmp_file_path, $node);
+      $fileobj = new FileObject($env, $tmp_file_path, $node);
       // Check that uploaded files are valid.
       if (!$fileobj->isPublic()) {
         new Message($env, 'The file <b>' . $file . '</b> has an invalid name and could not be uploaded. Please use a different name.', MESSAGE_WARNING);
       }
       elseif (is_file($tmp_file_path)) {
-        copy($tmp_file_path, $node->realpath . '/' . normalizeFilePath($file));
+        copy($tmp_file_path, $node->path . '/' . normalizeFilePath($file));
         unlink($tmp_file_path);
       }
       else {

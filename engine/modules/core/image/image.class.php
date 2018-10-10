@@ -10,7 +10,7 @@ define('IMAGE_RENDER_FULL', 'image_full');
 /**
  * Class Image
  */
-class Image extends File {
+class Image extends FileObject {
 
   public $width = '';
   public $height = '';
@@ -111,26 +111,19 @@ class Image extends File {
    *
    * @param Environment $env
    *   The Environment.
-   *
-   * @param int $maxw
-   *   The maximum width of the thumbnail.
-   *
-   * @param int $maxh
-   *   The maximum height of the thumbnail.
-   *
-   * @param string $image_action
-   *   The type of action to perform.
-   *
-   * @param int $compression
-   *   The compression level of the thumbnail.
-   *
-   * @param int $fallback
-   *   A fallback image to use if the image can not be loaded.
-   *
+   * @param array $vars
+   *   An array of the variables for the thumbnail to generate.
    * @return string
    *   The url of the generated thumbnail.
    */
-  public function generateThumbnail($env, $maxw = NULL, $maxh = NULL, $image_action = 'crop', $compression = 60, $fallback) {
+  public function generateThumbnail($env, $vars) {
+
+    $maxw = isset($vars['w_max']) ? $vars['w_max'] : 0;
+    $maxh = isset($vars['h_max']) ? $vars['h_max'] : 0;
+    $image_action = isset($vars['image_action']) ? $vars['image_action'] : 0;
+    $compression = isset($vars['compression']) ? $vars['compression'] : 0;
+    $fallback = isset($vars['fallback']) ? $vars['fallback'] : 0;
+
 
     if ($maxw == 'auto') {
       $maxw = 0;
