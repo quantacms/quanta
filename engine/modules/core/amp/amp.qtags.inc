@@ -92,12 +92,12 @@ function qtag_AMP_CAROUSEL($env, $target, $attributes) {
 
   $carousel_attributes_defaults = array(
     // TODO: Extend to all options.
-    'width' => '400',
-    'height' => '225', // 400:225 = 16:9
-    'layout' => 'responsive', // responsive / fixed-height
-    'type' => 'slides',
-    'autoplay' => 'false',
-    'delay' => '3000', // used when autoplay is active
+    'carousel_width' => '400',
+    'carousel_height' => '225', // 400:225 = 16:9
+    'carousel_layout' => 'responsive', // responsive / fixed-height
+    'carousel_type' => 'slides',
+    'carousel_autoplay' => 'false',
+    'carousel_delay' => '3000', // used when autoplay is active
   );
 
   $carousel_attributes = array();
@@ -107,14 +107,103 @@ function qtag_AMP_CAROUSEL($env, $target, $attributes) {
 
   $rand_class = rand(0, 99999999);
   $html = '<amp-carousel class="amp-' . $rand_class . '"';
-  $html .= ' width="' . $carousel_attributes['width'] . '"';
-  $html .= ' height="' . $carousel_attributes['height'] . '"';
-  $html .= ' layout="' . $carousel_attributes['layout'] . '"';
-  $html .= ' type="' . $carousel_attributes['type'] . '"';
-  $html .= ($carousel_attributes['autoplay'] == 'true' ? ' autoplay' : '');
-  $html .= ' delay="' . $carousel_attributes['delay'] . '"';
+  $html .= ' width="' . $carousel_attributes['carousel_width'] . '"';
+  $html .= ' height="' . $carousel_attributes['carousel_height'] . '"';
+  $html .= ' layout="' . $carousel_attributes['carousel_layout'] . '"';
+  $html .= ' type="' . $carousel_attributes['carousel_type'] . '"';
+  $html .= ($carousel_attributes['carousel_autoplay'] == 'true' ? ' autoplay' : '');
+  $html .= ' delay="' . $carousel_attributes['carousel_delay'] . '"';
   $html .= '>' . $list->render() . '</amp-carousel>';
 
   return $html;
 
+}
+
+
+
+/**
+ * Implements AMP_SIDEBAR qtag.
+ *
+ * Render amp version of the overlay menu.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_AMP_SIDEBAR($env, $target, $attributes) {
+
+  $sidebar_attributes_defaults = array(
+    'sidebar_side' => 'right',
+  );
+
+  $sidebar_attributes = array();
+  foreach ($sidebar_attributes_defaults as $k => $attr) {
+    $sidebar_attributes[$k] = (isset($attributes[$k]) ? $attributes[$k] : $attr);
+  }
+  
+  $rand_class = rand(0, 99999999);
+  $html = '<amp-sidebar id="' . $attributes['sidebar_id'] . '"';
+  $html .= ' class="amp-' . $rand_class . '"';
+  $html .= ' layout="nodisplay"';
+  $html .= ' side="' . $sidebar_attributes['sidebar_side'] . '"';
+  $html .= '>';
+  $html .= '<button class="amp-close-sidebar" on="tap:' . $attributes['sidebar_id'] . '.close" role="button" tabindex="0"><i class="fa fa-times"></i></button>';
+  $html .= $target;
+  $html .= '</amp-sidebar>';
+
+  return $html;
+}
+
+
+
+/**
+ * Implements AMP_SIDEBAR_BUTTON qtag.
+ *
+ * Render a button to handle an AMP sidebar.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_AMP_SIDEBAR_BUTTON($env, $target, $attributes) {
+
+  $html = '';
+
+  // TODO: find a better way to filter AMP
+  if (Amp::isActive($env)) {
+    $sidebar_button_attributes_defaults = array(
+      'sidebar_button_action' => 'toggle',
+    );
+
+    $sidebar_button_attributes = array();
+    foreach ($sidebar_button_attributes_defaults as $k => $attr) {
+      $sidebar_button_attributes[$k] = (isset($attributes[$k]) ? $attributes[$k] : $attr);
+    }
+    
+    $rand_class = rand(0, 99999999);
+    $html = '<button' . (empty($attributes['sidebar_button_id']) ? '' : ' id="' . $attributes['sidebar_button_id'] . '"');
+    $html .= ' class="amp-' . $rand_class . '"';
+    $html .= ' on="tap:' . $target . '.' . $sidebar_button_attributes['sidebar_button_action'] . '"';
+    $html .= '>';
+    $html .= $attributes['sidebar_button_html'];
+    $html .= '</button>';
+  }
+
+  return $html;
 }

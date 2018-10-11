@@ -22,9 +22,9 @@ function qtag_GRID_CAROUSEL($env, $target, $attributes) {
     // Google AMP carousel.
     $attributes['module'] = 'grid';
     $attributes['tpl'] = 'grid-carousel-amp';
-    $attributes['width'] = '400';
-    $attributes['height'] = '260';
-    $attributes['autoplay'] = 'true';
+    $attributes['carousel_width'] = '400';
+    $attributes['carousel_height'] = '260';
+    $attributes['carousel_autoplay'] = 'true';
     return qtag_AMP_CAROUSEL($env, $target, $attributes);
 
   } else {
