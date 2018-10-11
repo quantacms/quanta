@@ -1,3 +1,13 @@
+.flickity-carousel{
+  position:relative;
+  transition: opacity 0.3s;
+  opacity:0; /* init */
+}
+
+.flickity-carousel.flickity-enabled{
+  opacity:1;
+}
+
 .node-item{
   width:100%;
 }
