@@ -197,12 +197,12 @@ function qtag_AMP_SIDEBAR_BUTTON($env, $target, $attributes) {
     }
     
     $rand_class = rand(0, 99999999);
-    $html = '<a href="#"' . (empty($attributes['sidebar_button_id']) ? '' : ' id="' . $attributes['sidebar_button_id'] . '"');
+    $html = '<button' . (empty($attributes['sidebar_button_id']) ? '' : ' id="' . $attributes['sidebar_button_id'] . '"');
     $html .= ' class="amp-' . $rand_class . '"';
     $html .= ' on="tap:' . $target . '.' . $sidebar_button_attributes['sidebar_button_action'] . '"';
     $html .= '>';
     $html .= $attributes['sidebar_button_html'];
-    $html .= '</a>';
+    $html .= '</button>';
   }
 
   return $html;

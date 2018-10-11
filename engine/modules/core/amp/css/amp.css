@@ -23,3 +23,25 @@ amp-carousel .slide .caption a {
 a > .image {
   display: block; /* remove extra-height in link */
 }
+
+
+/* style menu buttons like links */
+button[on] {
+  background: none;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+}
+
+/* AMP SIDEBAR */
+amp-sidebar {
+  background: #fff;
+}
+amp-sidebar .amp-close-sidebar {
+  font-size: 30px;
+  line-height: 35px;
+  margin-bottom: 20px;
+}
+amp-sidebar ul li {
+  padding: 5px;
+}
