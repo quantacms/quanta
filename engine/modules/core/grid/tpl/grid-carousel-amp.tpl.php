@@ -1,4 +1,4 @@
-<div class="slide">
+<article class="slide">
   <amp-img src="[IMGTHUMBURL|node=[LISTITEM]|1000x0:{ATTRIBUTE|name=thumbnail:[LISTITEM]}]"
     class="cover align-top"
     width="400"
@@ -9,4 +9,4 @@
       [LINK:[LISTITEM]]
     </div>    
   </amp-img>
-</div>
+</article>
