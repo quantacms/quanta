@@ -267,10 +267,10 @@ function qtag_JSON($env, $target, &$attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_HEADER($env, $target, $attributes) {
+function qtag_HEADER($env, $target, &$attributes) {
   $attributes['wrapper_html_tag'] = 'header';
   $target_header = isset($target) ? $target : 'header';
-  $target = qtag_CONTENT($env, $target_header, null);
+  $target = qtag_CONTENT($env, $target_header, $attributes);
   
   return qtag_WRAPPER($env, $target, $attributes);
 }
@@ -293,10 +293,10 @@ function qtag_HEADER($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_FOOTER($env, $target, $attributes) {
+function qtag_FOOTER($env, $target, &$attributes) {
   $attributes['grid'] = 'grid-container';
   $attributes['grid_html_tag'] = 'footer';
   $target_footer = isset($target) ? $target : 'footer';
-  print_r($attributes);
+  
   return qtag_CONTENT($env, $target_footer, $attributes);
 }
