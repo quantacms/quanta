@@ -16,7 +16,7 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_SEARCH($env, $target, $attributes) {
+function qtag_SEARCH($env, $target, &$attributes) {
   $search_form = '
 		[INPUT|name=search|title=|type=string:search-form]
 		[INPUT|name=submit|type=submit|value=Search!:search-form]
@@ -41,7 +41,7 @@ function qtag_SEARCH($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_SEARCHRESULTS($env, $target, $attributes) {
+function qtag_SEARCHRESULTS($env, $target, &$attributes) {
   $output = '';
   $results = array();
   $results_arr = search($env);

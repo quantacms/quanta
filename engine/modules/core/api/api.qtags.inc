@@ -16,7 +16,7 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_QUANTA($env, $target, $attributes) {
+function qtag_QUANTA($env, $target, &$attributes) {
 
 	return '<span class="powered-by-quanta">Powered by <a href="https://www.quantacms.com">Quanta CMS</a></span>';
 }
@@ -37,7 +37,7 @@ function qtag_QUANTA($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_RANDOM($env, $target, $attributes) {
+function qtag_RANDOM($env, $target, &$attributes) {
   $min = isset($attributes['min']) ? $attributes['min'] : 0;
   $max = isset($attributes['max']) ? $attributes['max'] : 1000000;
   return rand($min, $max);
@@ -60,7 +60,7 @@ function qtag_RANDOM($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_EMAIL($env, $target, $attributes) {
+function qtag_EMAIL($env, $target, &$attributes) {
   $string = '';
   if (valid_email($target)) {
     $title = (isset($attributes['title']) ? $attributes['title'] : $target);
@@ -86,7 +86,7 @@ function qtag_EMAIL($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_PHONE($env, $target, $attributes) {
+function qtag_PHONE($env, $target, &$attributes) {
   if (isset($attributes['class'])){
     $attributes['class'] .= ' tel';
   }
@@ -114,7 +114,7 @@ function qtag_PHONE($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_URL($env, $target, $attributes) {
+function qtag_URL($env, $target, &$attributes) {
   if (empty($target)) {
     $target = $env->getRequestedPath();
   }
@@ -138,7 +138,7 @@ function qtag_URL($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_STRING($env, $target, $attributes) {
+function qtag_STRING($env, $target, &$attributes) {
   return $target;
 }
 
@@ -159,7 +159,7 @@ function qtag_STRING($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_DATE($env, $target, $attributes) {
+function qtag_DATE($env, $target, &$attributes) {
   $date = new DateTime($target);
   if (isset($attributes['format'])) {
     $formatted_date = $date->format($attributes['format']);
@@ -187,7 +187,7 @@ function qtag_DATE($env, $target, $attributes) {
  * @return string
  *   The back button.
  */
-function qtag_BACK($env, $target, $attributes) {
+function qtag_BACK($env, $target, &$attributes) {
   $title = isset($attributes['title']) ? $attributes['title'] : 'Back';
   return '<a href="#" onclick="history.back()">' . $title . '</a>';
 }
@@ -209,7 +209,7 @@ function qtag_BACK($env, $target, $attributes) {
  * @return string
  *   The back button.
  */
-function qtag_NODE_JSON($env, $target, $attributes) {
+function qtag_NODE_JSON($env, $target, &$attributes) {
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $fields = empty($attributes['fields']) ? array('name', 'teaser', 'author', 'body') : explode(',', $attributes['fields']);
   $values = array();

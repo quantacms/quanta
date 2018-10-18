@@ -16,7 +16,7 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_MENU($env, $target, $attributes) {
+function qtag_MENU($env, $target, &$attributes) {
   $links = array();
   $links_html = array();
 

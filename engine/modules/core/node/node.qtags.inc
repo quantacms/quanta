@@ -16,7 +16,7 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_AUTHOR($env, $target, $attributes) {
+function qtag_AUTHOR($env, $target, &$attributes) {
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $author = $node->getAuthor();
   return qtag_LINK($env, $author, $attributes);
@@ -39,7 +39,7 @@ function qtag_AUTHOR($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_ATTRIBUTE($env, $target, $attributes) {
+function qtag_ATTRIBUTE($env, $target, &$attributes) {
 
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
 
@@ -159,7 +159,7 @@ function qtag_ATTRIBUTE($env, $target, $attributes) {
  *
  * TODO: we should make Links an object oriented / class item.
  */
-function qtag_LINK($env, $target, $attributes) {
+function qtag_LINK($env, $target, &$attributes) {
   $querystring = array();
   $link_title = '';
   $link_target = '';
@@ -263,7 +263,7 @@ function qtag_LINK($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_ADD($env, $target, $attributes) {
+function qtag_ADD($env, $target, &$attributes) {
   $nodeobj = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $target = $nodeobj->getName();
   $link = '';
@@ -297,7 +297,7 @@ function qtag_ADD($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_EDIT($env, $target, $attributes) {
+function qtag_EDIT($env, $target, &$attributes) {
   $nodeobj = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $target = $nodeobj->getName();
   $string = '';
@@ -337,7 +337,7 @@ function qtag_EDIT($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_DELETE($env, $target, $attributes) {
+function qtag_DELETE($env, $target, &$attributes) {
   $nodeobj = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $target = $nodeobj->getName();
   $string = '';
@@ -372,7 +372,7 @@ function qtag_DELETE($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_OPERATIONS($env, $target, $attributes) {
+function qtag_OPERATIONS($env, $target, &$attributes) {
   $operations = '';
   // Collect the three basic admin links.
   $operations .= qtag_ADD($env, $target, $attributes);
@@ -398,7 +398,7 @@ function qtag_OPERATIONS($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_CATEGORIES($env, $target, $attributes) {
+function qtag_CATEGORIES($env, $target, &$attributes) {
   $node = NodeFactory::current($env);
   $html = '';
   $cats = $node->getCategories($target);
@@ -426,7 +426,7 @@ function qtag_CATEGORIES($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_COUNT($env, $target, $attributes) {
+function qtag_COUNT($env, $target, &$attributes) {
   $nodeobj = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
 
   $depth = '';
@@ -462,7 +462,7 @@ function qtag_COUNT($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_STATUS($env, $target, $attributes) {
+function qtag_STATUS($env, $target, &$attributes) {
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $status = $node->getStatus();
   $status_node = NodeFactory::load($env, $status);
@@ -487,7 +487,7 @@ function qtag_STATUS($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_TEASER($env, $target, $attributes) {
+function qtag_TEASER($env, $target, &$attributes) {
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   return filter_xss($node->getTeaser());
 }
@@ -510,7 +510,7 @@ function qtag_TEASER($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_TITLE($env, $target, $attributes) {
+function qtag_TITLE($env, $target, &$attributes) {
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   return filter_xss($node->getTitle());
 }
@@ -533,7 +533,7 @@ function qtag_TITLE($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_BODY($env, $target, $attributes) {
+function qtag_BODY($env, $target, &$attributes) {
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   // TODO: add filter_xss.
   return $node->getBody();
@@ -557,7 +557,7 @@ function qtag_BODY($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_CONTENT($env, $target, $attributes) {
+function qtag_CONTENT($env, $target, &$attributes) {
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $node->buildTemplate();
   return $node->render();  

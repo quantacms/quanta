@@ -19,7 +19,7 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_FA_ICON($env, $target, $attributes) {
+function qtag_FA_ICON($env, $target, &$attributes) {
   return '<i class="fa fa-' . $target . '"></i>';
 }
 

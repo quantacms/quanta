@@ -16,6 +16,6 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_MESSAGES($env, $target, $attributes) {
+function qtag_MESSAGES($env, $target, &$attributes) {
   return Message::burnMessages(MESSAGE_TYPE_SCREEN);
 }

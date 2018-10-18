@@ -16,7 +16,7 @@
  * @return string
  *   The rendered Shadow.
  */
-function qtag_SHADOW($env, $target, $attributes) {
+function qtag_SHADOW($env, $target, &$attributes) {
   $shadow = $env->getData('shadow');
   $string = NULL;
   switch ($target) {

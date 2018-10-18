@@ -19,7 +19,7 @@ define('CAROUSEL_DIRS', 'carousel_dirs');
  * @return string
  *   The rendered qtag.
  */
-function qtag_CAROUSEL($env, $target, $attributes) {
+function qtag_CAROUSEL($env, $target, &$attributes) {
   /** @var Page $page */
   $page = $env->getData('page');
   $module_path = $env->getModulePath('flickity');
@@ -109,7 +109,7 @@ function qtag_CAROUSEL($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_FILECAROUSEL($env, $target, $attributes) {
+function qtag_FILECAROUSEL($env, $target, &$attributes) {
   $attributes['carousel-type'] = CAROUSEL_FILES;
   return qtag_CAROUSEL($env, $target, $attributes);
 }

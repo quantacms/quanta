@@ -17,7 +17,7 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_LANGUAGE($env, $target, $attributes) {
+function qtag_LANGUAGE($env, $target, &$attributes) {
   return Localization::getLanguage($env);
 }
 
@@ -38,7 +38,7 @@ function qtag_LANGUAGE($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_FALLBACK_LANGUAGE($env, $target, $attributes) {
+function qtag_FALLBACK_LANGUAGE($env, $target, &$attributes) {
   return Localization::getFallbackLanguage($env);
 }
 
@@ -59,7 +59,7 @@ function qtag_FALLBACK_LANGUAGE($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_LANGUAGE_SWITCHER($env, $target, $attributes) {
+function qtag_LANGUAGE_SWITCHER($env, $target, &$attributes) {
 
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $language_switcher_tpl = 'language_switcher';
@@ -101,7 +101,7 @@ function qtag_LANGUAGE_SWITCHER($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_TRANSLATE_LINKS($env, $target, $attributes) {
+function qtag_TRANSLATE_LINKS($env, $target, &$attributes) {
   $attributes['active_items'] = Localization::getLanguage($env);
   // We don't want translate links to be considered as editable nodes.
   $attributes['editable'] = 'false';
@@ -127,7 +127,7 @@ function qtag_TRANSLATE_LINKS($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_TRANSLATE($env, $target, $attributes) {
+function qtag_TRANSLATE($env, $target, &$attributes) {
   $node = NodeFactory::load($env, $target);
   $current = NodeFactory::current($env);
   if (!$node->exists) {

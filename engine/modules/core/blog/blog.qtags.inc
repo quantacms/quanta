@@ -19,7 +19,7 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_BLOG($env, $target, $attributes) {
+function qtag_BLOG($env, $target, &$attributes) {
   $dirlist = new DirList($env, $target, 'blog', array('sort' => 'time') + $attributes, 'blog');
   return $dirlist->render();
 }
@@ -43,6 +43,6 @@ function qtag_BLOG($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_READMORE($env, $target, $attributes) {
+function qtag_READMORE($env, $target, &$attributes) {
   return 'Read more';
 }

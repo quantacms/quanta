@@ -27,7 +27,7 @@ define("JUMPER_EMPTY", "_empty");
  * @return string
  *   The rendered qtag.
  */
-function qtag_JUMPER($env, $target, $attributes) {
+function qtag_JUMPER($env, $target, &$attributes) {
   // Which folder to use.
   $dirlist = new DirList($env, $target, 'jumper', array('sortbytime' => 'asc') + $attributes, 'jumper');
 

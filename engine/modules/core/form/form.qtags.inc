@@ -17,7 +17,7 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_INPUT($env, $target, $attributes) {
+function qtag_INPUT($env, $target, &$attributes) {
   $rendered = '';
   $form = FormFactory::getForm($env, $target);
   FormFactory::createInputItem($env, $attributes, $form);
@@ -42,7 +42,7 @@ function qtag_INPUT($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_INPUT_RENDER($env, $target, $attributes) {
+function qtag_INPUT_RENDER($env, $target, &$attributes) {
 
   $rendered = '';
   $form = FormFactory::getForm($env, $target);
@@ -80,7 +80,7 @@ function qtag_INPUT_RENDER($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_FORM($env, $target, $attributes) {
+function qtag_FORM($env, $target, &$attributes) {
   $form = FormFactory::getForm($env, $target);
   $form->loadAttributes($attributes);
   $string = '';
@@ -108,7 +108,7 @@ function qtag_FORM($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_LIST_VALUES($env, $target, $attributes) {
+function qtag_LIST_VALUES($env, $target, &$attributes) {
   $attributes['editable'] = 'false';
   $attributes['clean'] = TRUE;
   $attributes['separator'] = ',';
