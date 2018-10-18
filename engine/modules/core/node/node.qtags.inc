@@ -275,7 +275,7 @@ function qtag_ADD($env, $target, &$attributes) {
     $attributes['language'] = isset($attributes['language']) ? $attributes['language'] : Localization::getLanguage($env);
     $attributes['title'] = isset($attributes['title']) ? filter_xss($attributes['title']) : '&oplus;';
 
-    $link = qtag_LINK($env, $target, &$attributes);
+    $link = qtag_LINK($env, $target, $attributes);
   }
   return $link;
 }
@@ -313,7 +313,7 @@ function qtag_EDIT($env, $target, &$attributes) {
     $attributes['title'] = isset($attributes['title']) ? filter_xss($attributes['title']) : '&#9998;';
     $attributes['redirect'] = isset($attributes['redirect']) ? $attributes['redirect'] : '';
 
-    $string = qtag_LINK($env, $target, &$attributes);
+    $string = qtag_LINK($env, $target, $attributes);
   }
   return $string;
 }
@@ -350,7 +350,7 @@ function qtag_DELETE($env, $target, &$attributes) {
 
     $attributes['redirect'] = isset($attributes['redirect']) ? $attributes['redirect'] : '';
 
-    $string = qtag_LINK($env, $target, &$attributes);
+    $string = qtag_LINK($env, $target, $attributes);
   }
   return $string;
 }
@@ -375,9 +375,9 @@ function qtag_DELETE($env, $target, &$attributes) {
 function qtag_OPERATIONS($env, $target, &$attributes) {
   $operations = '';
   // Collect the three basic admin links.
-  $operations .= qtag_ADD($env, $target, &$attributes);
-  $operations .= qtag_EDIT($env, $target, &$attributes);
-  $operations .= qtag_DELETE($env, $target, &$attributes);
+  $operations .= qtag_ADD($env, $target, $attributes);
+  $operations .= qtag_EDIT($env, $target, $attributes);
+  $operations .= qtag_DELETE($env, $target, $attributes);
   return $operations;
 }
 

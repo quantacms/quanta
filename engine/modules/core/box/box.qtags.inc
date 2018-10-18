@@ -26,7 +26,7 @@ function qtag_BOX($env, $target, &$attributes) {
   if (!empty($attributes['box'])) {
     unset($attributes['box']);
   }
-  $box->setHtml(qtag_BLOCK($env, $target, &$attributes));
+  $box->setHtml(qtag_BLOCK($env, $target, $attributes));
   return $box->render();
 }
 
