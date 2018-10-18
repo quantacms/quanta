@@ -16,7 +16,7 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_META_DATA($env, $target, $attributes) {
+function qtag_META_DATA($env, $target, &$attributes) {
   $meta = $env->getData('metadata');
   $metatags = array();
 

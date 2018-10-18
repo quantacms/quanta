@@ -17,7 +17,7 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_LIST($env, $target, $attributes) {
+function qtag_LIST($env, $target, &$attributes) {
   $tpl = isset($attributes['tpl']) ? $attributes['tpl'] : 'dir';
   $dirlist = new DirList($env, $target, $tpl, $attributes, 'list');  
   $render = $dirlist->render();
@@ -41,7 +41,7 @@ function qtag_LIST($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_FILETABLE($env, $target, $attributes) {
+function qtag_FILETABLE($env, $target, &$attributes) {
   $filelist = new FileList($env, $target, 'file_table', $attributes, 'list');
   return $filelist->render();
 }
@@ -63,7 +63,7 @@ function qtag_FILETABLE($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_FILES($env, $target, $attributes) {
+function qtag_FILES($env, $target, &$attributes) {
   $filelist = new FileList($env, $target, 'file', $attributes);
   return $filelist->render();
 }
@@ -86,7 +86,7 @@ function qtag_FILES($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_FILES_ADMIN($env, $target, $attributes) {
+function qtag_FILES_ADMIN($env, $target, &$attributes) {
   $filelist = new FileList($env, $target, 'file_admin', $attributes);
 
   // TODO: not optimal, but we don't want default files from father node on node add...
@@ -118,7 +118,7 @@ function qtag_FILES_ADMIN($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_TREE($env, $target, $attributes) {
+function qtag_TREE($env, $target, &$attributes) {
   $dirlist = new DirList($env, $target, 'tree', $attributes);
   $render = $dirlist->render();
   return $render;
@@ -144,7 +144,7 @@ function qtag_TREE($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_BLOCKS($env, $target, $attributes) {
+function qtag_BLOCKS($env, $target, &$attributes) {
   $dirlist = new DirList($env, $target, 'blocks', $attributes, 'list');
   return $dirlist->render();
 }

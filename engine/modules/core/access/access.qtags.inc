@@ -16,7 +16,7 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_PERMISSION($env, $target, $attributes) {
+function qtag_PERMISSION($env, $target, &$attributes) {
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   if ($node->isNew()) {
     $permission = 'inherit';

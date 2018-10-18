@@ -16,7 +16,7 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_STATS($env, $target, $attributes) {
+function qtag_STATS($env, $target, &$attributes) {
   $stats = array();
   $stats[] = 'Node loaded: ' . $env->getData(STATS_NODE_LOADED);
   $stats[] = 'Node built: ' . $env->getData(STATS_NODE_BUILT);

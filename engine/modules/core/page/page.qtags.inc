@@ -16,7 +16,7 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_CSS($env, $target, $attributes) {
+function qtag_CSS($env, $target, &$attributes) {
   $page = $env->getData('page');
 
 
@@ -71,7 +71,7 @@ function qtag_CSS($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_JS($env, $target, $attributes) {
+function qtag_JS($env, $target, &$attributes) {
   $page = $env->getData('page');
 
   $js_code = '';
@@ -123,7 +123,7 @@ function qtag_JS($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_BODYCLASSES($env, $target, $attributes) {
+function qtag_BODYCLASSES($env, $target, &$attributes) {
   $page = $env->getData('page');
   $body_classes = $page->getData('body_classes');
   return implode(' ', $body_classes);
@@ -146,7 +146,7 @@ function qtag_BODYCLASSES($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_CONTEXT($env, $target, $attributes) {
+function qtag_CONTEXT($env, $target, &$attributes) {
   return $_REQUEST['context'];
 }
 
@@ -168,7 +168,7 @@ function qtag_CONTEXT($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_EMPTY($env, $target, $attributes) {
+function qtag_EMPTY($env, $target, &$attributes) {
   $text = isset($attributes['text']) ? $attributes['text'] : '&nbsp;';
   return $text;
 }
@@ -190,7 +190,7 @@ function qtag_EMPTY($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_BREADCRUMB($env, $target, $attributes) {
+function qtag_BREADCRUMB($env, $target, &$attributes) {
   $node = NodeFactory::current($env);
 
   // Check if current node id home (main node).
@@ -243,7 +243,7 @@ function qtag_BREADCRUMB($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_JSON($env, $target, $attributes) {
+function qtag_JSON($env, $target, &$attributes) {
   return json_encode($target);
 }
 

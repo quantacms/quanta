@@ -17,7 +17,7 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_MAILFORM($env, $target, $attributes) {
+function qtag_MAILFORM($env, $target, &$attributes) {
   if (!isset($attributes['ok_message'])) {
     $attributes['ok_message'] = 'Your mail has been sent. Thanks!';
   }

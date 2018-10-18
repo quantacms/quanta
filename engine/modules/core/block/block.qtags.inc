@@ -17,7 +17,7 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_BLOCK($env, $target, $attributes) {
+function qtag_BLOCK($env, $target, &$attributes) {
   $node = NodeFactory::load($env, $target);
 
   if (isset($attributes['rendered'])) {
@@ -54,7 +54,7 @@ function qtag_BLOCK($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_WRAPPER($env, $target, $attributes) {
+function qtag_WRAPPER($env, $target, &$attributes) {
   $wrapper_html_tag = !empty($attributes['wrapper_html_tag']) ? $attributes['wrapper_html_tag'] : 'div';
   $wrapper_id = !empty($attributes['wrapper_id']) ? $attributes['wrapper_id'] : '';
   $wrapper_class = !empty($attributes['wrapper_class']) ? $attributes['wrapper_class'] : '';
