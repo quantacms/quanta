@@ -249,3 +249,54 @@ function qtag_JSON($env, $target, $attributes) {
 
 
 
+
+/**
+ * Implements qtag HEADER.
+ *
+ * Render the page header.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_HEADER($env, $target, $attributes) {
+  $attributes['wrapper_html_tag'] = 'header';
+  $target_header = isset($target) ? $target : 'header';
+  $target = qtag_CONTENT($env, $target_header, null);
+  
+  return qtag_WRAPPER($env, $target, $attributes);
+}
+
+
+/**
+ * Implements qtag FOOTER.
+ *
+ * Render the page footer.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_FOOTER($env, $target, $attributes) {
+  $attributes['grid'] = 'grid-container';
+  $attributes['grid_html_tag'] = 'footer';
+  $target_footer = isset($target) ? $target : 'footer';
+  print_r($attributes);
+  return qtag_CONTENT($env, $target_footer, $attributes);
+}
