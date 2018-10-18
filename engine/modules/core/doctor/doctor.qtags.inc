@@ -16,6 +16,6 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_DOCTOR_TIMESTAMP($env, $target, $attributes) {
+function qtag_DOCTOR_TIMESTAMP($env, $target, &$attributes) {
 	return Doctor::timestamp($env);
 }

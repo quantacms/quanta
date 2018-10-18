@@ -16,7 +16,7 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_GRID_CAROUSEL($env, $target, $attributes) {
+function qtag_GRID_CAROUSEL($env, $target, &$attributes) {
 
   if (Amp::isActive($env)) {
     // Google AMP carousel.

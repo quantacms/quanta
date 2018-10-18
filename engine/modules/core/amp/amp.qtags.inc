@@ -16,7 +16,7 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_AMP_LINK($env, $target, $attributes) {
+function qtag_AMP_LINK($env, $target, &$attributes) {
   $node = NodeFactory::current($env);
   return '<link rel="amphtml" href="' . ($env->getBaseUrl() . '/amp/' . $node->getName()) . '">';
 
@@ -40,7 +40,7 @@ function qtag_AMP_LINK($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_CANONICAL_LINK($env, $target, $attributes) {
+function qtag_CANONICAL_LINK($env, $target, &$attributes) {
   $node = NodeFactory::current($env);
   return '<link rel="canonical" href="' . ($env->getBaseUrl() . '/' . $node->getName()) . '">';
 
@@ -64,7 +64,7 @@ function qtag_CANONICAL_LINK($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_AMP_CAROUSEL($env, $target, $attributes) {
+function qtag_AMP_CAROUSEL($env, $target, &$attributes) {
 
   $module = isset($attributes['module']) ? $attributes['module'] : 'amp';
   if (empty($attributes['carousel-type'])) {
@@ -138,7 +138,7 @@ function qtag_AMP_CAROUSEL($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_AMP_SIDEBAR($env, $target, $attributes) {
+function qtag_AMP_SIDEBAR($env, $target, &$attributes) {
 
   $sidebar_attributes_defaults = array(
     'sidebar_side' => 'right',
@@ -181,7 +181,7 @@ function qtag_AMP_SIDEBAR($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_AMP_SIDEBAR_BUTTON($env, $target, $attributes) {
+function qtag_AMP_SIDEBAR_BUTTON($env, $target, &$attributes) {
 
   $html = '';
 

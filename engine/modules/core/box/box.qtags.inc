@@ -16,7 +16,7 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_BOX($env, $target, $attributes) {
+function qtag_BOX($env, $target, &$attributes) {
   // Check if the box is editable.
   if (!isset($attributes['editable'])) {
     $attributes['editable'] = BOX_NON_EDITABLE;
@@ -26,7 +26,7 @@ function qtag_BOX($env, $target, $attributes) {
   if (!empty($attributes['box'])) {
     unset($attributes['box']);
   }
-  $box->setHtml(qtag_BLOCK($env, $target, $attributes));
+  $box->setHtml(qtag_BLOCK($env, $target, &$attributes));
   return $box->render();
 }
 
@@ -47,6 +47,7 @@ function qtag_BOX($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_CLOSE($env, $target, $attributes) {
-  return '<a class="close-button" href="#">X Close</a>';
+function qtag_CLOSE($env, $target, &$attributes) {
+
+  return '<a class="close-button" href="#' . $target . '">X Close</a>';
 }

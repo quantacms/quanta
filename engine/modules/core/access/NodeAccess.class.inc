@@ -20,8 +20,19 @@ class NodeAccess extends Access {
    *   Returns TRUE if access check was positive.
    */
   public static function check($env, $action, $vars = array()) {
-    $access = new NodeAccess($env, $action, $vars);
-    $can_access = $access->checkAction();
+    static $access_checked;
+    // Static cache of access controls.
+    if (empty($access_checked)) {
+      $access_checked = array();
+    }
+    if (!isset($access_checked[$action][$vars['node']->getName()])) {
+      $access = new NodeAccess($env, $action, $vars);
+      $can_access = $access->checkAction();
+      $access_checked[$action][$vars['node']->getName()] = $can_access;
+    }
+    else {
+      $can_access = $access_checked[$action][$vars['node']->getName()];
+    }
     return $can_access;
 
   }

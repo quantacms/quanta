@@ -16,7 +16,7 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_MAP($env, $target, $attributes) {
+function qtag_MAP($env, $target, &$attributes) {
   // TODO: remove Aldo's key and setup an attribute :-)
  
 	if (!isset($attributes['key'])) {

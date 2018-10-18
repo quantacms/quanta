@@ -16,7 +16,7 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_IMG($env, $target, $attributes) {
+function qtag_IMG($env, $target, &$attributes) {
   $node =  NodeFactory::current($env);
   $image = new Image($env, $target, $node);
   $image->loadAttributes($attributes);
@@ -40,7 +40,7 @@ function qtag_IMG($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_THUMBNAIL($env, $target, $attributes) {
+function qtag_THUMBNAIL($env, $target, &$attributes) {
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
   $attributes['link'] = $node->getName();
 	$attributes['node'] = $node->getName();
@@ -64,7 +64,7 @@ function qtag_THUMBNAIL($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_IMGTHUMB($env, $target, $attributes) {
+function qtag_IMGTHUMB($env, $target, &$attributes) {
   $node = isset($attributes['node']) ? NodeFactory::load($env, $attributes['node']) : NodeFactory::current($env);
 
   // Load the image.
@@ -146,7 +146,7 @@ function qtag_IMGTHUMB($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_IMGTHUMBURL($env, $target, $attributes) {
+function qtag_IMGTHUMBURL($env, $target, &$attributes) {
   $attributes['url'] = TRUE;
   return qtag_IMGTHUMB($env, $target, $attributes);
 }
