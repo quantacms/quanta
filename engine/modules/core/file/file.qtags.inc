@@ -16,7 +16,7 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_FILEATTRIBUTE($env, $target, $attributes) {
+function qtag_FILEATTRIBUTE($env, $target, &$attributes) {
   $node = empty($attributes['node']) ? NodeFactory::current($env) : NodeFactory::load($env, $attributes['node']);
   $file = new FileObject($env, $target, $node);
   $string = NULL;
@@ -61,7 +61,7 @@ function qtag_FILEATTRIBUTE($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_FILE($env, $target, $attributes) {
+function qtag_FILE($env, $target, &$attributes) {
   $node = empty($attributes['node']) ? NodeFactory::current($env) : NodeFactory::load($env, $attributes['node']);
 
   $file = new FileObject($env, $target, $node, $attributes['title']);
@@ -92,7 +92,7 @@ function qtag_FILE($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_FILE_PREVIEW($env, $target, $attributes) {
+function qtag_FILE_PREVIEW($env, $target, &$attributes) {
   $node = empty($attributes['node']) ? NodeFactory::current($env) : NodeFactory::load($env, $attributes['node']);
   if (isset($attributes['tmp_path'])) {
     $target = $env->dir['tmp'] . '/files/' . $attributes['tmp_path'] . '/' . $target;
@@ -132,7 +132,7 @@ function qtag_FILE_PREVIEW($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_FILE_QTAG_SUGGESTION($env, $target, $attributes) {
+function qtag_FILE_QTAG_SUGGESTION($env, $target, &$attributes) {
   $node = empty($attributes['node']) ? NodeFactory::current($env) : NodeFactory::load($env, $attributes['node']);
   if (isset($attributes['tmp_path'])) {
     $file = new FileObject($env, $env->dir['tmp'] . '/files/' . $attributes['tmp_path'] . '/' . $target, NODE_NEW);

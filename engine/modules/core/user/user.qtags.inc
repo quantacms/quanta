@@ -17,7 +17,7 @@
  * @return string
  *   The rendered qtag.
  */
-function qtag_USERATTRIBUTE($env, $target, $attributes) {
+function qtag_USERATTRIBUTE($env, $target, &$attributes) {
   $user = ($target == NULL) ? UserFactory::current($env) : new User($env, $target);
   switch ($attributes['name']) {
 
@@ -63,7 +63,7 @@ function qtag_USERATTRIBUTE($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_LOGIN($env, $target, $attributes) {
+function qtag_LOGIN($env, $target, &$attributes) {
   $user = UserFactory::current($env);
   if ($user->exists) {
     $title = isset($attributes['title']) ? $attributes['title'] : 'Logout';
@@ -93,7 +93,7 @@ function qtag_LOGIN($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_REGISTER($env, $target, $attributes) {
+function qtag_REGISTER($env, $target, &$attributes) {
   $user = UserFactory::current($env);
   if (UserAccess::check($env, USER_ACTION_REGISTER, array('user' => $user))) {
     $title = isset($attributes['title']) ? $attributes['title'] : 'Sign up';
@@ -121,7 +121,7 @@ function qtag_REGISTER($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_USER_EDIT($env, $target, $attributes) {
+function qtag_USER_EDIT($env, $target, &$attributes) {
   $user = ($target == NULL) ? UserFactory::current($env) : new User($env, $target);
   if (UserAccess::check($env, USER_ACTION_EDIT, array('user' => $user))) {
     $title = isset($attributes['title']) ? $attributes['title'] : 'Edit profile';
@@ -149,7 +149,7 @@ function qtag_USER_EDIT($env, $target, $attributes) {
  * @return string
  *   The rendered qtag.
  */
-function qtag_USER_EDIT_OWN($env, $target, $attributes) {
+function qtag_USER_EDIT_OWN($env, $target, &$attributes) {
   $user = ($target == NULL) ? UserFactory::current($env) : new User($env, $target);
   if (UserAccess::check($env, USER_ACTION_EDIT, array('user' => $user))) {
     $title = isset($attributes['title']) ? $attributes['title'] : 'Edit your profile';

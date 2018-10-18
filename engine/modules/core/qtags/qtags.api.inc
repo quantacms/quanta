@@ -105,7 +105,7 @@ function checkCodeTags(&$env, $html, $options = array(), $regex_options = 'U') {
             $qtag_access = TRUE;
 
             $vars = array(
-              'attributes' => $attr_arr,
+              'attributes' => &$attr_arr,
               'target' => $tag_destination,
               'qtag' => &$qtag[$tag_full],
               'access' => &$qtag_access,
@@ -120,8 +120,9 @@ function checkCodeTags(&$env, $html, $options = array(), $regex_options = 'U') {
             else {
 
               // Run the qtag.
-              $tag_html = $func($env, !empty($tag_destination) ? $tag_destination : NULL, $attr_arr);
+              $tag_html = $func($env, !empty($tag_destination) ? $tag_destination : NULL, $vars['attributes']);
 
+              // Prepare the qtag replacement.
               $qtag[$tag_full] = $tag_html;
 
               // Let other modules hook into the rendered qtag.
