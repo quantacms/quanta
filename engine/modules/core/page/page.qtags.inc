@@ -294,7 +294,7 @@ function qtag_HEADER($env, $target, &$attributes) {
  *   The rendered qtag.
  */
 function qtag_FOOTER($env, $target, &$attributes) {
-  $attributes['grid'] = 'grid-container';
+  $attributes['grid'] = 'grid grid-container';
   $attributes['grid_html_tag'] = 'footer';
   $target_footer = isset($target) ? $target : 'footer';
   
