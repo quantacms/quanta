@@ -21,9 +21,11 @@
 
 
 
-/* MAIN PAGE structure: header + #grid-main(max-height) + footer ( + others...) */
+/* "three-rows" style: */
+/* MAIN PAGE structure: */
+/* header + #grid-main(max-height) + footer */
 
-body.grid {
+body.grid.three-rows {
   min-height: 100%;
   display: flex;
   flex-wrap: nowrap;
@@ -31,10 +33,10 @@ body.grid {
   align-items: stretch;
   justify-content: initial;
 }
-body.grid > * {
+body.grid.three-rows > * {
   flex-shrink: 0;
 }
-#grid-main {
+.three-rows #grid-main {
   flex-grow: 1;
 }
 

@@ -53,7 +53,7 @@ function grid_qtag($env, $vars) {
     $grid_id = !empty($vars['attributes']['grid_id']) ? $vars['attributes']['grid_id'] : '';
     $classes = (!empty($vars['attributes']['grid']) && $vars['attributes']['grid'] != 1) ? $vars['attributes']['grid'] : '';
 
-    $vars['qtag'] = '<' . $grid_html_tag . (!empty($grid_id) ? ' id="' . $grid_id . '"' : '') . ' class="grid ' . $classes . '">' . $vars['qtag'] . '</' . $grid_html_tag . '>';
+    $vars['qtag'] = '<' . $grid_html_tag . (!empty($grid_id) ? ' id="' . $grid_id . '"' : '') . ' class="' . $classes . '">' . $vars['qtag'] . '</' . $grid_html_tag . '>';
   }
 }
 
