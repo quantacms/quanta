@@ -1,38 +1,318 @@
-body {
-    font-size: 18px;
-    line-height: 26px;
+* { 
+    box-sizing: border-box; 
+    font-family: Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace; 
 }
 
-/* Main content */
-#content > .inner {
-    background: #ffffff;
-    border-width: 0;
+h1 { 
+    font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace; 
+    font-weight: 600;
+    line-height: 1.2em; 
+    font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
 }
-
-/* H1 headers */
-h1 {
-    padding-top: 16px;
-    padding-bottom: 16px;
-}
-
-h2 {
-    padding-top: 12px;
-    padding-bottom: 12px;
-}
+h3 { 
+    font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
+    font-weight: 700; 
+    line-height: 15.4px; 
+} 
+p { 
+    font-family: "Courier New", Courier, "Lucida Typewriter", monospace; 
+    font-size: 16px;
+    font-weight: 300; 
+    line-height: 1.2em; 
+} 
 
 a {
-    color: #3a6aff;
-    text-decoration: underline;
+  text-decoration: none;
 }
 
-#sidebar-left .inner {
-    background: #dddddd;
+html, body {
+  margin: 0px;
 }
 
-#content-body .inner {
-    background: #eeeeee;
+.container {
+    display: grid;
+    grid-template-rows: 100vh 400px auto 400px 100px;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-areas:
+        'header header header'
+        'intro intro intro'
+        'featured-work featured-work featured-work'
+        'profile profile profile'
+        'footer footer footer';
+    margin: 0px;
+    padding: 0px;
 }
 
-#logo .inner {
-    background: #ffe9b1;
+.header {
+    grid-area: header;
+    background: rgb(88, 95, 88);
+    top: 0;
+    background-size: cover;
+    color: white;
+    background-image: 
+    linear-gradient(
+      rgba(153, 113, 113, 0.5),
+      rgba(53, 34, 34, 0.5)
+    ),
+    url(https://cdn-images-1.medium.com/max/2000/1*T8ocdmCbacNGy4cIz1irmQ.jpeg);
+}
+
+.nav {
+    top: 0;
+    left: 0;
+    right: 0;
+    position: fixed;
+    z-index: 2;
+}
+
+.nav-container {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    padding: 0px;
+}
+
+.nav-container .brand {
+   grid-column: 1 / 4;
+}
+
+.nav-container ul {
+    grid-column: 6 / -2;
+    justify-self: end;
+}
+
+.nav-container ul li {
+    display: inline-block;
+    padding: 12px;
+    font-size: 24px;
+}
+
+.nav-container ul li a {
+    text-decoration: none;
+    color: rgb(240,240,240);
+}
+
+.nav-container ul li a.active {
+    text-decoration: none;
+    color: #7D7C7D;
+}
+
+.nav-container ul li a:hover {
+    color: white;
+    border-bottom: 3px solid rgb(163, 38, 163);
+}
+
+input#toggle {
+    display: none;
+}
+
+.mobile-icon {
+    color: white;
+    cursor: pointer;
+    display: none;
+}
+
+.mobile-drop {
+    background: rgb(240,240,240);
+    color: rgb(75, 50, 75);
+}
+
+.mobile-drop > ul > li > a {
+    color: rgb(75, 50, 75);
+}
+
+.mobile-drop > ul > li > a:hover {
+    color: rgb(102, 88, 88);
+    border-bottom: 2px solid rgb(82, 38, 82);
+}
+
+.mobile-drop > .mobile-icon {
+    color: rgb(75, 50, 75);
+}
+
+@media screen and (max-width: 930px) {
+    .nav-container ul {
+        grid-column: 6 / end;
+        justify-self: end;
+    }
+}
+
+@media screen and (max-width: 1523px) {
+    .nav-container ul {
+        grid-column: 4 / end;
+        justify-self: end;
+    }
+}
+
+@media screen and (max-width: 800px) {
+    .nav-container ul {
+        grid-column: 5 / end;
+        justify-self: end;
+    }
+}
+
+@media screen and (max-width: 1017px) {
+    .nav-container {
+        grid-template-columns: repeat(2, 1fr);
+        grid-row-gap: 0px;
+    }
+
+    .nav-container .brand {
+        grid-column-start: 1;
+        justify-self: start;
+        padding: 0px;
+        margin-left: 8px;
+    }
+
+    .mobile-icon {
+        display: block;
+        grid-column-start: 5;
+        padding: 0px;
+      } 
+
+    .nav-container ul {
+        grid-row-start: 2;
+    }
+
+    .nav-container ul {
+        display: none;
+    }
+
+    #toggle:checked + .nav-container ul {
+       display: block;
+    }
+
+    .label-cursor {
+        cursor: pointer;
+        margin-right: 8px;
+    }
+}
+
+.header-content {
+    position: relative; 
+    top: 40px;
+    display: grid;
+    height: 100%;
+    width: 100%; 
+    grid-template-columns: 1fr 3fr 1fr;
+}
+
+.header-content > * {
+    grid-column-start: 2;
+    align-self: center;
+    justify-self: center;
+    text-align: center;
+    color: white;
+}
+
+.intro {
+    grid-area: intro;
+}
+
+.featured-work {
+    grid-area: featured-work;
+}
+
+.featured-work-container {
+    display: grid;
+    /* grid-template-columns: repeat(3, 1fr); */
+    /* grid-gap: 10px; */
+    /* grid-auto-rows: 1fr 1fr; */
+    /* padding: 40px; */
+    grid-template-areas: 
+                'a a b c d d'
+                'a a b c d d'
+                'a a e f d d'
+                'a a e f d d';
+    /* grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr; */
+    grid-gap: 15px;
+    margin: 80px;
+}
+
+.featured-gallery {
+    object-fit: cover;
+    width: 100%;
+    /*height: 100%; */
+  }
+
+.profile {
+    grid-area: profile;
+    background: rgb(204, 200, 200);
+}
+
+.footer {
+    grid-area: footer;
+    background-color: rgb(240,240,240);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr)
+}
+
+a.footer-link {
+    color: rgb(75, 50, 75);
+    font-weight: bolder;
+    padding: 4px;
+}
+
+a.footer-link:hover {
+   color: rgb(117, 92, 117);
+}
+
+
+/* centers a div items to center */
+
+.grid-container {
+    display: grid;
+    height: 100%;
+    width: 100%; 
+    grid-template-columns: 1fr 600px 1fr;
+  }
+
+  @media only screen and (max-width: 619px) {
+    .grid-container {
+        display: grid;
+        height: 100%;
+        width: 100%; 
+        grid-template-columns: 1fr;
+      }
+  }
+
+  .item-center {
+    grid-column-start: 2;
+    align-self: center;
+    justify-self: center;
+    text-align: center;
+    color: rgb(77, 31, 31);
+  }
+
+/* end centers a div items to center */
+
+.text-center {
+    align-self: center;
+    justify-self: center;
+    text-align: center;
+}
+
+a.btn {
+    border-radius: 2px;
+    padding: 22px;
+    text-align: center;
+    background: rgb(209, 80, 80);
+    text-decoration: none;
+    color: white;
+    font-weight: bolder;
+}
+
+a.btn:hover {
+    background: rgb(175, 53, 53);
+    text-decoration: none;
+}
+
+.space-bottom {
+    margin-bottom: 30px;
+}
+
+.img-fit {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
