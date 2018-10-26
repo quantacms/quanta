@@ -145,8 +145,8 @@ abstract class ListObject extends DataContainer {
       $classes[] = $this->getAttribute('grid_list');
     }
 
-    $ajax = (!empty($this->getAttribute('ajax'))) ? ' rel= ' . $this->getAttribute('ajax') : '';
-    $tpl = (!empty($this->getAttribute('tpl'))) ? ' tpl= ' . $this->getAttribute('tpl') : '';
+    $ajax = (!empty($this->getAttribute('ajax'))) ? ' rel="' . $this->getAttribute('ajax') . '"'  : '';
+    $tpl = (!empty($this->getAttribute('tpl'))) ? ' tpl="' . $this->getAttribute('tpl') . '"' : '';
 
     if (!empty($this->getAttribute('empty_message')) && (count($this->rendered_items) == 0)) {
       $output = $this->getAttribute('empty_message');
