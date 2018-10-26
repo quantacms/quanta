@@ -20,8 +20,8 @@ amp-carousel .slide .caption {
 amp-carousel .slide .caption a {
   color: #fff;
 }
-a > .image {
-  display: block; /* remove extra-height in link */
+.link-image {
+  line-height:0; /* Remove extra-height */ 
 }
 
 
