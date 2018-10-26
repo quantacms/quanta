@@ -110,6 +110,7 @@ class UserFactory {
     $env->setContext($action);
     // TODO: this shit is needed with new approach.
     foreach ($form_data as $k => $v) {
+
       if (is_array($form_data[$k]) && (count($form_data[$k]) == 1)) {
         $v = array_pop($v);
       }
