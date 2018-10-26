@@ -100,6 +100,10 @@ class FormFactory {
         $formitem = new FormItemEmail($env, $input);
         break;
 
+      case 'url':
+        $formitem = new FormItemUrl($env, $input);
+        break;
+
       case 'password':
         $formitem = new FormItemPassword($env, $input);
         break;

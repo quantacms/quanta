@@ -279,3 +279,60 @@ function user_action_logout($env, $vars) {
   $logout = $user->logOut();
   exit($logout);
 }
+
+/**
+ * Implements hook_user_validate().
+ *
+ * Standard user validation.
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param array $vars
+ *   An array of variables.
+ */
+function user_user_validate($env, $vars) {
+
+  /** @var User $user */
+  $user = $vars['user'];
+  $check_password = !$user->exists || strlen($user->getPassword()) > 0;
+
+  // Check if some user has the same email as the current one.
+  exec('grep -r -i -o --include \*.json "\"email\"\:\"' . $user->getEmail() . '\"" ' . $env->dir['users'], $mail_exists);
+  $mail_exists = UserFactory::getUserFromField($env, 'email', $user->getEmail());
+
+  // TODO: check also special characters.
+  // Minimum user name length.
+  if (strlen($user->name) < USER_MIN_NAME_LENGTH) {
+    $user->addData('validation_errors', array('name' => t('Your username should have at least %length characters', array('%length' => USER_MIN_NAME_LENGTH))));
+  }
+  // Checks that username is alphanumeric.
+  if (!is_alphanumeric($user->name) && empty($vars['skip_validate']['username_alphanumeric'])) {
+    $user->addData('validation_errors', array('name' => t('Please use only letters and numbers for your username')));
+  }
+  // For register, check that no user with the same username already exists.
+  if ($user->exists && $env->getContext() == USER_ACTION_REGISTER) {
+    $user->addData('validation_errors', array('name' => t('Username %name already exists!', array('%name' => $user->name))));
+  }
+  // Checks that email is not used by other users.
+  if ($mail_exists && ($env->getContext() == USER_ACTION_REGISTER)) {
+    $user->addData('validation_errors', array('email' => t('Email %address already exists!', array('%address' => $user->getEmail()))));
+  }
+  // Checks that email is in a valid format.
+  if (!valid_email($user->getEmail())) {
+    $user->addData('validation_errors', array('email' => t('Please enter a valid E-mail address!')));
+  }
+  // Checks that old password matches new.
+  if ($check_password && $user->exists && (!empty($user->getData('old_password'))) && ($user->getPassword() != pwd($user->getData('old_password')))) {
+    $user->addData('validation_errors', array('old_password' => t('The old password you entered is not valid. Please try again.')));
+  }
+  // Checks password length.
+  // TODO: make customizable in hooks.
+  if ($check_password && strlen($user->getPassword()) < USER_PASSWORD_MIN_LENGTH) {
+    $user->addData('validation_errors', array('password' => t('Password should be at least %length characters long.', array('%length' => USER_PASSWORD_MIN_LENGTH))));
+  }
+  // Checks that the repeated password matches the original.
+  if ($check_password && pwd($user->getData('password_rp')) != pwd($user->getData('password'))) {
+    $user->addData('validation_errors', array('password_rp' => 'Password fields are not the same.'));
+  }
+
+}

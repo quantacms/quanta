@@ -46,11 +46,12 @@ class Mail extends Node {
     try {
       // Send the email.
       $mail->send();
-		  $this->delete();
+      // TODO: We are not storing emails anymore, for now.
+		  // $this->delete();.
 		}
 		catch(Exception $ex) {
       // Catch any errors.
-      new Message($this->env, 'Mailer Error: ' . $mail->ErrorInfo, MESSAGE_ERROR);
+      new Message($this->env, t('Mailer Error: %error', array('%error' => $mail->ErrorInfo)), MESSAGE_ERROR);
 		}
   }
 } 

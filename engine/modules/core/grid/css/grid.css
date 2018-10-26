@@ -219,7 +219,12 @@ body.grid > * {
 .grid-row-span-10 {
   grid-row-end: span 10;
 }
-
+.grid-row-span-11 {
+  grid-row-end: span 11;
+}
+.grid-row-span-12 {
+  grid-row-end: span 12;
+}
 /* md: Medium devices (tablets, 768px and up) */
 @media (min-width: 768px) {
   .grid-start-md-1 {

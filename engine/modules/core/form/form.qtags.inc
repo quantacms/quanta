@@ -115,3 +115,28 @@ function qtag_LIST_VALUES($env, $target, &$attributes) {
   $dirlist = new DirList($env, $target, 'list-values', $attributes, 'form');
 	return $dirlist->render();
 }
+
+/**
+ * Implements LIST_OPTIONS qtag.
+ *
+ * Use subnodes of a node as possible options for a select item.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_LIST_OPTIONS($env, $target, &$attributes) {
+  $attributes['editable'] = 'false';
+  $attributes['clean'] = TRUE;
+  $attributes['separator'] = '';
+  $dirlist = new DirList($env, $target, 'list-options', $attributes, 'form');
+  return $dirlist->render();
+}
