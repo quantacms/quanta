@@ -7,102 +7,22 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css">
     <!-- Import CSS, JS files from the platform and its modules. -->
     [META_DATA]
+    [CSS|runlast]
     [CSS|external:/assets/css/style.css]
     <title>[TITLE]</title>
 </head>
 <body>
-    <div class="container">
+    <div class="container" id="grid-main">
         <!-- Header node's content -->
-        <header class="header">
-            <input type="checkbox" id="toggle">
-            <nav class="nav nav-container" id="nav">
-                <div class="brand text-center">
-                    <img src="assets/images/logo2.png" width="240" height="70">
-                </div>
-                <ul class="text-center">
-                    <li> <a href=""> ABOUT </a> </li>
-                    <li> <a href=""> WORK </a> </li>
-                    <li> <a href=""> SERVICES </a> </li>
-                    <li> <a href=""> PARTNERS </a> </li>
-                    <li> <a href=""> BLOG </a> </li>
-                    <li> <a href=""> CONTACT </a> </li>
-                </ul>
-                <div class="mobile-icon text-center">
-                    <label for="toggle" class="label-cursor">
-                        <i class="fa fa-bars fa-4x"></i>
-                    </label> 
-                </div> 
-            </nav>
-            <div class="header-content"> 
-                <div class="text-center">
-                    <h1 class="text-uppercase">
-                        <strong>A Web Agency site template</strong>
-                    </h1>
-                    <p class="space-bottom">
-                        Start building better websites using the 
-                        framework! Just download your template and start going,
-                        no strings attached!
-                    </p>
-                    <div>
-                        <a class="btn btn-primary btn-xl js-scroll-trigger" href="#about">Find Out More</a>
-                    </div>
-                </div>
-            </div>
-        </header>
+        [HEADER|rendered|wrapper_class=header:header]
         <!-- Intro's node's content -->
-        <section class="intro grid-container">
-            <div class="item-center text-center">
-                <h1 class="text-uppercase">
-                    <strong>A Web Agency site template</strong>
-                </h1>
-                <p class="space-bottom">
-                    Start building better websites using the 
-                    framework! Just download your template and start going,
-                    no strings attached!
-                </p>
-                <a class="btn" href="#about">Find Out More</a>
-            </div>
-        </section>
+        [CONTENT|rendered|id=intro:intro]
         <!-- Featured-Work node's content -->
-        <section class="featured-work">
-            <h3 class="text-center"> Featured work </h3>
-            <div class="featured-work-container"> 
-                <div style="grid-area: a;"><img src="car.jpeg" class="img-fit"> </div>
-                <div style="grid-area: b;"><img src="triger.jpeg" class="img-fit"> </div>
-                <div style="grid-area: c;"><img src="butterfly.jpeg" class="img-fit"> </div>
-                <div style="grid-area: d;"><img src="logo2.png" class="img-fit"> </div>
-                <div style="grid-area: e;"><img src="logo.png" class="img-fit"> </div>
-                <div style="grid-area: f;"><img src="logo2.png" class="img-fit"> </div>
-            </div>
-        </section>
+        [CONTENT|rendered|id=work:work]
         <!-- Profile node's content -->
-        <section class="profile grid-container">
-            <div class="item-center text-center">
-                <h1 class="text-uppercase">
-                    <strong>About Web Agency</strong>
-                </h1>
-                <p class="space-bottom">
-                    Start building better websites using the 
-                    framework! Just download your template and start going,
-                    no strings attached!
-                </p>
-                <a class="btn btn-primary btn-xl js-scroll-trigger" href="#about">Find Out More</a>
-            </div>
-        </section>
+        [CONTENT|rendered|id=profile:profile]
         <!-- Footer node's content -->
-        <footer class="footer">
-            <div class="text-center"> 
-                <a class="footer-link" href=""> Privacy Policy | Terms & condition </a>
-            </div>
-            <div class="text-center">
-                <a href="" class="footer-link"> <i class="fab fa-facebook fa-2x"></i> </a>
-                <a href="" class="footer-link"> <i class="fab fa-instagram fa-2x"></i> </a>
-                <a href="" class="footer-link"> <i class="fab fa-twitter fa-2x"></i> </a>
-            </div>
-            <div class="text-center"> 
-                Mail to <a class="footer-link" href="mailto: 123.emailm@outlook.com"> info@123.xyz</a> 
-            </div>
-        </footer>
+        [FOOTER|rendered|id=footer:footer]
     </div>
     [JS|runlast]
     <script type="text/javascript" src="/assets/js/script.js"></script>
