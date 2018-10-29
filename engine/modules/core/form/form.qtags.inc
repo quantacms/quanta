@@ -18,10 +18,10 @@
  *   The rendered qtag.
  */
 function qtag_INPUT($env, $target, &$attributes) {
-  $rendered = '';
   $form = FormFactory::getForm($env, $target);
   FormFactory::createInputItem($env, $attributes, $form);
-  $rendered .= str_replace('[INPUT|', '[INPUT_RENDER|', $attributes['tag_full']);
+  $rendered = str_replace('[INPUT|', '[INPUT_RENDER|', $attributes['tag_full']);
+  unset($attributes['grid']);
   return $rendered;
 }
 
@@ -50,13 +50,13 @@ function qtag_INPUT_RENDER($env, $target, &$attributes) {
 
     $input = $form->getItem($attributes['name']);
     if ($input->isFirst()) {
-      $rendered .= $form->renderFormOpen();
+      $attributes['prefix'] = $form->renderFormOpen();
     }
 
     $rendered .= ($form->isValidated()) ? '' : $input->renderFormItem();
 
     if ($input->isLast()) {
-        $rendered .= $form->renderFormClose();
+        $attributes['suffix'] = $form->renderFormClose();
     }
   }
 

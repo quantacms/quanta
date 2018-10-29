@@ -22,7 +22,7 @@ class FormItemUrl extends FormItemString {
    */
   public function validate() {
     $value = $this->getValue();
-    if (!valid_email(array_pop($value))) {
+    if (!valid_url(array_pop($value))) {
        $this->getForm()->validationError($this, t('Insert a valid URL'));
     };
   }

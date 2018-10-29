@@ -74,9 +74,6 @@ body.grid > * {
 }
 
 
-
-
-
 /* RESPONSIVE */
 
 /* MOBILE FIRST */
@@ -263,7 +260,9 @@ body.grid > * {
   .grid-start-md-11 {
     grid-column-start: 11;
   }
-
+  .grid-start-md-12 {
+    grid-column-start: 12;
+  }
   .grid-row-start-md-1 {
     grid-row-start: 1;
   }
@@ -364,6 +363,12 @@ body.grid > * {
   }
   .grid-row-span-md-10 {
     grid-row-end: span 10;
+  }
+  .grid-row-span-md-11 {
+    grid-row-end: span 11;
+  }
+  .grid-row-span-md-12 {
+    grid-row-end: span 12;
   }
 }
 
