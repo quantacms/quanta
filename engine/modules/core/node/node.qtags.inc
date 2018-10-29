@@ -377,7 +377,7 @@ function qtag_DELETE($env, $target, &$attributes) {
  */
 function qtag_OPERATIONS($env, $target, &$attributes) {
   $operations = '';
-  // TODO: now that we are passing
+  // TODO: now that we are passing attributes by reference, we can't reuse it easily here.
   $empty_attributes = array();
   $operations .= qtag_ADD($env, $target, $empty_attributes);
   $empty_attributes = array();
