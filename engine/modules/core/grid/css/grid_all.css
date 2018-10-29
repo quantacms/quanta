@@ -82,6 +82,11 @@ ul.grid {
   padding-bottom: calc(var(--gap-size) * 3);
 }
 
+
+.flex {
+  display: flex;
+}
+
 .text-left {
   text-align: left;
 }
@@ -161,6 +166,10 @@ ul.grid {
 
 /* md: Medium devices (tablets, 768px and up) */
 @media (min-width: 768px) {
+  .flex-md {
+    display: flex;
+  }
+
   .text-md-left {
     text-align: left;
   }
@@ -211,6 +220,10 @@ ul.grid {
 
 /* lg: Large devices (desktops, 992px and up) */
 @media (min-width: 992px) {
+  .flex-lg {
+    display: flex;
+  }
+
   .text-lg-left {
     text-align: left;
   }
