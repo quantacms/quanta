@@ -49,11 +49,19 @@ function grid_page_init($env, $vars) {
  */
 function grid_qtag($env, $vars) {
   if (!empty($vars['attributes']['grid'])) {
+    $inner_open = '';
+    $inner_close = '';
     $grid_html_tag = !empty($vars['attributes']['grid_html_tag']) ? $vars['attributes']['grid_html_tag'] : 'div';
     $grid_id = !empty($vars['attributes']['grid_id']) ? $vars['attributes']['grid_id'] : '';
     $classes = (!empty($vars['attributes']['grid']) && $vars['attributes']['grid'] != 1) ? $vars['attributes']['grid'] : '';
 
-    $vars['qtag'] = '<' . $grid_html_tag . (!empty($grid_id) ? ' id="' . $grid_id . '"' : '') . ' class="' . $classes . '">' . $vars['qtag'] . '</' . $grid_html_tag . '>';
+    if (!preg_match('~(?<!\S)grid(?!\S)~i', $vars['attributes']['grid'])) {
+      // !grid container = grid child: add an inner element
+      $inner_open = '<div class="inner">';
+      $inner_close = '</div>';
+    }
+
+    $vars['qtag'] = '<' . $grid_html_tag . (!empty($grid_id) ? ' id="' . $grid_id . '"' : '') . ' class="' . $classes . '">' . $inner_open . $vars['qtag'] . $inner_close . '</' . $grid_html_tag . '>';
   }
 }
 
