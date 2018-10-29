@@ -61,7 +61,7 @@ function grid_qtag($env, $vars) {
       $inner_close = '</div>';
     }
 
-    $vars['qtag'] = '<' . $grid_html_tag . (!empty($grid_id) ? ' id="' . $grid_id . '"' : '') . ' class="' . $classes . '">' . $inner_open . $vars['qtag'] . $inner_close . '</' . $grid_html_tag . '>';
+    $vars['qtag'] = '<' . $grid_html_tag . (!empty($grid_id) ? ' id="' . $grid_id . '"' : '') . ' class="grid-item ' . $classes . '">' . $inner_open . $vars['qtag'] . $inner_close . '</' . $grid_html_tag . '>';
   }
 }
 

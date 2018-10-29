@@ -235,12 +235,14 @@ function qtag_LINK($env, $target, &$attributes) {
     }
   }
 
+  // Check if link has an ID.
+  $id = !empty($link_id) ? ('id="' . $link_id . '"') : '';
   $query = (!empty($querystring)) ? ('?' . implode('&', $querystring)) : '';
 
 
   $title = isset($attributes['title']) ? $attributes['title'] : $title_default;
   // Create the link HTML.
-  $link = '<a ' . (!empty($link_id) ? 'id="' . $link_id . '"' : '') . ' ' . implode(' ', $link_data) . ' class="' . implode(' ', $classes) . '" ' . $link_title . ' href="' . $target . $query . '" ' . $link_target . '>' . $title . '</a>';
+  $link = '<a ' . $id . ' ' . implode(' ', $link_data) . ' class="' . implode(' ', $classes) . '" ' . $link_title . ' href="' . $target . $query . '" ' . $link_target . '>' . $title . '</a>';
   return $link;
 }
 

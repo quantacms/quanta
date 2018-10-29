@@ -43,6 +43,7 @@ abstract class JSONDataContainer extends DataContainer {
         unset($this->json->{$ignore_value});
       }
     }
+
     $fh = fopen($jsonpath, 'w+');
     fwrite($fh, json_encode($this->json));
     fclose($fh);

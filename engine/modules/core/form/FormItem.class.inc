@@ -496,7 +496,7 @@ abstract class FormItem extends DataContainer {
       ($this->hasValidationErrors() ? 'has-validation-errors' : '') .
       '">' .
       ($this->hasValidationErrors() ? ('<div class="validation-error validation-error">' . $this->getValidationErrors() . '</div>') : '') .
-      (!empty($this->getLabel()) ? ('<div class="form-item-label"><label for="' . $this->getName() . '">' . $this->getLabel() . '' . ($this->isRequired() ? '<span class="form-item-required">*</span>' : '') . '</label></div>') : '') .
+      (!empty($this->getLabel()) ? ('<div class="form-item-label"><label for="' . $this->getId() . '">' . $this->getLabel() . '' . ($this->isRequired() ? '<span class="form-item-required">*</span>' : '') . '</label></div>') : '') .
       $rendered .
       '</div>';
 

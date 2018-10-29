@@ -70,6 +70,12 @@ class User extends Node {
       if (isset($this->json->email)) {
         $this->setEmail($this->json->email);
       }
+      if (isset($this->json->first_name)) {
+        $this->setFirstName($this->json->first_name);
+      }
+      if (isset($this->json->last_name)) {
+        $this->setLastName($this->json->last_name);
+      }
       if (isset($this->json->data)) {
         $this->data = (array)$this->json->data;
       }
@@ -238,6 +244,9 @@ class User extends Node {
   public function update() {
     // Create a default title for the user node, if it's not set.
     $this->setTitle($this->getData('first_name') . ' ' . $this->getData('last_name'));
+    $this->setFirstName($this->getData('first_name'));
+    $this->setLastName($this->getData('last_name'));
+    $this->setEmail($this->getData('email'));
     $this->setPassword(pwd($this->getPassword()));
     $valid = $this->save();
     return $valid;
@@ -252,48 +261,12 @@ class User extends Node {
    *   Returns true if the constructed user is valid.
    */
   public function validate() {
-    $check_password = !$this->exists || strlen($this->getPassword()) > 0;
-    // Check if some user has the same email as the current one.
-    exec('grep -r -i -o --include \*.json "\"email\"\:\"' . $this->getEmail() . '\"" ' . $this->env->dir['users'], $mail_exists);
-    $mail_exists = UserFactory::getUserFromField($this->env, 'email', $this->getEmail());
-
     // Allow skipping standard user validation using a hook.
     $vars = array('user' => $this, 'skip_validate' => array());
+    // Pre validate hook (to interact with validation criterias.
+    $this->env->hook('user_pre_validate', $vars);
+    // Validate hook.
     $this->env->hook('user_validate', $vars);
-
-    // TODO: check also special characters.
-    if (strlen($this->name) < USER_MIN_NAME_LENGTH) {
-      $this->addData('validation_errors', array('name' => 'Your username should have at least ' . USER_MIN_NAME_LENGTH . ' characters'));
-    }
-    // Checks that username is alphanumeric.
-    if (!is_alphanumeric($this->name) && empty($vars['skip_validate']['username_alphanumeric'])) {
-      $this->addData('validation_errors', array('name' => 'Please use only letters and numbers for your username'));
-    }
-    // For register, check that no user with the same username already exists.
-    if ($this->exists && $this->env->getContext() == USER_ACTION_REGISTER) {
-      $this->addData('validation_errors', array('name' => 'Username ' . $this->name . ' already exists!'));
-    }
-    // Checks that email is not used by other users.
-    if ($mail_exists && ($this->env->getContext() == USER_ACTION_REGISTER)) {
-      $this->addData('validation_errors', array('email' => 'Email ' . $this->getEmail() . ' already exists!'));
-    }
-    // Checks that email is in a valid format.
-    if (!valid_email($this->getEmail())) {
-      $this->addData('validation_errors', array('email' => 'Please enter a valid E-mail address!'));
-    }
-    // Checks that old password matches new.
-    if ($check_password && $this->exists && (!empty($this->getData('old_password'))) && ($this->getPassword() != pwd($this->getData('old_password')))) {
-      $this->addData('validation_errors', array('old_password' => 'The old password you entered is not valid. Please try again.'));
-    }
-    // Checks password length.
-    // TODO: make customizable in hooks.
-    if ($check_password && strlen($this->getPassword()) < USER_PASSWORD_MIN_LENGTH) {
-      $this->addData('validation_errors', array('password' => 'Password should be at least ' . USER_PASSWORD_MIN_LENGTH . ' characters long.'));
-    }
-    // Checks that the repeated password matches the original.
-    if ($check_password && pwd($this->getData('password_rp')) != pwd($this->getData('password'))) {
-      $this->addData('validation_errors', array('password_rp' => 'Password fields are not the same.'));
-    }
 
     return empty($this->getData('validation_errors'));
   }
@@ -416,6 +389,7 @@ class User extends Node {
     $this->json->last_name = $this->getData('last_name');
     $this->json->password = $this->getPassword();
     $this->json->roles = $this->getRoles();
+
     // Run all Node-related json.
     parent::updateJSON();
   }

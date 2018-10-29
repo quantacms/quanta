@@ -17,7 +17,7 @@
  *   The rendered qtag.
  */
 function qtag_IMG($env, $target, &$attributes) {
-  $node =  NodeFactory::current($env);
+  $node = isset($attributes['node']) ? NodeFactory::load($env, $attributes['node']) : NodeFactory::current($env);
   $image = new Image($env, $target, $node);
   $image->loadAttributes($attributes);
   return $image->render();
