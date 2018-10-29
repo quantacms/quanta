@@ -18,10 +18,10 @@
  *   The rendered qtag.
  */
 function qtag_INPUT($env, $target, &$attributes) {
-  $rendered = '';
   $form = FormFactory::getForm($env, $target);
   FormFactory::createInputItem($env, $attributes, $form);
-  $rendered .= str_replace('[INPUT|', '[INPUT_RENDER|', $attributes['tag_full']);
+  $rendered = str_replace('[INPUT|', '[INPUT_RENDER|', $attributes['tag_full']);
+  unset($attributes['grid']);
   return $rendered;
 }
 
@@ -50,13 +50,13 @@ function qtag_INPUT_RENDER($env, $target, &$attributes) {
 
     $input = $form->getItem($attributes['name']);
     if ($input->isFirst()) {
-      $rendered .= $form->renderFormOpen();
+      $attributes['prefix'] = $form->renderFormOpen();
     }
 
     $rendered .= ($form->isValidated()) ? '' : $input->renderFormItem();
 
     if ($input->isLast()) {
-        $rendered .= $form->renderFormClose();
+        $attributes['suffix'] = $form->renderFormClose();
     }
   }
 
@@ -114,4 +114,29 @@ function qtag_LIST_VALUES($env, $target, &$attributes) {
   $attributes['separator'] = ',';
   $dirlist = new DirList($env, $target, 'list-values', $attributes, 'form');
 	return $dirlist->render();
+}
+
+/**
+ * Implements LIST_OPTIONS qtag.
+ *
+ * Use subnodes of a node as possible options for a select item.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_LIST_OPTIONS($env, $target, &$attributes) {
+  $attributes['editable'] = 'false';
+  $attributes['clean'] = TRUE;
+  $attributes['separator'] = '';
+  $dirlist = new DirList($env, $target, 'list-options', $attributes, 'form');
+  return $dirlist->render();
 }

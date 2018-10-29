@@ -80,6 +80,6 @@ function localization_doctor_setup($env, $vars) {
  *   An array of variables.
  */
 function localization_shadow_node_edit_extra($env, $vars) {
-  $null_attributes = array();
-  $vars['html'] .= qtag_TRANSLATE_LINKS($env, NULL, $null_attributes);
+  $attr = array();
+  $vars['html'] .= qtag_TRANSLATE_LINKS($env, NULL, $attr);
 }

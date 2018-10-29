@@ -69,7 +69,6 @@ class DirList extends ListObject {
       $this->env->hook('list_item', $vars);
 
       $editable = $this->getAttribute('editable');
-
       // Wrap in the inline editor.
       if (empty($editable) || $editable == 'true') {
         $list_item = $node->wrap($list_item);

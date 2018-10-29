@@ -173,7 +173,7 @@ class Node extends JSONDataContainer {
     $this->json->body = $this->getBody();
     $this->json->title = $this->getTitle();
     $this->json->thumbnail = $this->getThumbnail();
-    $this->json->timestamp = $this->getTimestamp();
+    $this->json->timestamp = empty($this->getTimestamp()) ? time() : $this->getTimestamp();
     $this->json->status = $this->getStatus();
   }
 
@@ -337,7 +337,7 @@ class Node extends JSONDataContainer {
     // Reload the node JSON.
     $this->updateJSON();
     // Save the node json (excluding some fields such as path.)
-    $this->saveJSON(array('path', 'exists', 'path', 'father', 'data'));
+    $this->saveJSON(array('name', 'path', 'exists', 'path', 'father', 'data'));
     $this->env->hook('node_after_save', $vars);
   }
 
