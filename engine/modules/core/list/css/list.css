@@ -17,6 +17,10 @@
 	display: list-item;
 }
 
+.list-image_title_linked .node-item {
+	height: 100%;
+}
+
 .list-item-image-cover {
 	position: relative;
 	display: flex;
