@@ -87,6 +87,9 @@ function qtag_EMAIL($env, $target, &$attributes) {
  *   The rendered qtag.
  */
 function qtag_PHONE($env, $target, &$attributes) {
+  // Remove all spaces, W3C standard.
+  $tel = preg_replace('/\s+/', '', $target); 
+
   if (isset($attributes['class'])){
     $attributes['class'] .= ' tel';
   }
@@ -94,7 +97,7 @@ function qtag_PHONE($env, $target, &$attributes) {
     $attributes['class'] = ' tel';
   }
 
-  return '<a class="phone" href="tel:' . $target . '">' . $target . '</a>';
+  return '<a class="phone" href="tel:' . $tel . '">' . $target . '</a>';
 }
 
 /**
