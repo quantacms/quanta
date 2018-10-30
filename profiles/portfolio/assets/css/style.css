@@ -131,6 +131,10 @@ input#toggle {
         grid-row-gap: 0px;
     }
 
+    .nav-container nav{
+        margin-left: 0px;
+    }
+
     .nav-container .brand {
         grid-column-start: 1;
         justify-self: start;
@@ -142,18 +146,23 @@ input#toggle {
         display: block;
         grid-column-start: 5;
         padding: 0px;
-      } 
+    } 
 
     .nav-container .menu {
-        grid-column: 1 / end;
-    }
-
-    .menu ul {
+        grid-column: 1;
+        margin-left: 0px;
+        justify-self: start;
         display: none;
     }
 
-    #toggle:checked + .menu ul {
+    #toggle:checked + .menu {
        display: block;
+    }
+
+    .nav-container .menu ul li {
+        display: block;
+        margin-left: 0px;
+        text-align: left;
     }
 
     .label-cursor {
@@ -168,8 +177,8 @@ input#toggle {
         height: 100%;
         width: 100%; 
         grid-template-columns: 1fr;
-      }
-  }
+    }
+}
 
 .header-content {
     position: relative; 

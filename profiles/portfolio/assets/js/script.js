@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
     var ticking = false;
     
     function doSomething(scroll_pos) {
-      if ( scroll_pos > 140 && menu) {
+      if ( scroll_pos > 140  ) {
         menu.classList.add("fixed-menu");
       } else {
         menu.classList.remove("fixed-menu");
