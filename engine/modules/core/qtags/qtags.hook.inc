@@ -10,7 +10,6 @@
 function qtags_page_complete($env, $vars) {
   $html = transformCodeTags($env, $vars['page']->html);
   $html = transformCodeTags($env, $html, array('runlast' => TRUE));
-
   $vars['page']->html = $html;
 }
 
