@@ -7,23 +7,32 @@
 }
 
 
+/* "three-rows" style: */
+/* MAIN PAGE structure: */
+/* header + #grid-main(max-height) + footer */
+
+body.grid.three-rows > footer {
+  grid-row-gap: 0;
+}
+
+
+
 /* GRID */
 
 .grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   grid-gap: var(--gap-size);
+  padding: var(--gap-size);
 }
 .grid > * {
   grid-column: auto / span 12;
 }
 body.grid {
   grid-row-gap: 0;
+  padding: 0;
 }
 body.grid > * {
-  padding: var(--gap-size);
-}
-.grid-container > .grid {
   padding: var(--gap-size);
 }
 .grid.grid-container {
