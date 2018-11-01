@@ -157,7 +157,7 @@ function qtag_ATTRIBUTE($env, $target, &$attributes) {
  * @return string
  *   The rendered qtag.
  *
- * TODO: we should make Links an object oriented / class item.
+ * TODO: we should really make Link a class.
  */
 function qtag_LINK($env, $target, &$attributes) {
   $querystring = array();
@@ -166,6 +166,9 @@ function qtag_LINK($env, $target, &$attributes) {
   $title_default = '';
   $link_data = array();
   $link_id = !empty($attributes['link_id']) ? $attributes['link_id'] : '';
+
+  // Add support for protocol (http, https etc.).
+  $protocol = !(empty($attributes['protocol'])) ? ($attributes['protocol'] . '://') : '';
 
   $classes = array('link');
 
@@ -242,7 +245,7 @@ function qtag_LINK($env, $target, &$attributes) {
 
   $title = isset($attributes['title']) ? $attributes['title'] : $title_default;
   // Create the link HTML.
-  $link = '<a ' . $id . ' ' . implode(' ', $link_data) . ' class="' . implode(' ', $classes) . '" ' . $link_title . ' href="' . $target . $query . '" ' . $link_target . '>' . $title . '</a>';
+  $link = '<a ' . $id . ' ' . implode(' ', $link_data) . ' class="' . implode(' ', $classes) . '" ' . $link_title . ' href="' . $protocol . $target . $query . '" ' . $link_target . '>' . $title . '</a>';
   return $link;
 }
 
