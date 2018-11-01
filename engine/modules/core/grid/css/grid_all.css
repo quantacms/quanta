@@ -36,7 +36,7 @@ body.grid.three-rows {
 body.grid.three-rows > * {
   flex-shrink: 0;
 }
-.three-rows #grid-main {
+body.grid.three-rows #grid-main {
   flex-grow: 1;
 }
 
@@ -125,7 +125,7 @@ ul.grid {
 /* MOBILE FIRST */
 
 .order--1 {
-  order: 0;  
+  order: -1;  
 }
 .order-0 {
   order: 0;  
@@ -181,7 +181,7 @@ ul.grid {
   }
 
   .order-md--1 {
-    order: 0;  
+    order: -1;  
   }
   .order-md-0 {
     order: 0;  
@@ -235,7 +235,7 @@ ul.grid {
   }
 
   .order-lg--1 {
-    order: 0;  
+    order: -1;  
   }
   .order-lg-0 {
     order: 0;  
