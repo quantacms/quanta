@@ -356,11 +356,16 @@ class Environment extends DataContainer {
   }
 
   /**
-   * Hook function - will look for all modulename_function in all active modules.
+   * Hook function - will look for all modulename_function in all active modules
+   * and let the user alter the variables contained into &$vars.
    *
-   * @param $function
+   * @param string $function
+   *   The hook function name.
    * @param array $vars
+   *   An array of variables.
+   *
    * @return bool
+   *   Returns TRUE if any module was implementing the hook.
    */
   public function hook($function, &$vars = array()) {
     $env = &$this;

@@ -8,7 +8,7 @@
  *   An array of variables.
  */
 function sitemap_boot($env, $vars) {
-  // TODO: object oriented, using templates, etc. etc.
+  // TODO: refactor with object oriented approach, using templates, etc. etc.
   if ($env->getRequestedPath() == 'google_sitemap') {
     header("Content-type: text/xml");
 
