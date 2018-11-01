@@ -90,14 +90,14 @@ function qtag_PHONE($env, $target, &$attributes) {
   // Remove all spaces, W3C standard.
   $tel = preg_replace('/\s+/', '', $target); 
 
-  if (isset($attributes['class'])){
-    $attributes['class'] .= ' tel';
+  if (!isset($attributes['phone_class'])){
+    $attributes['phone_class'] = 'phone';
   }
   else {
-    $attributes['class'] = ' tel';
+    $attributes['phone_class'] .= ' phone';
   }
 
-  return '<a class="phone" href="tel:' . $tel . '">' . $target . '</a>';
+  return '<a class="' . $attributes['phone_class'] . '" href="tel:' . $tel . '">' . $target . '</a>';
 }
 
 /**
