@@ -1,6 +1,7 @@
 body {
     font-size: 18px;
     line-height: 26px;
+    background: green;
 }
 
 /* Main content */
@@ -25,14 +26,24 @@ a {
     text-decoration: underline;
 }
 
-#sidebar-left .inner {
-    background: #dddddd;
+#sidebar_left  {
+    background: #666666;
 }
 
-#content-body .inner {
+
+#sidebar_right  {
+    background: #00aa00;
+}
+#content_body {
     background: #eeeeee;
 }
 
-#logo .inner {
+#header {
+    background: #fafafa;
+}
+#logo {
     background: #ffe9b1;
+}
+#promo {
+    background: #f0ad4e;
 }

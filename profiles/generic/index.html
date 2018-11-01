@@ -17,25 +17,19 @@
     </head>
 
     <!-- Body -->
-    <body class="[BODYCLASSES]">
-    <div id="page">
+    <body class="grid [BODYCLASSES]">
         <!-- Header node's content -->
-        [BLOCK|rendered|padding=10|box=100xauto|name=fix-header|id=header:header]
-        <!-- Display messages (if any) -->
-        [MESSAGES]
-        <!-- Display a breadcrumb of currently viewed node -->
-        [BREADCRUMB]
+        [CONTENT|grid=grid grid-span-lg-12 grid-span-12 grid-row-span-2|grid_id=header:_header]
         <!-- Left sidebar -->
-        [BLOCK|rendered|id=sidebar-left|box=20xauto|padding=10:sidebar-left]
+        [CONTENT|grid=grid grid-gap-0 grid-span-lg-3 grid-span-12 grid-row-span-5|grid_id=sidebar_left:_sidebar-left]
+        [CONTENT|grid=grid grid-span-lg-6 grid-span-12 grid-row-span-10|grid_id=content_body:_content]
+
+
         <!-- Currently viewed node's content -->
-        [ATTRIBUTE|box=60xauto|padding=10|id=content-body|name=content]
         <!-- Right sidebar -->
-        [BLOCK|rendered|id=sidebar-right|box=20xauto|padding=10:sidebar-right]
+        [CONTENT|grid=grid-span-lg-3 grid-span-12 grid-row-span-8|grid_id=sidebar_right:_sidebar-right]
         <!-- Footer node's content -->
         [BLOCK|rendered|padding=10|box=100xauto|id=footer:footer]
-    </div>
-    <!-- General page load info and statistics -->
-    <!-- [STATS|box=100xauto] -->
-    [JS|runlast]
-</body>
+        [JS|runlast]
+    </body>
 </html>
