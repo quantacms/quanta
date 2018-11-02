@@ -57,3 +57,43 @@ footer a {
 nav.menu.menu-vertical li+li {
     margin-top: 10px;
 }
+
+/* SMALL STYLING FOR EXAMPLES */
+.blog-thumb {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.list-blog-item {
+    border-bottom: 1px dashed #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+.blog-preview {
+    margin-bottom: 10px;
+}
+
+.blog-title {
+    padding: 10px;
+    font-size: 1.4em;
+}
+
+h1  {
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+body.page-animals {
+    background:url(https://t3.ftcdn.net/jpg/01/01/56/18/240_F_101561831_VwcFxxCBpUqBxpppW8abJmcNOKOXzUOL.jpg);
+}
+
+#animals_blog_grid {
+    background: #fff;
+}
+
+#animals_blog {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #aaa;
+}
