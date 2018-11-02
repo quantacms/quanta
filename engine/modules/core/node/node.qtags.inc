@@ -206,8 +206,8 @@ function qtag_LINK($env, $target, &$attributes) {
   }
 
   // Check if there is "target" attribute.
-  if (isset($attributes['target'])) {
-    $link_target = 'target="' . $attributes['target'] . '"';
+  if (isset($attributes['link_target'])) {
+    $link_target = 'target="' . $attributes['link_target'] . '"';
   }
 
   // TODO: make just a big variable "data".
