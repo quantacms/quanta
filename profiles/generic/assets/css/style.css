@@ -1,3 +1,5 @@
+/* GENERAL */
+
 body {
     font-family: Arial, Helvetica, sans-serif;
     color: #333;
@@ -11,28 +13,26 @@ a {
 /* HEADER */
 
 header {
-    background: #eee;
+    background: #f3f3f3;
 }
+
 header nav a {
     color: #666;
     text-transform: uppercase;
     padding: 5px;
 }
 
-
-
 /* 1st SIDE */
 
 #side-first {
-    background: #ddd;
+    background: #fffacd;
 }
 
 /* 2nd SIDE */
 
 #side-second {
-    background: #bbb;
+    background: #f4f8ff;
 }
-
 
 /* FOOTER */
 
@@ -54,11 +54,8 @@ footer a {
     color: #ddd;
 }
 
-nav.menu.menu-vertical li+li {
-    margin-top: 10px;
-}
-
 /* SMALL STYLING FOR EXAMPLES */
+
 .blog-thumb {
     margin-top: 10px;
     margin-bottom: 10px;
@@ -79,20 +76,25 @@ nav.menu.menu-vertical li+li {
     font-size: 1.4em;
 }
 
-h1  {
+h1 {
     margin-bottom: 20px;
     margin-top: 20px;
 }
 
 body.page-animals {
-    background:url(https://t3.ftcdn.net/jpg/01/01/56/18/240_F_101561831_VwcFxxCBpUqBxpppW8abJmcNOKOXzUOL.jpg);
+    background: url(https://t3.ftcdn.net/jpg/01/01/56/18/240_F_101561831_VwcFxxCBpUqBxpppW8abJmcNOKOXzUOL.jpg);
 }
 
-#animals_blog_grid {
+body.page-fruits {
+    background: #fff2c9;
+}
+
+body.page-animals main,
+body.page-fruits main {
     background: #fff;
 }
 
-#animals_blog {
+body.page-animals .content-blog {
     margin-top: 15px;
     padding-top: 15px;
     border-top: 1px solid #aaa;
