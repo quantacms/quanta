@@ -67,4 +67,14 @@ abstract class JSONDataContainer extends DataContainer {
     $this->name = $name;
   }
 
+  /**
+   * Gets the full path of the json container.
+   *
+   * @return string
+   *   The full path.
+   */
+  public function getPath() {
+    return $this->path;
+  }
+
 }
