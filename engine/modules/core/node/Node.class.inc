@@ -482,10 +482,6 @@ class Node extends JSONDataContainer {
     if (!empty($this->lineage)) {
       return;
     }
-    // Homepage should not have a lineage. TODO: correct?
-    if ($this->isHome()) {
-      return;
-    }
 
     $fullpath = str_replace($this->env->dir['docroot'], '', $this->path);
     $bca = explode('/', $fullpath);
