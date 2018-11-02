@@ -12,16 +12,17 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;  
+  padding: var(--gap-size);  
 }
-
-.grid > *:not([class*='grid-span-']) {
+.grid > *:not([class*='grid-span-']),
+.grid > *[class*='grid-span-md'],
+.grid > *[class*='grid-span-lg'] {
   width: 100%;
 }
-
-body.grid > * {
-  padding: var(--gap-size);
+body.grid {
+  padding: 0;
 }
-.grid-container > .grid {
+body.grid > * {
   padding: var(--gap-size);
 }
 .grid.grid-container {
