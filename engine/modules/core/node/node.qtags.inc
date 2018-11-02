@@ -42,12 +42,6 @@ function qtag_AUTHOR($env, $target, &$attributes) {
 function qtag_ATTRIBUTE($env, $target, &$attributes) {
 
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
-
-  // Check if the node shall be rendered before gathering attributes.
-  if (isset($attributes['rendered'])) {
-    $node->buildTemplate();
-  }
-
   switch ($attributes['name']) {
     // Node's name (aka name of the folder).
     case 'name':
@@ -73,8 +67,7 @@ function qtag_ATTRIBUTE($env, $target, &$attributes) {
 
     // Node's full rendered content.
     case 'content':
-      $node->buildTemplate();
-      $string = $node->render();
+      $string = NodeFactory::render($env, $node);
       break;
 
     // Node's body.
@@ -115,18 +108,6 @@ function qtag_ATTRIBUTE($env, $target, &$attributes) {
     // Node's status.
     case 'status':
       $string = $node->getStatus();
-      break;
-
-    // Node's template file.
-    case 'tpl_file':
-      $node->buildTemplate();
-      $string = $node->getData('tpl_file');
-      break;
-
-    // Node's template file.
-    case 'tpl':
-      $node->buildTemplate();
-      $string = (!empty($node->getData('tpl_file'))) ? file_get_contents($node->getData('tpl_file')) : '';
       break;
 
     default:
@@ -567,7 +548,5 @@ function qtag_BODY($env, $target, &$attributes) {
  *   The rendered qtag.
  */
 function qtag_CONTENT($env, $target, &$attributes) {
-  $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
-  $node->buildTemplate();
-  return $node->render();  
+  return NodeFactory::render($env, $target);
 }

@@ -18,6 +18,9 @@ function doctor_doctor_pre_setup($env, $vars) {
   $doctor->checkCurrentUnixUser();
 
   // Check that all system paths do exist.
+  $doctor->checkWebServerType();
+
+  // Check that all system paths do exist.
   $doctor->checkWebServerModules();
 
   // Check that all system paths do exist.

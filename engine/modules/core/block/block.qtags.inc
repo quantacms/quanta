@@ -21,16 +21,16 @@ function qtag_BLOCK($env, $target, &$attributes) {
   $node = NodeFactory::load($env, $target);
 
   if (isset($attributes['rendered'])) {
-    $node->buildTemplate();
-    $body = $node->render();
+    $body = NodeFactory::render($env, $target);
   }
   else {
+    $node = NodeFactory::load($env, $target);
     $body = isset($attributes['with-title']) ? ('<h2 class="block-title">' . filter_xss($node->getTitle()) . '</h2>' . $node->getBody()) : $node->getBody();
   }
 
   // Wrap in the inline editor.
   if (empty($attributes['editable']) || $attributes['editable'] == 'true') {
-    $body = $node->wrap($body);
+    $body = NodeTemplate::wrap($env, $node, $body);
   }
   // If user can't see the node, don't display it.
   return $node->isForbidden() ? '' : $body;

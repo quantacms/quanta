@@ -294,9 +294,57 @@ function qtag_HEADER($env, $target, &$attributes) {
  *   The rendered qtag.
  */
 function qtag_FOOTER($env, $target, &$attributes) {
-  $attributes['grid'] = 'grid grid-container';
+  $attributes['grid'] = 'grid grid-container ' . (!empty($attributes['grid']) ? $attributes['grid'] : '');
   $attributes['grid_html_tag'] = 'footer';
   $target_footer = isset($target) ? $target : 'footer';
   
   return qtag_CONTENT($env, $target_footer, $attributes);
 }
+
+/**
+ * Implements qtag ASIDE.
+ *
+ * Renders a sidebar with <aside> tag.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_ASIDE($env, $target, &$attributes) {
+  $attributes['grid'] .= 'grid grid-container' . (!empty($attributes['grid']) ? $attributes['grid'] : '');;
+  $attributes['grid_html_tag'] = 'aside';
+  return qtag_CONTENT($env, $target, $attributes);
+}
+
+
+/**
+ * Implements qtag MAIN.
+ *
+ * Renders a main content with <main> tag.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_MAIN($env, $target, &$attributes) {
+  $attributes['grid'] .= 'grid grid-container' . (!empty($attributes['grid']) ? $attributes['grid'] : '');;
+  $attributes['grid_html_tag'] = 'main';
+  return qtag_CONTENT($env, $target, $attributes);
+}
+
