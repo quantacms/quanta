@@ -1,0 +1,57 @@
+<!--
+ This template contains the main structure for all nodes in the pages folder.
+ Feel free to review all the inline comments, to better understand how things are done.
+ Then, you can delete them :-)!
+
+===========
+Breadcrumb
+===========
+Display a breadcrumb of currently viewed node
+-->
+[BREADCRUMB|grid=order-lg--1]
+
+<!--
+===========
+Main content
+===========
+We are giving those grid attributes to the main content:
+
+grid-start-lg-3 -> Start from cell "3" when in "Large" (desktop, laptop) mode
+grid-span-md-8  -> Column span of 8 cells when in "Medium" (tablet) mode
+p-x -> set default single padding on column
+p-y3 -> set default triple padding on row
+
+The referenced node for content structure is _content (see _components/_content)
+-->
+[MAIN|grid=grid-start-lg-3 grid-span-md-8 p-x p-y3:_content]
+
+<!--
+===========
+1st Sidebar
+===========
+We are giving those grid attributes to the first sidebar:
+order-lg--1 ->
+grid-start-lg-1 -> Start from cell "1" when in "Large" (desktop, laptop) mode
+grid-span-md-4  -> Column span of 4 cells when in "Medium" (tablet) mode
+p-x -> set default single padding on column
+p-y3 -> set default triple padding on row
+text-left -> align text on left by default.
+
+The referenced node for content structure is _side_first (see _components/_side_first)
+
+-->
+[ASIDE|grid_id=side-first|grid=order-lg--1 grid-start-lg-1 grid-span-md-4 grid-span-lg-2 p-x p-y3 text-left:_side-first]
+
+<!--
+===========
+2nd Sidebar
+===========
+We are giving those grid attributes to the second sidebar:
+grid-span-lg-2  -> Column span of 2 cells when in "Large" (desktop, laptop) mode
+p-x -> set default single padding on column
+p-y3 -> set default triple padding on row
+text-left -> align text on left by default.
+
+The referenced node for content structure is _side_first (see _components/_side_first)
+-->
+[ASIDE|grid_id=side-second|grid=grid-span-lg-2 p-x p-y3 text-left:_side-second]
