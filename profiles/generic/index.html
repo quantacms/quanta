@@ -12,24 +12,24 @@
         <!-- Import CSS, JS files from the platform and its modules. -->
         [META_DATA]
         [CSS|runlast]
-        [CSS|external:/assets/css/style.css]
+        [CSS|runlast|refresh|external:/assets/css/style.css]
         <title>[TITLE] - QuantaCMS example</title>
     </head>
 
     <!-- Body -->
-    <body class="grid [BODYCLASSES]">
-        <!-- Header node's content -->
-        [CONTENT|grid=grid grid-span-lg-12 grid-span-12 grid-row-span-2|grid_id=header:_header]
-        <!-- Left sidebar -->
-        [CONTENT|grid=grid grid-gap-0 grid-span-lg-3 grid-span-12 grid-row-span-5|grid_id=sidebar_left:_sidebar-left]
-        [CONTENT|grid=grid grid-span-lg-6 grid-span-12 grid-row-span-10|grid_id=content_body:_content]
-
-
+    <body class="grid three-rows [BODYCLASSES]">
+        <!-- Display messages (if any) -->
+        [MESSAGES]
+    
+        <!-- Site's header -->
+        [HEADER:_header]
+    
         <!-- Currently viewed node's content -->
-        <!-- Right sidebar -->
-        [CONTENT|grid=grid-span-lg-3 grid-span-12 grid-row-span-8|grid_id=sidebar_right:_sidebar-right]
-        <!-- Footer node's content -->
-        [BLOCK|rendered|padding=10|box=100xauto|id=footer:footer]
+        [CONTENT|grid_id=grid-main|grid=grid grid-container]
+    
+        <!-- Site's footer -->
+        [FOOTER:_footer]
+
         [JS|runlast]
     </body>
 </html>
