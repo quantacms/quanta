@@ -36,10 +36,15 @@ class Node extends JSONDataContainer {
 
   /**
    * Constructs a node object.
+   *
    * @param Environment $env
+   *   The Environment.
    * @param string $name
+   *   The node's name (folder name / path).
    * @param string $father
+   *   The Father node of this node.
    * @param string $language
+   *   The language of this node.
    */
   public function __construct(&$env, $name, $father = NULL, $language = NULL, $path = NULL) {
 
@@ -498,62 +503,6 @@ class Node extends JSONDataContainer {
   }
 
   /**
-   * Generate the template for displaying the node.
-   * Eventually node will use tpl.html files (with dashed depth).
-   *
-   * TODO: separate template in another object.
-   */
-  public function buildTemplate() {
-
-    // The node's default renderis is its content.
-
-    $tpl = array();
-    $tpl_level = 0;
-
-    // a template in the same directory has always priority.
-    if (is_file($this->path . '/tpl.html')) {
-      $this->setData('tpl_file', $this->path . '/tpl.html');
-    }
-    else {
-      foreach ($this->lineage as $lineage) {
-
-        $tpl_level++;
-
-        // If tpl^.html exists - template applies to all sublevels of the node.
-        if (is_file($lineage->path . '/tpl^.html')) {
-          $this->setData('tpl_file', $lineage->path . '/tpl^.html');
-        }
-        else {
-          $min = '';
-
-          // We support 5 levels of sub-level templates for now.
-          // level 0 = tpl.html
-          // level 1 = tpl-.html
-          // level 2 = tpl--.html
-          // etc...
-
-          for ($i = 1; $i <= 6; $i++) {
-            $min .= '-';
-            $file = $lineage->path . '/tpl' . $min . '.html';
-            if (file_exists($file)) {
-              $tpl[$tpl_level + $i] = $file;
-            }
-          }
-        }
-      }
-
-      // check if there is a sub-level template.
-      if (isset($tpl[$tpl_level])) {
-        $this->setData('tpl_file', $tpl[$tpl_level]);
-      }
-    }
-
-    // Set the template.
-    $this->tpl = (!empty($this->getData('tpl_file'))) ? file_get_contents($this->getData('tpl_file')) : $this->getBody();
-
-  }
-
-  /**
    * Check if current node is the homepage node.
    * @return bool
    */
@@ -810,37 +759,6 @@ class Node extends JSONDataContainer {
       $categories[] = NodeFactory::load($this->env, $exp[count($exp) - 2]);
     }
     return $categories;
-  }
-
-  /**
-   * "wrap" a Node block in html tags allowing inline editing, deleting etc.
-   *
-   * @param string $html
-   *   The initial html.
-   *
-   * @return string
-   *   The wrapped html.
-   */
-  public function wrap($html) {
-
-    $actions = array();
-    // If user can edit the node, add an edit button.
-    if (NodeAccess::check($this->env, NODE_ACTION_EDIT, array('node' => $this))) {
-      $actions[] = '[EDIT:' . $this->getName() . ']';
-    }
-    // If user can delete the node, add a delete button.
-    if (NodeAccess::check($this->env, NODE_ACTION_DELETE, array('node' => $this))) {
-      $actions[] = '[DELETE:' . $this->getName() . ']';
-    }
-
-    // TODO: it produces a space before the name. Why?
-    $wrap = '<div class="node-item" data-rel="' . $this->getName() . '">';
-    if (!empty($actions)) {
-      $wrap .= '<div class="node-item-actions">' . implode($actions) . '</div>';
-    }
-    $wrap .= $html;
-    $wrap .= '</div>';
-    return $wrap;
   }
 
   /**

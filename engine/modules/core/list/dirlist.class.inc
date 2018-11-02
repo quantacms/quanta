@@ -18,6 +18,7 @@ class DirList extends ListObject {
   public function generateList() {
 
     $i = 0;
+    // TODO: better management of this, including in NodeTemplate class etc.
     $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
     /** @var Node $node_current */
     $node_current = NodeFactory::current($this->env);
@@ -71,7 +72,7 @@ class DirList extends ListObject {
       $editable = $this->getAttribute('editable');
       // Wrap in the inline editor.
       if (empty($editable) || $editable == 'true') {
-        $list_item = $node->wrap($list_item);
+        $list_item = NodeTemplate::wrap($this->env, $node, $list_item);
       }
 
       // If the "clean" attribute is not present, add some wrapping html.
