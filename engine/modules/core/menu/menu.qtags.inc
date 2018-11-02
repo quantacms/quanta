@@ -29,9 +29,8 @@ function qtag_MENU($env, $target, &$attributes) {
   }
   elseif(!empty($target)) {
     // Get links from target node.
-    $node = NodeFactory::load($env, $target);
-    $node->buildTemplate();
-    $links = explode("\n", trim($node->render()));
+    $rendered = NodeFactory::render($env, $target);
+    $links = explode("\n", trim($rendered));
   }
 
   foreach ($links as $link) {

@@ -1,4 +1,8 @@
 <?php
+define('WEB_SERVER_APACHE', 1);
+define('WEB_SERVER_NGINX', 2);
+
+
 define('DOCTOR_MODE_BASH', 'bash');
 define('DOCTOR_MODE_BROWSER', 'browser');
 define('DOCTOR_RECIPE', 'doctor_recipe.txt');
@@ -18,7 +22,13 @@ class Doctor extends DataContainer {
 
   /**
    * @var string $web_server_user
-   *   The apache user.
+   *   The web server type.
+   */
+  public $web_server_type;
+
+  /**
+   * @var string $web_server_user
+   *   The web server user.
    */
   public $web_server_user;
 
@@ -216,40 +226,49 @@ class Doctor extends DataContainer {
   }
 
   /**
-   * Check the apache modules.
+   * Check the Server modules.
    */
   public function checkWebServerModules() {
-    $this->op('Checking Apache modules...');
+    // We don't need to check modules for nginx.
+    if ($this->web_server_type == WEB_SERVER_APACHE) {
 
-    $modules = array(
-      'rewrite',
-      'headers',
-    );
-    $missing_modules = array();
-    foreach ($modules as $module) {
-      // Checking if modules are enabled...
-      $check = $this->execute('apachectl -M | grep "' . $module . '_module"');
-      $this->talk($module . '...');
-      if (empty($check)) {
-        $missing_modules[] = $module;
-        $this->ko('not found!');
-      }
-      else {
-        $this->ok('found!');
-      }
-    }
-    // If there are missing apache modules, we have to block the process.
-    if (!empty($missing_modules)) {
-      $this->ko(array('You can not install Quanta without those apache modules: ' . implode(', ', $missing_modules)));
-      $this->ko(array('Hint: on apache2, try those commands:'));
-      foreach ($missing_modules as $missing_module) {
-        $this->talk('a2enmod ' . $missing_module);
-      }
-      $this->stop('Aborting.');
+      $this->op('Checking Web Server modules (Apache only)...');
 
+      $modules = array(
+        'rewrite',
+        'headers',
+      );
+      $missing_modules = array();
+      foreach ($modules as $module) {
+        // Checking if modules are enabled...
+        $check = $this->execute('apachectl -M | grep "' . $module . '_module"');
+        $this->talk($module . '...');
+        if (empty($check)) {
+          $missing_modules[] = $module;
+          $this->ko('not found!');
+        }
+        else {
+          $this->ok('found!');
+        }
+      }
+      // If there are missing apache modules, we have to block the process.
+      if (!empty($missing_modules)) {
+        $this->ko(array('You can not install Quanta without those apache modules: ' . implode(', ', $missing_modules)));
+        $this->ko(array('Hint: on apache2, try those commands:'));
+        foreach ($missing_modules as $missing_module) {
+          $this->talk('a2enmod ' . $missing_module);
+        }
+        $this->stop('Aborting.');
+      }
     }
   }
 
+  /**
+   * Check the webserver type(Apache or Nginx).
+   */
+  public function checkWebServerType() {
+    $this->web_server_type = $this->ask("Which web server type are you using?\n" . WEB_SERVER_APACHE . ": Apache\n" . WEB_SERVER_NGINX . ": nginx\n", NULL, array(WEB_SERVER_APACHE, WEB_SERVER_NGINX));
+  }
 
   /**
    * Check the web Server user.
@@ -257,11 +276,13 @@ class Doctor extends DataContainer {
    * Doctor will try to automatically fetch the apache username. If impossible, it will ask the client to provide one name.
    */
   public function checkWebServerUser() {
-    $this->op('Checking Apache user...');
+    $this->op('Checking Web Server (Apache or nginx) user...');
 
     $candidate_users = array(
       'www-data',
       'nobody',
+      'apache2',
+      'nginx',
     );
 
     foreach ($candidate_users as $candidate_user) {
@@ -274,7 +295,7 @@ class Doctor extends DataContainer {
 
     if (!empty($this->web_server_user)) {
       $this->talk('Web Server user detected: ' . $this->web_server_user);
-      $is_web_server_user_ok = str_replace("\n", "", $this->ask('Please press enter if OK, or enter your apache user name here: '));
+      $is_web_server_user_ok = str_replace("\n", "", $this->ask('Please press enter if OK, or enter your webserver (Apache or nginx) user name here: '));
     }
     else {
       $this->talk('We could not detect a web server username.');
@@ -284,6 +305,7 @@ class Doctor extends DataContainer {
       $this->web_server_user = $is_web_server_user_ok;
     }
   }
+
 
   /**
    * If current user is not the same as web server user, manual chown commands have to be run
@@ -308,7 +330,9 @@ class Doctor extends DataContainer {
    * @return string
    *   The answer
    */
-  public function ask($phrase, $hidden = FALSE) {
+  public function ask($phrase, $hidden = FALSE, $values = array()) {
+    // TODO: display choice values.
+    $allowed_values = array_flip($values);
     $this->talk($phrase);
     if ($hidden) {
       system('stty -echo');
@@ -316,6 +340,11 @@ class Doctor extends DataContainer {
     $answer = str_replace("\n", "", fgets(STDIN));
     if ($hidden) {
       system('stty echo');
+    }
+
+    if (!empty($values) && !isset($allowed_values[$answer])) {
+      $this->ko('Invalid choice: ' . $answer . var_export($values));
+      $answer = $this->ask($phrase, $hidden, $values);
     }
     return $answer;
   }
@@ -358,7 +387,7 @@ class Doctor extends DataContainer {
    * @param mixed $style
    *   The visual style of the message.
    */
-  public function talk($phrase, $style = array('bash-color' => '0;37', 'browser-style' => 'color:#fff')) {
+  public function talk($phrase, $style = array('bash-color' => NULL, 'browser-style' => 'color:#fff')) {
     // Support arrays for multiline phrases.
     if (is_array($phrase)) {
       $phrase = implode("\n", $phrase);

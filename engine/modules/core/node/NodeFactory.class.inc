@@ -441,4 +441,20 @@ class NodeFactory {
     return $response_json;
   }
 
+  /**
+   * Render a node, by building its template.
+   *
+   * @param Environment $env
+   *   The Environment.
+   * @param $node_name
+   *   The name of the node to be rendered..
+   *
+   * @return Node
+   *   The rendered HTML of the node object.
+   */
+  public static function render(Environment $env, $node_name = NULL, $language = NULL) {
+    $node = empty($node_name) ? NodeFactory::current($env) : NodeFactory::load($env, $node_name);
+    $tpl = new NodeTemplate($env, $node);
+    return $tpl->getHtml();
+  }
 }

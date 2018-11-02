@@ -78,9 +78,7 @@ class Page extends DataContainer {
 
     // This is an AJAX request. Skip loading index.html and just provide requested content.
     if (isset($_REQUEST['ajax'])) {
-      $node = NodeFactory::current($this->env);
-      $node->buildTemplate();
-      $this->html = $node->render();
+      $this->html = NodeFactory::render($this->env);
     }
     // This is an actual HTML page request. Commonly index.html.
     elseif (!empty($this->getIndexFile())) {
