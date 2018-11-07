@@ -33,7 +33,7 @@ function qtag_JUMPER($env, $target, &$attributes) {
 
   $ajax = (isset($attributes['ajax'])) ? $attributes['ajax'] : '_self';
   $empty = (isset($attributes['empty'])) ? $attributes['empty'] : '----------';
-  $tpl = (isset($attributes['tpl'])) ? ('tpl="' . $attributes['tpl'] . '"') : '';
+  $tpl = (isset($attributes['tpl'])) ? ('data-tpl="' . $attributes['tpl'] . '"') : '';
 
   // Render the jumper.
   // TODO: maybe use FORM tags?
