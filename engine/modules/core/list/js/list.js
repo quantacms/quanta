@@ -2,7 +2,7 @@ var refreshLists = function () {
 
     $('.list').each(function () {
         var rel = $(this).attr('rel');
-        var tpl = $(this).attr('tpl');
+        var tpl = $(this).data('tpl');
         var list = $(this);
         if (rel != undefined) {
             $(this).find('a.link').off('click').on('click', function (e) {
