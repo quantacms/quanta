@@ -2,7 +2,7 @@ var refreshJumpers = function() {
     $('.jumper').each(function() {
         $(this).bind('change', function() {
             var rel = $(this).attr('rel');
-            var tpl = $(this).attr('tpl');
+            var tpl = $(this).data('tpl');
 
           if (rel == '_self') {
                 top.location.href = '/' + $(this).val();
