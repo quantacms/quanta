@@ -43,42 +43,42 @@ body.grid > * {
   grid-auto-flow: dense;
 }
 
-.grid-no-gap {
+.grid-gap-0 {
   grid-gap: 0;
 }
-.grid-gap {
+.grid-gap-1 {
   grid-gap: var(--gap-size);
 }
-.grid-gap2 {
+.grid-gap-2 {
   grid-gap: calc(var(--gap-size) * 2);
 }
-.grid-gap3 {
+.grid-gap-3 {
   grid-gap: calc(var(--gap-size) * 3);
 }
 
-.grid-column-gap {
-  grid-column-gap: var(--gap-size);
-}
-.grid-column-gap0 {
+.grid-column-gap-0 {
   grid-column-gap: 0;
 }
-.grid-column-gap2 {
+.grid-column-gap-1 {
+  grid-column-gap: var(--gap-size);
+}
+.grid-column-gap-2 {
   grid-column-gap: calc(var(--gap-size) * 2);
 }
-.grid-column-gap3 {
+.grid-column-gap-3 {
   grid-column-gap: calc(var(--gap-size) * 3);
 }
 
-.grid-row-gap {
-  grid-row-gap: var(--gap-size);
-}
-.grid-row-gap0 {
+.grid-row-gap-0 {
   grid-row-gap: 0;
 }
-.grid-row-gap2 {
+.grid-row-gap-1 {
+  grid-row-gap: var(--gap-size);
+}
+.grid-row-gap-2 {
   grid-row-gap: calc(var(--gap-size) * 2);
 }
-.grid-row-gap3 {
+.grid-row-gap-3 {
   grid-row-gap: calc(var(--gap-size) * 3);
 }
 
