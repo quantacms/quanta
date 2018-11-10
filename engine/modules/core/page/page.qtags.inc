@@ -269,7 +269,7 @@ function qtag_JSON($env, $target, &$attributes) {
  */
 function qtag_HEADER($env, $target, &$attributes) {
   $attributes['wrapper_html_tag'] = 'header';
-  $attributes['wrapper_id'] = 'header';
+  $attributes['wrapper_id'] = isset($attributes['header_id']) ? $attributes['header_id'] : '';
   $target_header = isset($target) ? $target : 'header';
   $target = qtag_CONTENT($env, $target_header, $attributes);
   
@@ -297,7 +297,8 @@ function qtag_HEADER($env, $target, &$attributes) {
 function qtag_FOOTER($env, $target, &$attributes) {
   $attributes['grid'] = 'grid grid-container' . (!empty($attributes['grid']) ? ' ' . $attributes['grid'] : '');
   $attributes['grid_html_tag'] = 'footer';
-  $attributes['grid_id'] = 'footer';
+  $attributes['grid_id'] = isset($attributes['footer_id']) ? $attributes['footer_id'] : '';
+  
   $target_footer = isset($target) ? $target : 'footer';
   
   return qtag_CONTENT($env, $target_footer, $attributes);
@@ -321,7 +322,7 @@ function qtag_FOOTER($env, $target, &$attributes) {
  *   The rendered qtag.
  */
 function qtag_ASIDE($env, $target, &$attributes) {
-  $attributes['grid'] .= 'grid grid-container' . (!empty($attributes['grid']) ? ' ' . $attributes['grid'] : '');;
+  $attributes['grid'] = 'grid grid-container' . (!empty($attributes['grid']) ? ' ' . $attributes['grid'] : '');;
   $attributes['grid_html_tag'] = 'aside';
   return qtag_CONTENT($env, $target, $attributes);
 }
