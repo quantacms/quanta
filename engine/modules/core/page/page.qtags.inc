@@ -322,7 +322,7 @@ function qtag_FOOTER($env, $target, &$attributes) {
  *   The rendered qtag.
  */
 function qtag_ASIDE($env, $target, &$attributes) {
-  $attributes['grid'] = 'grid grid-container' . (!empty($attributes['grid']) ? ' ' . $attributes['grid'] : '');;
+  $attributes['grid'] = 'grid grid-container' . (!empty($attributes['grid']) ? ' ' . $attributes['grid'] : '');
   $attributes['grid_html_tag'] = 'aside';
   return qtag_CONTENT($env, $target, $attributes);
 }
@@ -346,7 +346,7 @@ function qtag_ASIDE($env, $target, &$attributes) {
  *   The rendered qtag.
  */
 function qtag_MAIN($env, $target, &$attributes) {
-  $attributes['grid'] = 'grid grid-container' . (!empty($attributes['grid']) ? ' ' . $attributes['grid'] : '');;
+  $attributes['grid'] = 'grid grid-container' . (!empty($attributes['grid']) ? ' ' . $attributes['grid'] : '');
   $attributes['grid_html_tag'] = 'main';
   return qtag_CONTENT($env, $target, $attributes);
 }
