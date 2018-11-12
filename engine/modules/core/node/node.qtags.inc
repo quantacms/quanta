@@ -192,8 +192,8 @@ function qtag_LINK($env, $target, &$attributes) {
   $env->hook('link_alter', $vars);
 
   // Add custom classes to the link.
-  if (isset($attributes['class'])) {
-    $classes[] = $attributes['class'];
+  if (isset($attributes['link_class'])) {
+    $classes[] = $attributes['link_class'];
   }
 
   // Check if there is a link title.
@@ -256,8 +256,8 @@ function qtag_ADD($env, $target, &$attributes) {
   $link = '';
   // Check if the user has the permission to add a node.
   if (NodeAccess::check($env, NODE_ACTION_ADD, array('node' => $nodeobj))) {
-    $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
-    $attributes['class'] .= ' add-link ';
+    $attributes['link_class'] = isset($attributes['add_class']) ? $attributes['add_class'] : '';
+    $attributes['link_class'] .= ' add-link ';
     $attributes['tooltip'] = isset($attributes['tooltip']) ? filter_xss($attributes['tooltip']) : 'Add to ' . filter_xss($nodeobj->getTitle()) . '...';
     $attributes['language'] = isset($attributes['language']) ? $attributes['language'] : Localization::getLanguage($env);
     $attributes['title'] = isset($attributes['title']) ? filter_xss($attributes['title']) : '&oplus;';
@@ -291,8 +291,8 @@ function qtag_EDIT($env, $target, &$attributes) {
   $string = '';
   if (NodeAccess::check($env, NODE_ACTION_EDIT, array('node' => $nodeobj))) {
 
-    $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
-    $attributes['class'] .= ' edit-link';
+    $attributes['link_class'] = isset($attributes['edit_class']) ? $attributes['edit_class'] : '';
+    $attributes['link_class'] .= ' edit-link';
     $title = filter_xss(empty($nodeobj->getTitle()) ? $nodeobj->getName() : $nodeobj->getTitle());
 
     $attributes['tooltip'] = isset($attributes['tooltip']) ? filter_xss($attributes['tooltip']) : 'Edit ' . $title . '...';
@@ -331,8 +331,8 @@ function qtag_DELETE($env, $target, &$attributes) {
   $string = '';
   if (NodeAccess::check($env, NODE_ACTION_DELETE, array('node' => $nodeobj))) {
 
-    $attributes['class'] = isset($attributes['class']) ? $attributes['class'] : '';
-    $attributes['class'] .= 'delete-link';
+    $attributes['link_class'] = isset($attributes['delete_class']) ? $attributes['delete_class'] : '';
+    $attributes['link_class'] .= 'delete-link';
     $attributes['title'] = isset($attributes['title']) ? filter_xss($attributes['title']) : '&ominus;';
     $attributes['tooltip'] = isset($attributes['tooltip']) ? filter_xss($attributes['tooltip']) : 'Delete ' . filter_xss($nodeobj->getTitle()) . '...';
 
