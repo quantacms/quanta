@@ -36,5 +36,7 @@ header nav {
 }
 header nav.menu li {
   display: inline-block;
+}
+header nav.menu li + li {
   margin-left: 15px;
 }

@@ -47,6 +47,7 @@
 .list-item-title-overlay h1 {
 	position: absolute;
 	padding: 15px;
+	margin: 0;
 	color: #fff;
 	transition: 0.3s all;
 	transform: scale(0.8); /* init */

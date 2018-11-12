@@ -149,7 +149,8 @@ function qtag_LINK($env, $target, &$attributes) {
   $link_id = !empty($attributes['link_id']) ? $attributes['link_id'] : '';
 
   // Add support for protocol (http, https etc.).
-  $protocol = !(empty($attributes['protocol'])) ? ($attributes['protocol'] . '://') : '';
+  // TODO: Find a better solution for &colon; instead of : to avoid conflicts in multiple qtags.
+  $protocol = !(empty($attributes['protocol'])) ? ($attributes['protocol'] . '&colon;//') : '';
 
   $classes = array('link');
 

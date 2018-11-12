@@ -148,7 +148,7 @@ abstract class ListObject extends DataContainer {
     }
 
     $ajax = (!empty($this->getAttribute('ajax'))) ? ' rel="' . $this->getAttribute('ajax') . '"'  : '';
-    $tpl = (!empty($this->getAttribute('tpl'))) ? ' tpl="' . $this->getAttribute('tpl') . '"' : '';
+    $tpl = (!empty($this->getAttribute('tpl'))) ? ' data-tpl="' . $this->getAttribute('tpl') . '"' : '';
 
     if (!empty($this->getAttribute('empty_message')) && (count($this->rendered_items) == 0)) {
       $output = $this->getAttribute('empty_message');
