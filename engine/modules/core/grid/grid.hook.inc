@@ -56,7 +56,7 @@ function grid_qtag($env, $vars) {
     $classes = (!empty($vars['attributes']['grid']) && $vars['attributes']['grid'] != 1) ? $vars['attributes']['grid'] : '';
 
     if (!preg_match('~(?<!\S)grid(?!\S)~i', $vars['attributes']['grid'])) {
-      // !grid container = grid child: add an inner element
+      // Not a grid container? => grid child: add an inner wrapper to break the "grid" behaviour
       $inner_open = '<div class="inner">';
       $inner_close = '</div>';
     }

@@ -20,12 +20,12 @@ We are giving those grid attributes to the main content:
 
 grid-start-lg-3 -> Start from cell "3" when in "Large" (desktop, laptop) mode.
 grid-span-md-8  -> Column span of 8 cells when in "Medium" (tablet) mode.
-p-x -> set default single padding on column.
-p-y3 -> set default triple padding on row.
+p-x-1 -> set default single padding on column.
+p-y-3 -> set default triple padding on row.
 
 The referenced node for content structure is _content-basic (see _components/_content-basic).
 -->
-[MAIN|grid=grid-start-lg-3 grid-span-md-8 p-x p-y3:_content-basic]
+[MAIN|grid=grid-start-lg-3 grid-span-md-8 p-x-1 p-y-3:_content-basic]
 
 <!--
 ===========
@@ -35,13 +35,13 @@ We are giving those grid attributes to the first sidebar:
 order-lg--1 -> order:-1 before all elements with default order (0).
 grid-start-lg-1 -> Start from cell "1" when in "Large" (desktop, laptop) mode.
 grid-span-md-4 -> Column span of 4 cells when in "Medium" (tablet) mode.
-p-x -> set default single padding on column.
-p-y3 -> set default triple padding on row.
+p-x-1 -> set default single padding on column.
+p-y-3 -> set default triple padding on row.
 text-left -> align text on left by default.
 
 The referenced node for content structure is _side-first (see _components/_side-first).
 -->
-[ASIDE|grid_id=side-first|grid=order-lg--1 grid-start-lg-1 grid-span-md-4 grid-span-lg-2 p-x p-y3 text-left:_side-first]
+[ASIDE|grid_id=side-first|grid=order-lg--1 grid-start-lg-1 grid-span-md-4 grid-span-lg-2 p-x-1 p-y-3 text-left:_side-first]
 
 <!--
 ===========
@@ -49,10 +49,10 @@ The referenced node for content structure is _side-first (see _components/_side-
 ===========
 We are giving those grid attributes to the second sidebar:
 grid-span-lg-2  -> Column span of 2 cells when in "Large" (desktop, laptop) mode.
-p-x -> set default single padding on column.
-p-y3 -> set default triple padding on row.
+p-x-1 -> set default single padding on column.
+p-y-3 -> set default triple padding on row.
 text-left -> align text on left by default.
 
 The referenced node for content structure is _side-second (see _components/_side-second).
 -->
-[ASIDE|grid_id=side-second|grid=grid-span-lg-2 p-x p-y3 text-left:_side-second]
+[ASIDE|grid_id=side-second|grid=grid-span-lg-2 p-x-1 p-y-3 text-left:_side-second]
