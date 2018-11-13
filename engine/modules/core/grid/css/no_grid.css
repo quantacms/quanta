@@ -16,7 +16,9 @@
 }
 .grid > *:not([class*='grid-span-']),
 .grid > *[class*='grid-span-md'],
-.grid > *[class*='grid-span-lg'] {
+.grid > *[class*='grid-span-lg'],
+.grid > *[class*='grid-span-xl'],
+.grid > *[class*='grid-span-xxl'] {
   width: 100%;
 }
 body.grid {
@@ -163,8 +165,80 @@ body.grid > * {
 
 /* xl: Extra large devices (large desktops, 1200px and up) */
 @media (min-width: 1200px) {
+  .grid-span-xl-1 {
+    flex-basis: var(--size-1-col);
+  }
+  .grid-span-xl-2 {
+    flex-basis: var(--size-2-col);
+  }
+  .grid-span-xl-3 {
+    flex-basis: var(--size-3-col);
+  }
+  .grid-span-xl-4 {
+    flex-basis: var(--size-4-col);
+  }
+  .grid-span-xl-5 {
+    flex-basis: var(--size-5-col);
+  }
+  .grid-span-xl-6 {
+    flex-basis: var(--size-6-col);
+  }
+  .grid-span-xl-7 {
+    flex-basis: var(--size-7-col);
+  }
+  .grid-span-xl-8 {
+    flex-basis: var(--size-8-col);
+  }
+  .grid-span-xl-9 {
+    flex-basis: var(--size-9-col);
+  }
+  .grid-span-xl-10 {
+    flex-basis: var(--size-10-col);
+  }
+  .grid-span-xl-11 {
+    flex-basis: var(--size-11-col);
+  }
+  .grid-span-xl-12 {
+    flex-basis: var(--size-12-col);
+  }  
 }
 
 /* xxl: XXL devices (very large desktops, 1440px and up) */
 @media (min-width: 1440px) {
+  .grid-span-xxl-1 {
+    flex-basis: var(--size-1-col);
+  }
+  .grid-span-xxl-2 {
+    flex-basis: var(--size-2-col);
+  }
+  .grid-span-xxl-3 {
+    flex-basis: var(--size-3-col);
+  }
+  .grid-span-xxl-4 {
+    flex-basis: var(--size-4-col);
+  }
+  .grid-span-xxl-5 {
+    flex-basis: var(--size-5-col);
+  }
+  .grid-span-xxl-6 {
+    flex-basis: var(--size-6-col);
+  }
+  .grid-span-xxl-7 {
+    flex-basis: var(--size-7-col);
+  }
+  .grid-span-xxl-8 {
+    flex-basis: var(--size-8-col);
+  }
+  .grid-span-xxl-9 {
+    flex-basis: var(--size-9-col);
+  }
+  .grid-span-xxl-10 {
+    flex-basis: var(--size-10-col);
+  }
+  .grid-span-xxl-11 {
+    flex-basis: var(--size-11-col);
+  }
+  .grid-span-xxl-12 {
+    flex-basis: var(--size-12-col);
+  }  
 }
