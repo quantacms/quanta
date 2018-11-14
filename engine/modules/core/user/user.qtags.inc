@@ -66,11 +66,14 @@ function qtag_USERATTRIBUTE($env, $target, &$attributes) {
 function qtag_LOGIN($env, $target, &$attributes) {
   $user = UserFactory::current($env);
   if ($user->exists) {
+    $attributes['class'][] = 'logout-link';
     $title = isset($attributes['title']) ? $attributes['title'] : 'Logout';
-    $link = '[LINK|title=' . $title . '|class=logout-link]';
+    $link = '[LINK|title=' . $title . ']';
   }
   else {
     $title = isset($attributes['title']) ? $attributes['title'] : 'Login';
+    $attributes['class'][] = 'login-link';
+
     $link = '[LINK|title=' . $title . '|class=login-link]';
   }
   return $link;
