@@ -25,6 +25,7 @@ function qtag_GRID_CAROUSEL($env, $target, &$attributes) {
     $attributes['carousel_width'] = '400';
     $attributes['carousel_height'] = '260';
     $attributes['carousel_autoplay'] = 'true';
+    $attributes['carousel_type'] = 'slides';
     return qtag_AMP_CAROUSEL($env, $target, $attributes);
 
   } else {

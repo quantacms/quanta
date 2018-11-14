@@ -1,6 +1,3 @@
-amp-carousel {
-  margin-bottom: -17px !important; /* workaround for padding bottom */
-}
 amp-carousel .slide .cover img{
   object-fit: cover;
 }
@@ -23,6 +20,7 @@ amp-carousel .slide .caption a {
 .link-image {
   line-height:0; /* Remove extra-height */ 
 }
+
 
 
 /* style menu buttons like links */

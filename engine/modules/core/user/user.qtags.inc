@@ -72,9 +72,7 @@ function qtag_LOGIN($env, $target, &$attributes) {
   }
   else {
     $title = isset($attributes['title']) ? $attributes['title'] : 'Login';
-    $attributes['class'][] = 'login-link';
-
-    $link = '[LINK|title=' . $title . '|class=login-link]';
+    $link = '[LINK|title=' . $title . '|link_class=login-link]';
   }
   return $link;
 }
@@ -100,7 +98,7 @@ function qtag_REGISTER($env, $target, &$attributes) {
   $user = UserFactory::current($env);
   if (UserAccess::check($env, USER_ACTION_REGISTER, array('user' => $user))) {
     $title = isset($attributes['title']) ? $attributes['title'] : 'Sign up';
-    return $user->exists ? '' : '[LINK|title=' . $title . '|class=register-link]';
+    return $user->exists ? '' : '[LINK|title=' . $title . '|link_class=register-link]';
   }
   else {
     return '';
@@ -128,7 +126,7 @@ function qtag_USER_EDIT($env, $target, &$attributes) {
   $user = ($target == NULL) ? UserFactory::current($env) : new User($env, $target);
   if (UserAccess::check($env, USER_ACTION_EDIT, array('user' => $user))) {
     $title = isset($attributes['title']) ? $attributes['title'] : 'Edit profile';
-    return $user->exists ? '[LINK|title=' . $title . '|class=user-edit-link]' : $target;
+    return $user->exists ? '[LINK|title=' . $title . '|link_class=user-edit-link]' : $target;
   }
   else {
     return '';
@@ -156,7 +154,7 @@ function qtag_USER_EDIT_OWN($env, $target, &$attributes) {
   $user = ($target == NULL) ? UserFactory::current($env) : new User($env, $target);
   if (UserAccess::check($env, USER_ACTION_EDIT, array('user' => $user))) {
     $title = isset($attributes['title']) ? $attributes['title'] : 'Edit your profile';
-    return $user->exists ? '[LINK|title=' . $title . '|class=user-edit-own-link]' : $target;
+    return $user->exists ? '[LINK|title=' . $title . '|link_class=user-edit-own-link]' : $target;
   }
   else {
     return '';
