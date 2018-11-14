@@ -67,6 +67,8 @@ function qtag_CANONICAL_LINK($env, $target, &$attributes) {
 function qtag_AMP_CAROUSEL($env, $target, &$attributes) {
 
   $module = isset($attributes['module']) ? $attributes['module'] : 'amp';
+
+  // TODO: create a better distinction between the 2 attributes "carousel-type" and "carousel_type"
   if (empty($attributes['carousel-type'])) {
     $attributes['carousel-type'] = CAROUSEL_DIRS;
   }
@@ -92,11 +94,11 @@ function qtag_AMP_CAROUSEL($env, $target, &$attributes) {
 
   $carousel_attributes_defaults = array(
     // TODO: Extend to all options.
-    'carousel_width' => '400',
+    'carousel_width' => '400', // it must be "auto" with "fixed-height" layout
     'carousel_height' => '225', // 400:225 = 16:9
     'carousel_layout' => 'responsive', // responsive / fixed-height
-    'carousel_type' => 'slides',
-    'carousel_autoplay' => 'false',
+    'carousel_type' => 'slides', // slides / carousel
+    'carousel_autoplay' => 'false', // true only for "slides" type
     'carousel_delay' => '3000', // used when autoplay is active
   );
 
@@ -116,7 +118,6 @@ function qtag_AMP_CAROUSEL($env, $target, &$attributes) {
   $html .= '>' . $list->render() . '</amp-carousel>';
 
   return $html;
-
 }
 
 
