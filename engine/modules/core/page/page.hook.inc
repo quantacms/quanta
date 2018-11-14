@@ -111,15 +111,17 @@ function page_doctor_setup($env, $vars) {
     '403' => array(
       'title' => '403 - Forbidden',
       'father' => '_system',
+      'body' => '<p>Whoops. Apparently you don\'t have the permission to access the requested page.<\/p><p><a href=\"\/\">Back to Home<\/a><\/p>',
     ),
     '404' => array(
       'title' => '404 - File not found',
       'father' => '_system',
+      'body' => '<p>Whoops. Apparently the content you were looking for, is not here!<\/p><p><a href=\"\/\">Back to Home<\/a><\/p>',
     ),
     'home' => array(
       'title' => 'Your Homepage',
       'father' => 'pages',
-      'body' => 'Welcome in your new QUANTA Homepage. That\'s where everything begins...',
+      'body' => '<p>Welcome in your new QUANTA Homepage. That\'s where everything begins...</p>',
     ),
   );
 
