@@ -39,9 +39,10 @@ function grid_page_init($env, $vars) {
 
 
 /**
+ * Implements hook_qtag().
+ *
  * Renders a Quanta grid.
  *
- * 
  * @param Environment $env
  *   The Environment.
  * @param $vars
