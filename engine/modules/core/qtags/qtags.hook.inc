@@ -39,7 +39,6 @@ function qtags_init($env, $vars) {
  *   An array of variables.
  */
 function _qtag_highlight($qtag, $attributes, $target, $delimiters) {
-  print_r($delimiters);
   $highlighted = '<span class="qtag">';
   $highlighted .= '<span class="qtag-open-close">' . $delimiters[0] . '</span><span class="qtag-name">' . $qtag . '</span>';
   foreach ($attributes as $attribute_name => $attribute_value) {
