@@ -43,8 +43,8 @@ function page_boot($env, $vars) {
   // TODO: object oriented, using templates, etc. etc.
   if ($env->request[count($env->request) - 1] == 'robots.txt') {
     $robots = new Robots($env);
-    $robots->disallow('*', '/search');
-    $robots->disallow('*', '/qtags');
+    $robots->disallow('*', '/search/');
+    $robots->disallow('*', '/qtag/');
 
     // $robots->disallow('*', '/files*');
     // $robots->disallow('*', '/css*');

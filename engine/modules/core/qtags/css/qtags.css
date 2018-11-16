@@ -1,0 +1,31 @@
+/** Qtags highlighting */
+.qtag {
+    font-family: "Courier new";
+    font-size: 0.9em;
+    background: #eee;
+}
+
+.qtag-name {
+    font-weight: bold;
+}
+
+.qtag-target {
+    color: #00a;
+    font-weight: bold;
+}
+.qtag-attribute {
+    color: #770;
+    font-weight: bold;
+}
+
+.qtag  .qtag {
+    background: #000;
+    color: white;
+}
+
+.qtag .qtag .qtag-target {
+    color: #0dd;
+}
+.qtag .qtag .qtag-attribute {
+    color: #dd0;
+}

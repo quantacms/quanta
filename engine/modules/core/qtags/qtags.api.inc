@@ -85,8 +85,13 @@ function checkCodeTags(&$env, $html, $options = array(), $regex_options = 'U') {
         }
       }
 
+      // When the highlight attribute is used, don't render the tab but display it in an highlighted format.
+      // TODO: not elegant to have this here?
+      if (!empty($attr_arr['highlight'])) {
+        $replacing[$tag_full] = _qtag_highlight($tag_name, $attributes, $tag_destination, $delimiters);
+      }
       // When the showtag attribute is used, don't render the tab but just display it.
-      if (!empty($attr_arr['showtag'])) {
+      elseif (!empty($attr_arr['showtag'])) {
         $replacing[$tag_full] =  string_normalize(str_replace('|showtag', '', $tag_full));
       }
       // When the showtag attribute is used, don't render the tab but just display it.
