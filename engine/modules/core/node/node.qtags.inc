@@ -25,7 +25,7 @@ function qtag_AUTHOR($env, $target, &$attributes) {
 /**
  * Implements of qtag ATTRIBUTE.
  *
- * Very important tag that allows retrieving every standard attribute of a node.
+ * Allows retrieving standard attributes of a node.
  *
  * @param Environment $env
  *   The Environment.
@@ -480,7 +480,11 @@ function qtag_STATUS($env, $target, &$attributes) {
  */
 function qtag_TEASER($env, $target, &$attributes) {
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
-  return filter_xss($node->getTeaser());
+  $teaser = filter_xss($node->getTeaser());
+  if (isset($attributes['editable'])) {
+    $teaser = NodeTemplate::wrap($env, $node, $teaser);
+  }
+  return $teaser;
 }
 
 
@@ -503,7 +507,11 @@ function qtag_TEASER($env, $target, &$attributes) {
  */
 function qtag_TITLE($env, $target, &$attributes) {
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
-  return filter_xss($node->getTitle());
+  $title = filter_xss($node->getTitle());
+  if (isset($attributes['editable'])) {
+    $title = NodeTemplate::wrap($env, $node, $title);
+  }
+  return $title;
 }
 
 
@@ -526,8 +534,13 @@ function qtag_TITLE($env, $target, &$attributes) {
  */
 function qtag_BODY($env, $target, &$attributes) {
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
-  // TODO: add filter_xss.
-  return $node->getBody();
+  // TODO: breaks the HTML, but we definitely need a xss filter for this tag.
+  // $body = filter_xss($node->getBody());
+  $body = $node->getBody();
+  if (isset($attributes['editable'])) {
+    $body = NodeTemplate::wrap($env, $node, $body);
+  }
+  return $body;
 }
 
 
@@ -549,5 +562,10 @@ function qtag_BODY($env, $target, &$attributes) {
  *   The rendered qtag.
  */
 function qtag_CONTENT($env, $target, &$attributes) {
-  return NodeFactory::render($env, $target);
+  $node = NodeFactory::load($env, $target);
+  $content = NodeFactory::render($env, $node->getName());
+  if (isset($attributes['editable'])) {
+    $content = NodeTemplate::wrap($env, $node, $content);
+  }
+  return $content;
 }
