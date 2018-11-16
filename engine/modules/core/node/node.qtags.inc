@@ -25,7 +25,7 @@ function qtag_AUTHOR($env, $target, &$attributes) {
 /**
  * Implements of qtag ATTRIBUTE.
  *
- * Very important tag that allows retrieving every standard attribute of a node.
+ * Allows retrieving standard attributes of a node.
  *
  * @param Environment $env
  *   The Environment.
@@ -142,7 +142,6 @@ function qtag_ATTRIBUTE($env, $target, &$attributes) {
  */
 function qtag_LINK($env, $target, &$attributes) {
   $querystring = array();
-  $link_title = '';
   $link_target = '';
   $title_default = '';
   $link_data = array();
@@ -187,6 +186,10 @@ function qtag_LINK($env, $target, &$attributes) {
       $attributes['rel'] = $node->getName();    
     }
   }
+  // Set the text of the link.
+  $title = isset($attributes['title']) ? $attributes['title'] : $title_default;
+  // Check if there is a link title.
+  $link_title = isset($attributes['link_title']) ? $attributes['link_title'] : strip_tags($title);
 
   $vars = array('target' => &$target, 'attributes' => &$attributes, 'link_data' => &$link_data);
   $env->hook('link_alter', $vars);
@@ -194,11 +197,6 @@ function qtag_LINK($env, $target, &$attributes) {
   // Add custom classes to the link.
   if (isset($attributes['link_class'])) {
     $classes[] = $attributes['link_class'];
-  }
-
-  // Check if there is a link title.
-  if (isset($attributes['link_title'])) {
-    $link_title = 'title="' . $attributes['link_title'] . '"';
   }
 
   // Check if there is a target language.
@@ -222,12 +220,11 @@ function qtag_LINK($env, $target, &$attributes) {
 
   // Check if link has an ID.
   $id = !empty($link_id) ? ('id="' . $link_id . '"') : '';
+  // Sets a query string.
   $query = (!empty($querystring)) ? ('?' . implode('&', $querystring)) : '';
 
-
-  $title = isset($attributes['title']) ? $attributes['title'] : $title_default;
   // Create the link HTML.
-  $link = '<a ' . $id . ' ' . implode(' ', $link_data) . ' class="' . implode(' ', $classes) . '" ' . $link_title . ' href="' . $protocol . $target . $query . '" ' . $link_target . '>' . $title . '</a>';
+  $link = '<a ' . $id . ' ' . implode(' ', $link_data) . ' class="' . implode(' ', $classes) . '" title="' . $link_title . '" href="' . $protocol . $target . $query . '" ' . $link_target . '>' . $title . '</a>';
   return $link;
 }
 
@@ -480,7 +477,11 @@ function qtag_STATUS($env, $target, &$attributes) {
  */
 function qtag_TEASER($env, $target, &$attributes) {
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
-  return filter_xss($node->getTeaser());
+  $teaser = filter_xss($node->getTeaser());
+  if (isset($attributes['editable'])) {
+    $teaser = NodeTemplate::wrap($env, $node, $teaser);
+  }
+  return $teaser;
 }
 
 
@@ -503,7 +504,11 @@ function qtag_TEASER($env, $target, &$attributes) {
  */
 function qtag_TITLE($env, $target, &$attributes) {
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
-  return filter_xss($node->getTitle());
+  $title = filter_xss($node->getTitle());
+  if (isset($attributes['editable'])) {
+    $title = NodeTemplate::wrap($env, $node, $title);
+  }
+  return $title;
 }
 
 
@@ -526,8 +531,13 @@ function qtag_TITLE($env, $target, &$attributes) {
  */
 function qtag_BODY($env, $target, &$attributes) {
   $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
-  // TODO: add filter_xss.
-  return $node->getBody();
+  // TODO: breaks the HTML, but we definitely need a xss filter for this tag.
+  // $body = filter_xss($node->getBody());
+  $body = $node->getBody();
+  if (isset($attributes['editable'])) {
+    $body = NodeTemplate::wrap($env, $node, $body);
+  }
+  return $body;
 }
 
 
@@ -549,5 +559,32 @@ function qtag_BODY($env, $target, &$attributes) {
  *   The rendered qtag.
  */
 function qtag_CONTENT($env, $target, &$attributes) {
-  return NodeFactory::render($env, $target);
+  $node = NodeFactory::load($env, $target);
+  $content = NodeFactory::render($env, $node->getName());
+  if (isset($attributes['editable'])) {
+    $content = NodeTemplate::wrap($env, $node, $content);
+  }
+  return $content;
+}
+
+/**
+ * Implements qtag KEYWORDS.
+ *
+ * Returns the keywords of a node.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_KEYWORDS($env, $target, &$attributes) {
+  $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
+  return $node->getKeywords();
 }
