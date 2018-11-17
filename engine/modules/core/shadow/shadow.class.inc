@@ -62,22 +62,23 @@ class Shadow extends Page {
     switch ($this->env->getContext()) {
       case USER_ACTION_LOGIN:
         break;
-        
+
       case NODE_ACTION_DELETE:
         $this->addTab('temporary form', file_get_contents($this->env->getModulePath('node') . '/tpl/node_data.inc'), 1);
-        $this->addButton('edit-save', 'Delete');      
+        $this->addButton('edit-save', 'Delete');
         break;
-      
+
       default:
 
         $this->addTab('temporary form', file_get_contents($this->env->getModulePath('node') . '/tpl/node_data.inc'), 1);
-        $this->addButton('edit-save', 'Save');         
+        $this->addButton('edit-save', 'Save');
         break;
     }
   }
-  
+
   /**
    * Renders a Shadow using the Page class.
+   * Github: Simone-dev - Add a "insivible" paramter which identifies if a tab should be displayed or not
    */
   public function render() {
     $tabs = $this->getTabs();
@@ -91,12 +92,31 @@ class Shadow extends Page {
     foreach ($tabs as $wtabs) {
       foreach ($wtabs as $tab) {
         $i++;
-        // A tab can be null in case of single-page Shadows.
-        if ($tab['title'] != NULL) {
-          $tab_titles .= '<li data-title="' . $tab['title'] . '" class="shadow-title ' . (($i == 1) ? 'enabled' : '') . '" ><a href="#" data-rel="' . $i . '" id="shadow-title-' . $i . '">' . $tab['title'] . '</a></li>';
+
+        /**
+        * Github: Simone-dev - Add a "insivible" paramter which identifies if a tab should be displayed or not
+        *         Next step: refactor if else statement with a ternary operator within the HTML string
+        */
+        if($tab['invisible'] == 1){
+
+          // A tab can be null in case of single-page Shadows.
+          if ($tab['title'] != NULL) {
+            $tab_titles .= '<li data-title="' . $tab['title'] . '" class="shadow-title ' . (($i == 1) ? 'enabled' : '') . '" style="display:none"><a href="#" data-rel="' . $i . '" id="shadow-title-' . $i . '">' . $tab['title'] . '</a></li>';
+          }
+          $tab_contents .= '<div class="shadow-content shadow-content-' . $this->env->getContext() . ' ' . $tab['classes'] . ' ' . (($i == 1) ? 'enabled' : '') . '" id="shadow-content-' . $i . '">' . $tab['content'] . ' style="display:none"</div>';
+
+        } else {
+
+          // A tab can be null in case of single-page Shadows.
+          if ($tab['title'] != NULL) {
+            $tab_titles .= '<li data-title="' . $tab['title'] . '" class="shadow-title ' . (($i == 1) ? 'enabled' : '') . '" ><a href="#" data-rel="' . $i . '" id="shadow-title-' . $i . '">' . $tab['title'] . '</a></li>';
+          }
+          $tab_contents .= '<div class="shadow-content shadow-content-' . $this->env->getContext() . ' ' . $tab['classes'] . ' ' . (($i == 1) ? 'enabled' : '') . '" id="shadow-content-' . $i . '">' . $tab['content'] . '</div>';
+
         }
-        $tab_contents .= '<div class="shadow-content shadow-content-' . $this->env->getContext() . ' ' . $tab['classes'] . ' ' . (($i == 1) ? 'enabled' : '') . '" id="shadow-content-' . $i . '">' . $tab['content'] . '</div>';
       }
+
+
     }
     $this->setData('tab_titles', $tab_titles);
     $this->setData('tab_contents', $tab_contents);
@@ -135,11 +155,13 @@ class Shadow extends Page {
    * @param string $classes
    *   Classes of the tabbed item.
    */
-  public function addTab($title, $content, $weight = 1, $classes = NULL) {
+
+  //Github: Simone-dev - Add a "insivible" paramter which identifies if a tab should be displayed or not
+  public function addTab($title, $content, $weight = 1, $classes = NULL, $invisible) {
     while (isset($this->tabs[$weight])) {
       $weight += 0.1;
     }
-    $this->tabs[$weight][$this->env->getContext()] = array('title' => $title, 'content' => $content, 'classes' => $classes);
+    $this->tabs[$weight][$this->env->getContext()] = array('title' => $title, 'content' => $content, 'classes' => $classes, 'invisible' => $invisible);
   }
 
   /**
