@@ -29,11 +29,7 @@ nav.menu.menu-vertical a {
 header {
   display: flex;
   align-items: center;
-}/*
-header nav {
-  margin-left: auto;
-  text-align: right;
-}*/
+}
 header nav.menu li {
   display: inline-block;
 }
