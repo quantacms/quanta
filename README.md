@@ -1,4 +1,4 @@
-# quantacms
+# Quanta Cms #
 An innovative, DB-free Content Management System for web and application development, based on the principles of Quantum physics.
 
 Originally designed by Aldo Tripiciano in 2015, Quanta is now proudly free and open source.
@@ -21,22 +21,22 @@ Quanta's Features
 - Forms management
 - Workflow management (Draft->Published statuses, etc.)
 - Multilingualism / Internationalization 
-- High security (delegated on the OS file permissions - completely eliminating SQL injections and such)
+- Improved security (delegated on the OS file permissions - completely eliminating SQL injections and other SQL-based attacks)
 - Big applications are easy to distribute on multiple machines, Virtualized or Cloud-based.
 
 Quanta's Architecture
 ----------------------------------
 Quanta is completely Object Oriented PHP, escaping the traditional MVC model and design patterns. 
 
-- a 100% file-system based architecture structured on hierarchical system folders (no DB or SQL involved). 
-- Internal caching and indexation of directories through an internal vocabulary
-- JSON storage of data and metadata
-- 100% Object Oriented PHP
-- Template engine allowing creation and override individual template for individual or multiple entities
-- qTags: special markup allowing creation of tags that are incapsulated into templates, allowing the creation of complex applications with huge reduction of coding times
-- CSS Grid approach natively supported by qTags
-- Node-level access control (roles, permissions, etc.)
-- Views system
+* a 100% file-system based architecture structured on hierarchical system folders (no DB or SQL involved). 
+* Internal caching and indexation of directories through an internal vocabulary
+* JSON storage of data and metadata
+* 100% Object Oriented PHP
+* Template engine allowing creation and override individual template for individual or multiple entities
+* qTags: special markup allowing creation of tags that are incapsulated into templates, allowing the creation of complex applications with huge reduction of coding times
+* CSS Grid approach natively supported by qTags
+* Node-level access control (roles, permissions, etc.)
+* Views system
 
 
 Pre-Requisites
