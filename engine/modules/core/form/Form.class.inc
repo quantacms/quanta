@@ -1,6 +1,15 @@
 <?php
+/**
+ *
+ */
 define("FORM_METHOD_POST", 'post');
+/**
+ *
+ */
 define("FORM_METHOD_GET", 'get');
+/**
+ *
+ */
 define("FORM_PAGE_FORM", '___page_form___');
 /**
  * Class Form
@@ -83,7 +92,6 @@ class Form extends DataContainer {
         $this->env->hook('form_submit', $vars);
         $this->env->hook('form_type_' . $this->getType() . '_submit', $vars);
         $this->env->hook($this->getId() . '_form_submit', $vars);
-        // If there are no errors, redirect OR show the OK message of the form.
         if (empty($this->getRedirect())) {
           return $this->getOkMessage();
         }
@@ -342,7 +350,6 @@ class Form extends DataContainer {
     $this->setMethod((isset($attributes['method'])) ? $attributes['method'] : FORM_METHOD_POST);
     $this->setOkMessage((isset($attributes['ok_message'])) ? $attributes['ok_message'] : 'Your form has been submitted.');
     $this->setAnchor((isset($attributes['anchor'])) ? $attributes['anchor'] : $this->getId());
-    $this->setRedirect((isset($attributes['redirect'])) ? $attributes['redirect'] : NULL);
 
   }
 
