@@ -29,7 +29,7 @@ Quanta's Architecture
 ----------------------------------
 Quanta is completely Object Oriented PHP, escaping the traditional MVC model and design patterns. 
 
-* a 100% file-system based architecture structured on 📁 hierarchical system folders (no DB or SQL involved). 
+* a 100% file-system based architecture structured on  hierarchical system folders 📁 (no DB or SQL involved). 
 * Internal caching and indexation of directories through an internal vocabulary
 * JSON storage of data and metadata
 * 100% Object Oriented PHP
