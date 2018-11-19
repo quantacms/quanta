@@ -78,6 +78,10 @@ function user_doctor_setup($env, $vars) {
     $password = 'pass';
     $password_repeat = 'pass_repeat';
 
+    if (!empty($doctor->getData('admin-pass'))) {
+      $password = $doctor->getData('admin-pass');
+      $password_repeat = $doctor->getData('admin-pass');
+    }
     while ($password != $password_repeat) {
       $password = $doctor->ask('Please enter a password for the administrator user', TRUE);
       $password_repeat = $doctor->ask('Please repeat your password', TRUE);
