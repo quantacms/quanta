@@ -68,6 +68,22 @@ ul.grid {
   text-align: right;
 }
 
+.align-content-start {
+  align-content: start;
+}
+
+.align-content-center {
+  align-content: center;
+}
+
+.align-content-end {
+  align-items: end;
+}
+
+.align-content-stretch {
+  align-items: stretch;
+}
+
 .align-items-start {
   align-items: start;
 }
