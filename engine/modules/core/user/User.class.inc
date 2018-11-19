@@ -353,11 +353,30 @@ class User extends Node {
   }
 
   /**
+   * @param $context
+   * @return bool|string
+   */
+  public function renderEditForm($context) {
+    $user_edit_form = file_get_contents($this->env->getModulePath('user') . '/tpl/user_edit.inc');
+    return $user_edit_form;
+  }
+
+
+  /**
+   * Renders a Login form.
+   * TODO: refactor and move elsewhere.
+   *
+   * @return string
+   */
+  public function renderLoginForm() {
+    $login_form = file_get_contents($this->env->getModulePath('user') . '/tpl/user_login.inc');
+    return $login_form;
+  }
+
+  /**
    * Rebuild the User object in session, based on current user.
    */
   public function rebuildSession() {
-    // TODO: always appropriate to set logged when rebuilding a session?
-    $this->roles += array('logged' => 'logged');
     $_SESSION['user'] = $this->serializeForSession();
   }
 

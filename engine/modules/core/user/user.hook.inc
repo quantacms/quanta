@@ -77,11 +77,13 @@ function user_doctor_setup($env, $vars) {
     $doctor->talk('Not found! Attempting to create Admin User...');
     $password = 'pass';
     $password_repeat = 'pass_repeat';
-
+    // Get admin password from command line...
     if (!empty($doctor->getData('admin-pass'))) {
       $password = $doctor->getData('admin-pass');
       $password_repeat = $doctor->getData('admin-pass');
+      $doctor->ok('Pre-selecting admin password');
     }
+    // ...or from user input.
     while ($password != $password_repeat) {
       $password = $doctor->ask('Please enter a password for the administrator user', TRUE);
       $password_repeat = $doctor->ask('Please repeat your password', TRUE);
@@ -154,7 +156,7 @@ function user_action_login($env, $vars) {
  */
 function user_shadow_user_register_form($env, $vars) {
   $user = UserFactory::current($env);
-  $tab = '<h2>Create a free account</h2>' . UserFactory::renderUserEditForm($env, $env->getContext());
+  $tab = '<h2>Create a free account</h2>' . $user->renderEditForm($env->getContext());
   $vars['shadow']->addTab('Insert your data', $tab, 1);
   $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Sign Up!');
 }
@@ -186,7 +188,7 @@ function user_shadow_user_edit_form($env, $vars) {
       break;
   }
 
-  $tab = '<h2>' . $title . '</h2>' . UserFactory::renderUserEditForm($env, $env->getContext());
+  $tab = '<h2>' . $title . '</h2>' . $user->renderEditForm($env->getContext());
   $shadow->addTab('Your Profile', $tab, 1);
   $shadow->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Update');
 }
@@ -201,7 +203,7 @@ function user_shadow_user_edit_form($env, $vars) {
  */
 function user_shadow_user_login_form($env, $vars) {
   $user = UserFactory::current($env);
-  $tab = UserFactory::renderLoginForm($env);
+  $tab = $user->renderLoginForm();
   /** @var Shadow $shadow */
   $shadow = $vars['shadow'];
   $shadow->addTab('Your Login Data', $tab, 1);
