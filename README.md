@@ -3,7 +3,8 @@
 An innovative, DB-free Content Management System for web and application development, based on the principles of Quantum physics.
 
 Originally designed by Aldo Tripiciano in 2015, Quanta is now proudly free and open source.
-Detailed info is available at: https://www.quantacms.com
+
+Detailed info is available at the official website: https://www.quantacms.com
 
 The Author
 ----------------------------------
