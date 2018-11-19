@@ -39,9 +39,10 @@ function grid_page_init($env, $vars) {
 
 
 /**
+ * Implements hook_qtag().
+ *
  * Renders a Quanta grid.
  *
- * 
  * @param Environment $env
  *   The Environment.
  * @param $vars
@@ -53,7 +54,7 @@ function grid_qtag($env, $vars) {
     $inner_close = '';
     $grid_html_tag = !empty($vars['attributes']['grid_html_tag']) ? $vars['attributes']['grid_html_tag'] : 'div';
     $grid_id = !empty($vars['attributes']['grid_id']) ? $vars['attributes']['grid_id'] : '';
-    $classes = (!empty($vars['attributes']['grid']) && $vars['attributes']['grid'] != 1) ? $vars['attributes']['grid'] : '';
+    $grid_classes = (!empty($vars['attributes']['grid']) && $vars['attributes']['grid'] != 1) ? $vars['attributes']['grid'] : '';
 
     if (!preg_match('~(?<!\S)grid(?!\S)~i', $vars['attributes']['grid'])) {
       // Not a grid container? => grid child: add an inner wrapper to break the "grid" behaviour
@@ -61,7 +62,7 @@ function grid_qtag($env, $vars) {
       $inner_close = '</div>';
     }
 
-    $vars['qtag'] = '<' . $grid_html_tag . (!empty($grid_id) ? ' id="' . $grid_id . '"' : '') . ' class="grid-item ' . $classes . '">' . $inner_open . $vars['qtag'] . $inner_close . '</' . $grid_html_tag . '>';
+    $vars['qtag'] = '<' . $grid_html_tag . (!empty($grid_id) ? ' id="' . $grid_id . '"' : '') . (!empty($grid_classes) ? ' class="' . $grid_classes . '"' : '') . '>' . $inner_open . $vars['qtag'] . $inner_close . '</' . $grid_html_tag . '>';
   }
 }
 
