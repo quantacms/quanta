@@ -1,3 +1,4 @@
+![alt text](https://www.quantacms.com/assets/img/q_cms.png)
 # Quanta Cms #
 An innovative, DB-free Content Management System for web and application development, based on the principles of Quantum physics.
 
