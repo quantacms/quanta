@@ -1,0 +1,15 @@
+{
+    "teaser": null,
+    "author": "administrator",
+    "body": "<h1 class='text-center'>About us</h1> <p class='text-center'>We are a global company established in ...</p>",
+    "title": "About us",
+    "thumbnail": null,
+    "timestamp": 1541086800,
+    "status": "node-status-published",
+    "permissions": {
+        "node_add": "admin",
+        "node_edit": "admin",
+        "node_delete": "admin",
+        "node_view": "anonymous"
+    }
+}

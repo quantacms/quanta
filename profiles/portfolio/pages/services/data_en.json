@@ -1,0 +1,15 @@
+{
+    "teaser": null,
+    "author": "administrator",
+    "body": "[CONTENT:_services]",
+    "title": "Our services",
+    "thumbnail": null,
+    "timestamp": 1541086800,
+    "status": "node-status-published",
+    "permissions": {
+        "node_add": "admin",
+        "node_edit": "admin",
+        "node_delete": "admin",
+        "node_view": "anonymous"
+    }
+}

@@ -12,17 +12,15 @@
     <title>[TITLE]</title>
 </head>
 <body>
-    <div class="container" id="grid-main">
+    <div id="grid-main" class="grid">
         <!-- Header node's content -->
-        [HEADER|rendered|wrapper_class=header:header]
-        <!-- Intro's node's content -->
-        [CONTENT|rendered|id=intro:intro]
-        <!-- Featured-Work node's content -->
-        [CONTENT|rendered|id=work:work]
-        <!-- Profile node's content -->
-        [CONTENT|rendered|id=profile:profile]
+        [HEADER|rendered|wrapper_class=header:_header]
+        
+        <!-- Currently viewed node's content -->
+        [CONTENT]
+
         <!-- Footer node's content -->
-        [FOOTER|rendered|id=footer:footer]
+        [FOOTER|rendered|wrapper_class=footer:_footer]
     </div>
     [JS|runlast]
     <script type="text/javascript" src="/assets/js/script.js"></script>
