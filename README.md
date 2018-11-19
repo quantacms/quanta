@@ -1,10 +1,11 @@
+<center>
 ![alt text](https://www.quantacms.com/assets/img/q_cms.png)
 # Quanta Cms #
 An innovative, DB-free Content Management System for web and application development, based on the principles of Quantum physics.
 
 Originally designed by Aldo Tripiciano in 2015, Quanta is now proudly free and open source.
 Detailed info is available at: https://www.quantacms.com
-
+</center>
 The Author
 ----------------------------------
 Aldo Tripiciano is a seasoned italian IT Developer, consulting for 15+ years on the major CMS players (Drupal, Wordpress, Joomla, etc.) for global companies and organisations such as the United Nations and the European Commission. 
