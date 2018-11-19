@@ -60,16 +60,50 @@ in order to run Quanta on Windows, you will have to install a VM (VMware, Virtua
 Installation
 -----------------
 Quick kickstart guide:
-1. create a host pointing to your quanta folder (i.e. myproject.com => /var/www/quanta)
-2. run Doctor: 
+
+1. clone the latest release of the Quanta repo
+
+2. create a host pointing to your quanta folder (i.e. myproject.com => /var/www/quanta)
+
+3. run Doctor: 
 ```bash
 ./doctor myproject.com
 ```
-and follow the steps
+and follow the steps until installation is completed.
+
+4. run Composer:
+```bash
+composer install
+```
+
+5. Done! Check your new site at http://myproject.com and start customizing. 
 
 Detailed information about Quanta's installation process is available on the website: https://www.quantacms.com/installation-instructions/
 
-Custmization
+
+Customization
 -----------------
-Detailed information about Quanta's installation process is available on the website: https://www.quantacms.com/installation-instructions/
+Once you have, you can start: 
+* structuring your folders structure -> https://www.quantacms.com/approaching-quantas-structure-nodes-folders-and-datajson-files/
+* playing around with qTags -> https://www.quantacms.com/what-is-a-quanta-tag-qtag/
+* creating a basic layout -> https://www.quantacms.com/the-index-html-file/ 
+* building up great templates -> https://www.quantacms.com/the-tpl-html-file/
+* creating a custom module -> https://www.quantacms.com/creating-a-custom-quanta-module/
 
+... and become a Quanta pro by having a look at:
+* the documentation -> https://www.quantacms.com/documentation/
+* the tutorials  -> https://www.quantacms.com/tutorial/
+
+Support
+-----------------
+Found any issue? Got any idea? 
+Quanta's contributors and enthusiasts are always happy to help.
+
+* the FAQ -> https://www.quantacms.com/faq/
+* the Community -> https://www.quantacms.com/community/
+* the Facebook Group -> https://www.facebook.com/groups/quantacms
+
+If you feel like something needs attention, don't hesitate in opening a new issue in the github repository:
+https://github.com/quantacms/quanta
+
+Quanta needs you to make every day new steps to become the best CMS ever created!
