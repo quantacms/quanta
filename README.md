@@ -2,7 +2,7 @@
 An innovative, DB-free Content Management System for web and application development, based on the principles of Quantum physics.
 
 Originally designed by Aldo Tripiciano in 2015, Quanta is now proudly free and open source.
-
+Detailed info is available at: https://www.quantacms.com
 
 The Author
 ----------------------------------
@@ -15,7 +15,7 @@ Quanta's Features
 
 - Pre-defined installation profiles (including modules, themes and general entities)
 - A customizable UI backend ("Shadow"), also used for overlay forms
-- Easy creation and inline editing of forms
+- Inline editing of content
 - A batch tool for install, update, diagnostic and repair ("Doctor")
 - User management
 - Forms management
@@ -24,11 +24,12 @@ Quanta's Features
 - Improved security (delegated on the OS file permissions - completely eliminating SQL injections and other SQL-based attacks)
 - Big applications are easy to distribute on multiple machines, Virtualized or Cloud-based.
 
+
 Quanta's Architecture
 ----------------------------------
 Quanta is completely Object Oriented PHP, escaping the traditional MVC model and design patterns. 
 
-* a 100% file-system based architecture structured on hierarchical system folders (no DB or SQL involved). 
+* a 100% file-system based architecture structured on 📁 hierarchical system folders (no DB or SQL involved). 
 * Internal caching and indexation of directories through an internal vocabulary
 * JSON storage of data and metadata
 * 100% Object Oriented PHP
