@@ -8,6 +8,18 @@
   /*flex-grow: 1;*/
 }
 
+
+/* "three-rows" style: */
+/* MAIN PAGE structure: */
+/* header + #grid-main(max-height) + footer */
+
+body.grid.three-rows #grid-main {
+  flex-grow: 1;
+  align-content: start;
+}
+
+
+
 .grid {
   display: flex;
   flex-wrap: wrap;

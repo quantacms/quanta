@@ -11,7 +11,9 @@
 /* MAIN PAGE structure: */
 /* header + #grid-main(max-height) + footer */
 
-body.grid.three-rows > footer {
+body.grid.three-rows > header,
+body.grid.three-rows > footer,
+body.grid.three-rows #grid-main {
   grid-gap: 0;
 }
 
