@@ -61,7 +61,11 @@ Installation
 -----------------
 Quick kickstart guide:
 1. create a host pointing to your quanta folder (i.e. myproject.com => /var/www/quanta)
-2. run Doctor: ```bash ./doctor myproject.com``` and follow the steps
+2. run Doctor: 
+```bash
+./doctor myproject.com
+```
+and follow the steps
 
 Detailed information about Quanta's installation process is available on the website: https://www.quantacms.com/installation-instructions/
 
