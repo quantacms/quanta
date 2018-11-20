@@ -8,11 +8,22 @@
   /*flex-grow: 1;*/
 }
 
+
+/* "three-rows" style: */
+/* MAIN PAGE structure: */
+/* header + #grid-main(max-height) + footer */
+
+body.grid.three-rows #grid-main {
+  flex-grow: 1;
+  align-content: start;
+}
+
+
+
 .grid {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;  
-  padding: var(--gap-size);  
+  justify-content: center;
 }
 .grid > *:not([class*='grid-span-']),
 .grid > *[class*='grid-span-md'],
@@ -21,17 +32,6 @@
 .grid > *[class*='grid-span-xxl'] {
   width: 100%;
 }
-body.grid {
-  padding: 0;
-}
-body.grid > * {
-  padding: var(--gap-size);
-}
-.grid.grid-container {
-  padding: 0;
-}
-
-
 
 
 
