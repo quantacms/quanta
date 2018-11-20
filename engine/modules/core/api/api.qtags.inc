@@ -18,7 +18,7 @@
  */
 function qtag_QUANTA($env, $target, &$attributes) {
 
-	return '<span class="powered-by-quanta">Powered by <a href="https://www.quantacms.com">Quanta CMS</a></span>';
+	return '<span class="powered-by-quanta">Powered by <a href="https://www.quanta.org">Quanta CMS</a></span>';
 }
 /**
  * Implements RANDOM qtag.
