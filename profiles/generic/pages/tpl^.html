@@ -3,29 +3,32 @@
  Feel free to review all the inline comments, to better understand how things are done.
  Then, you can delete them :-)!
 
-===========
+==========
 Breadcrumb
-===========
+==========
 Display a breadcrumb of currently viewed node:
 order-lg--1 -> All elements have order:0 by default; setting order-lg--1 we set order:-1 only for "Large" mode. We need to do this because we set the 1st Side too as order-lg--1, so we have to set it also for Breadcrumb to mantain it before the 1st Side.
 
+p-x-1 -> set default single padding on X axis (left + right).
 -->
-[BREADCRUMB|grid=order-lg--1]
+[BREADCRUMB|grid=order-lg--1 p-x-1]
 
 <!--
-===========
+============
 Main content
-===========
+============
 We are giving those grid attributes to the main content:
 
-grid-start-lg-3 -> Start from cell "3" when in "Large" (desktop, laptop) mode.
+grid-start-lg-4 -> Start from line "4" when in "Large" (desktop, laptop) mode.
+grid-start-xl-3 -> Start from line "3" when in "Extra Large" (large desktop) mode.
 grid-span-md-8  -> Column span of 8 cells when in "Medium" (tablet) mode.
-p-x-1 -> set default single padding on column.
-p-y-3 -> set default triple padding on row.
+...
+p-x-1 -> set default single padding on X axis (left + right).
+p-y-3 -> set default triple padding on Y axis (top + bottom).
 
-The referenced node for content structure is _content-basic (see _components/_content-basic).
+The referenced node for content structure is _content-basic-layout (see _components/_content-basic-layout).
 -->
-[MAIN|grid=grid-start-lg-3 grid-span-md-8 p-x-1 p-y-3:_content-basic]
+[CONTENT|grid=grid-start-lg-4 grid-start-xl-3 grid-span-md-8 grid-span-lg-6 grid-span-xl-8 p-x-1 p-y-3:_content-basic-layout]
 
 <!--
 ===========
@@ -33,15 +36,16 @@ The referenced node for content structure is _content-basic (see _components/_co
 ===========
 We are giving those grid attributes to the first sidebar:
 order-lg--1 -> order:-1 before all elements with default order (0).
-grid-start-lg-1 -> Start from cell "1" when in "Large" (desktop, laptop) mode.
+grid-start-lg-1 -> Start from line "1" when in "Large" (desktop, laptop) mode.
 grid-span-md-4 -> Column span of 4 cells when in "Medium" (tablet) mode.
-p-x-1 -> set default single padding on column.
-p-y-3 -> set default triple padding on row.
+...
+p-x-1 -> set default single padding on X axis (left + right).
+p-y-3 -> set default triple padding on Y axis (top + bottom).
 text-left -> align text on left by default.
 
 The referenced node for content structure is _side-first (see _components/_side-first).
 -->
-[ASIDE|grid_id=side-first|grid=order-lg--1 grid-start-lg-1 grid-span-md-4 grid-span-lg-2 p-x-1 p-y-3 text-left:_side-first]
+[ASIDE|grid_id=side-first|grid=order-lg--1 grid-start-lg-1 grid-span-md-4 grid-span-lg-3 grid-span-xl-2 p-x-1 p-y-3 text-left:_side-first]
 
 <!--
 ===========
@@ -49,10 +53,10 @@ The referenced node for content structure is _side-first (see _components/_side-
 ===========
 We are giving those grid attributes to the second sidebar:
 grid-span-lg-2  -> Column span of 2 cells when in "Large" (desktop, laptop) mode.
-p-x-1 -> set default single padding on column.
-p-y-3 -> set default triple padding on row.
+p-x-1 -> set default single padding on X axis (left + right).
+p-y-3 -> set default triple padding on Y axis (top + bottom).
 text-left -> align text on left by default.
 
 The referenced node for content structure is _side-second (see _components/_side-second).
 -->
-[ASIDE|grid_id=side-second|grid=grid-span-lg-2 p-x-1 p-y-3 text-left:_side-second]
+[ASIDE|grid_id=side-second|grid=grid-span-lg-3 grid-span-xl-2 p-x-1 p-y-3 text-left:_side-second]
