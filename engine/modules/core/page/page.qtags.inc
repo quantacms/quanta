@@ -268,12 +268,13 @@ function qtag_JSON($env, $target, &$attributes) {
  *   The rendered qtag.
  */
 function qtag_HEADER($env, $target, &$attributes) {
-  $attributes['wrapper_html_tag'] = 'header';
-  $attributes['wrapper_id'] = isset($attributes['header_id']) ? $attributes['header_id'] : '';
-  $target_header = isset($target) ? $target : 'header';
-  $target = qtag_CONTENT($env, $target_header, $attributes);
+  $attributes['grid'] = 'grid' . (!empty($attributes['grid']) ? ' ' . $attributes['grid'] : '');
+  $attributes['grid_html_tag'] = 'header';
+  $attributes['grid_id'] = isset($attributes['header_id']) ? $attributes['header_id'] : '';
   
-  return qtag_WRAPPER($env, $target, $attributes);
+  $target_header = isset($target) ? $target : 'header';
+  
+  return qtag_CONTENT($env, $target_header, $attributes);
 }
 
 
