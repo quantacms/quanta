@@ -78,7 +78,6 @@ footer a {
 
 h1 {
     margin-bottom: 20px;
-    margin-top: 20px;
 }
 
 body.page-animals {
@@ -89,8 +88,8 @@ body.page-fruits {
     background: #fff2c9;
 }
 
-body.page-animals main,
-body.page-fruits main {
+body.page-animals main > div,
+body.page-fruits main > div{
     background: #fff;
 }
 
