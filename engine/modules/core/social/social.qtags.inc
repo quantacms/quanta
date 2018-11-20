@@ -51,7 +51,7 @@ function qtag_SHARE_BUTTONS($env, $target, &$attributes) {
       'title' => t('Share on LinkedIn'),
     ),
     'twitter' => array(
-      'url' => 'twitter.com/share?url=' . $url . '&amp;text=' . $node->getTitle() . '%20-%20[URL]&amp;hashtags=' . implode(',', $node->getKeywords()),
+      'url' => 'twitter.com/share?url=' . $url . '&amp;text=' . $node->getTitle() . '%20-%20' . $url,
       'title' => t('Share on Twitter'),
     ),
     'pinterest' => array(

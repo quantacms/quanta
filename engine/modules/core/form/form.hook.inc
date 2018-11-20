@@ -18,7 +18,7 @@ function form_load_includes($env, $vars) {
 
 /**
  * Implements hook_form_validate();
- * Check that required fields are met, and other stuff.
+ * Check that required fields are met, and other standard validations.
  *
  * @param Environment $env
  *   The Environment.
@@ -41,7 +41,7 @@ function form_form_validate($env, $vars) {
 
 /**
  * Implements hook_boot().
- * TODO: refactor the whole.
+ * TODO: This approach was made for fetching results for autocomplete fields. Refactor the whole.
  *
  * @param Environment $env
  *   The Environment.
