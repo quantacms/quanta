@@ -121,6 +121,7 @@ function qtag_URL($env, $target, &$attributes) {
   if (empty($target)) {
     $target = $env->getRequestedPath();
   }
+  // TODO: handle "amp" in URL contruction.
   return $env->getBaseUrl() . '/' . $target;
 }
 

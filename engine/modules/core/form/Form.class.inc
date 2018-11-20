@@ -318,7 +318,7 @@ class Form extends DataContainer {
    */
   public function renderFormOpen() {
    $rendered = '<a name="' . $this->getId() . '"></a>';
-    $rendered .= '<form class="grid-container grid" target="' . $this->getTarget() . '" action="' . $this->getAction() .
+    $rendered .= '<form class="grid" target="' . $this->getTarget() . '" action="' . $this->getAction() .
      '#' . $this->getAnchor() .'" method="' . $this->getMethod() .
      '" id="' . $this->getId() . '">';
     // TODO: why two fields? check shadow...
