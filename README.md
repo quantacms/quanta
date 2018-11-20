@@ -1,10 +1,10 @@
-![alt text](https://www.quantacms.com/assets/img/q_cms.png)
+![alt text](https://www.quanta.org/assets/img/q_cms.png)
 # Quanta Cms #
 An innovative, DB-free Content Management System for web and application development, based on the principles of Quantum physics.
 
 Originally designed by Aldo Tripiciano in 2015, Quanta is now proudly free and open source.
 
-Detailed info is available at the official website: https://www.quantacms.com
+Detailed info is available at the official website: https://www.quanta.org
 
 The Author
 ----------------------------------
@@ -77,31 +77,33 @@ and follow the steps until installation is completed.
 composer install
 ```
 
-5. Done! Check your new site at http://myproject.com and start customizing. 
+5. Done! Check your new site at http://myproject
 
-Detailed information about Quanta's installation process is available on the website: https://www.quantacms.com/installation-instructions/
+and start customizing. 
+
+Detailed information about Quanta's installation process is available on the website: https://www.quanta.org/installation-instructions/
 
 
 Customization
 -----------------
 Once you have, you can start: 
-* structuring your folders structure -> https://www.quantacms.com/approaching-quantas-structure-nodes-folders-and-datajson-files/
-* playing around with qTags -> https://www.quantacms.com/what-is-a-quanta-tag-qtag/
-* creating a basic layout -> https://www.quantacms.com/the-index-html-file/ 
-* building up great templates -> https://www.quantacms.com/the-tpl-html-file/
-* creating a custom module -> https://www.quantacms.com/creating-a-custom-quanta-module/
+* structuring your folders structure -> https://www.quanta.org/approaching-quantas-structure-nodes-folders-and-datajson-files/
+* playing around with qTags -> https://www.quanta.org/what-is-a-quanta-tag-qtag/
+* creating a basic layout -> https://www.quanta.org/the-index-html-file/ 
+* building up great templates -> https://www.quanta.org/the-tpl-html-file/
+* creating a custom module -> https://www.quanta.org/creating-a-custom-quanta-module/
 
 ... and become a Quanta pro by having a look at:
-* the documentation -> https://www.quantacms.com/documentation/
-* the tutorials  -> https://www.quantacms.com/tutorial/
+* the documentation -> https://www.quanta.org/documentation/
+* the tutorials  -> https://www.quanta.org/tutorial/
 
 Support
 -----------------
 Found any issue? Got any idea? 
 Quanta's contributors and enthusiasts are always happy to help.
 
-* the FAQ -> https://www.quantacms.com/faq/
-* the Community -> https://www.quantacms.com/community/
+* the FAQ -> https://www.quanta.org/faq/
+* the Community -> https://www.quanta.org/community/
 * the Facebook Group -> https://www.facebook.com/groups/quantacms
 
 If you feel like something needs attention, don't hesitate in opening a new issue in the github repository:
