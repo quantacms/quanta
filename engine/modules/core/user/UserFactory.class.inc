@@ -175,4 +175,27 @@ class UserFactory {
     }
     return $user;
   }
+
+
+  /**
+   * Renders an user edit form
+   * @param $context
+   * @return bool|string
+   */
+  public static function renderUserEditForm($env, $context) {
+    $user_edit_form = file_get_contents($env->getModulePath('user') . '/tpl/user_edit.inc');
+    return $user_edit_form;
+  }
+
+
+  /**
+   * Renders a Login form.
+   * TODO: refactor and move elsewhere.
+   *
+   * @return string
+   */
+  public static function renderLoginForm($env) {
+    $login_form = file_get_contents($env->getModulePath('user') . '/tpl/user_login.inc');
+    return $login_form;
+  }
 }
