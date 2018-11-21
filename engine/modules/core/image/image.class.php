@@ -1,9 +1,9 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: aldotripiciano
- * Date: 16/05/15
- * Time: 16:45
+ * This class allows creation, manipulation and transformation
+ * of Images.
+ * It extends a basic File class, to which it adds image editing functions.
+ *
  */
 define('IMAGE_RENDER_FULL', 'image_full');
 
@@ -11,12 +11,17 @@ define('IMAGE_RENDER_FULL', 'image_full');
  * Class Image
  */
 class Image extends FileObject {
-
+  /** @var int $width */
   public $width = '';
+  /** @var int $height */
   public $height = '';
+  /** @var array $css */
   public $css = array();
+  /** @var array $class */
   public $class = array();
+  /** @var string $linkto */
   public $linkto = NULL;
+  /** @var string $title */
   public $title = NULL;
 
   /**
@@ -26,7 +31,7 @@ class Image extends FileObject {
   public function loadAttributes($attributes) {
     foreach($attributes as $attname => $attribute) {
 
-      // Check forced size.
+      // Check the image size as input by the user.
       if (preg_match_all('/[0-9|auto]x[0-9|auto]/', $attname, $matches)) {
         $size = explode('x', $attname);
         $this->width = $size[0];

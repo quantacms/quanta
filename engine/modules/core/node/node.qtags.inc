@@ -189,7 +189,12 @@ function qtag_LINK($env, $target, &$attributes) {
   // Set the text of the link.
   $title = isset($attributes['title']) ? $attributes['title'] : $title_default;
   // Check if there is a link title.
-  $link_title = isset($attributes['link_title']) ? $attributes['link_title'] : strip_tags($title);
+  if (isset($attributes['link_title'])) {
+    $link_title = $attributes['link_title'];
+  }
+  else {
+    $link_title = (!empty($node) ? $node->getTitle() : strip_tags($title));
+  }
 
   $vars = array('target' => &$target, 'attributes' => &$attributes, 'link_data' => &$link_data);
   $env->hook('link_alter', $vars);
