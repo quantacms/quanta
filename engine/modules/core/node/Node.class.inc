@@ -27,6 +27,7 @@ class Node extends JSONDataContainer {
   public $exists;
   public $permissions;
   public $status;
+  public $keywords;
   public $timestamp;
   public $father = NULL;
   public $thumbnail = NULL;
@@ -151,6 +152,10 @@ class Node extends JSONDataContainer {
     if (isset($this->json->thumbnail)) {
       $this->setThumbnail($this->json->thumbnail);
     }
+    // Load the node Keywords from json.
+    if (isset($this->json->keywords)) {
+      $this->setKeywords($this->json->keywords);
+    }
   }
 
   /**
@@ -180,6 +185,8 @@ class Node extends JSONDataContainer {
     $this->json->thumbnail = $this->getThumbnail();
     $this->json->timestamp = empty($this->getTimestamp()) ? time() : $this->getTimestamp();
     $this->json->status = $this->getStatus();
+    $this->json->keywords = $this->getKeywords();
+
   }
 
   /**
@@ -383,6 +390,26 @@ class Node extends JSONDataContainer {
    */
   public function setStatus($status) {
     $this->status = $status;
+  }
+
+  /**
+   * Gets the status of a node.
+   *
+   * @return string
+   *   The node status.
+   */
+  public function getKeywords() {
+    return $this->keywords;
+  }
+
+  /**
+   * Sets the status of a node.
+   *
+   * @param string $status
+   *   The node status.
+   */
+  public function setKeywords($status) {
+    $this->keywords = $status;
   }
 
   /**

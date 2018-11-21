@@ -20,6 +20,7 @@ class FormItemString extends FormItem {
       ($this->isDisabled() ? 'disabled ' : '') .
       ($this->isRequired() ? 'required ' : '') .
       ('class="' . $this->getClass() . '" ') .
+      ('size="' . $this->getSize() . '" ') .
       ('placeholder="' . $this->getPlaceHolder() . '" ') .
       ('name="' . $this->getName() . '" ') .
       ('id="' . $this->getId() . '" ') .
@@ -33,13 +34,46 @@ class FormItemString extends FormItem {
   }
 
   /**
+   * Gets the size of the input.
+   *
    * @return string
+   */
+  public function getSize() {
+    return $this->getData('size');
+  }
+
+  /**
+   * Sets the size of the input.
+   *
+   * @param $size
+   *   The input size.
+   *
+   * @return string
+   */
+  public function setSize($size) {
+    $this->setData('size', $size);
+  }
+
+
+  /**
+   * The HTML type of this input (could be text, date, etc.)
+   *
+   * @return string
+   *   The HTML type.
    */
   public function getHTMLType() {
     return 'text';
   }
 
+  /**
+   * Load the Attributes of this item.
+   */
   public function loadAttributes() {
-    // TODO: Implement loadAttributes() method.
+    $size = $this->getInputAttr('size');
+    if (empty($size)) {
+      // TODO: default size for text inputs?
+      $size = 20;
+    }
+    $this->setSize($size);
   }
 }
