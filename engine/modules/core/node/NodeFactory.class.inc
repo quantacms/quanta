@@ -270,6 +270,10 @@ class NodeFactory {
           $node->setTimestamp($field_value);
           break;
 
+        case 'keywords':
+          $node->setKeywords($field_value);
+          break;
+
         default:
           $node->json->{$field_name} = $field_value;
           break;
@@ -380,6 +384,8 @@ class NodeFactory {
             $node->setBody($nodedata['edit-content']);
             $node->setAuthor($nodedata['edit-author']);
             $node->setTeaser($nodedata['edit-teaser']);
+            $node->setKeywords($nodedata['edit-keywords']);
+
             $node->setContent('<h1>' . $node->getTitle() . '</h1>' . $node->getBody());
             $datetime = strtotime($nodedata['edit-date'] . ' ' . $nodedata['edit-time']);
             $node->setTimestamp($datetime > 0 ? $datetime : time());

@@ -143,7 +143,6 @@ function node_shadow_node_delete_form($env, $vars) {
  *   An array of variables.
  */
 function node_metadata($env, $vars) {
-  // Setup body classes per each item in the current node lineage.
   $node = NodeFactory::current($env);
   $author = UserFactory::load($env, $node->getAuthor());
 
@@ -151,16 +150,38 @@ function node_metadata($env, $vars) {
     'content' => 'utf-8',
   );
 
-  $vars['metadata']['description'] = array(
-    'content' => filter_xss($node->getTeaser()),
-  );
+  if (!empty($node->getTeaser())) {
+    // Meta description.
+    $vars['metadata']['description'] = array(
+      'content' => filter_xss($node->getTeaser()),
+    );
+    // Twitter description.
+    $vars['metadata']['twitter:description'] = array(
+      'content' => filter_xss($node->getTeaser()),
+    );
+    // Twitter card.
+    $vars['metadata']['twitter:card'] = array(
+      'content' => filter_xss($node->getTeaser()),
+    );
+    // OG description.
+    $vars['metadata']['og:description'] = array(
+      'property' => 'og:description',
+      'content' => filter_xss($node->getTeaser()),
+    );
+  }
+
+  if (!empty($node->getKeywords())) {
+    $vars['metadata']['keywords'] = array(
+      'content' => (implode(',', $node->getKeywords())),
+    );
+  }
 
   $vars['metadata']['name'] = array(
     'content' => filter_xss($author->getTitle()),
   );
 
   $vars['metadata']['application-name'] = array(
-    'content' => 'Quanta CMS',
+    'content' => t('Quanta CMS'),
   );
 
   // OG metadata.
@@ -184,31 +205,20 @@ function node_metadata($env, $vars) {
       'property' => 'og:image',
       'content' => $env->getData('request_url') . $node->getThumbnail(),
     );
-  }
 
-  $vars['metadata']['og:description'] = array(
-    'property' => 'og:description',
-    'content' => filter_xss($node->getTeaser()),
-  );
-
-  // Twitter metadata.
-  $vars['metadata']['twitter:description'] = array(
-    'content' => filter_xss($node->getTeaser()),
-  );
-
-  if (!empty($node->getThumbnail())) {
     $vars['metadata']['twitter:image'] = array(
       'content' => $env->getData('request_url') . $node->getThumbnail(),
     );
   }
 
+
+
+
   $vars['metadata']['twitter:title'] = array(
     'content' => filter_xss($node->getTitle()),
   );
 
-  $vars['metadata']['twitter:card'] = array(
-    'content' => filter_xss($node->getTeaser()),
-  );
+
 
 }
 
