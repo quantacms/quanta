@@ -18,7 +18,7 @@ Quanta's Features
 - Pre-defined installation profiles (including modules, themes and general entities)
 - A customizable UI backend ("Shadow"), also used for overlay forms
 - Inline editing of content
-- A batch tool for install, update, diagnostic and repair ("Doctor")
+- A batch tool ("Doctor") for install, update, diagnostic and repair
 - User management
 - Forms management
 - Workflow management (Draft->Published statuses, etc.)
@@ -46,27 +46,27 @@ Pre-Requisites
 ----------------------------------
 Quanta can only be installed on any UNIX-based OS (Linux, OSx, etc.). 
 
-Apache 2.4+ or Nginx 1.15+
-PHP 5.6+ (7 strongly advised!) including libraries: GD, CURL
-Composer
+### General Requisites:
+__Apache 2.4+__ or __Nginx 1.15+__
+__PHP 5.6+__ (7 strongly advised!) including libraries: __GD__, __CURL__
+__Composer__
 
-For Apache users:
-the rewrite and headers module must be enabled.
+### For Apache users:
+The __rewrite__ and __headers__ modules must be enabled.
 
-For Windows / XAMP users:
-Quanta can only be installed on any UNIX-based OS (Linux, OSx, etc.). 
-in order to run Quanta on Windows, you will have to install a VM (VMware, VirtualBox, etc.) 
+### For Windows / XAMP users:
+As Quanta only runs on UNIX, in order to run Quanta on Windows, you will have to install a VM (VMware, VirtualBox, etc.) with your distribution of choice. 
 
 
 Installation
 -----------------
 Quick kickstart guide:
 
-1. clone the latest release of the Quanta repo
+1. Clone the latest release of the Quanta repo
 
-2. create a host pointing to your quanta folder (i.e. myproject.com => /var/www/quanta)
+2. Create a host pointing to your quanta folder (i.e. myproject.com => /var/www/quanta)
 
-3. run Doctor: 
+3. Run Doctor: 
 ```bash
 ./doctor myproject.com
 ```
@@ -77,9 +77,9 @@ and follow the steps until installation is completed.
 composer install
 ```
 
-5. Done! Check your new site at http://myproject
+5. Done! Check your brand new site at http://myproject
 
-and start customizing. 
+and start customizing it. 
 
 Detailed information about Quanta's installation process is available on the website: https://www.quanta.org/installation-instructions/
 
