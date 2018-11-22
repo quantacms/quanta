@@ -18,7 +18,7 @@ RewriteRule ^(thumbs)/(.*) engine/tmp/%{HTTP_HOST}/thumbs/$2 [NC]
 
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteCond %{REQUEST_URI} !boot\.(php)
-RewriteCond %{REQUEST_URI} .*\.(php|inc|json)
+RewriteCond %{REQUEST_URI} .*\.(php|inc|json|conf|lock|gitignore|doctor|htaccess)
 RewriteRule ^(.*)$ '/403' [R=301,L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
