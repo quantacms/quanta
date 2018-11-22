@@ -9,27 +9,31 @@ Detailed info is available at the official website: https://www.quanta.org
 The Author
 ----------------------------------
 Aldo Tripiciano is a seasoned italian IT Developer, consulting for 15+ years on the major CMS players (Drupal, Wordpress, Joomla, etc.) for global companies and organisations such as the United Nations and the European Commission. 
-After mastering the top tools in the market, he decided to go one step beyond and build something new, to better fit the new generation of the web. 
+After mastering the top tools in the market, he decided to go one step beyond and build something new, to better fit the new generation of the Web. 
 
 
 Quanta's Features
 ----------------------------------
+Quanta is a CMS thought for developers, offering a number of features out of the box:
 
 - Pre-defined installation profiles (including modules, themes and general entities)
 - A customizable UI backend ("Shadow"), also used for overlay forms
 - Inline editing of content
 - A batch tool ("Doctor") for install, update, diagnostic and repair
-- User management
-- Forms management
+- User management tools
+- Inline Form management
 - Workflow management (Draft->Published statuses, etc.)
+- Taxonomy management
 - Multilingualism / Internationalization 
-- Improved security (delegated on the OS file permissions - completely eliminating SQL injections and other SQL-based attacks)
-- Big applications are easy to distribute on multiple machines, Virtualized or Cloud-based.
-
+- Widget / Web service tools
+- NO-database approach, completely eliminating DB-related attacks such as SQL injections
+- Big applications are easy to distribute on multiple machines, Virtualized or Cloud-based servers, thanks to the file-system based data model
+- Pre-defined integrated functionalities (Blog, Carousels and Slideshows, Media Playlists, Maps, XML Sitemaps, Widgets, and much more)
 
 Quanta's Architecture
 ----------------------------------
-Quanta is completely ~Object Oriented PHP~, escaping the traditional MVC model and design patterns. 
+Quanta's Architecture is built on PHP7, yet not following the traditional MVC model nor standard PHP design patterns. 
+Its main characteristics are as follows: 
 
 * a 100% file-system based architecture structured on  hierarchical system folders 📁 (no DB or SQL involved). 
 * Internal caching and indexation of directories through an internal vocabulary
