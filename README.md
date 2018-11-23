@@ -18,6 +18,7 @@ Quanta is a CMS thought for developers, offering a number of features out of the
 
 - Pre-defined installation profiles (including modules, themes and general entities)
 - A customizable UI backend ("Shadow"), also used for overlay forms
+- qTags, a special agnostic markup allowing the creation of nestable Tags that are incapsulated into templates, allowing the creation of complex applications with huge reduction of coding times
 - Inline editing of content
 - A batch tool ("Doctor") for install, update, diagnostic and repair
 - User management tools
@@ -32,15 +33,23 @@ Quanta is a CMS thought for developers, offering a number of features out of the
 
 Quanta's Architecture
 ----------------------------------
-Quanta's Architecture is built on PHP7, yet not following the traditional MVC model nor standard PHP design patterns. 
-Its main characteristics are as follows: 
+Quanta's Architecture is built on PHP7, using standard design patterns, yet not following the traditional MVC model. 
+
+Quanta uses the follow design patterns:
+
+### Factory
+All Quanta entities such Nodes, Pages, Templates, Qtags, etc. are constructed and manipulated via static methods implemented in Factory classes. 
+
+### Front Controller
+All requests (excluding static files, that are served directly) are served via the centralized __boot.php__ file. 
+
+Quanta's main architectural characteristics are as follows: 
 
 * a 100% file-system based architecture structured on  hierarchical system folders 📁 (no DB or SQL involved). 
 * Internal caching and indexation of directories through an internal vocabulary
 * JSON storage of data and metadata
-* 100% Object Oriented PHP
+* Modular, Object Oriented PHP
 * Template engine allowing creation and override individual template for individual or multiple entities
-* qTags: special markup allowing creation of tags that are incapsulated into templates, allowing the creation of complex applications with huge reduction of coding times
 * CSS Grid approach natively supported by qTags
 * Node-level access control (roles, permissions, etc.)
 * Views system
