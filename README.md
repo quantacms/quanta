@@ -33,7 +33,7 @@ Quanta is a CMS thought for developers, offering a number of features out of the
 
 Quanta's Architecture
 ----------------------------------
-Quanta's Architecture is built on PHP7, using standard design patterns, yet not following the traditional MVC model. 
+Quanta's Architecture is built on a modular, Object Oriented PHP approach, using standard design patterns, yet not adhering to the traditional MVC model. 
 
 Quanta uses the follow design patterns:
 
@@ -42,13 +42,16 @@ All Quanta entities such Nodes, Pages, Templates, Qtags, etc. are constructed an
 
 ### Front Controller
 All requests (excluding static files, that are served directly) are served via the centralized __boot.php__ file. 
+The boot file processes the request, triggering in the process. 
 
-Quanta's main architectural characteristics are as follows: 
+### Template Method
+Through the use of "hooks" function, custom modules can intercept every phase of the content loading phase, manipulate the data and change the behavior of standard processes. 
 
-* a 100% file-system based architecture structured on  hierarchical system folders 📁 (no DB or SQL involved). 
+Quanta's internal architecture is based on: 
+
+* a 100% file-system based DB architecture structured on  hierarchical system folders 📁 (no SQL involved). 
 * Internal caching and indexation of directories through an internal vocabulary
 * JSON storage of data and metadata
-* Modular, Object Oriented PHP
 * Template engine allowing creation and override individual template for individual or multiple entities
 * CSS Grid approach natively supported by qTags
 * Node-level access control (roles, permissions, etc.)
