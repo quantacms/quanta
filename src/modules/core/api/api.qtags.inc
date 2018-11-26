@@ -1,0 +1,182 @@
+<?php
+namespace Quanta\Common;
+/**
+ * Implements qtag EMAIL.
+ *
+ * Renders a clickable email address.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_EMAIL($env, $target, &$attributes) {
+  $string = '';
+  if (valid_email($target)) {
+    $title = (isset($attributes['title']) ? $attributes['title'] : $target);
+    $string = '<a class="mail" href="mailto:' . $target . '">' . $title  . '</a>';
+  }
+  return $string;
+}
+
+/**
+ * Implements qtag PHONE.
+ *
+ * Renders a phone number.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_PHONE($env, $target, &$attributes) {
+  // Remove all spaces, W3C standard.
+  $tel = preg_replace('/\s+/', '', $target); 
+
+  if (!isset($attributes['phone_class'])){
+    $attributes['phone_class'] = 'phone';
+  }
+  else {
+    $attributes['phone_class'] .= ' phone';
+  }
+
+  return '<a class="' . $attributes['phone_class'] . '" href="tel:' . $tel . '">' . $target . '</a>';
+}
+
+/**
+ * Implements qtag URL.
+ *
+ * Renders the current site URL.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_URL($env, $target, &$attributes) {
+  if (empty($target)) {
+    $target = $env->getRequestedPath();
+  }
+  // TODO: handle "amp" in URL contruction.
+  return $env->getBaseUrl() . '/' . $target;
+}
+
+/**
+ * Implements qtag STRING.
+ *
+ * Renders a simple text / string.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_STRING($env, $target, &$attributes) {
+  return $target;
+}
+
+/**
+ * Implements qtag DATE.
+ *
+ * Renders a formatted date.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The rendered qtag.
+ */
+function qtag_DATE($env, $target, &$attributes) {
+  $date = new DateTime($target);
+  if (isset($attributes['format'])) {
+    $formatted_date = $date->format($attributes['format']);
+  }
+  else {
+    $formatted_date = $target;
+  }
+  return $formatted_date;
+}
+
+/**
+ * Implements qtag BACK.
+ *
+ * Renders a "back" button link.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The back button.
+ */
+function qtag_BACK($env, $target, &$attributes) {
+  $title = isset($attributes['title']) ? $attributes['title'] : 'Back';
+  return '<a href="#" onclick="history.back()">' . $title . '</a>';
+}
+
+/**
+ * Implements qtag BACK.
+ *
+ * Renders a "back" button link.
+ *
+ * @param Environment $env
+ *   The Environment.
+ *
+ * @param string $target
+ *   The qtag's target.
+ *
+ * @param array $attributes
+ *   The qtag's attributes.
+ *
+ * @return string
+ *   The back button.
+ */
+function qtag_NODE_JSON($env, $target, &$attributes) {
+  $node = empty($target) ? NodeFactory::current($env) : NodeFactory::load($env, $target);
+  $fields = empty($attributes['fields']) ? array('name', 'teaser', 'author', 'body') : explode(',', $attributes['fields']);
+  $values = array();
+  foreach ($fields as $field) {
+    $values[] = '"' . $field . '"' . ':"' . $node->getAttributeJSON($field) . '"';
+  }
+  $string = "{\n" . implode(",\n", $values) . "\n}";
+  return $string;
+}

@@ -8,4 +8,4 @@
   $doctor_cmd = $argv[2];
   $request_uri = '/doctor/';
   $docroot = getcwd();
-  include 'engine/boot.php';
+  include 'src/boot.php';
