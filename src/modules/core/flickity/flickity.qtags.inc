@@ -25,7 +25,8 @@ function qtag_CAROUSEL($env, $target, &$attributes) {
   /** @var Page $page */
   $page = $env->getData('page');
   $module_path = $env->getModulePath('flickity');
-  $page->addJS($module_path . '/js/flickity.pkgd.min.js');
+  // TODO: support relative path to JS.
+  $page->addJS('/engine/modules/core/flickity/js/flickity.pkgd.min.js');
   $page->addCSS($module_path . '/css/flickity.min.css');
   $page->addCSS($module_path . '/css/flickity-quanta.css');
 

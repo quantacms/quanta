@@ -9,34 +9,50 @@ Detailed info is available at the official website: https://www.quanta.org
 The Author
 ----------------------------------
 Aldo Tripiciano is a seasoned italian IT Developer, consulting for 15+ years on the major CMS players (Drupal, Wordpress, Joomla, etc.) for global companies and organisations such as the United Nations and the European Commission. 
-After mastering the top tools in the market, he decided to go one step beyond and build something new, to better fit the new generation of the web. 
+After mastering the top tools in the market, he decided to go one step beyond and build something new, to better fit the new generation of the Web. 
 
 
 Quanta's Features
 ----------------------------------
+Quanta is a CMS thought for developers, offering a number of features out of the box:
 
 - Pre-defined installation profiles (including modules, themes and general entities)
 - A customizable UI backend ("Shadow"), also used for overlay forms
+- qTags, a special agnostic markup allowing the creation of nestable Tags that are incapsulated into templates, allowing the creation of complex applications with huge reduction of coding times
 - Inline editing of content
 - A batch tool ("Doctor") for install, update, diagnostic and repair
-- User management
-- Forms management
+- User management tools
+- Inline Form management
 - Workflow management (Draft->Published statuses, etc.)
+- Taxonomy management
 - Multilingualism / Internationalization 
-- Improved security (delegated on the OS file permissions - completely eliminating SQL injections and other SQL-based attacks)
-- Big applications are easy to distribute on multiple machines, Virtualized or Cloud-based.
-
+- Widget / Web service tools
+- NO-database approach, completely eliminating DB-related attacks such as SQL injections
+- Big applications are easy to distribute on multiple machines, Virtualized or Cloud-based servers, thanks to the file-system based data model
+- Pre-defined integrated functionalities (Blog, Carousels and Slideshows, Media Playlists, Maps, XML Sitemaps, Widgets, and much more)
 
 Quanta's Architecture
 ----------------------------------
-Quanta is completely ~Object Oriented PHP~, escaping the traditional MVC model and design patterns. 
+Quanta's Architecture is built on a modular, Object Oriented PHP approach, using standard design patterns, yet not adhering to the traditional MVC model. 
 
-* a 100% file-system based architecture structured on  hierarchical system folders 📁 (no DB or SQL involved). 
+Quanta uses the follow design patterns:
+
+### Factory
+All Quanta entities such Nodes, Pages, Templates, Qtags, etc. are constructed and manipulated via static methods implemented in Factory classes. 
+
+### Front Controller
+All requests (excluding static files, that are served directly) are served via the centralized __boot.php__ file. 
+The boot file processes the request, triggering in the process. 
+
+### Template Method
+Through the use of "hooks" function, custom modules can intercept every phase of the content loading phase, manipulate the data and change the behavior of standard processes. 
+
+Quanta's internal architecture is based on: 
+
+* a 100% file-system based DB architecture structured on  hierarchical system folders 📁 (no SQL involved). 
 * Internal caching and indexation of directories through an internal vocabulary
 * JSON storage of data and metadata
-* 100% Object Oriented PHP
 * Template engine allowing creation and override individual template for individual or multiple entities
-* qTags: special markup allowing creation of tags that are incapsulated into templates, allowing the creation of complex applications with huge reduction of coding times
 * CSS Grid approach natively supported by qTags
 * Node-level access control (roles, permissions, etc.)
 * Views system

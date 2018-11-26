@@ -4,9 +4,6 @@ DirectoryIndex src/boot.php
 RewriteEngine on
 RewriteBase /
 
-RewriteCond %{REQUEST_URI} (.*)data\.json$ [NC]
-RewriteRule ^(.*)$ '/403' [R=301,L]
-
 RewriteCond %{REQUEST_URI} /+[^\.]+$
 RewriteRule ^(.+[^/])$ %{REQUEST_URI}/ [R=301,L]
 
@@ -19,11 +16,15 @@ RewriteRule ^(assets)/(.*) sites/%{HTTP_HOST}/assets/$2
 RewriteRule ^(tmp)/(.*) tmp/%{HTTP_HOST}/files/$2 [NC]
 RewriteRule ^(thumbs)/(.*) tmp/%{HTTP_HOST}/thumbs/$2 [NC]
 
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^(.*)(src)/([\/0-9a-zA-Z-\.\_]+) src/$3
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteCond %{REQUEST_URI} !boot\.(php)
+RewriteCond %{REQUEST_URI} .*\.(php|inc|json|conf|lock|gitignore|doctor|htaccess)
+RewriteRule ^(.*)$ '/403' [R=301,L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^([0-9a-zA-Z-]+) src/boot.php [L,QSA]
+
+
 
 # Serve resources with far-future expires headers.
 #
