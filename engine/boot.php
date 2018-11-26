@@ -51,7 +51,7 @@
 
   // Initialize doctor, if there is a request to do so.
   if (isset($doctor_cmd)) {
-    $doctor = new Doctor($env, $doctor_cmd);
+    $doctor = new Doctor($env, $doctor_cmd, $doctor_args);
     $doctor->cure();
     $doctor->goHome();
     exit;
