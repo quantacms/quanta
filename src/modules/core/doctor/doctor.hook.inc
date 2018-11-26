@@ -31,11 +31,13 @@ function doctor_doctor_pre_setup($env, $vars) {
   $doctor->ok('Current user: ' . $doctor->unix_user);
   $doctor->ok('Web Server user: ' . $doctor->web_server_user);
 
+  // Check that users are correct. Skip the check if server user is set via command line.
+  if (empty($doctor->getData('web-server-user'))) {
   $user_is_correct = $doctor->ask('Are those users correct? (y/n)');
-  if ($user_is_correct == 'n') {
-    $doctor->stop('Aborting.');
+    if ($user_is_correct == 'n') {
+      $doctor->stop('Aborting.');
+    }
   }
-
   // Check that all system paths do exist.
   $doctor->checkSystemPaths();
 

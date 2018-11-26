@@ -1,8 +1,9 @@
 <?php
 namespace Quanta\Common;
 
-define('WEB_SERVER_APACHE', 1);
-define('WEB_SERVER_NGINX', 2);
+define('WEB_SERVER_APACHE', 'apache');
+define('WEB_SERVER_NGINX', 'nginx');
+
 define('DOCTOR_MODE_BASH', 'bash');
 define('DOCTOR_MODE_BROWSER', 'browser');
 define('DOCTOR_RECIPE', 'doctor_recipe.txt');
@@ -45,6 +46,12 @@ class Doctor extends DataContainer {
   public $command;
 
   /**
+   * @var string $args
+   *   The args passed to the doctor.
+   */
+  public $args;
+
+  /**
    * Doctor constructor.
    *
    * @param Environment $env
@@ -56,10 +63,21 @@ class Doctor extends DataContainer {
    * @param string $mode
    *   The doctor mode (Bash by default).
    */
-  public function __construct($env, $command, $mode = DOCTOR_MODE_BASH) {
+  public function __construct($env, $command, $doctor_args = array(), $mode = DOCTOR_MODE_BASH) {
     $this->env = $env;
     $this->mode = $mode;
     $this->command = $command;
+    // Load command line parameters starting with --.
+
+    foreach ($doctor_args as $doctor_arg) {
+      $doctor_arg_expl = explode('=', $doctor_arg);
+      if (substr($doctor_arg_expl[0], 0, 2) == '--') {
+        $doctor_arg_name = substr($doctor_arg_expl[0], 2);
+        $doctor_arg_val = ((count($doctor_arg_expl) == 0) ? $doctor_arg_name : $doctor_arg_expl[1]);
+        $this->setData($doctor_arg_name, $doctor_arg_val);
+      }
+    }
+
     $this->env->setData('doctor', $this);
   }
 
@@ -267,7 +285,28 @@ class Doctor extends DataContainer {
    * Check the webserver type(Apache or Nginx).
    */
   public function checkWebServerType() {
-    $this->web_server_type = $this->ask("Which web server type are you using?\n" . WEB_SERVER_APACHE . ": Apache\n" . WEB_SERVER_NGINX . ": nginx\n", NULL, array(WEB_SERVER_APACHE, WEB_SERVER_NGINX));
+    if (!empty($this->getData('web-server-type'))) {
+      $this->web_server_type = $this->getData('web-server-type');
+      $this->talk('Pre-selecting server type...' . $this->web_server_type);
+      // Pre-selected using --web-server-type parameter. Must be apache or nginx.
+      if (($this->web_server_type != WEB_SERVER_NGINX) && ($this->web_server_type != WEB_SERVER_APACHE)) {
+        $this->ko('You pre-selected an invalid web-server type: @type. Please either use "' . WEB_SERVER_NGINX . '"" or "' . WEB_SERVER_APACHE . '"');
+        $this->stop('Aborting the install');
+      }
+      else {
+        $this->ok('Pre-selecting server: ' . $this->web_server_type);
+      }
+      return;
+    }
+
+    // TODO: better procedural approach without either "return" or "if... else".
+    $this->web_server_type = $this->ask("Which web server type are you using?\n" .
+      WEB_SERVER_APACHE . ": Apache\n" .
+      WEB_SERVER_NGINX . ": nginx\n",
+      NULL,
+      array(WEB_SERVER_APACHE, WEB_SERVER_NGINX)
+    );
+
   }
 
   /**
@@ -276,7 +315,13 @@ class Doctor extends DataContainer {
    * Doctor will try to automatically fetch the apache username. If impossible, it will ask the client to provide one name.
    */
   public function checkWebServerUser() {
-    $this->op('Checking Web Server (Apache or nginx) user...');
+    if (!empty($this->getData('web-server-type'))) {
+      $this->web_server_user = $this->getData('web-server-user');
+      $this->ok('Pre-selecting Web Server user: ' . $this->web_server_user);
+      return;
+    }
+
+    $this->op('Checking Web Server User...');
 
     $candidate_users = array(
       'www-data',
@@ -499,4 +544,5 @@ class Doctor extends DataContainer {
   public static function timestamp($env) {
 	  return filemtime($env->dir['tmp'] . '/' . DOCTOR_RECIPE);
 	}
+
 }

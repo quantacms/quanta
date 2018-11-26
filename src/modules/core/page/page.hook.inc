@@ -87,6 +87,18 @@ function page_doctor_setup($env, $vars) {
       $profile_node = NodeFactory::loadFromRealPath($env, $profile_path);
       $profiles_choice[] = $k . ') ' . $profile_node->getTitle() . ', ' . $profile_node->getTeaser();
     }
+
+    if (!empty($doctor->getData('profile'))) {
+      $profiles_rev = array_flip($profiles);
+      $choice = $doctor->getData('profile');
+      if (isset($profiles_rev[$choice])) {
+        $doctor->ok('Pre-selecting profile: ' . $choice);
+      }
+      else {
+        $doctor->stop('Invalid profile pre-selected: ' . $choice . ". Valid profiles are: \n" . implode("\n", $profiles) . "\n Aborting");
+      }
+      $profile_chosen = $choice;
+    }
     while (!isset($profile_chosen)) {
       if (isset($choice)) {
         $doctor->ko(t('Invalid choice.'));
