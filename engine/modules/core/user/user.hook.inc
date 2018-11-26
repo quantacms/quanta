@@ -77,7 +77,13 @@ function user_doctor_setup($env, $vars) {
     $doctor->talk('Not found! Attempting to create Admin User...');
     $password = 'pass';
     $password_repeat = 'pass_repeat';
-
+    // Get admin password from command line...
+    if (!empty($doctor->getData('admin-pass'))) {
+      $password = $doctor->getData('admin-pass');
+      $password_repeat = $doctor->getData('admin-pass');
+      $doctor->ok('Pre-selecting admin password');
+    }
+    // ...or from user input.
     while ($password != $password_repeat) {
       $password = $doctor->ask('Please enter a password for the administrator user', TRUE);
       $password_repeat = $doctor->ask('Please repeat your password', TRUE);

@@ -6,6 +6,7 @@
 
   $host = $argv[1];
   $doctor_cmd = $argv[2];
+  $doctor_args = $argv;
   $request_uri = '/doctor/';
   $docroot = getcwd();
   include 'engine/boot.php';
