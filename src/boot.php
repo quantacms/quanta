@@ -1,22 +1,14 @@
 <?php
   namespace Quanta\Common;
-  // bootstrap.php
-  define('ROOT', __DIR__ . DIRECTORY_SEPARATOR);
-  define('SRC', ROOT . 'src' . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR);
-  // PSR-4 autoloading without composer.
-  spl_autoload_register(function ($class) {
-    $file = SRC . str_replace('\\', '/', $class) . '.php';
-    if (file_exists($file)) {
-      require $file;
-    }
 
-  });
   // Include the Environment module.
-  require_once('modules/core/environment/environment.module');
+  require_once('modules/environment/environment.module');
 
   // Include the Cache module.
-  require_once('modules/core/cache/cache.module');
+  // TODO: Those classes shall be loaded by the autoloader.
+  require_once('modules/cache/cache.module');
 
+  require_once('modules/qtags/qtags.module');
   // Pre-set host.
   if (!isset($host)) {
     $host = NULL;

@@ -1,7 +1,0 @@
-<?php
-namespace Quanta\Common;
-
-$this->dependsFrom('qtags');
-$this->dependsFrom('localization');
-require_once('page.class.inc');
-require_once('Robots.class.inc');

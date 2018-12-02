@@ -1,0 +1,9 @@
+<?php
+$this->dependsFrom('localization');
+
+require_once('User.class.php');
+require_once('UserFactory.class.php');
+
+
+
+

@@ -1,0 +1,4 @@
+<?php
+$this->dependsFrom('list');
+require_once('PlayList.class.php');
+require_once('Album.class.php');

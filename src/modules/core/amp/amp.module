@@ -1,3 +1,0 @@
-<?php
-$this->dependsFrom('page');
-require_once('Amp.class.inc');
