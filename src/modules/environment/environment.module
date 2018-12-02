@@ -1,0 +1,7 @@
+<?php
+
+  require_once('DataContainer.class.php');
+  require_once('JSONDataContainer.class.php');
+  require_once('Environment.class.php');
+  require_once('Garbage.class.php');
+

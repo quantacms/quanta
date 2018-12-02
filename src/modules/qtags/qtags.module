@@ -1,0 +1,3 @@
+<?php
+require_once('Qtag.class.php');
+require_once('QtagFactory.class.php');

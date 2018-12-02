@@ -1,0 +1,5 @@
+<?php
+  require_once('AccessChecker.interface.php');
+  require_once('Access.class.php');
+  require_once('NodeAccess.class.php');
+  require_once('UserAccess.class.php');

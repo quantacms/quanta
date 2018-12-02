@@ -1,5 +1,0 @@
-<?php
-  $this->dependsFrom('environment');
-  require_once('Doctor.class.inc');
-
-
