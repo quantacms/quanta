@@ -1,5 +1,5 @@
 <div class="slide">
-  <amp-img src="[IMGTHUMBURL|node={LISTNODE}:{LISTITEM}]"
+  <amp-img src="[IMG_THUMB_URL|node={LISTNODE}:{LISTITEM}]"
     class="cover"
     width="400"
     height="225"

@@ -36,5 +36,5 @@ function message_page_after_build($env, $vars) {
  */
 function message_load_includes($env, $vars) {
   $module_path = $env->getModulePath('message');
-  $env->addInclude($module_path . '/css/message.css');
+  $env->addInclude($module_path . '/assets/css/message.css');
 }

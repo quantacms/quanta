@@ -1,0 +1,21 @@
+.go-home::before {
+  display:inline;
+  content: '\f015'; /* .fa-home */
+  font-family:'fontawesome';  
+}
+
+ul.breadcrumb {
+  text-align: left;
+  padding: 0;
+}
+
+ul.breadcrumb li {
+  display: inline-block;
+  padding: 0;
+  margin: 0;
+  border-right: 1px solid #aaa;
+  padding-right: 4px;
+}
+ul.breadcrumb li + li {
+  margin-left: 4px;
+}

@@ -12,5 +12,5 @@ namespace Quanta\Common;
 function blog_load_includes($env, $vars) {
   $module_path = $env->getModulePath('blog');
 
-  $env->addInclude($module_path . '/css/blog.css');
+  $env->addInclude($module_path . '/assets/css/blog.css');
 }

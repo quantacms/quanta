@@ -13,7 +13,7 @@ use Quanta\Qtags\Quanta;
 function box_load_includes($env, $vars) {
   $module_path = $env->getModulePath('box');
 
-  $env->addInclude($module_path . '/css/box.css');
+  $env->addInclude($module_path . '/assets/css/box.css');
 }
 
 /**

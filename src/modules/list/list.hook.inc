@@ -12,6 +12,6 @@ namespace Quanta\Common;
 function list_load_includes($env, $vars) {
   $module_path = $env->getModulePath('list');
 
-  $env->addInclude($module_path . '/js/list.js');
-  $env->addInclude($module_path . '/css/list.css');
+  $env->addInclude($module_path . '/assets/js/list.js');
+  $env->addInclude($module_path . '/assets/css/list.css');
 }

@@ -1,7 +1,0 @@
-<?php
-/*
- * Ideally this module should including as few functions as possible.
- * Functions should mostly be hooks to be included into modules.
- */
-namespace Quanta\Common;
-require_once("Api.class.php");

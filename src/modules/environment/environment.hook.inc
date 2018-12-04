@@ -11,6 +11,7 @@ namespace Quanta\Common;
  *   An array of variables.
  */
 function environment_complete($env, $vars) {
-  $garbage = new Garbage($env);
-  $garbage->collect();
+  // TODO: fix the Garbage collector.
+  // $garbage = new Garbage($env);
+  // $garbage->collect();
 }

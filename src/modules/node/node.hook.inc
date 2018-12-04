@@ -55,8 +55,8 @@ function node_action_node_delete($env, $vars) {
 function node_load_includes($env, $vars) {
   $module_path = $env->getModulePath('node');
 
-  $env->addInclude($module_path . '/js/node.js');
-  $env->addInclude($module_path . '/css/node.css');
+  $env->addInclude($module_path . '/assets/js/node.js');
+  $env->addInclude($module_path . '/assets/css/node.css');
 }
 
 /**
@@ -105,7 +105,7 @@ function node_init($env, $vars) {
 function node_shadow_node_form($env, $vars) {
   /** @var Shadow $shadow */
   $shadow = $vars['shadow'];
-  $action_name = ($env->getContext() == NODE_ACTION_ADD ? 'create' : 'edit') . ' content';
+  $action_name = ($env->getContext() == \Quanta\Common\Node::NODE_ACTION_ADD ? 'create' : 'edit') . ' content';
 
   $shadow->addTab($action_name, file_get_contents($env->getModulePath('node') . '/tpl/node_edit.inc'), 1);
   $shadow->addTab('manage metadata', file_get_contents($env->getModulePath('node') . '/tpl/metadata_form.inc'), 2);

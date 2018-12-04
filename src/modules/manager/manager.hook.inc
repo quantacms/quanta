@@ -10,8 +10,8 @@ namespace Quanta\Common;
  */
 function manager_load_includes($env, $vars) {
   $module_path = $env->getModulePath('manager');
-  $env->addInclude($module_path . '/js/manager.js');
-  $env->addInclude($module_path . '/css/manager.css');
+  $env->addInclude($module_path . '/assets/js/manager.js');
+  $env->addInclude($module_path . '/assets/css/manager.css');
 }
 
 /**

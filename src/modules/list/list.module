@@ -1,6 +1,0 @@
-<?php
-$this->dependsFrom('node');
-
-require_once('list.class.php');
-require_once('dirlist.class.php');
-require_once('filelist.class.php');

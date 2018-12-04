@@ -30,7 +30,7 @@ function cache_regenerate_json($env, $vars) {
  *   An array of variables.
  */
 function cache_boot($env, $vars) {
-  $env->tmpdir('cache', CACHE_FOLDER);
+  $env->tmpdir('cache', Cache::DIR_CACHE);
 }
 
 /**
