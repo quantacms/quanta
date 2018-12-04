@@ -4,5 +4,5 @@
     <div class="slide-text">[TEASER:[LISTITEM]]</div>
     <a class="slide-link" href="/[LISTITEM]">View more</a>
   </div>
-  <div class="slide-img">[IMGTHUMB|node=[LISTITEM]|1000x0:{ATTRIBUTE|name=thumbnail:[LISTITEM]}]</div>
+  <div class="slide-img">[IMG_THUMB|node=[LISTITEM]|1000x0:{ATTRIBUTE|name=thumbnail:[LISTITEM]}]</div>
 </article>

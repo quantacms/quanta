@@ -12,5 +12,5 @@ namespace Quanta\Common;
 function jumper_load_includes($env, $vars) {
   $module_path = $env->getModulePath('jumper');
 
-  $env->addInclude($module_path . '/js/jumper.js');
+  $env->addInclude($module_path . '/assets/js/jumper.js');
 }

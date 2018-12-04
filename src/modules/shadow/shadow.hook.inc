@@ -12,8 +12,8 @@ namespace Quanta\Common;
 function shadow_load_includes($env, $vars) {
   $module_path = $env->getModulePath('shadow');
 
-  $env->addInclude($module_path . '/js/shadow.js');
-  $env->addInclude($module_path . '/css/shadow.css');
+  $env->addInclude($module_path . '/assets/js/shadow.js');
+  $env->addInclude($module_path . '/assets/css/shadow.css');
 }
 
 /**

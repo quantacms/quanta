@@ -11,6 +11,6 @@ namespace Quanta\Common;
  */
 function jquery_boot($env, $vars) {
   $module_path = $env->getModulePath('jquery');
-  $env->addInclude($module_path . '/js/jquery.min.js');
-  $env->addInclude($module_path . '/js/engine.js');
+  $env->addInclude($module_path . '/assets/js/jquery.min.js');
+  $env->addInclude($module_path . '/assets/js/engine.js');
 }

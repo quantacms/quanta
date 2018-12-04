@@ -11,9 +11,9 @@ namespace Quanta\Common;
  */
 function grid_load_includes($env, $vars) {
   $module_path = $env->getModulePath('grid');
-  $env->addInclude($module_path . '/css/reset.css');
-  $env->addInclude($module_path . '/css/utilities.css');
-  $env->addInclude($module_path . '/css/grid_all.css');
+  $env->addInclude($module_path . '/assets/css/reset.css');
+  $env->addInclude($module_path . '/assets/css/utilities.css');
+  $env->addInclude($module_path . '/assets/css/grid_all.css');
 }
 
 
@@ -28,13 +28,11 @@ function grid_load_includes($env, $vars) {
 function grid_page_init($env, $vars) {
   /** @var Page $page */
   $page = $vars['page'];
-
   $module_path = $env->getModulePath('grid');
-
-  if (supportsGrid()) {
-    $page->addCSS($module_path . '/css/grid.css');
+  if (Grid::checkBrowserSupport()) {
+    $page->addCSS($module_path . '/assets/css/grid.css');
   } else {
-    $page->addCSS($module_path . '/css/no_grid.css');
+    $page->addCSS($module_path . '/assets/css/no_grid.css');
   }
 }
 

@@ -1,6 +1,0 @@
-<?php
-namespace Quanta\Common;
-
-require_once('Node.class.php');
-require_once('NodeTemplate.class.php');
-require_once('NodeFactory.class.php');

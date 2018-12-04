@@ -11,7 +11,7 @@ namespace Quanta\Common;
  */
 function page_load_includes($env, $vars) {
   $module_path = $env->getModulePath('page');
-  $env->addInclude($module_path . '/css/page.css');
+  $env->addInclude($module_path . '/assets/css/page.css');
 }
 
 /**
@@ -46,10 +46,6 @@ function page_boot($env, $vars) {
     $robots = new Robots($env);
     $robots->disallow('*', '/search/');
     $robots->disallow('*', '/qtag/');
-
-    // $robots->disallow('*', '/files*');
-    // $robots->disallow('*', '/css*');
-    // $robots->disallow('*', '/js*');
     header("Content-Type: text/plain");
     print $robots->render();
     exit();

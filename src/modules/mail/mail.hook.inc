@@ -14,8 +14,8 @@ function mail_init($env, $vars) {
   // Get the mails to queue.
   // TODO: don't check all emails at every page load. Use CRON instead?
   $mail_nodes = ($env->scanDirectory($env->dir['mailqueue'], array(
-    'exclude_dirs' => DIR_INACTIVE,
-    'type' => DIR_DIRS,
+    'exclude_dirs' => \Quanta\Common\Environment::DIR_INACTIVE,
+    'type' => \Quanta\Common\Environment::DIR_DIRS,
     )));
 
   foreach ($mail_nodes as $k) {

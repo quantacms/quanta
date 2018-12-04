@@ -1,14 +1,6 @@
 <?php
-  namespace Quanta\Common;
+  require_once('autoload.php');
 
-  // Include the Environment module.
-  require_once('modules/environment/environment.module');
-
-  // Include the Cache module.
-  // TODO: Those classes shall be loaded by the autoloader.
-  require_once('modules/cache/cache.module');
-
-  require_once('modules/qtags/qtags.module');
   // Pre-set host.
   if (!isset($host)) {
     $host = NULL;
@@ -24,25 +16,25 @@
   }
 
   // Create a new Environment.
-  $env = new Environment($host, $request_uri, $docroot);
-
-  // Check if the current request is a file rendering request.
-  $env->checkFile();
+  $env = new \Quanta\Common\Environment($host, $request_uri, $docroot);
 
   // Load the environment.
   $env->load();
 
-  // Start the user session.
-  $env->startSession();
-
   // Run all system modules.
   $env->runModules();
+
+  // Check if the current request is a file rendering request.
+  $env->checkFile();
+
+  // Start the user session.
+  $env->startSession();
 
   // Run the boot hook.
   $env->hook('boot');
 
   // Start page's standard index.html.
-  $page = new Page($env);
+  $page = new \Quanta\Common\Page($env);
   $vars = array('page' => &$page);
   $env->setData('page', $vars['page']);
 

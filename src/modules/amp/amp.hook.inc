@@ -28,7 +28,7 @@ function amp_init($env, $vars) {
 function amp_load_includes($env, $vars) {
   $module_path = $env->getModulePath('amp');
 
-  $env->addInclude($module_path . '/css/amp.css');
+  $env->addInclude($module_path . '/assets/css/amp.css');
 }
 
 /**

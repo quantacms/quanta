@@ -1,4 +1,0 @@
-<?php
-$this->dependsFrom('file');
-
-require_once('image.class.php');

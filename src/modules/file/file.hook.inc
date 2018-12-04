@@ -28,7 +28,7 @@ function file_shadow_file_form($env, $vars) {
  */
 function file_load_includes($env, $vars) {
   $module_path = $env->getModulePath('file');
-  $env->addInclude($module_path . '/css/file.css');
+  $env->addInclude($module_path . '/assets/css/file.css');
 }
 
 /**
@@ -47,11 +47,11 @@ function file_init($env, $vars) {
     FileObject::checkUploads($env);
     exit();
   }
-
+  $file_delete_act = \Quanta\Common\Node::NODE_ACTION_DELETE_FILE;
   // There is a request to delete a file.
   // TODO: move in actions / factory?
-  if (isset($_REQUEST[NODE_ACTION_DELETE_FILE])) {
-    $split_file_to_delete = explode('/', $_REQUEST[NODE_ACTION_DELETE_FILE]);
+  if (isset($_REQUEST[$file_delete_act])) {
+    $split_file_to_delete = explode('/', $_REQUEST[$file_delete_act]);
     FileObject::deleteFile($node, $split_file_to_delete[count($split_file_to_delete) - 1]);
     exit();
   }

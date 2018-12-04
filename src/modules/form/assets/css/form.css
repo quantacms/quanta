@@ -1,0 +1,72 @@
+.form-item.validation-error input,
+.form-item.validation-error select,
+.form-item.validation-error textarea
+{
+    border: 1px solid red !important;
+}
+
+.form-item-disabled {
+    color: #bbb;
+}
+
+.validation-error {
+    color: white;
+    background: red;
+    padding-left: 5px;
+    padding-right: 5px;
+    height: 20px;
+    line-height: 20px;
+    font-size: 10px;
+    font-family: "Verdana";
+    text-align: center;
+    border-radius: 15px;
+    text-transform: uppercase;
+    display: inline-block;
+    position: absolute;
+    bottom: -25px;
+    left: 0;
+    overflow:scroll;
+    overflow-y: hidden;
+    white-space:nowrap;
+
+}
+
+div.has-validation-errors {
+    border-style: dashed;
+    border-width: 1px;
+    border-color: red;
+
+}
+
+.has-validation-errors label {
+    color: red;
+}
+
+.has-validation-errors input, .has-validation-errors select, .has-validation-errors textarea {
+    border-color: red;
+}
+
+.form-item-required {
+    color: red;
+}
+
+.form-item-add {
+    color: green;
+}
+
+.form-item-remove {
+    color: red;
+}
+
+.form-item-wrapper {
+    position: relative;
+}
+
+.form-item {
+    font-size: 0.8em;
+}
+
+.form-item.required label:after {
+    content: " *";
+    color: red;
+}

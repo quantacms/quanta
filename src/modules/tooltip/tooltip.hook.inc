@@ -11,6 +11,6 @@ namespace Quanta\Common;
  */
 function tooltip_load_includes($env, $vars) {
   $module_path = $env->getModulePath('tooltip');
-  $env->addInclude($module_path . '/js/tooltip.js');
-  $env->addInclude($module_path . '/css/tooltip.css');
+  $env->addInclude($module_path . '/assets/js/tooltip.js');
+  $env->addInclude($module_path . '/assets/css/tooltip.css');
 }

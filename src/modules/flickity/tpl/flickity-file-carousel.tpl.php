@@ -7,5 +7,5 @@
       </div>
     </div>
   </div>
-  <div class="slide-img" style="">[IMGTHUMB|node={LISTNODE}:{LISTITEM}]</div>
+  <div class="slide-img" style="">[IMG_THUMB|node={LISTNODE}:{LISTITEM}]</div>
 </div>

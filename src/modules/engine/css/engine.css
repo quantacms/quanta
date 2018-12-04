@@ -1,27 +1,4 @@
-ul.gallery.list li {
-    display: inline-block;
-}
 
-ul.gallery.list {
-    width: 100%;
-}
-
-
-ul.breadcrumb {
-    text-align: left;
-    padding: 0;
-}
-
-ul.breadcrumb li {
-    display: inline-block;
-    padding: 0;
-    margin: 0;
-    border-right: 1px solid #aaa;
-    padding-right: 4px;
-}
-ul.breadcrumb li + li {
-    margin-left: 4px;
-}
 
 .description {
     font-style: italic;
@@ -36,8 +13,4 @@ ul.breadcrumb li + li {
 }
 
 
-.form-item.required label:after {
-    content: " *";
-    color: red;
 
-}

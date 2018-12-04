@@ -12,5 +12,5 @@ namespace Quanta\Common;
  */
 function social_load_includes($env, $vars) {
   $module_path = $env->getModulePath('social');
-  $env->addInclude($module_path . '/css/social.css');
+  $env->addInclude($module_path . '/assets/css/social.css');
 }

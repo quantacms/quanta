@@ -42,5 +42,5 @@ function qtags_boot($env, $vars) {
  */
 function qtags_load_includes($env, $vars) {
   $module_path = $env->getModulePath('qtags');
-  $env->addInclude($module_path . '/css/qtags.css');
+  $env->addInclude($module_path . '/assets/css/qtags.css');
 }

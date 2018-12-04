@@ -1,8 +1,0 @@
-<?php
-
-$this->dependsFrom('page');
-$this->dependsFrom('node');
-$this->dependsFrom('form');
-$this->dependsFrom('localization');
-
-require_once('Shadow.class.php');
