@@ -68,3 +68,17 @@ function doctor_doctor($env, $vars) {
   // TODO: move in modules - out of doctor.
   $doctor->checkBrokenLinks();
 }
+
+/**
+ * Implements hook_doctor_init().
+ *
+ * Setup a Quanta site.
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param array $vars
+ *   An array of variables.
+ */
+function doctor_init($env, $vars) {
+
+}

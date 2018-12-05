@@ -23,6 +23,5 @@ class UserEditOwn extends Link {
     else {
       return '';
     }
-    return $this->html;
   }
 }

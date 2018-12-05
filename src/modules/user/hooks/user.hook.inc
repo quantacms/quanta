@@ -186,7 +186,6 @@ function user_shadow_user_edit_form($env, $vars) {
  *   An array of variables.
  */
 function user_shadow_user_login_form($env, $vars) {
-  $user = UserFactory::current($env);
   $tab = UserFactory::renderLoginForm($env);
   /** @var Shadow $shadow */
   $shadow = $vars['shadow'];

@@ -1,12 +1,12 @@
 <?php
 namespace Quanta\Common;
 
-define('INPUT_DATE_NOW', 'NOW');
 /**
  * Class FormItemString
  * This class represents a Form Item of type dropdown Select
  */
 class FormItemDate extends FormItemString {
+  const INPUT_DATE_NOW = 'NOW';
   public $type = 'date';
   public $format = 'Y-m-d';
 
@@ -24,11 +24,22 @@ class FormItemDate extends FormItemString {
     }
   }
 
+  /**
+   * Parse a date in a specific format.
+   *
+   * @param $date
+   *   The input date.
+   * @param null $format
+   *   The date format to convert the date into.
+   *
+   * @return false|string
+   *   The parsed date.
+   */
   public function parseDate($date, $format = NULL) {
     if (empty($format)) {
       $format = $this->getDateFormat();
     }
-    if ($date == INPUT_DATE_NOW) {
+    if ($date == self::INPUT_DATE_NOW) {
       $time = time();
     }
     else {
@@ -37,11 +48,21 @@ class FormItemDate extends FormItemString {
     return date($format, $time);
   }
 
+  /**
+   * Get the date format of the item.
+   *
+   * @return string
+   *   The date format of the input item
+   */
   public function getDateFormat() {
     return $this->format;
   }
+
   /**
+   * Gets the HTML type of the Input item.
+   *
    * @return string
+   *   The Html type.
    */
   public function getHTMLType() {
     return 'date';

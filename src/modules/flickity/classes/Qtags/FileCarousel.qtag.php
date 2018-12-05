@@ -13,7 +13,8 @@ class FileCarousel extends Carousel {
    *   The rendered Qtag.
    */
   public function render() {
-    $this->attributes['carousel-type'] = CAROUSEL_FILES;
-    parent::render();
+    $this->attributes['carousel-type'] = \Quanta\Qtags\Carousel::CAROUSEL_FILES;
+
+    return parent::render();
   }
 }

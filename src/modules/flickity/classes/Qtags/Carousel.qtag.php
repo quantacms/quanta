@@ -3,14 +3,16 @@ namespace Quanta\Qtags;
 use Quanta\Common\DirList;
 use Quanta\Common\Page;
 
-define('CAROUSEL_FILES', 'carousel_files');
-define('CAROUSEL_DIRS', 'carousel_dirs');
+
 /**
  * Create a visual carousel based on a node list.
  * We are using the flickity plugin for rendering the carousel.
  */
 class Carousel extends Qtag {
-  public $carousel_type = CAROUSEL_DIRS;
+  const CAROUSEL_FILES = 'carousel_files';
+  const CAROUSEL_DIRS = 'carousel_dirs';
+
+  public $carousel_type = self::CAROUSEL_DIRS;
   /**
    * Render the Qtag.
    *
@@ -22,7 +24,7 @@ class Carousel extends Qtag {
     $page = $this->env->getData('page');
     $module_path = $this->env->getModulePath('flickity');
     // TODO: support relative path to JS.
-    $page->addJS('/src/modules/flickity/js/flickity.pkgd.min.js');
+    $page->addJS('/src/modules/flickity/assets/js/flickity.pkgd.min.js');
     $page->addCSS($module_path . '/assets/css/flickity.min.css');
     $page->addCSS($module_path . '/assets/css/flickity-quanta.css');
 
@@ -42,12 +44,12 @@ class Carousel extends Qtag {
     /** @var ListObject $list */
     switch ($this->carousel_type) {
 
-      case CAROUSEL_DIRS:
+      case self::CAROUSEL_DIRS:
         $tpl = isset($this->attributes['tpl']) ? $this->attributes['tpl'] : 'flickity-carousel';
         $list = new DirList($this->env, $this->getTarget(), $tpl, array('clean' => true, 'class' => 'flickity-carousel') + $this->attributes, $module);
         break;
 
-      case CAROUSEL_FILES:
+      case self::CAROUSEL_FILES:
         $tpl = isset($this->attributes['tpl']) ? $this->attributes['tpl'] : 'flickity-file-carousel';
         $list = new FileList($this->env, $this->getTarget(), $tpl, array('clean' => true, 'class' => 'flickity-carousel') + $this->attributes, $module);
         break;

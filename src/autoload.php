@@ -6,19 +6,7 @@
  *
  * Ideas and contributions welcome at https://www.github.com/quantacms/quanta
  */
-// Include the Environment module.
-// TODO: avoid direct inclusion.
-require_once('modules/environment/environment.module');
-
-/**
- * TODO: where to define global API functions?
- * @param $string
- * @param array $replace
- * @return string
- */
-function t($string, $replace = array()) {
-  return \Quanta\Common\Localization::t($string, $replace);
-}
+define("CLASS_MAP_FILE", $env->dir['tmp'] . '/class_map.dat');
 
 /**
  * Example 1: Using an anonymous function as the single parameter for `spl_autoload_register`
@@ -26,8 +14,11 @@ function t($string, $replace = array()) {
  * @see http://php.net/manual/en/functions.anonymous.php
  */
 spl_autoload_register(function($class_name) {
+    static $class_map;
     $split = explode('\\', $class_name);
-    $class_map = $GLOBALS['class_map'];
+    if (!$class_map) {
+      $class_map = unserialize(file_get_contents(CLASS_MAP_FILE));
+    }
     $namespace = $split[1];
     $tagname = $split[2];
     if (isset($class_map[$namespace][$tagname])) {
@@ -38,3 +29,18 @@ spl_autoload_register(function($class_name) {
   }
 );
 
+/**
+ * Renders a translatable string.
+ * TODO: move elsewhere.
+ *
+ * @param $string
+ *   The string.
+ * @param array $replace
+ *   Replacement tokens.
+ *
+ * @return string
+ *   The translated string.
+ */
+function t($string, $replace = array()) {
+  return \Quanta\Common\Localization::t($string, $replace);
+}

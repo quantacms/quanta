@@ -49,8 +49,6 @@ class FormItemString extends FormItem {
    *
    * @param $size
    *   The input size.
-   *
-   * @return string
    */
   public function setSize($size) {
     $this->setData('size', $size);

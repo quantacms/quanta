@@ -85,7 +85,7 @@ class Attribute extends Qtag {
 
       default:
         $string = '';
-        new Message($this->env, t('Error: trying to fetch the invalid attribute %attribute', array('%attribute' => $this->attributes['name']), MESSAGE_WARNING));
+        new Message($this->env, t('Error: trying to fetch the invalid attribute %attribute', array('%attribute' => $this->attributes['name']), \Quanta\Common\Message::MESSAGE_WARNING));
         break;
     }
 

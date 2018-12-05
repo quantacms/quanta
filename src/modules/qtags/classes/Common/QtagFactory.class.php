@@ -61,7 +61,10 @@ class QtagFactory {
         if ((strpos($tag_undelimited, '{') > 0) || (strpos($tag_undelimited, '[') > 0)) {
           continue;
         }
-        if ($qtag = QtagFactory::parseQTag($env, $tag_full, $delimiters)) {
+        // Parse the qtag.
+        $qtag = QtagFactory::parseQTag($env, $tag_full, $delimiters);
+        // Replace it in the HTML only if it's a valid Qtag.
+        if ($qtag) {
           // Runlast.
           if (!empty($qtag->getAttribute('runlast')) && empty($options['runlast'])) {
             continue;

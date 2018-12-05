@@ -1,5 +1,0 @@
-<?php
-  // TODO: include as part of the autoloader.
-  require_once('classes/Common/DataContainer.class.php');
-  require_once('classes/Common/Environment.class.php');
-  require_once('classes/Common/JSONDataContainer.class.php');

@@ -18,7 +18,7 @@ class Variable extends Qtag {
   public function render() {
     // We always need to specify the variable name.
     if (empty(Api::string_normalize(strip_tags($this->getTarget())))) {
-      return;
+      return '';
     }
 
     $this->variable_name = 'variable_' . $this->getTarget();
@@ -29,12 +29,13 @@ class Variable extends Qtag {
         new Message($this->env, t(
           'Warning: the variable !name has been set already. Possible solution: use the override attribute.',
           array('!name' => $this->variable_name)
-        ), MESSAGE_WARNING);
+        ), \Quanta\Common\Message::MESSAGE_WARNING);
       }
       else {
         $this->env->setData($this->variable_name, $this->getAttribute('set'));
       }
     }
+
     else {
       return $this->env->getData($this->variable_name);
     }

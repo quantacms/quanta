@@ -1,10 +1,9 @@
 .DS_Store
 .idea
 .idea*
-engine/tmp
-engine/tmp/*
-.users
-*/data.html
+src
+static/tmp
+static/_tmp
 sites
 sites/*
 sites*

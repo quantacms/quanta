@@ -5,7 +5,6 @@ use Quanta\Common\Image;
 
 /**
  * Create a thumbnail / edited version of an image on the fly.
- * @deprecated we are using the standard Img for this from now.
  */
 class ImgThumb extends Img {
   protected $manipulate = TRUE;

@@ -23,13 +23,20 @@ class NodeFactory {
    * @return Node
    *   The built node object.
    */
-  public static function load(Environment $env, $node_name, $language = NULL) {
+  public static function load(Environment $env, $node_name, $language = NULL, $force_reload = FALSE) {
+    static $loaded_nodes;
+    // Allow static caching of nodes. The factory doesn't load the same node two times.
+    if (!$force_reload && !empty($loaded_nodes[$node_name])) {
+      return $loaded_nodes[$node_name];
+    }
+
     if (empty($language)) {
       $language = Localization::getLanguage($env);
     }
     $node = new Node($env, $node_name, NULL, $language);
     $vars = array('node' => &$node);
     $env->hook('node_open', $vars);
+    $loaded_nodes[$node_name] = $node;
     return $node;
   }
 
@@ -105,7 +112,7 @@ class NodeFactory {
    *   The node object.
    */
   public static function buildEmptyNode($env, $father) {
-    $node = new Node($env, NODE_NEW, $father);
+    $node = new Node($env, \Quanta\Common\Node::NODE_NEW, $father);
     return $node;
   }
 
@@ -127,12 +134,12 @@ class NodeFactory {
     $if_not_exists = isset($vars['if_not_exists']) ? $vars['if_not_exists'] : 'error';
 
     if (!$symlink_folder_node->exists) {
-      new Message($env, 'Error: could not unlink ' . $symlink_name . ' from ' . $symlink_folder . '. ' . $symlink_folder . ' doesn\'t exist', MESSAGE_ERROR);
+      new Message($env, 'Error: could not unlink ' . $symlink_name . ' from ' . $symlink_folder . '. ' . $symlink_folder . ' doesn\'t exist', \Quanta\Common\Message::MESSAGE_ERROR);
     }
     elseif (!is_link($symlink_folder_node->path . '/' . $symlink_name)) {
       switch ($if_not_exists) {
         case 'error':
-          new Message($env, 'Error: could not unlink ' . $symlink_name . ' from ' . $symlink_folder . '. ' . $symlink_folder . '/' . $symlink_name . ' doesn\'t exist', MESSAGE_ERROR);
+          new Message($env, 'Error: could not unlink ' . $symlink_name . ' from ' . $symlink_folder . '. ' . $symlink_folder . '/' . $symlink_name . ' doesn\'t exist', \Quanta\Common\Message::MESSAGE_ERROR);
           break;
 
         case 'ignore':
@@ -144,7 +151,7 @@ class NodeFactory {
         unlink($symlink_folder_node->path . '/' . $symlink_name);
       }
       catch (Exception $ex) {
-        new Message($vars['env'], 'Error: could not unlink ' . $symlink_name . ' from ' . $symlink_folder, MESSAGE_ERROR);
+        new Message($vars['env'], 'Error: could not unlink ' . $symlink_name . ' from ' . $symlink_folder, \Quanta\Common\Message::MESSAGE_ERROR);
       }
     }
   }
@@ -183,17 +190,17 @@ class NodeFactory {
 
     // Check that source nodes and destination folder do actually exist.
     if (!$from_node->exists) {
-      new Message($env, 'Error: could not link ' . $source_node . ' into ' . $symlink_folder . '. ' . $source_node . ' doesn\'t exist', MESSAGE_ERROR);
+      new Message($env, 'Error: could not link ' . $source_node . ' into ' . $symlink_folder . '. ' . $source_node . ' doesn\'t exist', \Quanta\Common\Message::MESSAGE_ERROR);
     }
     elseif (!$symlink_folder_node->exists) {
-      new Message($env, 'Error: could not link ' . $source_node . ' into ' . $symlink_folder . '. ' . $symlink_folder . ' doesn\'t exist', MESSAGE_ERROR);
+      new Message($env, 'Error: could not link ' . $source_node . ' into ' . $symlink_folder . '. ' . $symlink_folder . ' doesn\'t exist', \Quanta\Common\Message::MESSAGE_ERROR);
     }
     // What to do if the symlink exists already.
     elseif (is_link($symlink_folder_node->path . '/' . $symlink_name)) {
 
       switch ($if_exists) {
         case 'error':
-          new Message($env, 'Error: could not link ' . $source_node . ' into ' . $symlink_folder . '. ' . $symlink_folder . '/' . $symlink_name . ' already exists.', MESSAGE_ERROR);
+          new Message($env, 'Error: could not link ' . $source_node . ' into ' . $symlink_folder . '. ' . $symlink_folder . '/' . $symlink_name . ' already exists.', \Quanta\Common\Message::MESSAGE_ERROR);
           break;
 
         case 'ignore':
@@ -217,7 +224,7 @@ class NodeFactory {
         $linked_ok = TRUE;
       }
       catch (Exception $ex) {
-        new Message($vars['env'], 'Error: could not link ' . $source_node . ' to ' . $symlink_folder, MESSAGE_ERROR);
+        new Message($vars['env'], 'Error: could not link ' . $source_node . ' to ' . $symlink_folder, \Quanta\Common\Message::MESSAGE_ERROR);
       }
     }
 
@@ -239,7 +246,7 @@ class NodeFactory {
   public static function updateTemplate($env, $tpl_file, $tpl_contents) {
     // Check if the template file exists. Throw a message if it doesn't.
     if (!is_file($tpl_file)) {
-      new Message($env, 'Warning: trying to update a non-existing template: ' . $tpl_file, MESSAGE_ERROR);
+      new Message($env, 'Warning: trying to update a non-existing template: ' . $tpl_file, \Quanta\Common\Message::MESSAGE_ERROR);
     }
     else {
       // Write the tpl file.
@@ -262,7 +269,7 @@ class NodeFactory {
     $node = NodeFactory::buildEmptyNode($env, $father);
 
     if (empty($vars['skip_normalize'])){
-      $name = normalizePath($name);
+      $name = \Quanta\Common\Api::normalizePath($name);
     }
     $node->setName($name);
 
@@ -321,7 +328,7 @@ class NodeFactory {
     if (!empty($current_node)) {
       // Do nothing. Load from static cache.
     }
-    elseif ($env->getContext() == Node::NODE_ACTION_ADD) {
+    elseif ($env->getContext() == \Quanta\Common\Node::NODE_ACTION_ADD) {
       $current_node = NodeFactory::buildEmptyNode($env, $env->getRequestedPath());
     }
 		elseif ($env->getContext() == 'qtag') {
@@ -398,7 +405,7 @@ class NodeFactory {
         }
 
         // Check if the user can access node add / edit for this node.
-        $has_access = (NodeAccess::check($env, $action, array('node' => ($action == NODE_ACTION_ADD) ? $node->father : $node)));
+        $has_access = (NodeAccess::check($env, $action, array('node' => ($action == \Quanta\Common\Node::NODE_ACTION_ADD) ? $node->father : $node)));
         if ($has_access) {
           if (isset($nodedata['edit-title'])) {
             // Setup all node data (title, Body, etc.)
@@ -447,9 +454,9 @@ class NodeFactory {
         break;
 
       // User requested to delete a Node...
-      case NODE_ACTION_DELETE:
+      case \Quanta\Common\Node::NODE_ACTION_DELETE:
 				// Check that the current user has the right to delete the node.
-        $has_access = (NodeAccess::check($env, NODE_ACTION_DELETE, array('node' => $node)));
+        $has_access = (NodeAccess::check($env, \Quanta\Common\Node::NODE_ACTION_DELETE, array('node' => $node)));
         if ($has_access) {
           // Delete the node...
           $node->delete();

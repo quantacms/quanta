@@ -12,6 +12,12 @@ class Register extends Link {
    */
   public $link_class = array('register-link');
 
+  /**
+   * Render the Qtag.
+   *
+   * @return string
+   *   The rendered Qtag.
+   */
   public function render() {
     $user = UserFactory::current($this->env);
     if (UserAccess::check($this->env, USER_ACTION_REGISTER, array('user' => $user))) {
