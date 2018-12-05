@@ -1,6 +1,5 @@
 <?php
 namespace Quanta\Qtags;
-use Quanta\Common\Message;
 
 /**
  * Renders active system messages (errors, warnings, etc.).
@@ -13,6 +12,6 @@ class Messages extends Qtag {
    *   The rendered Qtag.
    */
   public function render() {
-    return Message::burnMessages(MESSAGE_TYPE_SCREEN);
+    return \Quanta\Common\Message::burnMessages(\Quanta\Common\Message::MESSAGE_TYPE_SCREEN);
   }
 }

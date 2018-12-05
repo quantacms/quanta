@@ -281,7 +281,7 @@ class Box extends DataContainer {
       return '';
     }
     else {
-      $box_counter = Box::counter();
+      $box_counter = self::counter();
       $this->addData('class', array('box-' . $box_counter));
       $box_content = $this->getHtml();
       // Check if the box has a setup title.

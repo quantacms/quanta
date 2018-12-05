@@ -26,9 +26,9 @@ function workflow_shadow_node_form($env, $vars) {
 function workflow_doctor_setup($env, $vars) {
   // Initialize default statuses.
   $basic_statuses = array(
-    NODE_STATUS_DRAFT => array('title' => 'Draft'),
-    NODE_STATUS_UNPUBLISHED => array('title' => 'Unpublished'),
-    NODE_STATUS_PUBLISHED => array('title' => 'Published'),
+    \Quanta\Common\Node::NODE_STATUS_DRAFT => array('title' => 'Draft'),
+    \Quanta\Common\Node::NODE_STATUS_UNPUBLISHED => array('title' => 'Unpublished'),
+    \Quanta\Common\Node::NODE_STATUS_PUBLISHED => array('title' => 'Published'),
   );
 
   foreach ($basic_statuses as $status => $statusdata) {

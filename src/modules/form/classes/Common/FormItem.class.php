@@ -359,7 +359,7 @@ abstract class FormItem extends DataContainer {
   public function setValue($value = NULL) {
     // In order to support multiple values, we use an array.
     if (!is_array($value)) {
-      $value = explode(GLOBAL_SEPARATOR, $value);
+      $value = explode(\Quanta\Common\Environment::GLOBAL_SEPARATOR, $value);
     }
     $this->setData('value', $value);
   }

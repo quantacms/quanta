@@ -143,6 +143,32 @@ function page_doctor_setup($env, $vars) {
 }
 
 /**
+ * Implements hook_init().
+ * Construct and render a HTML page.
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param array $vars
+ *   An array of variables.
+ */
+function page_init($env, $vars) {
+  // Start page's standard index.html.
+  $page = new \Quanta\Common\Page($env);
+  $vars = array('page' => &$page);
+  $env->setData('page', $vars['page']);
+
+  // Check if there is an AJAX request in progress. TODO: move in ajax module.
+  if (!isset($_REQUEST['ajax'])) {
+    $env->hook('load_includes', $vars);
+    $page->loadIncludes();
+  }
+  // Build the page's HTML code.
+  $page->buildHTML();
+  // Render the page.
+  print $page->render();
+}
+
+/**
  * Implements hook_doctor().
  * Refresh minified CSS, JS, and and do other operations.
  *

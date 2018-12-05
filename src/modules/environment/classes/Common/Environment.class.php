@@ -13,6 +13,7 @@ class Environment extends DataContainer {
   const DIR_MODULES = 'modules';
   const QUANTA_ROOT = '__ROOT__';
   const GLOBAL_SEPARATOR = '@\@/@\@/@\@/@';
+
   public $host = array();
   public $dir = array();
   public $request_uri;
@@ -223,12 +224,38 @@ class Environment extends DataContainer {
   /**
    * Run all loaded modules.
    */
+  public function mapClasses() {
+    $fop = fopen(CLASS_MAP_FILE, 'w+');
+    foreach ($this->modules_loaded as $module) {
+      $autoload_paths = array('Common', 'Qtags');
+      foreach ($autoload_paths as $autoload_path) {
+        $full_autoload_path = $module['path'] . '/classes/' . $autoload_path;
+        /**
+         * Autoload module's qtags.
+         */
+        if (is_dir($full_autoload_path)) {
+          $classes = $this->scanDirectory($full_autoload_path);
+          foreach ($classes as $class) {
+            // Parse the Qtag.
+            $exp1 = explode('/', $class);
+            $exp2 = explode('.', $exp1[count($exp1) - 1]);
+            $item_name = $exp2[0];
+            $this->class_map[$autoload_path][$item_name] = $full_autoload_path . '/' . $class;
+          }
+        }
+      }
+    }
+    fwrite($fop, serialize($this->class_map));
+    fclose($fop);
+  }
+
+  /**
+   * Run all loaded modules.
+   */
   public function runModules() {
     foreach ($this->modules as $module) {
       $this->runModule($module);
     }
-    // TODO: serialize and save in file.
-    $GLOBALS['class_map'] = $this->class_map;
   }
 
   /**
@@ -244,47 +271,15 @@ class Environment extends DataContainer {
   /**
    * Run (Load) a module.
    * Run all Quanta autoload routines on each module.
-   * No PSR involved.
    *
    * @param $module
    */
   public function runModule($module) {
-
     $this->modules_loaded[$module['name']] = $module;
-
-    // TODO: deprecate and use autoloader.
+    // TODO: deprecate procedural hooks. Find an efficient OO approach.
     $includes = array('hook');
-
-    /**
-     * Autoload module's inclusions.
-     * TODO: useless waste of resources - include files in .module.
-     */
     foreach ($includes as $include_type) {
-      $include_path = $module['path'] . '/' . $module['name'] . '.' . $include_type . '.inc';
-      if (is_file($include_path)) {
-        //require_once($include_path);
-      }
-    }
-
-    $autoload_paths = array('Common', 'Qtags');
-    foreach ($autoload_paths as $autoload_path) {
-      $full_autoload_path = $module['path'] . '/classes/' . $autoload_path;
-      /**
-       * Autoload module's qtags.
-       */
-      if (is_dir($full_autoload_path)) {
-        $qtags = $this->scanDirectory($full_autoload_path);
-        foreach ($qtags as $qtag) {
-          $exp = explode('/', $qtag);
-          $exp2 = explode('.', $exp[count($exp) - 1]);
-          $item_name = $exp2[0];
-          $this->class_map[$autoload_path][$item_name] = $full_autoload_path . '/' . $qtag;
-        }
-      }
-    }
-
-    foreach ($includes as $include_type) {
-      $include_path = $module['path'] . '/' . $module['name'] . '.' . $include_type . '.inc';
+      $include_path = $module['path'] . '/hooks/' . $module['name'] . '.' . $include_type . '.inc';
       if (is_file($include_path)) {
         require_once($include_path);
       }
@@ -382,10 +377,13 @@ class Environment extends DataContainer {
     return $dirs;
   }
 
-  // Load all system directories.
+  /**
+   * Load and run system modules, core and custom.
+   */
   public function load() {
     $this->loadModules($this->dir['modules_core'], 'core');
     $this->loadModules($this->dir['modules_custom'], 'custom');
+    $this->runModules();
   }
 
   /**
@@ -415,7 +413,7 @@ class Environment extends DataContainer {
 
 
   /**
-   * Start client's session.
+   * Start client session.
    */
   public function startSession() {
     session_start();
@@ -518,7 +516,6 @@ class Environment extends DataContainer {
   private function findNodePath($folder) {
 
     $findcmd = 'find ' . $this->dir['docroot'] . '/ -name "' . $folder . '"';
-    print $findcmd;
     // TODO: sometimes getting empty folder. Why? Temporary fix.
     if (empty($folder)) {
       return NULL;
@@ -534,12 +531,13 @@ class Environment extends DataContainer {
    *   The folder (node) to search.
    * @param bool $link
    *   Search also symlinks if true.
+   *
    * @return mixed
    *   The path of the node.
    */
   public function nodePath($folder, $link = FALSE) {
     if (empty($folder)) {
-      return;
+      return NULL;
     }
 
     $nodepath = Cache::getStoredNodePath($this, $folder);
@@ -596,37 +594,5 @@ class Environment extends DataContainer {
     return $node_name;
   }
 
-  /**
-   * Checks if currently loaded environment is for a file, and renders it if so.
-   */
-  public function checkFile() {
 
-		// Support for letsencript https certificates.
-		if (!empty($this->request[2]) && $this->request[2] == 'acme-challenge') {
-			readfile('/' . trim($this->dir['docroot'] . implode('/', $this->request), '/'));
-		  die();
-		}
-    // TODO: redo the whole shit.
-    if (strpos($this->request[count($this->request) - 1], '.') > 0) {
-      $filename = $this->request[count($this->request) - 1];
-      $nodepath = Cache::getStoredNodePath($this, $this->request[1]);
-      $file = $nodepath . '/' . urldecode($filename);
-      if (is_file($file)) {
-        header('Content-Type: ' . mime_content_type($file));
-        $mods = array_flip(apache_get_modules());
-        if (isset($mods['mod_xsendfile'])) {
-          // TODO: support for xsendfile.
-          readfile($file);
-        }
-        else {
-          //TODO : slow, insecure...
-          readfile($file);
-        }
-        die();
-      }
-      elseif ($filename == 'favicon.ico') {
-        die("No favicon available.");
-      }
-    }
-  }
 }

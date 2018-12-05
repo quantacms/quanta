@@ -22,7 +22,7 @@ class GridCarousel extends Qtag {
       $this->attributes['carousel_height'] = '260';
       $this->attributes['carousel_autoplay'] = 'true';
       $this->attributes['carousel_type'] = 'slides';
-      $carousel = new AMP_CAROUSEL($this->env, $this->getTarget(), $this->attributes);
+      $carousel = new AmpCarousel($this->env, $this->getTarget(), $this->attributes);
 
     } else {
       // Classic flickity carousel.
@@ -31,7 +31,7 @@ class GridCarousel extends Qtag {
       $this->attributes['flickity_theme'] = 'actionbutton';
       $this->attributes['pageDots'] = 'true';
       $this->attributes['editable'] = 'false';
-      $carousel = new CAROUSEL($this->env, $this->getTarget(), $this->attributes);
+      $carousel = new Carousel($this->env, $this->getTarget(), $this->attributes);
     }
     return $carousel->render();
   }
