@@ -152,17 +152,19 @@ function page_doctor_setup($env, $vars) {
  *   An array of variables.
  */
 function page_init($env, $vars) {
-  // Start page's standard index.html.
-  $page = new \Quanta\Common\Page($env);
-  $vars = array('page' => &$page);
-  $env->setData('page', $vars['page']);
+  if (empty($env->getData('page'))) {
+    // Start page's standard index.html.
+    $page = new \Quanta\Common\Page($env);
+    $vars = array('page' => &$page);
+    $env->setData('page', $vars['page']);
 
-  $page->loadIncludes();
+    $page->loadIncludes();
 
-  // Build the page's HTML code.
-  $page->buildHTML();
-  // Render the page.
-  print $page->render();
+    // Build the page's HTML code.
+    $page->buildHTML();
+    // Render the page.
+    print $page->render();
+  }
 }
 
 /**

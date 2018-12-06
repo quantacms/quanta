@@ -18,7 +18,7 @@ class Add extends Link {
       $this->attributes['tooltip'] = !empty($this->attributes['tooltip']) ? \Quanta\Common\Api::filter_xss($this->attributes['tooltip']) : 'Add to ' . \Quanta\Common\Api::filter_xss($nodeobj->getTitle()) . '...';
       $this->language = !empty($this->attributes['language']) ? $this->attributes['language'] : \Quanta\Common\Localization::getLanguage($this->env);
       $this->link_body = !empty($this->attributes['title']) ? \Quanta\Common\Api::filter_xss($this->attributes['title']) : '&oplus;';
+      return parent::render();
     }
-    return parent::render();
   }
 }
