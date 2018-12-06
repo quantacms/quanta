@@ -524,7 +524,7 @@ class Environment extends DataContainer {
    *   The result of the node search.
    */
   private function findNodePath($folder) {
-    $findcmd = 'find ' . $this->dir['docroot'] . '/ -path ' . $this->dir['modules_custom'] . ' -prune -o -path ' . $this->dir['docroot'] . '/.git -prune -o -name "' . $folder . '"';
+    $findcmd = 'find ' . $this->dir['docroot'] . '/ -name "' . $folder . '"';
     // TODO: sometimes getting empty folder. Why? Temporary fix.
     if (empty($folder)) {
       return NULL;

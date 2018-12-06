@@ -9,7 +9,7 @@ namespace Quanta\Common;
  *
  */
 class FileList extends ListObject {
-  protected $scantype = DIR_FILES;
+  protected $scantype = \Quanta\Common\Environment::DIR_FILES;
   /** @var string $filename */
   public $filefield = 'files';
 
