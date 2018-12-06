@@ -135,12 +135,22 @@ class NodeFactory {
     $if_not_exists = isset($vars['if_not_exists']) ? $vars['if_not_exists'] : 'error';
 
     if (!$symlink_folder_node->exists) {
-      new Message($env, 'Error: could not unlink ' . $symlink_name . ' from ' . $symlink_folder . '. ' . $symlink_folder . ' doesn\'t exist', \Quanta\Common\Message::MESSAGE_ERROR);
+      new Message($env,
+        t('Error: could not unlink !symlink_name from !symlink_folder. !symlink_folder doesn\'t exist',
+          array('!symlink_name' => $symlink_name, '!symlink_folder' => $symlink_folder)
+        ),
+        \Quanta\Common\Message::MESSAGE_ERROR
+      );
     }
     elseif (!is_link($symlink_folder_node->path . '/' . $symlink_name)) {
       switch ($if_not_exists) {
         case 'error':
-          new Message($env, 'Error: could not unlink ' . $symlink_name . ' from ' . $symlink_folder . '. ' . $symlink_folder . '/' . $symlink_name . ' doesn\'t exist', \Quanta\Common\Message::MESSAGE_ERROR);
+          new Message($env,
+            t('Error: could not unlink !symlink_name from !symlink_folder. !symlink_folder/!symlink_name doesn\'t exist',
+              array('!symlink_name' => $symlink_name, '!symlink_folder' => $symlink_folder)
+            ),
+            \Quanta\Common\Message::MESSAGE_ERROR
+          );
           break;
 
         case 'ignore':
@@ -385,7 +395,7 @@ class NodeFactory {
 		  $path = array_pop($path);
 		}
     // Check the father of the node.
-    $father = ($action == NODE_ACTION_ADD) ? $nodedata['edit-father'] : NULL;
+    $father = ($action == \Quanta\Common\Node::NODE_ACTION_ADD) ? $nodedata['edit-father'] : NULL;
     $node = new Node($env, $path, $father);
     // Setup the after-save redirect.
     if (isset($nodedata['redirect'])) {
@@ -393,9 +403,9 @@ class NodeFactory {
     }
 
     switch ($action) {
-      case NODE_ACTION_ADD:
-      case NODE_ACTION_EDIT:
-        if ($action == NODE_ACTION_ADD) {
+      case \Quanta\Common\Node::NODE_ACTION_ADD:
+      case \Quanta\Common\Node::NODE_ACTION_EDIT:
+        if ($action == \Quanta\Common\Node::NODE_ACTION_ADD) {
           // Setup the path of the node to be created / updated.
           $node->path = $node->father->path . '/' . $path;
           $node->setAuthor($user->getName());
