@@ -1,6 +1,5 @@
 <?php
 namespace Quanta\Common;
-define("MATCH_ONLY", 'match_only');
 /**
  * Class QtagFactory
  *
@@ -8,7 +7,6 @@ define("MATCH_ONLY", 'match_only');
  *
  */
 class QtagFactory {
-
   /**
    * Searches for qtags in html, triggers the qTag function and converts them.
    * Will look for all qtag_TAG functions in modules, and use it to replace the tag
@@ -30,57 +28,40 @@ class QtagFactory {
    *   All the qtags in the html.
    *
    */
-  public static function checkCodeTags(&$env, $html, $options = array(), $regex_options = 'U') {
+  public static function checkCodeTags(Environment &$env, $html, array $options = array(), $regex_options = 's') {
     $replacing = array();
     // Find all qtags using regular expressions (both { and [ bracket types are valid for now).
-    // TODO: allow more qtag open / close characters, for advanced nesting.
     $regexs = array();
     $qtag_delimiters = isset($options['qtag_delimiters']) ? $options['qtag_delimiters'] : array('[]', '{}');
     foreach ($qtag_delimiters as $qtag_delimiter) {
       $qtag_del_open = substr($qtag_delimiter, 0, 1);
       $qtag_del_close = substr($qtag_delimiter, 1, 1);
-
       // Default regex option is "greedy".
-      $regexs['/\\' . $qtag_del_open . '[A-Z](.*)\\' . $qtag_del_close . '/' . $regex_options] = array($qtag_del_open, $qtag_del_close, '|');
+      $regexs['/\\' . $qtag_del_open . '[A-Z][^\[\]\{\}]+\\' . $qtag_del_close . '/' . $regex_options] = array($qtag_del_open, $qtag_del_close, '|');
     }
-
     // Run the regular expression: find all the [QTAGS] in the page.
     foreach ($regexs as $regex => $delimiters) {
       preg_match_all($regex, $html, $matches);
-
-      // If we just want to retrieve the matches without parsing them, return.
-      if (isset($options[MATCH_ONLY])) {
-        return $matches;
-      }
-
-      // Cycle the Qtags.
+      // Cycle all the matched Qtags.
       foreach ($matches[0] as $tag_full) {
-        $tag_undelimited = substr($tag_full, 1, strlen($tag_full) - 2);
-
-        // TODO: this is for nested Qtags or...?
-        if ((strpos($tag_undelimited, '{') > 0) || (strpos($tag_undelimited, '[') > 0)) {
-          continue;
-        }
-        // Parse the qtag.
+        // Parse each Qtag.
         $qtag = QtagFactory::parseQTag($env, $tag_full, $delimiters);
-        // Replace it in the HTML only if it's a valid Qtag.
+        // Replace the Qtag in the HTML only if it's a valid Qtag.
         if ($qtag) {
-          // Runlast.
+          // The runlast attribute identifies those Qtags that should be rendered only AFTER all the other Qtags
+          // have been loaded.
           if (!empty($qtag->getAttribute('runlast')) && empty($options['runlast'])) {
             continue;
           }
-          elseif (count(self::checkCodeTags($env, $tag_undelimited, array('match_only')))) {
-            continue;
-          }
-          // Highlight the Qtag - don't render i
-          elseif (!empty($qtag->attributes['highlight'])) {
-            $replacing[$tag_full] = $qtag->highlight();
-          }
-          // When the showtag attribute is used, don't render the tab but just display it.
+          // Show the Qtag - don't render it.
           elseif (!empty($qtag->attributes['showtag'])) {
             $replacing[$tag_full] = Api::string_normalize(str_replace('|showtag', '', $tag_full));
           }
-          // Start the rendering process of the Qtag.
+          // Show the Qtag - don't render it, and highlight it for readability.
+          elseif (!empty($qtag->attributes['highlight'])) {
+            $replacing[$tag_full] = $qtag->highlight();
+          }
+          // Replace the Qtag with its rendered HTML.
           else {
             $replacing[$tag_full] = $qtag->getHtml();
           }
@@ -147,9 +128,20 @@ class QtagFactory {
 
   /**
    * Parse a Qtag string and build a Qtag object.
+   *
+   * @param Environment $env
+   *   The Environment.
+   *
+   * @param string $tag_full
+   *   The full string of the QTag
+   *
+   * @param $delimiters
+   *   The Qtag's delimiters.
+   *
+   * @return mixed
+   *   The HTML with all Qtags transformed.
    */
-  public static function parseQTag($env, $tag_full, $delimiters) {
-
+  public static function parseQTag(Environment $env, $tag_full, $delimiters) {
     $tag_delimited = substr($tag_full, 1, strlen($tag_full) - 2);
     $tag = explode(':', $tag_delimited);
     $tag_name_p = $tag[0];
@@ -161,7 +153,6 @@ class QtagFactory {
     }
     // Load the attributes of the qtag.
     $attributes = explode($delimiters[2], $tag_name_p);
-
     $tag_name = (count($attributes) > 1) ? $attributes[0] : $tag[0];
     $qtag_attributes = array();
     unset($attributes[0]);
@@ -171,7 +162,6 @@ class QtagFactory {
       $split = explode('=', $attr_item);
       // If there is more than one = we have to just consider the first chunk
       // and unify the rest.
-
       $attribute_name = $split[0];
       $attribute_value = isset($split[1]) ? $split[1] : NULL;
       for ($i = 2; $i < count($split); $i++) {
@@ -185,10 +175,8 @@ class QtagFactory {
         $qtag_attributes[$attribute_name] = TRUE;
       }
     }
-
     // Parse the qTag.
     $qtag = QtagFactory::buildQTag($env, $tag_name, $qtag_attributes, $target, $delimiters);
-
     return $qtag;
   }
 
@@ -198,7 +186,7 @@ class QtagFactory {
    */
   public static function buildQTag($env, $tag, $attributes, $target, $delimiters) {
     // This code is needed to support Qtags in different versions.
-    // MY_QTAG, MYQTAG, MyQtag should all be valid ways to use a Qtag
+    // MY_QTAG or My_Qtag or MyQtag should all be valid ways to use a Qtag
     // and should all point to the MyQtag class.
     $tag_explode = explode('_', $tag);
     $qtag_class = '';
