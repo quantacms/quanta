@@ -34,7 +34,7 @@ abstract class ListObject extends DataContainer {
   protected $replacements = array();
 
   /** @var string $scantype */
-  protected $scantype = DIR_ALL;
+  protected $scantype = \Quanta\Common\Environment::DIR_ALL;
 
   /** @var string $module */
   protected $module = 'list';

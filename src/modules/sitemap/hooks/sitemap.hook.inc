@@ -17,9 +17,9 @@ function sitemap_boot(Environment $env, array $vars) {
     print "<?xml version=\"1.0\" encoding=\"utf-8\" ?>" . "\n";
     echo "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n";
     $site_pages = $env->scanDirectoryDeep($env->dir['docroot'], '', array(), array(
-      'exclude_dirs' => DIR_INACTIVE,
+      'exclude_dirs' => \Quanta\Common\Environment::DIR_INACTIVE,
       'symlinks' => FALSE,
-      DIR_ALL,
+      \Quanta\Common\Environment::DIR_ALL,
       'level' => 'tree'
     ));
 
