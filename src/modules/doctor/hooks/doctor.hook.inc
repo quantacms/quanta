@@ -11,7 +11,7 @@ namespace Quanta\Common;
  * @param array $vars
  *   An array of variables.
  */
-function doctor_doctor_pre_setup($env, $vars) {
+function doctor_doctor_pre_setup(Environment $env, array $vars) {
   /** @var Doctor $doctor */
   $doctor = $vars['doctor'];
   $doctor->op('Starting Quanta installation. Good luck!');
@@ -62,23 +62,9 @@ function doctor_doctor_pre_setup($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function doctor_doctor($env, $vars) {
+function doctor_doctor(Environment $env, array $vars) {
   /** @var Doctor $doctor */
   $doctor = $vars['doctor'];
   // TODO: move in modules - out of doctor.
   $doctor->checkBrokenLinks();
-}
-
-/**
- * Implements hook_doctor_init().
- *
- * Setup a Quanta site.
- *
- * @param Environment $env
- *   The Environment.
- * @param array $vars
- *   An array of variables.
- */
-function doctor_init($env, $vars) {
-
 }

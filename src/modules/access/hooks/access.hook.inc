@@ -9,7 +9,7 @@ namespace Quanta\Common;
  * @param $vars
  *   An array of variables.
  */
-function access_shadow_node_form($env, $vars) {
+function access_shadow_node_form(Environment $env, array $vars){
   /** @var Shadow $shadow */
   $shadow = &$vars['shadow'];
   $module_path = $env->getModulePath('access');
@@ -25,7 +25,7 @@ function access_shadow_node_form($env, $vars) {
  * @param $vars
  *   An array of variables.
  */
-function access_node_presave($env, $vars) {
+function access_node_presave(Environment $env, array $vars){
   $node_permissions = array(
     'node_add',
     'node_edit',
@@ -54,7 +54,7 @@ function access_node_presave($env, $vars) {
  * @param $vars
  *   An array of variables.
  */
-function access_node_open($env, $vars) {
+function access_node_open(Environment $env, array $vars) {
   /** @var Node $node */
   $node = &$vars['node'];
 
@@ -77,7 +77,7 @@ function access_node_open($env, $vars) {
  * @param $vars
  *   An array of variables.
  */
-function access_qtag_preload($env, $vars) {
+function access_qtag_preload(Environment $env, array $vars){
   $node = NodeFactory::current($env);
   $user = UserFactory::current($env);
 

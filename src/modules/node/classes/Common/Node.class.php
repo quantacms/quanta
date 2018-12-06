@@ -179,7 +179,7 @@ class Node extends JSONDataContainer {
    * @param $ignore array
    *   Which json attributes to ignore.
    */
-  public function updateJSON($ignore = array()) {
+  public function updateJSON(array $ignore = array()) {
     // Here we generate the json value, using the node object's values.
     $this->json->name = $this->getName();
     $this->json->teaser = $this->getTeaser();
@@ -299,17 +299,22 @@ class Node extends JSONDataContainer {
 
   /**
    * Check if the node's folder has a subfolder (subnode).
+   *
    * @param $name
+   *   The child node's name.
+   *
    * @return bool
+   *   TRUE if the node has that child.
    */
   public function hasChild($name) {
-
     return (empty($name) ? FALSE : is_dir($this->path . '/' . $name));
   }
 
   /**
    * Checks if the node is the currently viewed one.
+   *
    * @return bool
+   *   TRUE if the node is the currently viewed one.
    */
   public function isCurrent() {
     return ($this->name == $this->env->getRequestedPath());
@@ -326,11 +331,17 @@ class Node extends JSONDataContainer {
     $author = new User($this->env, $this->getAuthor());
 
     if ($this->getTitle() == '') {
-      new Message($this->env, t('Node title can not be empty.'), MESSAGE_WARNING);
+      new Message($this->env,
+        t('Node title can not be empty.'),
+        \Quanta\Common\Message::MESSAGE_WARNING
+      );
       $valid = FALSE;
     }
-    if (!$author->exists && $author->getName() != USER_ANONYMOUS) {
-      new Message($this->env, t('User %author' . $this->getAuthor() . ' is not a valid user!'), MESSAGE_WARNING);
+    if (!$author->exists && $author->getName() != \Quanta\Common\User::USER_ANONYMOUS) {
+      new Message($this->env,
+        t('User %author' . $this->getAuthor() . ' is not a valid user!'),
+        \Quanta\Common\Message::MESSAGE_WARNING
+      );
       $valid = FALSE;
     }
 
@@ -422,6 +433,7 @@ class Node extends JSONDataContainer {
    *   The node teaser.
    */
   public function getTeaser() {
+    // TODO: why not using api::stringNormalize?
     $teaser = (strlen(trim($this->teaser)) > 0) ? preg_replace('/\[[^>]*\]/', '', strip_tags($this->teaser)) : NULL;
     return $teaser;
   }
@@ -461,7 +473,7 @@ class Node extends JSONDataContainer {
    *   The node's author.
    */
   public function getAuthor() {
-    return ($this->author == NULL) ? USER_ANONYMOUS : $this->author;
+    return ($this->author == NULL) ? \Quanta\Common\User::USER_ANONYMOUS : $this->author;
   }
 
   /**
@@ -475,7 +487,12 @@ class Node extends JSONDataContainer {
     // This is useful in order to recover a node that was accidentally deleted.
     //unlink($this->path);
     rename($this->path, implode('/', $np));
-    new Message($this->env, 'user deleted this page: ' . $this->name . '.', MESSAGE_GENERIC, MESSAGE_TYPE_LOG, 'node');
+    new Message($this->env,
+      t('User deleted this node: !node.', array('!node' => $this->getName())),
+      \Quanta\Common\Message::MESSAGE_GENERIC,
+      \Quanta\Common\Message::MESSAGE_TYPE_LOG,
+      'node'
+    );
   }
 
   /**
@@ -519,18 +536,19 @@ class Node extends JSONDataContainer {
     // If <= 1 probably we are in homepage, no lineage available.
     if (count($explode_path) > 1) {
       $fullpath = $explode_path[1];
-
       $bca = explode('/', $fullpath);
+
       foreach ($bca as $bread_node) {
-        if ($bread_node == '') {
+        // In the lineage don't include the current node, or empty nodes.
+        if ($bread_node == '' || $bread_node == $this->getName()) {
           continue;
         }
         // TODO: use nodefactory without a loop.
-        $n = new Node($this->env, $bread_node);
-        if (!$n->exists) {
+        $node = \Quanta\Common\NodeFactory::load($this->env, $bread_node);
+        if (!$node->exists) {
           continue;
         }
-        $this->lineage[] = $n;
+        $this->lineage[] = $node;
       }
     }
   }
@@ -649,6 +667,7 @@ class Node extends JSONDataContainer {
       self::NODE_ACTION_DELETE,
       self::NODE_ACTION_VIEW,
     );
+
     foreach ($permissions as $permission) {
       if (empty($this->json->permissions->{$permission}) || $this->json->permissions->{$permission} == self::NODE_PERMISSION_INHERIT) {
         $grants[$permission] = $this->loadPermissionFromLineage($permission);
@@ -671,7 +690,7 @@ class Node extends JSONDataContainer {
   private function loadPermissionFromLineage($permission) {
     $this->buildLineage();
     // TODO: default permissions when no permission can be found even in lineage.
-    $grant = ($permission == self::NODE_ACTION_VIEW) ? ROLE_ANONYMOUS : ROLE_ADMIN;
+    $grant = ($permission == self::NODE_ACTION_VIEW) ? \Quanta\Common\User::ROLE_ANONYMOUS : \Quanta\Common\User::ROLE_ADMIN;
     // Navigate the whole tree gathering real permissions on the node.
     $lineage = array_reverse($this->getLineage());
     foreach ($lineage as $lineage_node) {

@@ -3,8 +3,8 @@ namespace Quanta\Qtags;
 /**
  * Renders an HTML5-formatted Email address with 'mailto:' prefix.
  */
-
-class Email extends Qtag {
+class Email extends Link {
+  public $external = TRUE;
   /**
    * Render the Qtag.
    *
@@ -12,11 +12,10 @@ class Email extends Qtag {
    *   The rendered Qtag.
    */
   public function render() {
-    $string = '';
-    if (valid_email($this->getTarget())) {
-      $title = (isset($this->attributes['title']) ? $this->attributes['title'] : $this->getTarget());
-      $string = '<a class="mail" href="mailto:' . $this->getTarget() . '">' . $title  . '</a>';
+    if (\Quanta\Common\Api::valid_email($this->getTarget())) {
+      $this->link_body = (isset($this->attributes['title']) ? $this->attributes['title'] : $this->getTarget());
+      $this->destination =  "mailto&colon;" . $this->getTarget();
     }
-    return $string;
+    return parent::render();
   }
 }

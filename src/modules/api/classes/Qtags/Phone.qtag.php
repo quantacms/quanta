@@ -3,8 +3,8 @@ namespace Quanta\Qtags;
 /**
  * Renders an HTML5-formatted Phone number with 'tel:' prefix.
  */
-
-class PHONE extends Qtag {
+class Phone extends Link {
+  public $external = TRUE;
   /**
    * Render the Qtag.
    *
@@ -14,7 +14,8 @@ class PHONE extends Qtag {
   public function render() {
     // Remove all spaces, W3C standard.
     $tel = preg_replace('/\s+/', '', $this->getTarget());
-    // TODO: make as an extension of LINK.
-    return '<a class="phone ' . $this->attributes['phone_class'] . '" href="tel:' . $tel . '">' . $this->getTarget() . '</a>';
+    $this->link_body = $tel;
+    $this->destination = htmlspecialchars("tel&colon;" . $tel);
+    return parent::render();
   }
 }

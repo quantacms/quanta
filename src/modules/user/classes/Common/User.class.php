@@ -1,54 +1,28 @@
 <?php
 namespace Quanta\Common;
-define("USER_ANONYMOUS", "guest");
-define("ROLE_ANONYMOUS", "anonymous");
-define("ROLE_ADMIN", "admin");
-define("ROLE_LOGGED", "logged");
-// TODO: seems arbitrary. Use a hook instead...
-define("USER_PASSWORD_MIN_LENGTH", 8);
-define("USER_MIN_NAME_LENGTH", 4);
-define("USER_ACTION_LOGIN", "user_login");
-define("USER_ACTION_EDIT", "user_edit");
-define("USER_ACTION_EDIT_OWN", "user_edit_own");
-define("USER_ACTION_REGISTER", "user_register");
-define("USER_VALIDATE", "user_validate");
-define("USER_VALIDATION_ERROR", "validation_error");
 
 /**
  * This class represents an user in the system.
- * Users in Quanta CMS are just extensions of Node objects,
- * AKA a folder + json file inside.
+ *
+ * Users in Quanta CMS are just extensions of Node objects.
  */
 class User extends Node {
+  const USER_ANONYMOUS = "guest";
+  const ROLE_ANONYMOUS = "anonymous";
+  const ROLE_ADMIN = "admin";
+  const ROLE_LOGGED = "logged";
+  // TODO: seems arbitrary. Use a hook instead...
+  const USER_PASSWORD_MIN_LENGTH = 8;
+  const USER_MIN_NAME_LENGTH =4;
+  const USER_ACTION_LOGIN = "user_login";
+  const USER_ACTION_EDIT = "user_edit";
+  const USER_ACTION_EDIT_OWN = "user_edit_own";
+  const USER_ACTION_REGISTER = "user_register";
+  const USER_VALIDATE = "user_validate";
+  const USER_VALIDATION_ERROR = "validation_error";
+
   /** @var array $roles */
   public $roles = array();
-
-  /**
-   * Check if the user entered a correct password.
-   *
-   * @param string $password
-   *   The entered password.
-   *
-   * @return bool
-   *   Return true if the user/pass combination matches.
-   */
-  private function checkPassword($password) {
-    if (!isset($this->json->password)) {
-      return FALSE;
-    }
-    // We compare with the encrypted password.
-    return ($this->json->password == UserFactory::passwordEncrypt($password));
-  }
-
-  /**
-   * Check if the user is anonymous / guest user.
-   *
-   * @return bool
-   *   Returns true if the current user is Anonymous.
-   */
-  public function isAnonymous() {
-    return $this->name == USER_ANONYMOUS;
-  }
 
   /**
    * Load the user object.
@@ -81,6 +55,33 @@ class User extends Node {
   }
 
   /**
+   * Check if the user entered a correct password.
+   *
+   * @param string $password
+   *   The entered password.
+   *
+   * @return bool
+   *   Return true if the user/pass combination matches.
+   */
+  private function checkPassword($password) {
+    if (!isset($this->json->password)) {
+      return FALSE;
+    }
+    // We compare with the encrypted password.
+    return ($this->json->password == UserFactory::passwordEncrypt($password));
+  }
+
+  /**
+   * Check if the user is anonymous / guest user.
+   *
+   * @return bool
+   *   Returns true if the current user is Anonymous.
+   */
+  public function isAnonymous() {
+    return $this->name == self::USER_ANONYMOUS;
+  }
+
+  /**
    * Check if the user has a role.
    *
    * @param $role
@@ -108,7 +109,7 @@ class User extends Node {
    */
   public function getRoles() {
     if (empty($this->roles)) {
-      return array(USER_ANONYMOUS);
+      return array(self::USER_ANONYMOUS);
     }
     else {
       return $this->roles;
@@ -132,8 +133,16 @@ class User extends Node {
    *   The JSON-encoded response to the logout action.
    */
   public function logOut() {
-    new Message($this->env, 'You logged out', MESSAGE_CONFIRM, MESSAGE_TYPE_SCREEN);
-    new Message($this->env, 'User ' . $this->name . ' logged out', MESSAGE_CONFIRM, MESSAGE_TYPE_LOG);
+    new Message($this->env,
+      t('You logged out'),
+      \Quanta\Common\Message::MESSAGE_CONFIRM,
+      \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
+    );
+    new Message($this->env,
+      t('User !user logged out', array('!user' => $this->name)),
+      \Quanta\Common\Message::MESSAGE_CONFIRM,
+      \Quanta\Common\Message::MESSAGE_TYPE_LOG
+    );
     unset($_SESSION['user']);
     // TODO: adapt cookies.
     $response = new \stdClass();
@@ -164,26 +173,39 @@ class User extends Node {
     }
     // If user dir doesn't exist.
     if (!($this->exists)) {
-      new Message($this->env, $this->getName() . ' is not a valid username. Please try to [LOGIN] again', MESSAGE_WARNING, MESSAGE_TYPE_SCREEN);
-      new Message($this->env, 'Someone tried to login with wrong username: ' . $this->name, MESSAGE_WARNING, MESSAGE_TYPE_LOG);
+      new Message($this->env, $this->getName() . ' is not a valid username. Please try to [LOGIN] again', \Quanta\Common\Message::MESSAGE_WARNING, \Quanta\Common\Message::MESSAGE_TYPE_SCREEN);
+      new Message($this->env, 'Someone tried to login with wrong username: ' . $this->name, \Quanta\Common\Message::MESSAGE_WARNING, \Quanta\Common\Message::MESSAGE_TYPE_LOG);
     }
     else {
       if ($this->checkPassword($password) || $force_login) {
-				new Message($this->env, $success_message, MESSAGE_CONFIRM, MESSAGE_TYPE_SCREEN);
-        new Message($this->env, 'User ' . $this->getName() . ' logged in', MESSAGE_CONFIRM, MESSAGE_TYPE_LOG);
+				new Message($this->env,
+          $success_message,
+          \Quanta\Common\Message::MESSAGE_CONFIRM,
+          \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
+        );
+        new Message($this->env,
+          'User ' . $this->getName() . ' logged in',
+          \Quanta\Common\Message::MESSAGE_CONFIRM,
+          \Quanta\Common\Message::MESSAGE_TYPE_LOG
+        );
+
         $this->roles += array('logged' => 'logged');
         $_SESSION['user'] = $this->serializeForSession();
-        
-				// TODO: adapt cookies.
-        // setcookie('user', $this->serializeForSession(),time() + $this->env->getData('session_lifetime', time() + 86400));
-
       }
       else {
         // Show an error message for wrong password.
-        new Message($this->env, 'Wrong username or password. Please <a class="login-link" href="#">try again</a>', MESSAGE_WARNING, MESSAGE_TYPE_SCREEN);
+        new Message($this->env,
+          t('Wrong username or password. Please try again'),
+          \Quanta\Common\Message::MESSAGE_WARNING,
+          \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
+        );
 
         // Create a log entry.
-        new Message($this->env, 'User ' . $this->name . ' tried to login with wrong username or password', MESSAGE_WARNING, MESSAGE_TYPE_LOG);
+        new Message($this->env,
+          t('User !name tried to login with wrong username or password', array('!name' => $this->name)),
+            \Quanta\Common\Message::MESSAGE_WARNING,
+            \Quanta\Common\Message::MESSAGE_TYPE_LOG
+          );
       }
     }
     // TODO: use a response object.
@@ -359,9 +381,12 @@ class User extends Node {
   }
 
   /**
+   * Update the user's json attributes.
+   *
    * @param array $ignore
+   *   Fields to be ignored
    */
-  public function updateJSON($ignore = array()) {
+  public function updateJSON(array $ignore = array()) {
     $this->json->email = $this->getEmail();
     $this->json->first_name = $this->getData('first_name');
     $this->json->last_name = $this->getData('last_name');
@@ -369,10 +394,12 @@ class User extends Node {
     $this->json->roles = $this->getRoles();
 
     // Run all Node-related json.
-    parent::updateJSON();
+    parent::updateJSON($ignore);
   }
 
   /**
+   * Serialize the user data to be saved in the Session.
+   *
    * @return string
    */
   public function serializeForSession() {
@@ -380,7 +407,5 @@ class User extends Node {
     unset($serialized->father);
     unset($serialized->env);
     return serialize($serialized);
-
   }
-
 }

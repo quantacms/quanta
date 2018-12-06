@@ -2,6 +2,7 @@
 .idea
 .idea*
 src
+static
 static/*
 sites
 sites/*

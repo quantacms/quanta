@@ -10,7 +10,7 @@ namespace Quanta\Common;
  * @param array $vars
  *   Mixed variables.
  */
-function meta_page_init($env, $vars) {
+function meta_page_init(Environment $env, array $vars) {
   $metadata = &$vars['metadata'];
   // Page metadata.
   $env->hook('metadata', $vars);

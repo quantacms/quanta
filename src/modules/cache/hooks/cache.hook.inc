@@ -6,7 +6,7 @@ namespace Quanta\Common;
  * Temporary function to regenerate all json files in the system. Handle with care!
  * @param $vars
 
-function cache_regenerate_json($env, $vars) {
+function cache_regenerate_json(Environment $env, array $vars) {
   $wikiroot = $env->dir['wiki'];
   $scan = $env->scanDirectory($wikiroot, array(
     'exclude_dirs' => DIR_ALL,
@@ -29,7 +29,7 @@ function cache_regenerate_json($env, $vars) {
  * @param $vars
  *   An array of variables.
  */
-function cache_boot($env, $vars) {
+function cache_boot(Environment $env, array $vars) {
   $env->tmpdir('cache', Cache::DIR_CACHE);
 }
 
@@ -43,7 +43,7 @@ function cache_boot($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function cache_doctor_clear_cache($env, $vars) {
+function cache_doctor_clear_cache(Environment $env, array $vars) {
   /** @var Doctor $doctor */
   $doctor = $vars['doctor'];
   $doctor->op(t('Running clear cache hooks...'));

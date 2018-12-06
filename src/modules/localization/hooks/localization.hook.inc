@@ -11,7 +11,7 @@ use Quanta\Qtags\TranslateLinks;
  *   An array of variables.
  *
  */
-function localization_load_includes($env, $vars) {
+function localization_load_includes(Environment $env, array $vars) {
   $module_path = $env->getModulePath('localization');
   $env->addInclude($module_path . '/assets/css/localization.css');
 }
@@ -25,7 +25,7 @@ function localization_load_includes($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function localization_boot($env, $vars) {
+function localization_boot(Environment $env, array $vars) {
   $env->sysdir('languages', Localization::$system_path);
   if (isset($_GET['lang'])) {
     Localization::switchLanguage($env, $_GET['lang']);
@@ -42,7 +42,7 @@ function localization_boot($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function localization_doctor_setup($env, $vars) {
+function localization_doctor_setup(Environment $env, array $vars) {
   /** @var Doctor $doctor */
   $doctor = $vars['doctor'];
 
@@ -59,10 +59,10 @@ function localization_doctor_setup($env, $vars) {
     // Create basic languages.
     foreach ($basic_languages as $langcode => $lang) {
       if (!is_dir($env->dir['languages'] . '/' . $langcode)) {
-        NodeFactory::buildNode($env, $langcode, DIR_LANGUAGES, array(
+        NodeFactory::buildNode($env, $langcode, \Quanta\Common\Localization::DIR_LANGUAGES, array(
             'title' => $lang,
-            'language' => LANGUAGE_NEUTRAL,
-            'status' => NODE_STATUS_PUBLISHED,
+            'language' => \Quanta\Common\Localization::LANGUAGE_NEUTRAL,
+            'status' => \Quanta\Common\Node::NODE_STATUS_PUBLISHED,
           )
         );
         $doctor->ok('...' . $lang . ' (' . $langcode . ')');
@@ -81,7 +81,7 @@ function localization_doctor_setup($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function localization_shadow_node_edit_extra($env, $vars) {
+function localization_shadow_node_edit_extra(Environment $env, array $vars) {
   $translate_links = new TranslateLinks($env, array(), NULL);
   $vars['html'] .= $translate_links->getHtml();
 }

@@ -9,7 +9,7 @@ namespace Quanta\Common;
  * @param array $vars
  *   An array of variables.
  */
-function qtags_page_complete($env, $vars) {
+function qtags_page_complete(Environment $env, array $vars) {
   $html = str_replace("\n", "", $vars['page']->html);
   $html = QtagFactory::transformCodeTags($env, $html);
   $html = QtagFactory::transformCodeTags($env, $html, array('runlast' => TRUE));
@@ -25,7 +25,7 @@ function qtags_page_complete($env, $vars) {
  * @param $vars
  *   An array of variables.
  */
-function qtags_boot($env, $vars) {
+function qtags_boot(Environment $env, array $vars) {
   if ($env->request[1] == 'qtag') {
     $env->setContext('qtag');
 		print QtagFactory::transformCodeTags($env, urldecode($env->request[2]));
@@ -41,7 +41,7 @@ function qtags_boot($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function qtags_load_includes($env, $vars) {
+function qtags_load_includes(Environment $env, array $vars) {
   $module_path = $env->getModulePath('qtags');
   $env->addInclude($module_path . '/assets/css/qtags.css');
 }

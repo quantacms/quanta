@@ -13,7 +13,7 @@ class UserEditOwn extends Link {
    */
   public function render() {
     $user = ($this->getTarget() == NULL) ? UserFactory::current($this->env) : new User($this->env, $this->getTarget());
-    if (UserAccess::check($this->env, USER_ACTION_EDIT, array('user' => $user))) {
+    if (UserAccess::check($this->env, \Quanta\Common\User::USER_ACTION_EDIT, array('user' => $user))) {
         if (!isset($this->attributes['title'])) {
           $this->attributes['title'] = t('Edit your profile');
         }

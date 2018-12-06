@@ -9,7 +9,7 @@ namespace Quanta\Common;
  * @param array $vars
  *   Miscellaneous environment / page variables.
  */
-function shadow_load_includes($env, $vars) {
+function shadow_load_includes(Environment $env, array $vars) {
   $module_path = $env->getModulePath('shadow');
 
   $env->addInclude($module_path . '/assets/js/shadow.js');
@@ -47,7 +47,7 @@ function shadow_boot(Environment $env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function shadow_init($env, $vars) {
+function shadow_init(Environment $env, array $vars) {
   /** @var Shadow $shadow */
   $shadow = $env->getData('shadow');
   if (!empty($env->getData('shadow'))) {
@@ -68,7 +68,7 @@ function shadow_init($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function shadow_page_init($env, $vars) {
+function shadow_page_init(Environment $env, array $vars) {
   $addcode = '<div id="shadow-outside"><div id="shadow-inside"></div><div id="shadow-item"></div></div>';
   $vars['page']->html = preg_replace("/\<\/body\>/", $addcode . '</body>', $vars['page']->html);
 }

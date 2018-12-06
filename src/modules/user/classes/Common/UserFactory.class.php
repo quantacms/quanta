@@ -14,7 +14,8 @@ class UserFactory {
    *
    * @param string $username
    *   The name of the user.
-   * @param $language
+   *
+   * @param string $language
    *   In which language to load the user.
    *
    * @return User
@@ -32,6 +33,7 @@ class UserFactory {
 
   /**
    * Create an user with basic values.
+   *
    * @param Environment $env
    *   The Environment.
    * @param string $name
@@ -42,8 +44,8 @@ class UserFactory {
    * @return User
    *   The constructed user object.
    */
-  public static function buildUser($env, $name, $vars = array()) {
-    $user = new User($env, NODE_NEW);
+  public static function buildUser(Environment $env, $name, array $vars = array()) {
+    $user = new User($env, \Quanta\Common\Node::NODE_NEW);
     $user->setName($name);
 
     $uservars = array('first_name', 'last_name');
@@ -82,7 +84,7 @@ class UserFactory {
    * @return User
    *   The retrieved user object.
    */
-  public static function getUserFromField($env, $field, $value) {
+  public static function getUserFromField(Environment $env, $field, $value) {
     // This is the best we found so far from retrieving one user from one field...
     $command = 'grep -r -i -o --include \*.json "\"' . $field . '\"\:\"' . $value . '\"" ' . $env->dir['users'];
     exec($command, $results);
@@ -106,7 +108,7 @@ class UserFactory {
    *
    * @return string
    */
-  public static function requestAction($env, $action, $form_data) {
+  public static function requestAction(Environment $env, $action, array $form_data) {
     $user = new User($env, array_pop($form_data['name']), '_users');
     $env->setContext($action);
     // TODO: this shit is needed with new approach.
@@ -123,12 +125,16 @@ class UserFactory {
 
     // If user does not have the permission, show an error message.
     if (!$can_edit) {
-      new Message($env, t('Sorry, you don\'t have the permissions to perform this action: ' . $action), MESSAGE_WARNING, MESSAGE_TYPE_SCREEN);
+      new Message($env,
+        t('Sorry, you don\'t have the permissions to perform this action: ' . $action),
+        \Quanta\Common\Message::MESSAGE_WARNING,
+        \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
+      );
     }
     // If user has the permission, perform the requested action.
     else {
       switch ($action) {
-        case USER_ACTION_REGISTER:
+        case \Quanta\Common\User::USER_ACTION_REGISTER:
           if ($user->validate()) {
             $user->update();
           }
@@ -155,8 +161,7 @@ class UserFactory {
    * @param bool $reload
    * @return mixed|User
    */
-  static function current($env, $reload = FALSE) {
-
+  static function current(Environment $env, $reload = FALSE) {
     static $user;
     // If user has been created already, don't redo the logic.
     if (!empty($user) && !$reload) {
@@ -165,7 +170,7 @@ class UserFactory {
 
     // Check if there is a logged in user in session.
     if (!isset($_SESSION['user'])) {
-      $user = new User($env, USER_ANONYMOUS);
+      $user = new User($env, \Quanta\Common\User::USER_ANONYMOUS);
     }
     else {
       $user = unserialize($_SESSION['user']);
@@ -183,7 +188,7 @@ class UserFactory {
    * @param $context
    * @return bool|string
    */
-  public static function renderUserEditForm($env, $context) {
+  public static function renderUserEditForm(Environment $env, $context) {
     $user_edit_form = file_get_contents($env->getModulePath('user') . '/tpl/user_edit.inc');
     return $user_edit_form;
   }
@@ -195,7 +200,7 @@ class UserFactory {
    *
    * @return string
    */
-  public static function renderLoginForm($env) {
+  public static function renderLoginForm(Environment $env) {
     $login_form = file_get_contents($env->getModulePath('user') . '/tpl/user_login.inc');
     return $login_form;
   }

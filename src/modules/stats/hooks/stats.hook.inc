@@ -19,7 +19,7 @@ define("STATS_QTAG_LOADED", 'stats_qtag_loaded');
  * @param array $vars
  *   An array of variables.
  */
-function stats_boot($env, $vars) {
+function stats_boot(Environment $env, array $vars) {
   // Mark page start loading time.
   $env->setData(STATS_PAGE_BOOT_TIME, round(microtime(TRUE) * 1000));
 }
@@ -32,7 +32,7 @@ function stats_boot($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function stats_page_init($env, $vars) {
+function stats_page_init(Environment $env, array $vars) {
   // Mark page end loading time.
   $env->setData(STATS_PAGE_COMPLETE_TIME, round(microtime(TRUE) * 1000));
 }
@@ -46,7 +46,7 @@ function stats_page_init($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function stats_node_build($env, $vars) {
+function stats_node_build(Environment $env, array $vars) {
   // Mark node building time.
   $env->setData(STATS_NODE_BUILT, ($env->getData(STATS_NODE_BUILT, 0) + 1));
   $list = $env->getData(STATS_NODE_LIST, array());
@@ -63,7 +63,7 @@ function stats_node_build($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function stats_node_load($env, $vars) {
+function stats_node_load(Environment $env, array $vars) {
   // Count loaded nodes.
   $env->setData(STATS_NODE_LOADED, ($env->getData(STATS_NODE_LOADED, 0) + 1));
 }
@@ -76,7 +76,7 @@ function stats_node_load($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function stats_node_load_cache($env, $vars) {
+function stats_node_load_cache(Environment $env, array $vars) {
   // Count nodes loaded from cache.
   $env->setData(STATS_NODE_LOADED_CACHE, ($env->getData(STATS_NODE_LOADED_CACHE, 0) + 1));
 }
@@ -90,7 +90,7 @@ function stats_node_load_cache($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function stats_wikitag($env, $vars) {
+function stats_wikitag(Environment $env, array $vars) {
   // Counted loaded qtags.
   $env->setData(STATS_QTAG_LOADED, ($env->getData(STATS_QTAG_LOADED, 0) + 1));
 }
@@ -103,7 +103,7 @@ function stats_wikitag($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function stats_qtag($env, $vars) {
+function stats_qtag(Environment $env, array $vars) {
   // Count loaded qtags.
   $env->setData(STATS_QTAG_LOADED, ($env->getData(STATS_QTAG_LOADED, 0) + 1));
 }

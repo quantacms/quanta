@@ -10,7 +10,7 @@ namespace Quanta\Common;
  * @param array $vars
  *   An array of variables.
  */
-function node_action_node_add($env, $vars) {
+function node_action_node_add(Environment $env, array $vars){
   $response_json = NodeFactory::requestAction($env, $vars['data']['action'], $vars['data']);
   exit($response_json);
 }
@@ -24,7 +24,7 @@ function node_action_node_add($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function node_action_node_edit($env, $vars) {
+function node_action_node_edit(Environment $env, array $vars){
   $response_json = NodeFactory::requestAction($env, $vars['data']['action'], $vars['data']);
   exit($response_json);
 }
@@ -39,7 +39,7 @@ function node_action_node_edit($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function node_action_node_delete($env, $vars) {
+function node_action_node_delete(Environment $env, array $vars){
 	$response_json = NodeFactory::requestAction($env, $vars['data']['action'], $vars['data']);
 	exit($response_json);
 }
@@ -52,7 +52,7 @@ function node_action_node_delete($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function node_load_includes($env, $vars) {
+function node_load_includes(Environment $env, array $vars){
   $module_path = $env->getModulePath('node');
 
   $env->addInclude($module_path . '/assets/js/node.js');
@@ -68,8 +68,7 @@ function node_load_includes($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function node_init($env, $vars) {
-
+function node_init(Environment $env, array $vars){
   $node = NodeFactory::current($env);
   // If the node does not exist, redirect to 404.
   if (!$node->exists && !isset($_REQUEST['shadow']) && $node->name != '404') {
@@ -102,7 +101,7 @@ function node_init($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function node_shadow_node_form($env, $vars) {
+function node_shadow_node_form(Environment $env, array $vars){
   /** @var Shadow $shadow */
   $shadow = $vars['shadow'];
   $action_name = ($env->getContext() == \Quanta\Common\Node::NODE_ACTION_ADD ? 'create' : 'edit') . ' content';
@@ -119,7 +118,7 @@ function node_shadow_node_form($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function node_shadow_node_delete_form($env, $vars) {
+function node_shadow_node_delete_form(Environment $env, array $vars){
   /** @var Shadow $shadow */
   $shadow = $vars['shadow'];
   $node = $shadow->getNode();
@@ -144,7 +143,7 @@ function node_shadow_node_delete_form($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function node_metadata($env, $vars) {
+function node_metadata(Environment $env, array $vars){
   $node = NodeFactory::current($env);
   $author = UserFactory::load($env, $node->getAuthor());
 
@@ -232,7 +231,7 @@ function node_metadata($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function node_body_classes($env, $vars) {
+function node_body_classes(Environment $env, array $vars){
   // Setup body classes per each item in the current node lineage.
   // TODO: show
   $node = NodeFactory::current($env);

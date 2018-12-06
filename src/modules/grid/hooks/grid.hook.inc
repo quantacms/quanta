@@ -9,7 +9,7 @@ namespace Quanta\Common;
  * @param $vars
  *   An array of variables.
  */
-function grid_load_includes($env, $vars) {
+function grid_load_includes(Environment $env, array $vars) {
   $module_path = $env->getModulePath('grid');
   $env->addInclude($module_path . '/assets/css/reset.css');
   $env->addInclude($module_path . '/assets/css/utilities.css');
@@ -25,7 +25,7 @@ function grid_load_includes($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function grid_page_init($env, $vars) {
+function grid_page_init(Environment $env, array $vars) {
   /** @var Page $page */
   $page = $vars['page'];
   $module_path = $env->getModulePath('grid');
@@ -81,7 +81,7 @@ function grid_qtag($env, &$vars) {
  * @param $vars
  *   An array of variables.
  */
-function grid_list_item($env, $vars) {
+function grid_list_item(Environment $env, array $vars) {
   /** @var ListObject $list */
   $list = $vars['list'];
   
