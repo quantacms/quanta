@@ -225,7 +225,12 @@ class Environment extends DataContainer {
    * Run all loaded modules.
    */
   public function mapClasses() {
+    // TODO: this is needed when the class map is not created yet (i.e. at very first install).
+    if (!is_dir($this->dir['tmp'])) {
+      mkdir($this->dir['tmp']);
+    }
     $fop = fopen(CLASS_MAP_FILE, 'w+');
+
     foreach ($this->modules_loaded as $module) {
       $autoload_paths = array('Common', 'Qtags');
       foreach ($autoload_paths as $autoload_path) {

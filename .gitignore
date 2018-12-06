@@ -3,7 +3,8 @@
 .idea*
 src
 static/*
-!static/tmp
+static/tmp/*
+!static/tmp/.gitkeep
 sites
 sites/*
 sites*
