@@ -18,10 +18,10 @@ class FilePreview extends Qtag {
     $node = NodeFactory::loadOrCurrent($this->env, $this->getAttribute('node'));
     if (!empty($this->getAttribute('tmp_path'))) {
       $this->setTarget($this->env->dir['tmp'] . '/files/' . $this->getAttribute('tmp_path') . '/' . $this->getTarget());
-      $node->setName(NODE_NEW);
+      $node->setName(\Quanta\Common\Node::NODE_NEW);
     }
 
-    $file = new FileObject($this->env, $this->getTarget(), NODE_NEW);
+    $file = new FileObject($this->env, $this->getTarget(), \Quanta\Common\Node::NODE_NEW);
     $preview = '';
     switch($file->getType()) {
       case 'image':

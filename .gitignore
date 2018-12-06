@@ -1,7 +1,6 @@
 .DS_Store
 .idea
 .idea*
-src
 static/*
 static/tmp/*
 !static/tmp/.gitkeep
