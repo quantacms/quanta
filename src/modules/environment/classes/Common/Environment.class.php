@@ -392,13 +392,14 @@ class Environment extends DataContainer {
    *
    * @param string $function
    *   The hook function name.
+   *
    * @param array $vars
    *   An array of variables.
    *
    * @return bool
    *   Returns TRUE if any module was implementing the hook.
    */
-  public function hook($function, &$vars = array()) {
+  public function hook($function, array &$vars = array()) {
     $env = &$this;
     $hooked = FALSE;
     foreach ($this->getLoadedModules() as $module) {
@@ -431,8 +432,12 @@ class Environment extends DataContainer {
 
   /**
    * Add a CSS / JS file to include.
+   *
    * @param $include
+   *   The file to include.
+   *
    * @param null $type
+   *   The type of the file.
    */
   public function addInclude($include, $type = NULL) {
     if ($type == NULL) {

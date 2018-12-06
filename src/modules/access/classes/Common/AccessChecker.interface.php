@@ -20,5 +20,5 @@ interface AccessChecker {
    * @return bool
    *   True if user has access to the action.
    */
-  static function check($env, $action, $vars = array());
+  static function check(Environment $env, $action, array $vars = array());
 }

@@ -1,6 +1,5 @@
 <?php
 namespace Quanta\Qtags;
-use Quanta\Common\NodeFactory;
 /**
  * Render a specific permission for a node.
  */
@@ -12,7 +11,7 @@ class Permission extends Qtag {
    *   The rendered Qtag.
    */
   public function render() {
-    $node = NodeFactory::loadOrCurrent($this->env, $this->getTarget());
+    $node = \Quanta\Common\NodeFactory::loadOrCurrent($this->env, $this->getTarget());
     if ($node->isNew()) {
       $permission = 'inherit';
     }

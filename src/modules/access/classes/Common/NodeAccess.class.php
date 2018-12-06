@@ -20,7 +20,7 @@ class NodeAccess extends Access {
    * @return boolean
    *   Returns TRUE if access check was positive.
    */
-  public static function check($env, $action, $vars = array()) {
+  public static function check(Environment $env, $action, array $vars = array()) {
     static $access_checked;
 
     // Static cache of access controls.

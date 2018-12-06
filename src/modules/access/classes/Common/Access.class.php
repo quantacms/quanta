@@ -41,7 +41,7 @@ abstract class Access implements AccessChecker {
    * @param array $vars
    *   Mixed variables.
    */
-  public function __construct(&$env, $action, $vars) {
+  public function __construct(Environment &$env, $action, array $vars) {
     $this->env = $env;
     $this->actor = isset($vars['user']) ? $vars['user'] : UserFactory::current($env);
     $this->node = isset($vars['node']) ? $vars['node'] : NodeFactory::current($env);

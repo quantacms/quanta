@@ -1,10 +1,11 @@
 <?php
+
 namespace Quanta\Common;
 
 /**
  * Class Node
- * This class represents a Node (corrisponding to a folder in the file system).
- * This is the core of the engine.
+ * This class represents a HTML Template of a Node.
+ * It interacts with the way the node is displayed in the page.
  */
 class NodeTemplate extends DataContainer {
   /** @var Node $node */
@@ -13,13 +14,15 @@ class NodeTemplate extends DataContainer {
   public $html = '';
 
   /**
-   * Constructs a node template  object.
+   * Constructs a Node Template  object.
+   *
    * @param Environment $env
-   * @param string $name
-   * @param string $father
-   * @param string $language
+   *   The Environment.
+   *
+   * @param string $node
+   *   The node related to the template.
    */
-  public function __construct(&$env, $node) {
+  public function __construct(Environment &$env, $node) {
     $this->env = $env;
     $this->node = $node;
     $this->buildTemplate();
@@ -36,9 +39,9 @@ class NodeTemplate extends DataContainer {
   }
 
   /**
-   * "wrap" a Node block in html tags allowing inline editing, deleting etc.
+   * "Wwrap" a Node block in special html tags allowing inline editing, deleting etc.
    *
-   *  @param Node $node
+   * @param Node $node
    *   The initial html.
    *
    * @param string $html
@@ -70,54 +73,55 @@ class NodeTemplate extends DataContainer {
 
   /**
    * Generate the template for displaying the node.
+   *
    * Eventually node will use tpl.html files (with dashed depth).
    */
   public function buildTemplate() {
-
-    // The node's default renderis is its content.
-
     $tpl = array();
     $tpl_level = 0;
-
-    // a template in the same directory has always priority.
-    if (is_file($this->node->getPath() . '/tpl.html')) {
-      $this->setData('tpl_file', $this->node->getPath() . '/tpl.html');
-    }
-    else {
-      $lineages = $this->node->getLineage();
-      foreach ($lineages as $lineage) {
-
-        $tpl_level++;
-
-        // If tpl^.html exists - template applies to all sublevels of the node.
-        if (is_file($lineage->path . '/tpl^.html')) {
-          $this->setData('tpl_file', $lineage->path . '/tpl^.html');
-        }
-        else {
-          $min = '';
-          // We support 5 levels of sub-level templates for now.
-          // level 0 = tpl.html
-          // level 1 = tpl-.html
-          // level 2 = tpl--.html
-          // etc...
-
-          for ($i = 1; $i <= 6; $i++) {
-            $min .= '-';
-            $file = $lineage->path . '/tpl' . $min . '.html';
-            if (file_exists($file)) {
-              $tpl[$tpl_level + $i] = $file;
-            }
+    // TODO: current node taken out of lineage. Correct to add like this?
+    $lineages = array($this->node) + $this->node->getLineage();
+    foreach ($lineages as $lineage) {
+      $tpl_level++;
+      // If tpl^.html exists - template applies to all sublevels of the node.
+      if (is_file($lineage->path . '/tpl^.html')) {
+        $this->setData('tpl_file', $lineage->path . '/tpl^.html');
+        break;
+      }
+      elseif (is_file($lineage->path . '/tpl.html')) {
+        $this->setData('tpl_file', $lineage->path . '/tpl.html');
+        break;
+      }
+      else {
+        $min = '';
+        // We support 5 levels of sub-level templates for now.
+        // level 0 = tpl.html
+        // level 1 = tpl-.html
+        // level 2 = tpl--.html
+        // etc...
+        for ($i = 1; $i <= 6; $i++) {
+          $min .= '-';
+          $file = $lineage->path . '/tpl' . $min . '.html';
+          if (file_exists($file)) {
+            $tpl[$tpl_level + $i] = $file;
           }
         }
       }
-
-      // check if there is a sub-level template.
-      if (isset($tpl[$tpl_level])) {
-        $this->setData('tpl_file', $tpl[$tpl_level]);
-      }
     }
 
-    // Set the template.
+    if ($this->node->name == 'documentation') {
+      print_r($this->getData('tpl_file'));
+      print "<br>TPL OF " . $this->node->getName() . ' : ';
+      print_r(file_get_contents($this->getData('tpl_file')));
+      print "<br>";
+    }
+    // Check if there is a sub-level template.
+    if (isset($tpl[$tpl_level])) {
+      $this->setData('tpl_file', $tpl[$tpl_level]);
+    }
+
+
+    // Set the template. By default, if no template file is found, a node renders its body.
     $this->html = (!empty($this->getData('tpl_file'))) ? file_get_contents($this->getData('tpl_file')) : $this->node->getBody();
 
   }
