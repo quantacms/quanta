@@ -9,7 +9,7 @@ namespace Quanta\Common;
  * @param array $vars
  *   An array of variables.
  */
-function file_shadow_file_form($env, $vars) {
+function file_shadow_file_form(Environment $env, array $vars) {
   /** @var Shadow $shadow */
   $shadow = $vars['shadow'];
   $node = $shadow->getNode();
@@ -26,7 +26,7 @@ function file_shadow_file_form($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function file_load_includes($env, $vars) {
+function file_load_includes(Environment $env, array $vars) {
   $module_path = $env->getModulePath('file');
   $env->addInclude($module_path . '/assets/css/file.css');
 }
@@ -39,7 +39,7 @@ function file_load_includes($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function file_init($env, $vars) {
+function file_init(Environment $env, array $vars) {
   $node = NodeFactory::current($env);
   // There is a request to upload a file.
   // TODO: move in actions / factory?
@@ -67,7 +67,7 @@ function file_init($env, $vars) {
  * @param $vars
  *   An array of variables.
  */
-function file_node_presave($env, $vars) {
+function file_node_presave(Environment $env, array $vars) {
   // TODO: move in File or create FileFactory module.
   /** @var Node $node */
   $node = $vars['node'];
@@ -99,7 +99,7 @@ function file_node_presave($env, $vars) {
  * @param $vars
  *   An array of variables.
  */
-function file_node_after_save($env, $vars) {
+function file_node_after_save(Environment $env, array $vars) {
 
   // TODO: move in File or create FileFactory module.
   /** @var Node $node */
@@ -138,7 +138,7 @@ function file_node_after_save($env, $vars) {
  * @param $vars
  *   An array of variables.
  */
-function file_node_load($env, $vars) {
+function file_node_load(Environment $env, array $vars) {
   /** @var Node $node */
   $node = $vars['node'];
   // When saving a node, select the pre-created temporary files dir.

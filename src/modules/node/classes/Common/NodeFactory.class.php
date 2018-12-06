@@ -30,6 +30,7 @@ class NodeFactory {
       return $loaded_nodes[$node_name];
     }
 
+
     if (empty($language)) {
       $language = Localization::getLanguage($env);
     }
@@ -325,6 +326,7 @@ class NodeFactory {
    */
   public static function current(Environment $env) {
     static $current_node;
+
     if (!empty($current_node)) {
       // Do nothing. Load from static cache.
     }
@@ -333,15 +335,14 @@ class NodeFactory {
     }
 		elseif ($env->getContext() == 'qtag') {
       $current_node = NodeFactory::buildEmptyNode($env, NULL);
-		
 		}
     // We need to load the current node just once.
     else  {
       $tpl = isset($_REQUEST['tpl']) ? $_REQUEST['tpl'] : NULL;
       // Special case when we are in a "new node" add context.
       $current_node = NodeFactory::load($env, $env->getRequestedPath(), $tpl);
-    }
 
+    }
     return $current_node;
   }
 

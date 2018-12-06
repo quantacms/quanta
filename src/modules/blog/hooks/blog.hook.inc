@@ -9,7 +9,7 @@ namespace Quanta\Common;
  * @param $vars
  *   An array of variables.
  */
-function blog_load_includes($env, $vars) {
+function blog_load_includes(Environment $env, array $vars) {
   $module_path = $env->getModulePath('blog');
 
   $env->addInclude($module_path . '/assets/css/blog.css');

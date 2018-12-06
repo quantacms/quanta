@@ -9,7 +9,7 @@ namespace Quanta\Common;
  * @param array $vars
  *   An array of variables.
  */
-function mail_init($env, $vars) {
+function mail_init(Environment $env, array $vars) {
   $env->sysdir('mailqueue', '_mailqueue');
   // Get the mails to queue.
   // TODO: don't check all emails at every page load. Use CRON instead?
@@ -34,7 +34,7 @@ function mail_init($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function mail_form_type_mailform_submit($env, $vars) {
+function mail_form_type_mailform_submit(Environment $env, array $vars) {
   $mail_tmp = $env->dir['docroot'] . '/_mailqueue';
   $env->sysdir('mailqueue', $mail_tmp);
   $queue = new Node($env, '_mailqueue');

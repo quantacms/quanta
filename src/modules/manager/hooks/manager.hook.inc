@@ -8,7 +8,7 @@ namespace Quanta\Common;
  * @param array $vars
  *   An array of variables.
  */
-function manager_load_includes($env, $vars) {
+function manager_load_includes(Environment $env, array $vars) {
   $module_path = $env->getModulePath('manager');
   $env->addInclude($module_path . '/assets/js/manager.js');
   $env->addInclude($module_path . '/assets/css/manager.css');
@@ -22,7 +22,7 @@ function manager_load_includes($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function manager_init($env, $vars) {
+function manager_init(Environment $env, array $vars) {
   if ($env->getRequestedPath() == 'expand') {
     $node = NodeFactory::load($env, $_GET['node']);
     $manager = new Manager($env, $node);
@@ -39,7 +39,7 @@ function manager_init($env, $vars) {
  * @param array $vars
  *   An array of variables..
  */
-function manager_shadow_manager_form($env, $vars) {
+function manager_shadow_manager_form(Environment $env, array $vars) {
   /** @var Shadow $shadow */
   $shadow = $vars['shadow'];
 
@@ -50,7 +50,8 @@ function manager_shadow_manager_form($env, $vars) {
     $manager_cats = 'root';
   }
 
-  $shadow->addTab('manage categories', '<h2>Manage Categories</h2>' . '<div class="shadow-hint">In this screen you can select the categories in which you want to include the node.</div>' . $manager->renderTree($manager_cats), 4, 'manager-tree');
+  $shadow->addTab('manage categories',
+    '<h2>Manage Categories</h2>' . '<div class="shadow-hint">In this screen you can select the categories in which you want to include the node.</div>' . $manager->renderTree($manager_cats), 4, 'manager-tree');
 }
 
 /**
@@ -61,7 +62,7 @@ function manager_shadow_manager_form($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function manager_node_add_complete($env, $vars) {
+function manager_node_add_complete(Environment $env, array $vars) {
   // TODO: bugged on node add because we do not know the name of the node!
   manager_node_edit_complete($env, $vars);
 }
@@ -103,7 +104,7 @@ function manager_node_edit_complete($env, &$vars) {
  * @param array $vars
  *   An array of variables.
  */
-function manager_link_alter($env, $vars) {
+function manager_link_alter(Environment $env, array $vars) {
   // TODO: bugged on node add because we do not know the name of the node!
   if (isset($vars['attributes']['manager'])) {
     $vars['link_data'][] = 'data-manager="' . $vars['attributes']['manager'] . '"';

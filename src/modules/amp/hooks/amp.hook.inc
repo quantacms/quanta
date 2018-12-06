@@ -9,8 +9,8 @@ namespace Quanta\Common;
  * @param array $vars
  *   An array of variables.
  */
-function amp_init($env, $vars) {
-  if (Amp::isActive($env)) {
+function amp_init(Environment $env, array $vars) {
+  if (\Quanta\Common\Amp::isActive($env)) {
     $page = $env->getData('page');
     $page->setIndexFile('index-amp.html');
   }
@@ -25,7 +25,7 @@ function amp_init($env, $vars) {
  * @param $vars
  *   An array of variables.
  */
-function amp_load_includes($env, $vars) {
+function amp_load_includes(Environment $env, array $vars) {
   $module_path = $env->getModulePath('amp');
 
   $env->addInclude($module_path . '/assets/css/amp.css');
@@ -39,7 +39,7 @@ function amp_load_includes($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function amp_page_complete($env, $vars) {
+function amp_page_complete(Environment $env, array $vars) {
   if (Amp::isActive($env)) {
     $vars['page']->html = preg_replace('/style=\\"[^\\"]*\\"/', '', $vars['page']->html);
     $vars['page']->html = str_replace('<img', '<amp-img layout="intrinsic"', $vars['page']->html);
@@ -63,7 +63,7 @@ function amp_page_complete($env, $vars) {
  * @param $vars
  *   An array of variables.
  */
-function amp_qtag_preload($env, $vars) {
+function amp_qtag_preload(Environment $env, array $vars) {
   if (Amp::isActive($env) && !empty($vars['attributes']['no_amp'])) {
     // AMP is active: remove all no_amp items.
     $vars['access'] = FALSE;
@@ -86,7 +86,7 @@ function amp_qtag_preload($env, $vars) {
  * @param $vars
  *   An array of variables.
  */
-function amp_link_alter($env, $vars) {
+function amp_link_alter(Environment $env, array $vars) {
   if (Amp::isActive($env) && $vars['attributes']['external'] == FALSE) {
     $vars['target'] = '/amp' . $vars['target'];
   }

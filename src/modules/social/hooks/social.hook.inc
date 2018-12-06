@@ -10,7 +10,7 @@ namespace Quanta\Common;
  * @param array $vars
  *   An array of variables.
  */
-function social_load_includes($env, $vars) {
+function social_load_includes(Environment $env, array $vars) {
   $module_path = $env->getModulePath('social');
   $env->addInclude($module_path . '/assets/css/social.css');
 }

@@ -10,7 +10,7 @@ use Quanta\Qtags\Quanta;
  * @param $vars
  *   An array of variables.
  */
-function box_load_includes($env, $vars) {
+function box_load_includes(Environment $env, array $vars) {
   $module_path = $env->getModulePath('box');
 
   $env->addInclude($module_path . '/assets/css/box.css');
@@ -26,7 +26,7 @@ function box_load_includes($env, $vars) {
  * @param $vars
  *   An array of variables.
  */
-function box_qtag($env, $vars) {
+function box_qtag(Environment $env, array $vars) {
   $qtag = $vars['qtag'];
 
   if (!empty($qtag->getAttribute('box'))) {

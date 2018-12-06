@@ -9,7 +9,7 @@ namespace Quanta\Common;
  * @param array $vars
  *   An array of variables.
  */
-function sitemap_boot($env, $vars) {
+function sitemap_boot(Environment $env, array $vars) {
   // TODO: refactor with object oriented approach, using templates, etc. etc.
   if ($env->getRequestedPath() == 'google_sitemap') {
     header("Content-type: text/xml");

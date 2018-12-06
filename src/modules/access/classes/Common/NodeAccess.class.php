@@ -22,10 +22,12 @@ class NodeAccess extends Access {
    */
   public static function check($env, $action, $vars = array()) {
     static $access_checked;
+
     // Static cache of access controls.
     if (empty($access_checked)) {
       $access_checked = array();
     }
+
     if (!isset($access_checked[$action][$vars['node']->getName()])) {
       $access = new NodeAccess($env, $action, $vars);
       $can_access = $access->checkAction();
@@ -52,11 +54,16 @@ class NodeAccess extends Access {
       case \Quanta\Common\Node::NODE_ACTION_EDIT:
       case \Quanta\Common\Node::NODE_ACTION_VIEW:
       case \Quanta\Common\Node::NODE_ACTION_ADD:
+
         $permissions = $this->node->getPermissions();
 
         // If node doesn't exist, allow no permission to it.
         if ((!is_object($this->node) || !$this->node->exists) && $this->getAction() != \Quanta\Common\Node::NODE_ACTION_ADD) {
-          new Message($this->env, t('Error: trying to perform the !action action on a non existing node !node.', array('!node' => $this->node->name, '!action' => $this->getAction())), MESSAGE_WARNING);
+          new Message($this->env,
+            t('Error: trying to perform the !action action on a non existing node !node.', array('!node' => $this->node->name,
+              '!action' => $this->getAction())),
+            \Quanta\Common\Message::MESSAGE_WARNING
+          );
         }
         else {
           // Conversion to array as of new approach to values.
@@ -66,7 +73,7 @@ class NodeAccess extends Access {
           $perm_array = array_flip($permissions[$this->getAction()]);
 
           // If allowed role is anonymous always grant access.
-          if (!empty($this->getAction()) && isset($perm_array[ROLE_ANONYMOUS])) {
+          if (!empty($this->getAction()) && isset($perm_array[\Quanta\Common\User::ROLE_ANONYMOUS])) {
             $can_access = TRUE;
           }
           else {
@@ -81,7 +88,10 @@ class NodeAccess extends Access {
         break;
 
       default:
-        new Message($this->env, t('Error: the action !action is unknown.', array('!action' => $this->getAction())), MESSAGE_ERROR);
+        new Message($this->env,
+          t('Error: the action !action is unknown.', array('!action' => $this->getAction())),
+          \Quanta\Common\Message::MESSAGE_ERROR
+        );
     }
 
     return $can_access;

@@ -9,7 +9,7 @@ namespace Quanta\Common;
  * @param array $vars
  *   An array of variables.
  */
-function wysiwyg_page_init($env, $vars) {
+function wysiwyg_page_init(Environment $env, array $vars) {
   /** @var Page $page */
   $page = $vars['page'];
 

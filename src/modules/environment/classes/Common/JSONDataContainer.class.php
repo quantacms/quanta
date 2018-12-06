@@ -10,36 +10,37 @@ namespace Quanta\Common;
 abstract class JSONDataContainer extends DataContainer {
   public $name;
   public $path;
-
   public $jsonpath;
   public $dir;
   public $json;
-
   /**
-   *  This is meant only to be extended.
+   * Load the json attributes.
    */
   abstract function loadJSON();
-
   /**
+   *  Update the json attributes based on the object's attribute.
    *  This is meant only to be extended.
-   * @param array $ignore
+   *
+   *  @param array $ignore
+   *    Attributes to ignore in the update process.
    */
-  abstract function updateJSON($ignore = array());
-
+  abstract function updateJSON(array $ignore = array());
   /**
-   * Save the JSON dump of the data container.
+   * Save a JSON dump of the data container.
+   *
    * @param array $ignore
+   *   Attributes to ignore in the save process.
    */
-  protected function saveJSON($ignore = array()) {
+  protected function saveJSON(array $ignore = array()) {
     if (!is_dir($this->path)) {
       mkdir($this->path, 0755, TRUE) or die('Error. Cannot create dir: ' . $this->path);
     }
 
     $language = empty($this->getLanguage()) ? Localization::getLanguage($this->env) : $this->getLanguage();
-
-    $suffix = ($language == LANGUAGE_NEUTRAL) ? '' : ('_' . $language);
+    $suffix = ($language == \Quanta\Common\Localization::LANGUAGE_NEUTRAL) ? '' : ('_' . $language);
     $jsonpath = $this->path . '/data' . $suffix . '.json';
 
+    // Unset attributes to ignore.
     foreach ($ignore as $ignore_value) {
       if (isset($this->json->{$ignore_value})) {
         unset($this->json->{$ignore_value});
@@ -55,7 +56,9 @@ abstract class JSONDataContainer extends DataContainer {
 
   /**
    * Gets the name (equal to folder name) of the node.
-   * @return mixed
+   *
+   * @return string
+   *   The folder name of the JSON container.
    */
   public function getName() {
     return $this->name;
@@ -63,7 +66,9 @@ abstract class JSONDataContainer extends DataContainer {
 
   /**
    * Sets the name (equal to folder name) of the container.
-   * @param $name
+   *
+   * @param string $name
+   *   The folder name of the JSON container.
    */
   public function setName($name) {
     $this->name = $name;
@@ -78,5 +83,4 @@ abstract class JSONDataContainer extends DataContainer {
   public function getPath() {
     return $this->path;
   }
-
 }

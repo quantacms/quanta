@@ -9,7 +9,7 @@ namespace Quanta\Common;
  * @param $vars
  *   An array of variables.
  */
-function form_load_includes($env, $vars) {
+function form_load_includes(Environment $env, array $vars) {
   $module_path = $env->getModulePath('form');
   $env->addInclude($module_path . '/assets/css/form.css');
   $env->addInclude($module_path . '/assets/js/form.js');
@@ -27,7 +27,7 @@ function form_load_includes($env, $vars) {
  * @param $vars
  *   An array of variables.
  */
-function form_form_validate($env, $vars) {
+function form_form_validate(Environment $env, array $vars) {
   /** @var Form $form */
   $form = &$vars['form'];
 
@@ -50,7 +50,7 @@ function form_form_validate($env, $vars) {
  * @param $vars
  *   An array of variables.
  */
-function form_boot($env, $vars) {
+function form_boot(Environment $env, array $vars) {
   // TODO: object oriented, using templates, etc. etc.
   if ($env->getRequestedPath() == 'autocomplete') {
     $autocomplete_results = search($env, $_GET['search_string'], NodeFactory::load($env, $_GET['search_node']), array('title'), SEARCH_OUTPUT_MATCH);

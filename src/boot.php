@@ -11,7 +11,7 @@
     empty($host) ? NULL : $host,
     empty($request_uri) ? NULL : $request_uri,
     empty($docroot) ? NULL : $docroot);
-
+  $vars = array();
   // Include the class autoloader.
   require_once('autoload.php');
 
@@ -35,7 +35,7 @@
 
   // Check if there is an AJAX request in progress. TODO: move in ajax module.
   if (!isset($_REQUEST['ajax'])) {
-    $env->hook('load_includes', $vars);
+    $env->hook('load_includes',$vars);
   }
 
   // Initialize doctor, if there is a request to do so.
@@ -48,6 +48,7 @@
 
   // Check if there is any requested action.
   $env->checkActions();
+
 
   // Run the init hook.
   $env->hook('init', $vars);

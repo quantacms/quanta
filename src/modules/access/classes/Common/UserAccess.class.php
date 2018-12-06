@@ -32,9 +32,9 @@ class UserAccess extends Access {
    */
   public function checkAction() {
     switch ($this->getAction()) {
-      case USER_ACTION_REGISTER:
-      case USER_ACTION_EDIT:
-      case USER_ACTION_EDIT_OWN:
+      case \Quanta\Common\User::USER_ACTION_REGISTER:
+      case \Quanta\Common\User::USER_ACTION_EDIT:
+      case \Quanta\Common\User::USER_ACTION_EDIT_OWN:
         // TODO: rework.
         return TRUE;
         break;

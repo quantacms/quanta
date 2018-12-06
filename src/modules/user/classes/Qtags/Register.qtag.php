@@ -20,7 +20,7 @@ class Register extends Link {
    */
   public function render() {
     $user = UserFactory::current($this->env);
-    if (UserAccess::check($this->env, USER_ACTION_REGISTER, array('user' => $user))) {
+    if (UserAccess::check($this->env, \Quanta\Common\User::USER_ACTION_REGISTER, array('user' => $user))) {
       if (empty($this->attributes['title']))
       {
         $this->attributes['title'] = t('Sign up');

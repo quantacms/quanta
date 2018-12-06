@@ -9,7 +9,7 @@ namespace Quanta\Common;
  * @param array $vars
  *   An array of variables.
  */
-function message_page_after_build($env, $vars) {
+function message_page_after_build(Environment $env, array $vars) {
   $messages = $env->getData('message');
   // Check if there are messages to be added to the system log file.
   if (!empty($messages)) {
@@ -34,7 +34,7 @@ function message_page_after_build($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function message_load_includes($env, $vars) {
+function message_load_includes(Environment $env, array $vars) {
   $module_path = $env->getModulePath('message');
   $env->addInclude($module_path . '/assets/css/message.css');
 }
