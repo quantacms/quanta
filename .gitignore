@@ -2,9 +2,8 @@
 .idea
 .idea*
 src
-!static
-!static/
 static/*
+!static/tmp
 sites
 sites/*
 sites*
