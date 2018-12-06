@@ -109,12 +109,6 @@ class NodeTemplate extends DataContainer {
       }
     }
 
-    if ($this->node->name == 'documentation') {
-      print_r($this->getData('tpl_file'));
-      print "<br>TPL OF " . $this->node->getName() . ' : ';
-      print_r(file_get_contents($this->getData('tpl_file')));
-      print "<br>";
-    }
     // Check if there is a sub-level template.
     if (isset($tpl[$tpl_level])) {
       $this->setData('tpl_file', $tpl[$tpl_level]);
