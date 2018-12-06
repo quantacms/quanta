@@ -157,11 +157,8 @@ function page_init($env, $vars) {
   $vars = array('page' => &$page);
   $env->setData('page', $vars['page']);
 
-  // Check if there is an AJAX request in progress. TODO: move in ajax module.
-  if (!isset($_REQUEST['ajax'])) {
-    $env->hook('load_includes', $vars);
-    $page->loadIncludes();
-  }
+  $page->loadIncludes();
+
   // Build the page's HTML code.
   $page->buildHTML();
   // Render the page.
@@ -170,7 +167,8 @@ function page_init($env, $vars) {
 
 /**
  * Implements hook_doctor().
- * Refresh minified CSS, JS, and and do other operations.
+ *
+ * Minify all included CSS and JS, and perform other page-related operations.
  *
  * @param Environment $env
  *   The Environment.
@@ -184,6 +182,7 @@ function page_doctor($env, $vars) {
   $css = array();
   $js = array();
   $doctor->op('Generating minified CSS and JS files...');
+
   // Include JS / CSS files.
   foreach ($env->getIncludes() as $file) {
     if (substr($file['path'], 0, 6) == 'engine') {

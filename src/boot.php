@@ -33,6 +33,11 @@
   // Run the boot hook.
   $env->hook('boot');
 
+  // Check if there is an AJAX request in progress. TODO: move in ajax module.
+  if (!isset($_REQUEST['ajax'])) {
+    $env->hook('load_includes', $vars);
+  }
+
   // Initialize doctor, if there is a request to do so.
   if (isset($doctor_cmd)) {
     $doctor = new \Quanta\Common\Doctor($env, $doctor_cmd, $doctor_args);

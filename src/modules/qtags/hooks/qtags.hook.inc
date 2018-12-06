@@ -10,7 +10,8 @@ namespace Quanta\Common;
  *   An array of variables.
  */
 function qtags_page_complete($env, $vars) {
-  $html = QtagFactory::transformCodeTags($env, $vars['page']->html);
+  $html = str_replace("\n", "", $vars['page']->html);
+  $html = QtagFactory::transformCodeTags($env, $html);
   $html = QtagFactory::transformCodeTags($env, $html, array('runlast' => TRUE));
   $vars['page']->html = $html;
 }
