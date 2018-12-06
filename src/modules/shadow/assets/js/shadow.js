@@ -56,7 +56,6 @@ function openShadow(shadowData) {
   var shadowPath = '/' + ((shadow.node != undefined) ? (shadow.node + '/') : '');
   shadowPath += '?shadow=' + JSON.stringify(shadow);
 
-
   if (shadow.language != undefined) {
     shadowPath += '&lang=' + shadow.language;
   }

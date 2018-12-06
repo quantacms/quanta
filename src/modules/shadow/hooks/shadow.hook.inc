@@ -34,12 +34,13 @@ function shadow_boot(Environment $env, $vars) {
     // Check the requested context.
     $env->setContext($shadow_json->context);
     $env->setData('shadow', $shadow);
-
+    $env->setData('page', $shadow);
   }
 }
 
 /**
- * Implements hook_page_init().
+ * Implements hook_init().
+ *
  * There is the request to open a Shadow overlay form.
  *
  * @param Environment $env
@@ -60,6 +61,7 @@ function shadow_init(Environment $env, array $vars) {
 
 /**
  * Implements hook_page_init().
+ *
  * Add the Shadow popup's wrapper to HTML.
  * // TODO: could be entirely done in JS.
  *

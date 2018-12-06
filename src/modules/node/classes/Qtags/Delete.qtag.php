@@ -23,7 +23,7 @@ class Delete extends Link {
       $this->attributes['title'] = isset($this->attributes['title']) ? Api::filter_xss($this->attributes['title']) : '&ominus;';
       $this->attributes['tooltip'] = isset($this->attributes['tooltip']) ? Api::filter_xss($this->attributes['tooltip']) : t('Delete !title...', array('!title' => Api::filter_xss($nodeobj->getTitle())));
       $this->attributes['redirect'] = isset($this->attributes['redirect']) ? $this->attributes['redirect'] : '';
+      return parent::render();
     }
-    return parent::render();
   }
 }

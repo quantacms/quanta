@@ -25,8 +25,7 @@ class Edit extends Link {
       $this->attributes['tooltip'] = isset($this->attributes['tooltip']) ? Api::filter_xss($this->attributes['tooltip']) : t('Edit !title...', array('!title' => $title));
       $this->attributes['title'] = isset($this->attributes['title']) ? Api::filter_xss($this->attributes['title']) : '&#9998;';
       $this->attributes['redirect'] = isset($this->attributes['redirect']) ? $this->attributes['redirect'] : '';
+      return parent::render();
     }
-    return parent::render();
-
   }
 }
