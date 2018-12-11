@@ -16,7 +16,7 @@ class LanguageSwitcher extends Qtag {
    */
   public function render() {
 
-    $node = NodeFactory::loadOrCurrent($this->env, $target);
+    $node = NodeFactory::loadOrCurrent($this->env, $this->getTarget());
     $language_switcher_tpl = 'language_switcher';
 
     // We don't want translate links to be considered as editable nodes.
@@ -28,7 +28,7 @@ class LanguageSwitcher extends Qtag {
       // Uses name for label instead of title.
       $language_switcher_tpl = 'language_switcher_compact';
     }
-    $dirlist = new DirList($this->env, DIR_LANGUAGES, $language_switcher_tpl, $this->attributes, 'localization');
+    $dirlist = new DirList($this->env, Localization::DIR_LANGUAGES, $language_switcher_tpl, $this->attributes, 'localization');
     // Don't show language switch link, if node is not available in that language.
     foreach ($dirlist->getItems() as $langcode => $lang) {
       if (!$node->hasTranslation($langcode)) {
