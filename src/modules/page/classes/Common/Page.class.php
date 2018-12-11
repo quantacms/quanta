@@ -102,10 +102,13 @@ class Page extends DataContainer {
 
     // Page body classes (TODO: not that beautiful?).
     $this->env->hook('body_classes', $vars);
+
     // Page after build.
     $this->env->hook('page_after_build', $vars);
+
     // Page complete.
     $this->env->hook('page_complete', $vars);
+
   }
 
   /**

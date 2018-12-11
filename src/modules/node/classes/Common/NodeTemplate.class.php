@@ -81,34 +81,34 @@ class NodeTemplate extends DataContainer {
     $tpl_level = 0;
     // TODO: current node taken out of lineage. Correct to add like this?
     $lineages = array($this->node) + $this->node->getLineage();
-    foreach ($lineages as $lineage) {
-      $tpl_level++;
-      // If tpl^.html exists - template applies to all sublevels of the node.
-      if (is_file($lineage->path . '/tpl^.html')) {
-        $this->setData('tpl_file', $lineage->path . '/tpl^.html');
-        break;
-      }
-      elseif (is_file($lineage->path . '/tpl.html')) {
-        $this->setData('tpl_file', $lineage->path . '/tpl.html');
-        break;
-      }
-      else {
-        $min = '';
-        // We support 5 levels of sub-level templates for now.
-        // level 0 = tpl.html
-        // level 1 = tpl-.html
-        // level 2 = tpl--.html
-        // etc...
-        for ($i = 1; $i <= 6; $i++) {
-          $min .= '-';
-          $file = $lineage->path . '/tpl' . $min . '.html';
-          if (file_exists($file)) {
-            $tpl[$tpl_level + $i] = $file;
+    if (is_file($this->node->path . '/tpl.html')) {
+      $this->setData('tpl_file', $this->node->path . '/tpl.html');
+    }
+    else {
+      foreach ($lineages as $lineage) {
+        $tpl_level++;
+        // If tpl^.html exists - template applies to all sublevels of the node.
+        if (is_file($lineage->path . '/tpl^.html')) {
+          $this->setData('tpl_file', $lineage->path . '/tpl^.html');
+          break;
+        }
+        else {
+          $min = '';
+          // We support 5 levels of sub-level templates for now.
+          // level 0 = tpl.html
+          // level 1 = tpl-.html
+          // level 2 = tpl--.html
+          // etc...
+          for ($i = 1; $i <= 6; $i++) {
+            $min .= '-';
+            $file = $lineage->path . '/tpl' . $min . '.html';
+            if (file_exists($file)) {
+              $tpl[$tpl_level + $i] = $file;
+            }
           }
         }
       }
     }
-
     // Check if there is a sub-level template.
     if (isset($tpl[$tpl_level])) {
       $this->setData('tpl_file', $tpl[$tpl_level]);

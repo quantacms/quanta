@@ -88,11 +88,12 @@ class QtagFactory {
    *   The HTML with all Qtags transformed.
    */
   public static function transformCodeTags(&$env, $html, $options = array()) {
-
+    $transformed = 0;
     // After rendering all Qtags in a page, the result could still contain
     // other Qtags, derived from the first conversion cycle.
     // For this reason, keep looping until all Qtags are rendered.
     while (TRUE) {
+      $transformed++;
       // Parse all the Qtags in the given html.
       $replaces = (QtagFactory::checkCodeTags($env, $html, $options));
 

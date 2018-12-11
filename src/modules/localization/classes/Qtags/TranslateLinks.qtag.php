@@ -18,7 +18,7 @@ class TranslateLinks extends Qtag {
     // We don't want translate links to be considered as editable nodes.
     $this->attributes['editable'] = 'false';
     $this->attributes['symlinks'] = 'no';
-    $dirlist = new DirList($this->env, DIR_LANGUAGES, 'translate_links', $this->attributes, 'localization');
+    $dirlist = new DirList($this->env, Localization::DIR_LANGUAGES, 'translate_links', $this->attributes, 'localization');
     return $dirlist->render();
   }
 }
