@@ -5,7 +5,7 @@ namespace Quanta\Qtags;
  * Renders a simple (translatable) string.
  */
 
-class String extends Qtag {
+class Text extends Qtag {
   /**
    * Render the Qtag.
    *
