@@ -132,7 +132,8 @@ class Link extends Qtag {
 
     // Add custom classes to the link.
     if (isset($this->attributes['link_class'])) {
-      $this->link_class += explode(' ', $this->attributes['link_class']);
+      // TODO: add single classes instead of one string
+      $this->link_class[] = $this->attributes['link_class'];
     }
 
     // Check if there is a target language.
