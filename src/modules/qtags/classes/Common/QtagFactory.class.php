@@ -104,7 +104,7 @@ class QtagFactory {
       // Do all the Qtag replacements in the given html.
       foreach ($replaces as $qtag => $replace) {
         if (is_array($replace)) {
-          $replace = implode(GLOBAL_SEPARATOR, $replace);
+          $replace = implode(\Quanta\Common\Environment::GLOBAL_SEPARATOR, $replace);
         }
         $html = str_replace($qtag, $replace, $html);
       }

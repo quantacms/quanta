@@ -14,7 +14,7 @@ function message_page_after_build(Environment $env, array $vars) {
   // Check if there are messages to be added to the system log file.
   if (!empty($messages)) {
     foreach ($messages as $message) {
-      if ($message->type == MESSAGE_TYPE_LOG) {
+      if ($message->type == \Quanta\Common\Message::MESSAGE_TYPE_LOG) {
       $username = UserFactory::current($env)->name;
         $fh = fopen($env->dir['log'] . '/log.txt', 'a+') or die("error");
         fwrite($fh, '[' . date('Y-m-d h:i:s') . '] ' . str_replace('!username', $username, $message->body) . '

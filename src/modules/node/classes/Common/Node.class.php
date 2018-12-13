@@ -241,11 +241,10 @@ class Node extends JSONDataContainer {
    */
   public function load() {
     $vars = array('node' => &$this);
+    // TODO: running a hook at each node load is too CPU intensive. Deprecate node load hooks.
     $this->env->hook('node_load', $vars);
-
     //TODO: find a better way to check node existence
     if (!isset($this->json->timestamp) && $this->exists) {
-
       $this->buildContent();
     }
     if ($this->exists && ($this->getTimestamp() == NULL)) {

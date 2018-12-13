@@ -308,7 +308,7 @@ class Environment extends DataContainer {
       $attributes['type'] = self::DIR_ALL;
     }
 
-    $dirs = array_diff(scandir($base_dir), array('.', '..', '.git'));
+    $dirs = array_diff(scandir($base_dir), array('.', '..', '.git', 'assets', 'files'));
 
     foreach ($dirs as $k => $dir) {
       // Remove inactive if requested.
@@ -545,10 +545,19 @@ class Environment extends DataContainer {
    *   The path of the node.
    */
   public function nodePath($folder, $link = FALSE) {
+    static $node_paths;
+    // We use a static variable to lookup nodes paths only once.
+    if (empty($node_paths)) {
+      $node_paths = array();
+    }
+    if (isset($node_paths[$folder])) {
+      return $node_paths[$folder];
+    }
+
+    // TODO: maybe throw an error if an empty folder is searched for.
     if (empty($folder)) {
       return NULL;
     }
-
     $nodepath = Cache::getStoredNodePath($this, $folder);
     if (!empty($nodepath)) {
       return readlink($nodepath);

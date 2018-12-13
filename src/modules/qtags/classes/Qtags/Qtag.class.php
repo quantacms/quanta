@@ -238,4 +238,11 @@ class Qtag {
   public function getHtml() {
     return $this->html;
   }
+
+  /**
+   * Make a Qtag printable (print its rendered html).
+   */
+  public function __toString() {
+    return $this->html;
+  }
 }

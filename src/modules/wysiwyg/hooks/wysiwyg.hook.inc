@@ -10,11 +10,13 @@ namespace Quanta\Common;
  *   An array of variables.
  */
 function wysiwyg_page_init(Environment $env, array $vars) {
-  /** @var Page $page */
-  $page = $vars['page'];
 
   if (Shadow::isOpen($env)) {
-    // Include the codemirror lib.
-    $page->addCSS('https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/codemirror.min.css');
+    $attributes = array('external');
+    print new \Quanta\Qtags\Css($env, $attributes, 'https://cdnjs.cloudflare.com/ajax/libs/jodit/3.1.39/jodit.min.css');
+    print new \Quanta\Qtags\Js($env, $attributes, 'https://cdnjs.cloudflare.com/ajax/libs/jodit/3.1.39/jodit.min.js');
+    $attributes = array('inline' => TRUE, 'module' => 'wysiwyg');
+    print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/wysiwyg.js');
+
   }
 }
