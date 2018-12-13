@@ -21,9 +21,6 @@ class Js extends Qtag {
       if (isset($this->attributes['module'])) {
         $this->setTarget($this->env->getModule($this->attributes['module'])['path'] . '/' . $this->getTarget());
       }
-      else {
-        $this->setTarget($this->env->dir['docroot'] . '/' . $this->getTarget());
-      }
       $js = array($this->getTarget());
     }
     else {
@@ -38,7 +35,7 @@ class Js extends Qtag {
         $js_code .= '<script>' . file_get_contents($js_file) . '</script>';
       }
       else {
-        $js_code .= '<script src="' . $js_file . $refresh . '?[DOCTOR_TIMESTAMP]"></script>';
+        $js_code .= '<script src="' . $js_file . $refresh . '"></script>';
       }
     }
 

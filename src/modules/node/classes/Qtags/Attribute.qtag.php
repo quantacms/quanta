@@ -28,7 +28,7 @@ class Attribute extends Qtag {
       case 'author':
         $string = $node->getAuthor();
         // In case node has no author, return NULL string.
-        if ($string == USER_ANONYMOUS) {
+        if ($string == \Quanta\Common\User::USER_ANONYMOUS) {
           $string = '';
         }
         break;

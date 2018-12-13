@@ -38,7 +38,7 @@ class Manager extends DataContainer {
     $lines = array();
     foreach ($leaves as $leaf) {
 
-      if (!empty($leaf->name) && $leaf->name != 'home' && $leaf->name != 'files') {
+      if (!empty($leaf->name)) {
         $lines[] = $this->renderLeaf($leaf);
       }
     }

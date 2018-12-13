@@ -16,7 +16,7 @@ class FilesAdmin extends Qtag {
     $filelist = new FileList($this->env, $this->getTarget(), 'file_admin', $this->attributes);
 
     // TODO: not optimal, but we don't want default files from father node on node add...
-    if ($this->env->getContext() == NODE_ACTION_ADD) {
+    if ($this->env->getContext() == \Quanta\Common\Node::NODE_ACTION_ADD) {
       $filelist->clear();
     }
     else {
