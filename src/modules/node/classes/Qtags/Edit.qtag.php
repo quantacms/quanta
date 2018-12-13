@@ -1,8 +1,5 @@
 <?php
 namespace Quanta\Qtags;
-use Quanta\Common\NodeFactory;
-use Quanta\Common\NodeAccess;
-use Quanta\Common\Api;
 
 /**
  * Creates a link to edit a specific node, if user has rights.
@@ -10,6 +7,7 @@ use Quanta\Common\Api;
 class Edit extends Link {
   public $link_class = array('edit-link');
 
+  protected $html_body = '&#9998;';
   /**
    * Render the Qtag.
    *
@@ -17,13 +15,14 @@ class Edit extends Link {
    *   The rendered Qtag.
    */
   public function render() {
-    $nodeobj = NodeFactory::loadOrCurrent($this->env, $this->getTarget());
+    $nodeobj = \Quanta\Common\NodeFactory::loadOrCurrent($this->env, $this->getTarget());
     $this->setTarget($nodeobj->getName());
 
-    if (NodeAccess::check($this->env, \Quanta\Common\Node::NODE_ACTION_EDIT, array('node' => $nodeobj))) {
-      $title = Api::filter_xss(empty($nodeobj->getTitle()) ? $nodeobj->getName() : $nodeobj->getTitle());
-      $this->attributes['tooltip'] = isset($this->attributes['tooltip']) ? Api::filter_xss($this->attributes['tooltip']) : t('Edit !title...', array('!title' => $title));
-      $this->attributes['title'] = isset($this->attributes['title']) ? Api::filter_xss($this->attributes['title']) : '&#9998;';
+    if (\Quanta\Common\NodeAccess::check($this->env, \Quanta\Common\Node::NODE_ACTION_EDIT, array('node' => $nodeobj))) {
+      $title = \Quanta\Common\Api::filter_xss(empty($nodeobj->getTitle()) ? $nodeobj->getName() : $nodeobj->getTitle());
+      if (!isset($this->attributes['tooltip'])) {
+        $this->attributes['tooltip'] = t('Edit !title...', array('!title' => $title));
+      }
       $this->attributes['redirect'] = isset($this->attributes['redirect']) ? $this->attributes['redirect'] : '';
       return parent::render();
     }
