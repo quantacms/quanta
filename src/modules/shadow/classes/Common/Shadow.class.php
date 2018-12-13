@@ -57,23 +57,6 @@ class Shadow extends Page {
       $vars = array('shadow' => &$this);
       $this->env->hook('shadow_' . $component, $vars);
     }
-
-    // TODO: change this total shit and use another criteria for adding standard node data!
-    // TODO: IMPORTANT!
-    switch ($this->env->getContext()) {
-      case \Quanta\Common\User::USER_ACTION_LOGIN:
-        break;
-        
-      case \Quanta\Common\Node::NODE_ACTION_DELETE:
-        $this->addTab('temporary form', file_get_contents($this->env->getModulePath('node') . '/tpl/node_data.inc'), 1);
-        $this->addButton('edit-save', 'Delete');      
-        break;
-      
-      default:
-        $this->addTab('temporary form', file_get_contents($this->env->getModulePath('node') . '/tpl/node_data.inc'), 1);
-        $this->addButton('edit-save', 'Save');         
-        break;
-    }
   }
   
   /**

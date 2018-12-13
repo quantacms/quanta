@@ -108,6 +108,9 @@ function node_shadow_node_form(Environment $env, array $vars){
 
   $shadow->addTab($action_name, file_get_contents($env->getModulePath('node') . '/tpl/node_edit.inc'), 1);
   $shadow->addTab('manage metadata', file_get_contents($env->getModulePath('node') . '/tpl/metadata_form.inc'), 2);
+  $shadow->addTab(NULL, file_get_contents($env->getModulePath('node') . '/tpl/node_data.inc'), 1, TRUE);
+  $shadow->addButton('edit-save', $env->getContext() == \Quanta\Common\Node::NODE_ACTION_DELETE ? t('Delete') : t('Save'));
+
 }
 
 /**
@@ -126,7 +129,7 @@ function node_shadow_node_delete_form(Environment $env, array $vars){
   $has_access = NodeAccess::check($env, $env->getContext(), array('node' => $node));
   if (!$has_access) {
     // TODO: move this in access check!
-    new Message($env, 'User attempted to delete a node without access', MESSAGE_WARNING, MESSAGE_TYPE_LOG, 'node');
+    new Message($env, t('User attempted to delete a node without having access to it.'), \Quanta\Common\Message::MESSAGE_WARNING, \Quanta\Common\Message::MESSAGE_TYPE_LOG, 'node');
   }
   else {
     $shadow->addTab('Confirm Delete', $node->renderDeleteForm(), 1);
