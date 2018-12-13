@@ -1,3 +1,0 @@
-<?php
-$this->dependsFrom('node');
-require_once('FileObject.class.inc');

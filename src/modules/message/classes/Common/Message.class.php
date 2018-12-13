@@ -1,0 +1,95 @@
+<?php
+
+namespace Quanta\Common;
+
+/**
+ * Class Message
+ * A Message can be any kind of message to store (log) or to display to the
+ * navigating user (screen).
+ */
+class Message {
+  const MESSAGE_NOMODULE = 'unknown';
+  const MESSAGE_ERROR = 'error';
+  const MESSAGE_WARNING = 'warning';
+  const MESSAGE_NOTICE = 'notice';
+  const MESSAGE_GENERIC = 'generic';
+  const MESSAGE_CONFIRM = 'confirm';
+  const MESSAGE_TYPE_LOG = 'log';
+  const MESSAGE_TYPE_SCREEN = 'screen';
+
+  /** @var Environment $env */
+  public $env;
+  /** @var string $body */
+  public $body;
+  /** @var string $module */
+  public $module;
+  /** @var string $type */
+  public $type;
+  /** @var string $severity */
+  public $severity;
+
+  /**
+   * Construct the message item.
+   *
+   * @param Environment $env
+   *   The Environment.
+   * @param $body
+   *   The message's body.
+   * @param string $severity
+   *   The message's severity.
+   * @param string $type
+   *   The message's type.
+   * @param string $module
+   *   The module generating the message.
+   */
+  public function __construct($env, $body, $severity = self::MESSAGE_GENERIC, $type = self::MESSAGE_TYPE_SCREEN, $module = self::MESSAGE_NOMODULE) {
+    $this->env = $env;
+    $this->body = $body;
+    $this->type = $type;
+    $this->module = $module;
+    $this->severity = $severity;
+    $doctor = $env->getData('doctor');
+
+    // If the Doctor is curing the environment, show messages in the blackboard.
+    if (Doctor::isCuring($env)) {
+      switch ($this->severity) {
+        case self::MESSAGE_WARNING:
+        case self::MESSAGE_ERROR:
+          $doctor->ko($this->body);
+          break;
+        default:
+          $doctor->talk($this->body);
+          break;
+      }
+    }
+    else {
+      $this->env->addData('message', array($this));
+      if ($type == self::MESSAGE_TYPE_SCREEN) {
+        $_SESSION['messages'][] = serialize($this);
+      }
+    }
+  }
+
+  /**
+   * Fetch from the Session all the existing messages of a given type.
+   *
+   * @param string $type
+   *   The message type.
+   *
+   * @return string
+   *   The messages.
+   */
+  public static function burnMessages($type = self::MESSAGE_TYPE_SCREEN) {
+    $output = '';
+    if (isset($_SESSION['messages'])) {
+      foreach ($_SESSION['messages'] as $k => $mess) {
+        $message = unserialize($mess);
+        if ($message->type == $type) {
+          $output .= '<div class="message message-severity-' . $message->severity . '">' . $message->body . '</div>';
+          unset($_SESSION['messages'][$k]);
+        }
+      }
+    }
+    return $output;
+  }
+}

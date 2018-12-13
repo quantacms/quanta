@@ -1,10 +1,9 @@
 .DS_Store
 .idea
 .idea*
-engine/tmp
-engine/tmp/*
-.users
-*/data.html
+static/*
+static/tmp/*
+!static/tmp/.gitkeep
 sites
 sites/*
 sites*
