@@ -8,12 +8,7 @@ use Quanta\Common\Api;
 /**
  * Creates a link to another node in the system.
  */
-class Link extends Qtag {
-  /**
-   * @var string $link_body
-   *   The Link Body (HTML).
-   */
-  public $link_body;
+class Link extends HtmlTag {
   /**
    * @var string $link_title
    *   The Link Title (what appears in the <a title=... attribute).
@@ -61,10 +56,10 @@ class Link extends Qtag {
   public $protocol = NULL;
 
   /**
-   * The actual <a param... list of params.
-   * @var array
+   * The HTML tag.
+   * @var string
    */
-  private $link_params = array();
+  protected $html_tag = 'a';
 
   /**
    * @return string
@@ -73,13 +68,6 @@ class Link extends Qtag {
   public function render() {
     $querystring = array();
     $this->link_id = !empty($this->attributes['link_id']) ? $this->attributes['link_id'] : '';
-
-    // TODO: inconsistent tag attribute (title) and Qtag field (link_body). Adapt somehow.
-    if (isset($this->attributes['title'])) {
-      $this->link_body = $this->attributes['title'];
-    }
-    // Sets the link title (<a title=...).
-    $this->link_title = empty($this->attributes['link_title']) ? strip_tags($this->link_body) : $this->attributes['link_title'];
 
     $this->link_class[] = 'link';
     if (empty($this->destination)) {
@@ -92,9 +80,6 @@ class Link extends Qtag {
         $this->attributes['rel'] = NULL;
         // TODO: Find a better solution for &colon; instead of : to avoid conflicts in multiple qtags.
         $this->destination = $this->protocol . '&colon;//' . $this->getTarget();
-        if (empty($this->link_body)) {
-          $this->link_body = $this->getTarget();
-        }
       }
       // Link to a specific resource (i.e. to an image).
       elseif (!empty($this->attributes['external'])) {
@@ -105,10 +90,6 @@ class Link extends Qtag {
       elseif (!empty($this->getTarget())) {
         // Load the node.
         $node = NodeFactory::load($this->env, $this->getTarget());
-        // Load the link body / html.
-        if (empty($this->link_body)) {
-          $this->link_body = $node->getTitle();
-        }
         // Allow other modules to change the URL.
         $this->destination = '/' . $node->getName();
 
@@ -119,8 +100,14 @@ class Link extends Qtag {
           $this->link_class[] = 'link-active';
         }
         $this->attributes['rel'] = $node->getName();
+        if (empty($this->html_body)) {
+          $this->html_body = $node->getTitle();
+        }
       }
     }
+
+    // Sets the link title (<a title=...).
+    $this->link_title = empty($this->attributes['link_title']) ? strip_tags($this->html_body) : $this->attributes['link_title'];
 
     // Prepare variables for Link hooks.
     $vars = array(
@@ -130,6 +117,10 @@ class Link extends Qtag {
       );
     $this->env->hook('link_alter', $vars);
 
+    if (isset($this->attributes['title'])) {
+      $this->html_body = $this->attributes['title'];
+    }
+
     // Add custom classes to the link.
     if (isset($this->attributes['link_class'])) {
       // TODO: add single classes instead of one string
@@ -137,8 +128,8 @@ class Link extends Qtag {
     }
 
     // Check if there is a target language.
-    if (!empty($this->language)) {
-      $this->querystring['lang'] = $this->language;
+    if (!empty($this->attributes['language'])) {
+      $this->querystring['lang'] = $this->attributes['language'];
     }
     // Sets a query string.
     $query = (!empty($querystring)) ? ('?' . implode('&', $this->querystring)) : '';
@@ -148,27 +139,22 @@ class Link extends Qtag {
     $data_types = array('rel', 'language', 'type', 'widget', 'components', 'tooltip', 'redirect');
     foreach ($data_types as $data_type) {
       if (!empty($this->attributes[$data_type])) {
-        $this->link_params['data-' . $data_type] =  $this->attributes[$data_type];
+        if ($data_type == 'tooltip') {
+          $this->attributes[$data_type] = htmlspecialchars($this->attributes[$data_type]);
+        }
+        $this->html_params['data-' . $data_type] =  $this->attributes[$data_type];
       }
     }
 
-    $this->link_params['class'] = implode(' ', $this->link_class);
-    $this->link_params['title'] = $this->link_title;
-    $this->link_params['href'] = $this->destination . $query;
-    $this->link_params['target'] = $this->link_target;
+    $this->html_params['class'] = implode(' ', $this->link_class);
+    $this->html_params['title'] = $this->link_title;
+    $this->html_params['href'] = $this->destination . $query;
+    $this->html_params['target'] = $this->link_target;
     if (!empty($this->link_id)) {
-      $this->link_params['id'] = $this->link_id;
+      $this->html_params['id'] = $this->link_id;
     }
 
-    // Construct the link HTML.
-    $link = '<a';
-    foreach ($this->link_params as $link_param => $link_param_val) {
-      $link .= ' ' . $link_param . '="' . $link_param_val . '"';
-    }
-    $link .= '>';
-    $link .= $this->link_body;
-    $link .= '</a>';
-    return $link;
+    return parent::render();
 
   }
 }

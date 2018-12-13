@@ -3,6 +3,7 @@ namespace Quanta\Qtags;
 
 /**
  * Embeds a target content inside a Wrapper.
+ * @deprecated in favor of GRID.
  */
 
 class Wrapper extends Qtag {

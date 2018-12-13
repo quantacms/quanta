@@ -211,4 +211,25 @@ class QtagFactory {
     return $qtag;
   }
 
+  /**
+   * Convert a standard (class) name of a Qtag to its capitalized counterpart.
+   * I.e. BodyClasses => BODY_CLASSES.
+   *
+   * @param $qtag
+   *   The standard (Class) name of the Qtag.
+   *
+   * @return string
+   *   The "capitalized" version of the Qtag.
+   */
+  public static function capitalizeQtag($qtag) {
+    $capitalized = '';
+    for ($i = 0; $i < strlen($qtag); $i++) {
+      $letter = substr($qtag, $i, 1);
+      if ($i != 0 && ctype_upper($letter)) {
+        $capitalized .= "_";
+      }
+      $capitalized .= $letter;
+    }
+    return strtoupper($capitalized);
+  }
 }
