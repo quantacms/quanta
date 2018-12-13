@@ -1,3 +1,0 @@
-<?php
-include('Captcha.class.inc');
-include('captcha.hook.inc');

@@ -1,4 +1,0 @@
-<?php
-$this->dependsFrom('list');
-require_once('PlayList.class.inc');
-require_once('Album.class.inc');

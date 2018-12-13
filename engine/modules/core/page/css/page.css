@@ -1,5 +1,0 @@
-.go-home::before {
-  display:inline;
-  content: '\f015'; /* .fa-home */
-  font-family:'fontawesome';  
-}
