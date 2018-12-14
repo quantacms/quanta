@@ -26,7 +26,7 @@ class HtmlTag extends Qtag {
     $html = '<' . $this->html_tag . ' ';
     // Add the attributes.
     foreach ($this->html_params as $param_name => $param_value) {
-      $html .= $param_name;
+      $html .= $param_name . ' ';
       if (!empty($param_value)) {
         $html .= '="' . $param_value . '" ';
       }
