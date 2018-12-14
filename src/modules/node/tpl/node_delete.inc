@@ -1,4 +1,4 @@
-<h2>[STRING:Confirm Delete]</h2>
-[STRING:You are about to delete this post]:<br/><br/>
-<b>[ATTRIBUTE|name=title]</b>
+<h2>[TEXT:Confirm Delete]</h2>
+[TEXT:You are about to delete this post]:<br/><br/>
+<b>[TITLE]</b>
 <br/><br/>
