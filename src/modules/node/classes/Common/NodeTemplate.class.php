@@ -79,27 +79,27 @@ class NodeTemplate extends DataContainer {
   public function buildTemplate() {
     $tpl = array();
     $tpl_level = 0;
-    // TODO: current node taken out of lineage. Correct to add like this?
     $lineages = array($this->node) + $this->node->getLineage();
+    // If the current node has a TPL set use that directly and don't look for others.
     if (is_file($this->node->path . '/tpl.html')) {
       $this->setData('tpl_file', $this->node->path . '/tpl.html');
     }
     else {
+      // Navigate the node's lineage looking for a suitable template.
       foreach ($lineages as $lineage) {
         $tpl_level++;
         // If tpl^.html exists - template applies to all sublevels of the node.
-        if (is_file($lineage->path . '/tpl^.html')) {
-          $this->setData('tpl_file', $lineage->path . '/tpl^.html');
+        if (!isset($tpl_catch_all) && is_file($lineage->path . '/tpl^.html')) {
+          $tpl_catch_all = $lineage->path . '/tpl^.html';
           break;
         }
         else {
           $min = '';
           // We support 5 levels of sub-level templates for now.
-          // level 0 = tpl.html
           // level 1 = tpl-.html
           // level 2 = tpl--.html
           // etc...
-          for ($i = 1; $i <= 6; $i++) {
+          for ($i = 0; $i <= 5; $i++) {
             $min .= '-';
             $file = $lineage->path . '/tpl' . $min . '.html';
             if (file_exists($file)) {
@@ -109,11 +109,15 @@ class NodeTemplate extends DataContainer {
         }
       }
     }
+
     // Check if there is a sub-level template.
     if (isset($tpl[$tpl_level])) {
       $this->setData('tpl_file', $tpl[$tpl_level]);
     }
-
+    // If no sublevel template find (it has priority) check if there is a catchall template
+    elseif (isset($tpl_catch_all)) {
+      $this->setData('tpl_file', $tpl_catch_all);
+    }
 
     // Set the template. By default, if no template file is found, a node renders its body.
     $this->html = (!empty($this->getData('tpl_file'))) ? file_get_contents($this->getData('tpl_file')) : $this->node->getBody();
