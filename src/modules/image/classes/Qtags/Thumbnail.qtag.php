@@ -5,7 +5,7 @@ use Quanta\Common\NodeFactory;
 /**
  * Renders an image.
  */
-class Thumbnail extends ImgThumb {
+class Thumbnail extends Link {
   /**
    * Render the Qtag.
    *
@@ -14,9 +14,11 @@ class Thumbnail extends ImgThumb {
    */
   public function render() {
     $node = NodeFactory::loadOrCurrent($this->env, $this->getTarget());
+    $this->setAttribute('node', $node->getName());
     $this->setTarget($node->getThumbnail());
-    $this->attributes['link'] = $node->getName();
-    $this->attributes['node'] = $node->getName();
+    $img = new ImgThumb($this->env, $this->getAttributes(), $this->getTarget());
+    $this->destination = $node->getName();
+    $this->html_body = $img->render();
     return parent::render();
   }
 }

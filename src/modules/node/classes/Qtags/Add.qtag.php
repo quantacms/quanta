@@ -14,7 +14,6 @@ class Add extends Link {
   public function render() {
     // If no target is specified, use the current Node as a target.
     $nodeobj = \Quanta\Common\NodeFactory::loadOrCurrent($this->env, $this->getTarget());
-
     $this->setTarget($nodeobj->getName());
     // Check if the user has the permission to add a node.
     if (\Quanta\Common\NodeAccess::check($this->env, \Quanta\Common\Node::NODE_ACTION_ADD, array('node' => $nodeobj))) {

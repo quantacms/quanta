@@ -1,5 +1,6 @@
 <?php
 namespace Quanta\Qtags;
+use Quanta\Common\User;
 use Quanta\Common\UserFactory;
 
 /**
@@ -15,11 +16,11 @@ class Login extends Link {
     $user = UserFactory::current($this->env);
     if ($user->exists) {
       $this->link_class = array('logout-link');
-      $this->link_body = t('Logout');
+      $this->html_body = t('Logout');
     }
     else {
       $this->link_class = array('login-link');
-      $this->link_body = t('Login');
+      $this->html_body = t('Login');
     }
 
     return parent::render();
