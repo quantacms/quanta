@@ -14,7 +14,7 @@ class Content extends Qtag {
    */
   public function render() {
     // We can't allow an empty target for content, as it would continue looping forever.
-    $node = NodeFactory::load($this->env, $this->getTarget());
+    $node = NodeFactory::loadOrCurrent($this->env, $this->getTarget());
     $content = NodeFactory::render($this->env, $node->getName());
     // Inline editing link.
     if (isset($this->attributes['editable'])) {

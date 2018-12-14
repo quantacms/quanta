@@ -532,11 +532,10 @@ class Node extends JSONDataContainer {
     // Explode the full directory of the node to retrieve the relative path.
     $explode_path = explode($this->env->dir['docroot'], $this->path);
 
-    // If <= 1 probably we are in homepage, no lineage available.
+    // If count of path elements is <= 1 probably we are in homepage, therefore no lineage available.
     if (count($explode_path) > 1) {
       $fullpath = $explode_path[1];
       $bca = explode('/', $fullpath);
-
       foreach ($bca as $bread_node) {
         // In the lineage don't include the current node, or empty nodes.
         if ($bread_node == '' || $bread_node == $this->getName()) {
@@ -544,9 +543,6 @@ class Node extends JSONDataContainer {
         }
         // TODO: use nodefactory without a loop.
         $node = \Quanta\Common\NodeFactory::load($this->env, $bread_node);
-        if (!$node->exists) {
-          continue;
-        }
         $this->lineage[] = $node;
       }
     }
