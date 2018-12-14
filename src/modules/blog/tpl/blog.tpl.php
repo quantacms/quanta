@@ -4,6 +4,6 @@
 </div>
 <div class="blog-preview">
   <div class="blog-thumb"><div class="thumb">[THUMBNAIL|640x480:[LISTITEM]]</div></div>
-  <div class="blog-teaser">[ATTRIBUTE|name=teaser:[LISTITEM]]</div>
+  <div class="blog-teaser">[TEASER:[LISTITEM]]</div>
 </div>
-<div class="blog-actions">[LINK|title={STRING:Read More}:[LISTITEM]]</div>
+<div class="blog-actions">[LINK|title={TEXT:Read More}:[LISTITEM]]</div>
