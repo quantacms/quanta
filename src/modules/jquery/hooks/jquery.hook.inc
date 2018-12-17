@@ -2,7 +2,7 @@
 namespace Quanta\Common;
 
 /**
- * Implements hook_load_includes().
+ * Implements hook_boot().
  *
  * @param Environment $env
  *   The Environment.

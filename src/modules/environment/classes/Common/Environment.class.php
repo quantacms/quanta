@@ -405,6 +405,7 @@ class Environment extends DataContainer {
    *   Returns TRUE if any module was implementing the hook.
    */
   public function hook($function, array &$vars = array()) {
+
     $env = &$this;
     $hooked = FALSE;
     foreach ($this->getLoadedModules() as $module) {
