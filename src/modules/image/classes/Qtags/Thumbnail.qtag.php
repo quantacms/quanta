@@ -17,7 +17,8 @@ class Thumbnail extends Link {
     $this->setAttribute('node', $node->getName());
     $this->setTarget($node->getThumbnail());
     $img = new ImgThumb($this->env, $this->getAttributes(), $this->getTarget());
-    $this->destination = $node->getName();
+
+    $this->destination = '/' . $node->getName();
     $this->html_body = $img->render();
     return parent::render();
   }
