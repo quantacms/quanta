@@ -38,7 +38,8 @@ class Breadcrumb extends Qtag {
         // Add only published nodes without "breadcrumb_exclude".
         if ($node->isPublished() && !$node->getAttributeJSON('breadcrumb_exclude')) {
           $link_attr = array('link_class' => 'breadcrumb-link');
-          $link = new Link($this->env, $node->getName(), $link_attr);
+
+          $link = new Link($this->env, $link_attr, $node->getName());
           $themed_bc .= '<li>' . $link->render() . '</li>';
         }
       }

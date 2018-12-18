@@ -79,14 +79,17 @@ class NodeTemplate extends DataContainer {
   public function buildTemplate() {
     $tpl = array();
     $tpl_level = 0;
-    $lineages = array($this->node) + $this->node->getLineage();
+    $lineages = array($this->node->name => $this->node) + $this->node->getLineage();
+
     // If the current node has a TPL set use that directly and don't look for others.
     if (is_file($this->node->path . '/tpl.html')) {
       $this->setData('tpl_file', $this->node->path . '/tpl.html');
     }
     else {
+
       // Navigate the node's lineage looking for a suitable template.
       foreach ($lineages as $lineage) {
+
         $tpl_level++;
         // If tpl^.html exists - template applies to all sublevels of the node.
         if (!isset($tpl_catch_all) && is_file($lineage->path . '/tpl^.html')) {

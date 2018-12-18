@@ -146,15 +146,21 @@ class QtagFactory {
     $tag_delimited = substr($tag_full, 1, strlen($tag_full) - 2);
     $tag = explode(':', $tag_delimited);
     $tag_name_p = $tag[0];
-    // If there is more than one : we have to just consider the LAST chunk
-    // and unify the rest.
-    $target = (count($tag) > 1) ? $tag[count($tag) - 1] : NULL;
-    for ($i = 0; $i < (count($tag) - 1); $i++) {
-      $tag_name_p .= ':' . $tag[$i];
+    if (count($tag) > 1) {
+      unset($tag[0]);
+      $target = implode(':', $tag);
     }
+    else {
+      $target = NULL;
+    }
+    // If there is more than one : we have to just consider the FIRST chunk
+    // and unify the rest.
+    //$target = (count($tag) > 1) ? implode(':', $tag) : NULL;
+
+
     // Load the attributes of the qtag.
     $attributes = explode($delimiters[2], $tag_name_p);
-    $tag_name = (count($attributes) > 1) ? $attributes[0] : $tag[0];
+    $tag_name = $attributes[0];
     $qtag_attributes = array();
     unset($attributes[0]);
 
