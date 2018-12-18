@@ -20,6 +20,6 @@ class Form extends Qtag {
     if ($form->isSubmitted() && ($validate_ok = $form->checkValidate())) {
       $string = $validate_ok;
     }
-    return $string;
+    return $string . '</form>';
   }
 }
