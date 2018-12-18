@@ -15,7 +15,17 @@ class Input extends Qtag {
   public function render() {
     $form = FormFactory::getForm($this->env, $this->getTarget());
     FormFactory::createInputItem($this->env, $this->attributes, $form);
-    $rendered = new InputRender($this->env, $this->attributes, $this->getTarget());
-    return $rendered->html;
+    $rendered = '';
+
+    if (!(empty($this->attributes['name'])) && !(empty($form->getItem($this->attributes['name'])))) {
+
+      $input = $form->getItem($this->attributes['name']);
+      if ($input->isFirst()) {
+        $this->attributes['prefix'] = $form->renderFormOpen();
+      }
+      $rendered .= ($form->isValidated()) ? '' : $input->renderFormItem();
+    }
+
+    return $rendered;
   }
 }

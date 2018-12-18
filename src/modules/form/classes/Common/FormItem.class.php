@@ -561,6 +561,7 @@ abstract class FormItem extends DataContainer {
    */
   public function isLast() {
     $items = $this->getForm()->getItems();
+    print_r(array_keys($items));
     $last = array_pop($items);
     return ($this->getName() == $last->getName());
   }
