@@ -4,7 +4,6 @@ main {
   text-align: left;
 }
 
-
 nav.menu ul {
   list-style: none;
   margin: 0;
@@ -23,8 +22,6 @@ nav.menu.menu-vertical li + li {
 nav.menu.menu-vertical a {
   display: initial;
 }
-
-
 
 header {
   display: flex;
