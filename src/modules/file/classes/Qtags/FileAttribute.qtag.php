@@ -25,10 +25,6 @@ class FileAttribute extends Qtag {
         $string = $file->getName();
         break;
 
-      case 'path':
-        $string = $file->getFullPath();
-        break;
-
       case 'type':
         $string = $file::getFileType($file->getExtension());
         break;

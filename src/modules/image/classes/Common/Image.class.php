@@ -5,15 +5,12 @@ namespace Quanta\Common;
 /**
  * This class allows creation, manipulation and transformation
  * of Images.
- * It extends a basic File class, to which it adds image editing functions.
+ * It extends the basic FileObject class, to which it adds image editing functions.
  *
  */
-define('IMAGE_RENDER_FULL', 'image_full');
-
-/**
- * Class Image
- */
 class Image extends FileObject {
+   const IMAGE_RENDER_FULL = 'image_full';
+
   /** @var int $width */
   public $width = '';
   /** @var int $height */
@@ -22,18 +19,16 @@ class Image extends FileObject {
   public $css = array();
   /** @var array $class */
   public $class = array();
-  /** @var string $linkto */
-  public $linkto = NULL;
   /** @var string $title */
   public $title = NULL;
 
   /**
-   * Load image attributes.
-   * @param $attributes
+   * Load the image's  attributes.
+   *
+   * @param array $attributes
    */
   public function loadAttributes($attributes) {
     foreach ($attributes as $attname => $attribute) {
-
       // Check the image size as input by the user.
       if (preg_match_all('/[0-9|auto]x[0-9|auto]/', $attname, $matches)) {
         $size = explode('x', $attname);
@@ -47,9 +42,6 @@ class Image extends FileObject {
           break;
         case 'float':
           $this->css[] = 'float:' . $attribute;
-          break;
-        case 'link':
-          $this->linkto = $attribute;
           break;
         case 'title':
           $this->setTitle($attribute);
@@ -99,13 +91,12 @@ class Image extends FileObject {
    * @param string $mode
    * @return string
    */
-  public function render($mode = IMAGE_RENDER_FULL) {
-    $imgurl = (strpos($this->path, '/') !== FALSE) ? $this->path : '/' . $this->node->getName() . '/' . $this->path;
+  public function render($mode = self::IMAGE_RENDER_FULL) {
     $style = (count($this->css) > 0) ? 'style="' . implode(';', $this->css) . '" ' : '';
     $class = (count($this->class) > 0) ? implode(' ', $this->class) : '';
     $width = ($this->width > 0) ? 'width="' . $this->width . '"' : '';
     $height = ($this->height > 0) ? 'height="' . $this->height . '"' : '';
-    $img = '<img ' . $width . ' ' . $height . ' alt="' . $this->getTitle() . '" class="image ' . $class . '" src="' . $imgurl . '" ' . $style . " />";
+    $img = '<img ' . $width . ' ' . $height . ' alt="' . $this->getTitle() . '" class="image ' . $class . '" src="' . $this->path . '" ' . $style . " />";
     return $img;
 
   }
@@ -121,7 +112,7 @@ class Image extends FileObject {
    * @return string
    *   The url of the generated thumbnail.
    */
-  public function generateThumbnail($env, $vars) {
+  public function generateThumbnail(Environment $env, array $vars) {
 
     $maxw = isset($vars['w_max']) ? $vars['w_max'] : 0;
     $maxh = isset($vars['h_max']) ? $vars['h_max'] : 0;

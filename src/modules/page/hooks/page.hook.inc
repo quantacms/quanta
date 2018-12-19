@@ -9,7 +9,7 @@ namespace Quanta\Common;
  * @param array $vars
  *   An array of variables.
  */
-function page_load_includes($env, $vars) {
+function page_load_includes(Environment $env, $vars) {
   $module_path = $env->getModulePath('page');
   $env->addInclude($module_path . '/assets/css/page.css');
 }
@@ -22,7 +22,7 @@ function page_load_includes($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function page_body_classes($env, $vars) {
+function page_body_classes(Environment $env, $vars) {
   $vars['page']->addData('body_classes', array('page'));
 }
 
@@ -36,7 +36,7 @@ function page_body_classes($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function page_boot($env, $vars) {
+function page_boot(Environment $env, $vars) {
   $env->sysdir('pages', 'pages');
   $env->sysdir('system', '_system');
 
@@ -62,7 +62,7 @@ function page_boot($env, $vars) {
  * @param array $vars
  *   Miscellaneous environment / page variables.
  */
-function page_doctor_setup($env, $vars) {
+function page_doctor_setup(Environment $env, $vars) {
   /** @var Doctor $doctor */
   $doctor = $vars['doctor'];
   $doctor->op('Installing basic pages!');
@@ -151,7 +151,7 @@ function page_doctor_setup($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function page_init($env, $vars) {
+function page_init(Environment $env, $vars) {
   if (empty($env->getData('page'))) {
     // Start page's standard index.html.
     $page = new \Quanta\Common\Page($env);
@@ -179,7 +179,7 @@ function page_init($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function page_doctor($env, $vars) {
+function page_doctor(Environment $env, $vars) {
   /** @var Doctor $doctor */
   $doctor = $vars['doctor'];
   

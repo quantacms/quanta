@@ -1,15 +1,9 @@
 /* GRID in page TPL: header + #grid-main(max-height) + footer */
-
 #grid-main {
   display: grid;
   grid-auto-rows: min-content;
   grid-gap: 0;
 }
-
-
-/* "three-rows" style: */
-/* MAIN PAGE structure: */
-/* header + #grid-main(max-height) + footer */
 
 body.grid.three-rows > header,
 body.grid.three-rows > footer,
@@ -17,10 +11,7 @@ body.grid.three-rows #grid-main {
   grid-gap: 0;
 }
 
-
-
 /* GRID */
-
 .grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
@@ -76,9 +67,7 @@ body.grid {
   grid-row-gap: calc(var(--gap-size) * 3);
 }
 
-
 /* RESPONSIVE */
-
 /* MOBILE FIRST */
 
 .grid-start-1 {
