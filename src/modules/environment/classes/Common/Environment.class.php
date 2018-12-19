@@ -582,10 +582,18 @@ class Environment extends DataContainer {
       }
     }
     if (count($found_folders) > 1) {
-      new Message($this, 'Warning: there is more than one folder named ' . $folder . ': <br/>' . var_export($found_folders, 1) . '<br>Check integrity!');
+      new Message($this,
+        t('Warning: there is more than one folder named !folder: <br/>!folders<br>Check integrity!',
+          array(
+            '!folder' => $folder,
+            '!folders' => var_export($found_folders, 1),
+          )
+        ));
     }
     elseif (empty($result)) {
-      new Message($this, 'Warning: there is no folder named ' . $folder . '<br>Check integrity!');
+      new Message($this, t('Warning: there is no folder named !folder<br>Check integrity!',
+        array('!folder' => $folder)
+      ));
     }
     else {
       Cache::storeNodePath($this, $result);
@@ -612,6 +620,4 @@ class Environment extends DataContainer {
     $node_name = array_slice(explode('/', $target), -1)[0];
     return $node_name;
   }
-
-
 }

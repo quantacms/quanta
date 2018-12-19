@@ -56,7 +56,7 @@ abstract class DataContainer {
       $sum = ($before) ? ($value . $curr) : ($curr . $value);
     }
     else {
-      new Message($this->env, "UNKNOWN DATA TYPE: %value", array('%value' => $value), MESSAGE_ERROR);
+      new Message($this->env, t("Unknown data type: %value", array('%value' => $value)), MESSAGE_ERROR);
       $sum = NULL;
     }
     $this->setData($key, $sum);

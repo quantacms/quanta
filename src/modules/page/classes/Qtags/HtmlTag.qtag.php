@@ -42,4 +42,11 @@ class HtmlTag extends Qtag {
     }
     return $html;
   }
+
+  /**
+   * Helper function to add a class, useful in many situations.
+   */
+  public function addClass($classname) {
+    $this->html_params['class'] .= ' ' . $classname;
+  }
 }
