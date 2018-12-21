@@ -327,8 +327,6 @@ class Image extends FileObject {
         // the height identical but halving
         // the width to 50
 
-        if ($scale < 1 || TRUE) {
-
           // Calculate the new height and width
           // based on the scale
 
@@ -422,7 +420,7 @@ class Image extends FileObject {
           imagealphablending($img, true);
           imagesavealpha($img, true);
         }
-      }
+
 
       // Display the image using the header function to specify
       // the type of output our page is giving
