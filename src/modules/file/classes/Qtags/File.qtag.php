@@ -15,8 +15,8 @@ class File extends Qtag {
    *   The rendered Qtag.
    */
   public function render() {
-    $node = NodeFactory::loadOrCurrent($this->getData('node'));
-    $file = new FileObject($this->env, $this->getTarget(), $node, $this->getData('title'));
+    $node = NodeFactory::loadOrCurrent($this->env, $this->getAttribute('node'));
+    $file = new FileObject($this->env, $this->getTarget(), $node, $this->getAttribute('title'));
     // Return the rendered file, if exists.
     if ($file->exists) {
       return $file->render();

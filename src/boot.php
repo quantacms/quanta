@@ -55,7 +55,6 @@
   // Run the complete hook.
   $env->hook('complete');
 
-  print t("test");
   // Complete the boot process.
   exit();
 
