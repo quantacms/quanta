@@ -14,7 +14,7 @@ RewriteRule ^(files)/(.*) sites/%{HTTP_HOST}/files/$2
 RewriteRule ^(assets)/(.*) sites/%{HTTP_HOST}/assets/$2
 RewriteRule ^(tmp)/(.*) static/tmp/%{HTTP_HOST}/files/$2 [NC]
 RewriteRule ^(thumbs)/(.*) static/tmp/%{HTTP_HOST}/thumbs/$2 [NC]
-
+RewriteRule ^(modules)/(.*) src/modules/$2
 
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteCond %{REQUEST_URI} !boot\.(php)
