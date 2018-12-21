@@ -101,7 +101,6 @@ class Qtag {
       $this->html = '';
     }
     elseif (!$this->rendered) {
-
       $this->html = $this->render();
       $this->rendered = TRUE;
       // Let other modules hook into the rendered qtag.
@@ -112,6 +111,12 @@ class Qtag {
       }
       if (!empty($this->attributes['prefix']) && !empty($this->html)) {
         $this->html = $this->attributes['prefix'] . $this->html;
+      }
+      if (!empty($this->attributes['trim']) && is_numeric($this->attributes['trim']) && !empty($this->html)) {
+        $this->html = substr($this->html, 0, $this->attributes['trim']);
+        if (!empty($this->attributes['trim_text'])) {
+          $this->html .= $this->attributes['trim_text'];
+        }
       }
       // Prevent replacement where no_qtags attribute present. Used for input forms etc.
       if (isset($this->attributes['no_qtags'])) {

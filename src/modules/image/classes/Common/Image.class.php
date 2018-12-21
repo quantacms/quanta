@@ -67,7 +67,6 @@ class Image extends FileObject {
       $this->width = $get_size[0];
       $this->height = $get_size[1];
     }
-
   }
 
   /**
@@ -98,7 +97,6 @@ class Image extends FileObject {
     $height = ($this->height > 0) ? 'height="' . $this->height . '"' : '';
     $img = '<img ' . $width . ' ' . $height . ' alt="' . $this->getTitle() . '" class="image ' . $class . '" src="' . $this->path . '" ' . $style . " />";
     return $img;
-
   }
 
 
@@ -119,7 +117,6 @@ class Image extends FileObject {
     $img_action = isset($vars['image_action']) ? $vars['image_action'] : 0;
     $compression = isset($vars['compression']) ? $vars['compression'] : 0;
     $fallback = isset($vars['fallback']) ? $vars['fallback'] : 0;
-
 
     if ($maxw == 'auto') {
       $maxw = 0;
@@ -213,6 +210,7 @@ class Image extends FileObject {
       or print("Cannot create new GIF image: " . $img_path);
     }
 
+
     // header("Content-type: image/" . $img_extension);
 
 
@@ -220,6 +218,7 @@ class Image extends FileObject {
     // to the next step
 
     if ($img) {
+
 
       // We now need to decide how to resize the image
 
@@ -301,7 +300,6 @@ class Image extends FileObject {
 
       }
       elseif ($img_action == "crop") {
-
         // Get scale ratio
 
         $scale = max($img_thumb_width / $img_orig_width,
@@ -328,8 +326,6 @@ class Image extends FileObject {
         // we will need to crop the image, leaving
         // the height identical but halving
         // the width to 50
-
-        if ($scale < 1) {
 
           // Calculate the new height and width
           // based on the scale
@@ -424,7 +420,7 @@ class Image extends FileObject {
           imagealphablending($img, true);
           imagesavealpha($img, true);
         }
-      }
+
 
       // Display the image using the header function to specify
       // the type of output our page is giving
