@@ -24,11 +24,11 @@ class FileQtagSuggestion extends Qtag {
 
     switch ($file->getType()) {
       case 'image':
-        $suggestion = '[IMG|showtag:' . $this->getTarget() . ']';
+        $suggestion = '[IMG|highlight:' . $this->getTarget() . ']';
         break;
 
       default:
-        $suggestion = '[FILE|showtag:' . $this->getTarget() . ']';
+        $suggestion = '[FILE|highlight:' . $this->getTarget() . ']';
         break;
     }
 
