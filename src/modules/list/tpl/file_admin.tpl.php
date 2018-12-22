@@ -1,8 +1,8 @@
 <span class="sort-handle"></span>
 <span class="file-link-item">
-  <span class="file-preview">file preview</span>  
-  <a class="file-link" data-node="{LISTNODE}" data-filename="[FILEATTRIBUTE|name=name|node={LISTNODE}:{LISTITEM}]" target="_blank" href="/{LISTNODE}/[FILEATTRIBUTE|name=name|node={LISTNODE}:{LISTITEM}]">
-    [FILEATTRIBUTE|name=name|node={LISTNODE}:{LISTITEM}]
+  <span class="file-preview">[TEXT:Loading preview...]</span>
+  <a class="file-link" data-node="{LISTNODE}" data-filename="[FILE_ATTRIBUTE|name=name|node={LISTNODE}:{LISTITEM}]" target="_blank" href="/{LISTNODE}/[FILE_ATTRIBUTE|name=name|node={LISTNODE}:{LISTITEM}]">
+    [FILE_ATTRIBUTE|name=name|node={LISTNODE}:{LISTITEM}]
   </a>
 </span>
 <span class="file-qtag">[FILE_QTAG_SUGGESTION:{LISTITEM}]</span>
