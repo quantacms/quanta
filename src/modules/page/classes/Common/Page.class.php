@@ -65,9 +65,11 @@ class Page extends DataContainer {
    */
   public function addJS($js, $mode = 'file') {
     if ($mode == 'inline') {
+      // Inline JS.
       $this->addData('js_inline', array($js));
     }
     else {
+      // JS files.
       $this->addData('js', array($js));
     }
   }
