@@ -11,7 +11,6 @@ class FormItemDate extends FormItemString {
   public $format = 'Y-m-d';
 
   function loadAttributes() {
-    $this->addData('class', array('hasDatePicker'));
     parent::loadAttributes();
     if (!empty($this->getInputAttr('date_format'))) {
       $this->format = $this->getInputAttr('date_format');
