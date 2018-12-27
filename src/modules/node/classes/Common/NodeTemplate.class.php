@@ -78,7 +78,7 @@ class NodeTemplate extends DataContainer {
    */
   public function buildTemplate() {
     $tpl = array();
-    $tpl_level = 0;
+    $tpl_sublevel = 0;
     $lineages = $this->node->getLineage() + array($this->node->name => $this->node);
     // Invert lineage: from specific to generic.
     $lineages = array_reverse($lineages);
@@ -90,22 +90,24 @@ class NodeTemplate extends DataContainer {
     }
     else {
       // Navigate the node's lineage looking for a suitable template.
-      $tpl_level = count($lineages);
-
       foreach ($lineages as $lineage) {
-        $min = '';
 
         // Priority 2: tpl with levels (sub-level).
-        // We support 5 levels of sub-level templates for now.
-        // level 1 = tpl-.html
-        // level 2 = tpl--.html
-        // etc...
-        // "node/subnode/tpl-" has priority over "node/tpl--"
-        for ($i = 0; $i < 5; $i++) {
-          $min .= '-';
-          $file = $lineage->path . '/tpl' . $min . '.html';
-          if (file_exists($file)) {
-            $tpl[$tpl_level] = $file;
+        // Check it only if the folder is an anchestor of current node folder.
+        if ($tpl_sublevel > 0) {
+          $min = '';
+          // We support 5 levels of sub-level templates for now.
+          // level 1 = tpl-.html
+          // level 2 = tpl--.html
+          // etc...
+          // "node/subnode/tpl-" has priority over "node/tpl--"
+          for ($i = 1; $i <= 5; $i++) {
+            $min .= '-';
+            $file = $lineage->path . '/tpl' . $min . '.html';
+            if ($tpl_sublevel == $i && file_exists($file)) {
+              // tpl matches sublevel and distance form current node position: add it!
+              $tpl[$tpl_sublevel] = $file;
+            }
           }
         }
 
@@ -114,14 +116,13 @@ class NodeTemplate extends DataContainer {
         if (!isset($tpl_catch_all) && is_file($lineage->path . '/tpl^.html')) {
           $tpl_catch_all = $lineage->path . '/tpl^.html';
         }
-
-        $tpl_level--;
+        $tpl_sublevel++;
       }
 
       // Check if there is a sub-level template.
       if (!empty($tpl)) {
-        // Get the closest sub-level tpl to the node.
-        $closest_tpl_key = max(array_keys($tpl));
+        // Get the closest sub-level tpl to the node (tpl- is better than tpl--).
+        $closest_tpl_key = min(array_keys($tpl));
         $closest_tpl = $tpl[$closest_tpl_key];
         $this->setData('tpl_file', $closest_tpl);
       }
