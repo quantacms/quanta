@@ -20,15 +20,14 @@ class Api {
   }
 
   /**
-   * Redirect the current user to another page.
-   * // TODO: make this stuff better.
+   * Instant JS redirect to another page.
    *
    * @param string $where
    *   Where to redirect the user.
    */
   public static function redirect($where) {
     print '<script>top.location.href="' . $where . '";</script>';
-    die();
+    exit;
   }
 
   /**
@@ -94,13 +93,13 @@ class Api {
     $string = str_replace(':', '&colon;', $string);
     $string = str_replace('|', '&verbar;', $string);
 
-    if ($nl2br) {
-      $string = nl2br($string);
+    if (!$nl2br) {
+      $string = preg_replace('~[\r\n\t]+~', '', $string);;
     }
 
     // Remove tabs and newlines.
     // TODO: was necessary as it broke INPUT tags by weirdly printing the value...
-    return preg_replace('~[\r\n\t]+~', '', $string);
+    return $string;
 
   }
 
