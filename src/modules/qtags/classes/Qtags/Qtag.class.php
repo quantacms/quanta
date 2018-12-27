@@ -135,11 +135,8 @@ class Qtag {
   public function highlight() {
 
     // TODO: those characters seem ignored by htmlentities(). Converting manually for now, check out why.
-    $open_tag = str_replace('[', '&#91;',
-      str_replace('{', '	&#123;', ($this->delimiters[0])));
-    $close_tag = str_replace(']', '&#93;',
-      str_replace('}', '	&#125;', ($this->delimiters[1])));
-
+    $open_tag = \Quanta\Common\Api::string_normalize($this->delimiters[0]);
+    $close_tag = \Quanta\Common\Api::string_normalize($this->delimiters[1]);
     $highlighted = '<span class="qtag">';
     $highlighted .= '<span class="qtag-open-close">' . $open_tag . '</span><span class="qtag-name">' . $this->tag . '</span>';
     foreach ($this->attributes as $attribute_name => $attribute_value) {
