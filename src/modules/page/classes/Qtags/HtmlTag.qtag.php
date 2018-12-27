@@ -18,6 +18,19 @@ class HtmlTag extends Qtag {
     if (!empty($this->getAttribute('html_tag'))) {
       $this->html_tag = $this->getAttribute('html_tag');
     }
+    // Load id.
+    if (!empty($this->attributes['id'])) {
+      $this->html_params['id'] = $this->attributes['id'];
+    }
+    // Load classes.
+    if (!empty($this->attributes['class'])) {
+      if (isset($this->html_params['class'])) {
+        $this->html_params['class'] .= ' ' . $this->attributes['class'];
+      }
+      else {
+        $this->html_params['class'] = $this->attributes['class'];
+      }
+    }
     // Set the body of the html tag.
     if (empty($this->html_body)) {
       $this->html_body = $this->getTarget();
