@@ -36,7 +36,7 @@ function access_node_presave(Environment $env, array $vars){
   $node = &$vars['node'];
   // TODO: review this process.
   if (!isset($node->json->permissions)) {
-    $node->json->permissions = new stdClass();
+    $node->json->permissions = new \stdClass();
   }
   // Set all the node's permissions.
   foreach ($node_permissions as $permission) {

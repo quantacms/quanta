@@ -5,46 +5,38 @@ use Quanta\Common\NodeFactory;
 /**
  * Renders the full breadcrumb / lineage of the current node.
  */
-class Breadcrumb extends Qtag {
+class Breadcrumb extends HtmlTag {
+  protected $html_tag = 'ul';
+  protected $html_params = array('class' => 'breadcrumb');
   /**
    * @return string
    *   The rendered Qtag.
    */
   public function render() {
     $node = NodeFactory::current($this->env);
-
-    // Check if current node id home (main node).
-    if ($node->getName() == 'home'){
-      // Do not show breadcrumb in homepage.
-      return '';
-    }
-
     $node_home = NodeFactory::load($this->env, 'home');
-    // Builds the lineage of the node.
+    // Build the lineage of the node.
     $node->buildLineage();
-    // Starts with home node.
-    $breadcrumb = array('home' => $node_home) + $node->getLineage();
-
-    if (empty($this->attributes['include_current'])) {
-      array_pop($breadcrumb);
+    $breadcrumb = $node->getLineage();
+    // First item in breadcrumb is the home node, unless excluded by an attribute.
+    if (empty($this->attributes['exclude_home'])) {
+      $breadcrumb = array('home' => $node_home) + $breadcrumb;
     }
-
-    // TODO: breadcrumb generation must be done in page.class.
-    $this->env->setData('breadcrumb', $breadcrumb);
-    // Theme and renders the breadcrumb.
-    $themed_bc = '<ul class="breadcrumb">';
-    if (count($breadcrumb) > 0 && $breadcrumb != '') {
+    // Attribute to include current node in the breadcrumb.
+    if (!empty($this->attributes['include_current'])) {
+      $breadcrumb += array($node->name => $node);
+    }
+    // Generate the Breadcrumb items.
+    if (!empty($breadcrumb)) {
       foreach ($breadcrumb as $i => $node) {
-        // Add only published nodes without "breadcrumb_exclude".
+        // Add only published nodes without "breadcrumb_exclude" param in json.
         if ($node->isPublished() && !$node->getAttributeJSON('breadcrumb_exclude')) {
           $link_attr = array('link_class' => 'breadcrumb-link');
-
           $link = new Link($this->env, $link_attr, $node->getName());
-          $themed_bc .= '<li>' . $link->render() . '</li>';
+          $this->html_body .= '<li>' . $link->render() . '</li>';
         }
       }
     }
-    $themed_bc .= '</ul>';
-    return $themed_bc;
+    return parent::render();
   }
 }
