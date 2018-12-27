@@ -89,11 +89,12 @@ class Carousel extends HtmlTag {
       $page->addCSS($module_path . '/assets/css/flickity-quanta.css');
       $carousel_id = 'flickity-' . $flickity_counter;
       $this->html_params['id'] = $carousel_id;
-
       $this->html_body = $list->render();
       $js_attributes = array('external' => TRUE);
-      $this->html_body .= new Js($this->env, $js_attributes, '/src/modules/carousel/assets/js/flickity.pkgd.min.js');
-      $this->html_body .= '<script>window.addEventListener("DOMContentLoaded", function() { alert("ok");$("#' . $carousel_id . '").flickity({' . implode(',', $carousel_attributes_arr) . '});});</script>';
+      $page->addJS('/src/modules/carousel/assets/js/flickity.pkgd.min.js', 'file');
+      $page->addJS('window.addEventListener("DOMContentLoaded", function() {
+        $("#' . $carousel_id . '").flickity({' . implode(',', $carousel_attributes_arr) . '});
+        });', 'inline');
     }
     return parent::render();
   }

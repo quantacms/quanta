@@ -109,7 +109,6 @@ function access_qtag_preload(Environment $env, array $vars) {
  */
 function _access_filter($env, $criteria, $node, $user = NULL) {
 
-
   // Explode the criteria values.
   $filter = explode(',', $criteria);
 
