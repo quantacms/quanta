@@ -31,15 +31,6 @@ var openAjax = function(name, destination, afterExec, tpl) {
     });
 };
 
-var refreshButtons = function() {
-    $( "input.hasDatepicker").each(function() {
-        var default_date = ($(this).val());
-        $(this).Zebra_DatePicker({
-            format: 'd-m-Y'
-        });
-    });
-};
-
 var action = function(dataJson) {
     $.ajax({
         type: "POST",
@@ -98,5 +89,5 @@ $(document).ready(function() {
 });
 
 $(document).bind('refresh', function(ev) {
-    refreshButtons();
+    //refreshButtons();
 });
