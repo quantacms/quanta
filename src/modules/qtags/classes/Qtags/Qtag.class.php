@@ -133,21 +133,28 @@ class Qtag {
    *   The highlighted Qtag string.
    */
   public function highlight() {
+
+    // TODO: those characters seem ignored by htmlentities(). Converting manually for now, check out why.
+    $open_tag = str_replace('[', '&#91;',
+      str_replace('{', '	&#123;', ($this->delimiters[0])));
+    $close_tag = str_replace(']', '&#93;',
+      str_replace('}', '	&#125;', ($this->delimiters[1])));
+
     $highlighted = '<span class="qtag">';
-    $highlighted .= '<span class="qtag-open-close">' . $this->delimiters[0] . '</span><span class="qtag-name">' . $this->tag . '</span>';
+    $highlighted .= '<span class="qtag-open-close">' . $open_tag . '</span><span class="qtag-name">' . $this->tag . '</span>';
     foreach ($this->attributes as $attribute_name => $attribute_value) {
       if (($attribute_value != "showtag") && ($attribute_value != "highlight")) {
         $attribute_full = $attribute_name . (empty($attribute_value) ? '' : ('=' . $attribute_value));
-        $highlighted .= '<span class="qtag-attribute-separator">|</span>';
+        $highlighted .= '<span class="qtag-attribute-separator">&#124;</span>';
         $highlighted .= '<span class="qtag-attribute">' . $attribute_full . '</span>';
       }
     }
     if (!empty($this->getTarget())) {
-      $highlighted .= '<span class="qtag-target-separator">:</span>';
+      $highlighted .= '<span class="qtag-target-separator">&colon;</span>';
       $highlighted .= '<span class="qtag-target">' . $this->getTarget() . '</span>';
     }
 
-    $highlighted .= '<span class="qtag-open-close">' . $this->delimiters[1] . '</span>';
+    $highlighted .= '<span class="qtag-open-close">' . $close_tag . '</span>';
 
     $highlighted .= '</span>';
     return $highlighted;
