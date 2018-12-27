@@ -15,7 +15,7 @@ $(document).bind('refresh', function() {
 
     // Edit Node link behavior.
     $('.edit-link').off('click').on('click', function(e) {
-        // TODO: select default components in a hook.
+      // TODO: select default components in a hook.
         var components = (($(this).attr('data-components') != undefined) ? ($(this).attr('data-components').split(',')) : ['node_form', 'file_form', 'manager_form', 'access_form', 'status_form']);
 
         var shadow = {

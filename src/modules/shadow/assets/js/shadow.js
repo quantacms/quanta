@@ -18,9 +18,6 @@ $(document).bind('refresh', function () {
   // If users have updated anything, make shadow aware, to prevent accidental
   // window closing, and losing of the work.
   $('#shadow-item').find('input,select,textarea').bind('change', setShadowUpdated);
-  // Froala html container.
-  // @deprecated as Froala goes out of Quanta.
-  $('#shadow-item').unbind('froalaChanged').bind('froalaChanged', setShadowUpdated);
 
   $('.shadow-submit').on('click', function () {
     if (!($(this).hasClass('shadow-submitted'))) {
