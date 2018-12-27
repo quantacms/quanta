@@ -36,6 +36,9 @@ class Js extends Qtag {
       if (isset($this->attributes['inline'])) {
         $js_code .= '<script>' . $js_file . '</script>';
       }
+      elseif (isset($this->attributes['file_inline'])) {
+        $js_code .= '<script>' . file_get_contents($js_file) . '</script>';
+      }
       else {
         $js_code .= '<script src="' . $js_file . $refresh . '"></script>';
       }
