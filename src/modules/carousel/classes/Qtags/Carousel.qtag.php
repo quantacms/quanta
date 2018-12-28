@@ -27,7 +27,7 @@ class Carousel extends HtmlTag {
     $page = $this->env->getData('page');
 
     // TODO: create a class for the carousel.
-    $module = isset($this->attributes['module']) ? $this->attributes['module'] : 'flickity';
+    $module = isset($this->attributes['module']) ? $this->attributes['module'] : 'carousel';
     if (isset($this->attributes['carousel-type'])) {
       $this->carousel_type = $this->attributes['carousel-type'];
     }
