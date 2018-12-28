@@ -34,3 +34,7 @@ p {
 p:empty {
   margin: 0;
 }
+
+ul {
+  padding-left: 22px;
+}
