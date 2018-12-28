@@ -134,7 +134,7 @@ class Image extends FileObject {
 
     // Get the File path for the image
     $thumb_root = $env->dir['thumbs'];
-    $thumbfile = 'thumb-' . str_replace(' ', '-', str_replace('/', '-', $this->node->getName() . '-' . $this->width . 'x' . $this->height . '-' . $this->getName()));
+    $thumbfile = 'thumb-' . str_replace(' ', '-', str_replace('/', '-', $this->getNode()->getName() . '-' . $this->width . 'x' . $this->height . '-' . $this->getName()));
 
     $img_path = $this->getRealPath();
     $thumb_image_path = $thumb_root . '/' . $thumbfile;

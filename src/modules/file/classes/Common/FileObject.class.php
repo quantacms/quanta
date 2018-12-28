@@ -51,12 +51,14 @@ class FileObject extends DataContainer {
 
     if (strpos($file_path, '/') !== FALSE) {
       $this->external = TRUE;
+      $this->setNode(NodeFactory::current($env));
+
     }
     elseif ($node == NULL) {
-      $this->node = NodeFactory::current($env);
+      $this->setNode(NodeFactory::current($env));
     }
     else {
-      $this->node = $node;
+      $this->setNode(NodeFactory::load($node));
     }
     $this->setFileName($name);
     $this->setPath($file_path);
@@ -361,17 +363,43 @@ class FileObject extends DataContainer {
   }
 
   /**
+   * Gets the File name.
+   *
    * @return string
+   *   The file name.
    */
   public function getFileName() {
     return $this->filename;
   }
 
   /**
+   * Sets the File name.
+   *
    * @param $filename
+   *   The file name.
    */
   public function setFileName($filename) {
     $this->filename = $filename;
+  }
+
+  /**
+   * Gets the Node containing the file.
+   *
+   * @return Node
+   *   The node.
+   */
+  public function getNode() {
+    return $this->node;
+  }
+
+  /**
+   * Sets the Node containing the file.
+   *
+   * @param Node $node
+   *   The node.
+   */
+  public function setNode(Node $node) {
+    $this->node = $node;
   }
 
   /**
