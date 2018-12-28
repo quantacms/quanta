@@ -473,7 +473,7 @@ class Environment extends DataContainer {
    * @return string
    */
   public function getCandidatePath($title) {
-    $candidate_path = normalizePath($title);
+    $candidate_path = \Quanta\Common\Api::normalizePath($title);
 
     $i = 0;
     while (TRUE) {
