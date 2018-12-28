@@ -161,14 +161,11 @@ function file_node_load(Environment $env, array $vars) {
 function file_page_init(Environment $env, array $vars) {
   // If a Shadow is open, initialize file upload libraries.
   if (Shadow::isOpen($env)) {
-    $attributes = array('external');
-    print new \Quanta\Qtags\Css($env, $attributes, 'https://cdnjs.cloudflare.com/ajax/libs/jodit/3.1.39/jodit.min.css');
-    print new \Quanta\Qtags\Js($env, $attributes, 'https://cdnjs.cloudflare.com/ajax/libs/jodit/3.1.39/jodit.min.js');
-    $attributes = array('inline' => TRUE, 'module' => 'jquery');
+    $attributes = array('file_inline' => TRUE, 'refresh' => TRUE, 'module' => 'jquery');
     print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/jquery-ui.min.js');
     print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/jquery.ui.widget.js');
     print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/jquery.tablesorter.js');
-    $attributes = array('inline' => TRUE, 'module' => 'file');
+    $attributes = array('file_inline' => TRUE, 'refresh' => TRUE, 'module' => 'file');
     print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/jquery.knob.js');
     print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/jquery.iframe-transport.js');
     print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/jquery.fileupload.js');
