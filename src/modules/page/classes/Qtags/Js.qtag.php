@@ -16,7 +16,7 @@ class Js extends Qtag {
     $js = array();
     $js_inline = array();
     $js_code = '';
-    $refresh =  isset($this->attributes['refresh']) ? ('?' . Doctor::timestamp($this->env)) : '';
+    $refresh =  isset($this->attributes['refresh']) ? ('?' . \Quanta\Common\Doctor::timestamp($this->env)) : '';
 
     // If target is specified, include the css file directly.
     if (!empty($this->getTarget())) {
