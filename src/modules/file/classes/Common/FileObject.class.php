@@ -54,11 +54,11 @@ class FileObject extends DataContainer {
       $this->setNode(NodeFactory::current($env));
 
     }
-    elseif ($node == NULL) {
+    elseif (empty($node)) {
       $this->setNode(NodeFactory::current($env));
     }
     else {
-      $this->setNode(NodeFactory::load($env, $node));
+      $this->setNode($node);
     }
     $this->setFileName($name);
     $this->setPath($file_path);
