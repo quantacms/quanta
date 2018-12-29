@@ -14,7 +14,6 @@ class Input extends Qtag {
    */
   public function render() {
     $form = FormFactory::getForm($this->env, $this->getTarget());
-
     FormFactory::createInputItem($this->env, $this->attributes, $form);
     $rendered = '';
 
