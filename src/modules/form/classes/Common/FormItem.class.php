@@ -476,6 +476,7 @@ abstract class FormItem extends DataContainer {
   public function renderFormItem() {
     $rendered = '';
     $values = $this->getValue();
+
     $i = 0;
     // Load and render all existing values...
     foreach ($values as $value) {

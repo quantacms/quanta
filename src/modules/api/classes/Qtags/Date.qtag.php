@@ -13,6 +13,9 @@ class Date extends Qtag {
    *   The rendered Qtag.
    */
   public function render() {
+    if (empty($this->getTarget())) {
+      $this->setTarget(time());
+    }
     $date = new DateTime($this->getTarget());
     if (isset($this->attributes['format'])) {
       $formatted_date = $date->format($this->attributes['format']);
