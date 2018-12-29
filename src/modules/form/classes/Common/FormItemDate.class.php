@@ -24,6 +24,17 @@ class FormItemDate extends FormItemString {
   }
 
   /**
+   * Alter current date to use Y-m-d as required from HTML5.
+   *
+   * @return string
+   *   The parsed date.
+   */
+  public function getCurrentValue() {
+    $curr = parent::getCurrentValue();
+    return $this->parseDate($curr, 'Y-m-d');
+  }
+
+  /**
    * Parse a date in a specific format.
    *
    * @param $date
@@ -88,7 +99,6 @@ class FormItemDate extends FormItemString {
       ($this->isMultiple() ? 'data-limit="' . $this->getData('limit'). '" ' : ' ') .
       (!empty($this->getInputAttr('node')) ? (' data-node="' . $this->getInputAttr('node')) . '" ' : '') .
       (!empty($this->getData('min')) ? (' min="' . $this->getData('min')) . '" ' : '') .
-
       (!empty($this->getData('max')) ? (' max="' . $this->getData('max')) . '" ' : '') .
 
       '/>';
