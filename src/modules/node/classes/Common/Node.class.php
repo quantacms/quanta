@@ -245,7 +245,7 @@ class Node extends JSONDataContainer {
     if (!isset($this->json->timestamp) && $this->exists) {
       $this->buildContent();
     }
-    if ($this->exists && ($this->getTimestamp() == NULL)) {
+    if (!$this->exists || ($this->getTimestamp() == NULL)) {
       // TODO: what to do when no timestamp has been set?
       $this->setTimestamp(time());
     }
