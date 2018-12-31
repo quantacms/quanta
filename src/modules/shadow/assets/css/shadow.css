@@ -142,18 +142,21 @@
     overflow-y: auto;
 }
 
-.shadow-content {
-    display: none;
-}
-
 .shadow-grouped-contents .shadow-content {
     display: block;
 }
 
-.shadow-content.enabled {
+#shadow-tabs .shadow-content {
+    display: none;
+}
+
+#shadow-tabs .shadow-content.enabled {
     display: block;
 }
 
+.shadow-content.hidden {
+    display: none;
+}
 .shadow-hint {
     font-style: italic;
     display: block;
@@ -185,24 +188,6 @@
     color: #aaa;
 }
 
-.edit-date-wrapper {
-    width: 400px;
-    height: 60px;
-
-}
-
-.edit-date-wrapper label {
-    clear: both;
-    float: left;
-
-}
-
-.edit-date-wrapper input {
-    display: inline-block;
-    position: static;
-    float: left;
-}
-
 .description-row {
    padding-bottom:30px;
     padding-top: 8px;
@@ -211,25 +196,26 @@
     color: #777;
 }
 
-#shadow-buttons {
+#shadow-tabs #shadow-buttons {
     position: absolute;
     z-index: 1999;
     display: inline-block;
-    bottom: 0;
+    bottom: 20px;
     right: 0;
+}
 
+#shadow-single #shadow-buttons {
+    text-align: right;
 }
 
 #shadow-buttons a {
     font-size: 1.1em;
     text-decoration: none;
     border-radius: 15px;
-    padding: 12px;
+    padding: 8px;
     cursor: pointer;
     text-transform: uppercase;
     font-family: Arial;
-    text-align: left;
-    line-height: 65px;
     margin-right: 15px;
     background: #f3f3f4;
     border: 1px solid #aaa

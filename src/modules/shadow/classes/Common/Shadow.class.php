@@ -8,6 +8,7 @@ class Shadow extends Page {
   private $tabs = array();
   private $widget;
   public $buttons = array();
+  public $extra = array();
   public $components = array();
   /**
    * @var Node $node.
@@ -66,6 +67,8 @@ class Shadow extends Page {
     $tabs = $this->getTabs();
     $tab_titles = '';
     $tab_contents = '';
+    $enabled_tab = NULL;
+
     $i = 0;
     ksort($tabs);
 
@@ -76,15 +79,30 @@ class Shadow extends Page {
         $i++;
         // A tab can be null in case of single-page Shadows.
         if ($tab['title'] != NULL) {
-          $tab_titles .= '<li data-title="' . $tab['title'] . '" class="shadow-title ' . (($i == 1) ? 'enabled' : '') . '" ><a href="#" data-rel="' . $i . '" id="shadow-title-' . $i . '">' . $tab['title'] . '</a></li>';
+          if (empty($enabled_tab)) {
+            $enabled_tab = $i;
+            $add_classes = 'enabled';
+          }
+          else {
+            $add_classes = '';
+          }
+          $tab_titles .= '<li data-title="' . $tab['title'] . '" class="shadow-title ' . $add_classes . '" >
+          <a href="#" data-rel="' . $i . '" id="shadow-title-' . $i . '">' . $tab['title'] . '</a>
+          </li>';
         }
-        $tab_contents .= '<div class="shadow-content shadow-content-' . $this->env->getContext() . ' ' . $tab['classes'] . ' ' . (($i == 1) ? 'enabled' : '') . '" id="shadow-content-' . $i . '">' . $tab['content'] . '</div>';
+        else {
+          $add_classes = 'hidden';
+        }
+        $tab_contents .= '<div class="shadow-content shadow-content-' . $this->env->getContext() . ' ' . $tab['classes'] . ' ' . $add_classes . '" id="shadow-content-' . $i . '">' . $tab['content'] . '</div>';
       }
     }
     $this->setData('tab_titles', $tab_titles);
     $this->setData('tab_contents', $tab_contents);
     $this->setData('buttons', $this->buttons);
-    $this->setData('content', file_get_contents($this->env->getModulePath('shadow') . '/tpl/' . $this->getWidget() . '.inc'));
+    $this->setData('content',
+      '<div id="shadow-' . $this->widget . '">' .
+      file_get_contents($this->env->getModulePath('shadow') . '/tpl/' . $this->getWidget() . '.inc')) .
+    '</div>';
     $this->buildHTML();
     return $this->html;
   }
@@ -123,6 +141,28 @@ class Shadow extends Page {
       $weight += 0.1;
     }
     $this->tabs[$weight][$this->env->getContext()] = array('title' => $title, 'content' => $content, 'classes' => $classes);
+  }
+
+  /**
+   * Add an extra HTML to the Shadow form.
+   *
+   * @param string $content
+   *   The extra content.
+   * @param int $weight
+   *   The extra content weight.
+   */
+  public function addExtra($content, $weight = 1) {
+    $this->addData('extra', array(array('content' => $content, 'weight' => $weight)));
+  }
+
+  /**
+   * Get the Shadow's extra html.
+   *
+   * @return array
+   *   The shadow's extra content.
+   */
+  public function getExtra() {
+    return $this->getData('extra');
   }
 
   /**

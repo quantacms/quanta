@@ -17,7 +17,10 @@ class Thumbnail extends Link {
     $this->setAttribute('node', $node->getName());
     $this->setTarget($node->getThumbnail());
     $img = new ImgThumb($this->env, $this->getAttributes(), $this->getTarget());
-
+    // We use a prefix to avoid a double id for the link and the image.
+    if (!empty($this->getAttribute('id'))) {
+      $this->setAttribute('id', 'link-' . $this->getAttribute('id'));
+    }
     $this->destination = '/' . $node->getName();
     $this->html_body = $img->render();
     return parent::render();

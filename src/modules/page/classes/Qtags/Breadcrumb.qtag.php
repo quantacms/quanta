@@ -26,6 +26,7 @@ class Breadcrumb extends HtmlTag {
     if (!empty($this->attributes['include_current'])) {
       $breadcrumb += array($node->name => $node);
     }
+
     // Generate the Breadcrumb items.
     if (!empty($breadcrumb)) {
       foreach ($breadcrumb as $i => $node) {
