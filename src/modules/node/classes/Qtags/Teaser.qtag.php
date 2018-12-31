@@ -14,9 +14,11 @@ class Teaser extends Qtag {
   public function render() {
     $node = \Quanta\Common\NodeFactory::loadOrCurrent($this->env, $this->getTarget());
     $teaser = \Quanta\Common\Api::filter_xss($node->getTeaser());
-    if (isset($this->attributes['editable'])) {
-      $teaser = \Quanta\Common\NodeTemplate::wrap($this->env, $node, $teaser);
+    if (!empty($teaser)) {
+      if (isset($this->attributes['editable'])) {
+        $teaser = \Quanta\Common\NodeTemplate::wrap($this->env, $node, $teaser);
+      }
+      return $teaser;
     }
-    return $teaser;
   }
 }

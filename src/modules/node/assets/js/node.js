@@ -16,7 +16,7 @@ $(document).bind('refresh', function() {
     // Edit Node link behavior.
     $('.edit-link').off('click').on('click', function(e) {
       // TODO: select default components in a hook.
-        var components = (($(this).attr('data-components') != undefined) ? ($(this).attr('data-components').split(',')) : ['node_form', 'file_form', 'manager_form', 'access_form', 'status_form']);
+        var components = (($(this).attr('data-components') != undefined) ? ($(this).attr('data-components').split(',')) : ['node_edit', 'node_metadata', 'node_status', 'file_form', 'node_form']);
 
         var shadow = {
           module : 'node',
@@ -35,15 +35,14 @@ $(document).bind('refresh', function() {
           shadow.manager = $(this).attr('data-manager');
         }
 
-
-      openShadow(shadow);
+        openShadow(shadow);
 
         e.preventDefault();
     });
 
     // Add Node link behavior.
     $('.add-link').off('click').on('click', function(e) {
-            var components = (($(this).attr('data-components') != undefined) ? ($(this).attr('data-components').split(',')) : ['node_form', 'file_form']);
+            var components = (($(this).attr('data-components') != undefined) ? ($(this).attr('data-components').split(',')) : ['node_edit', 'node_metadata', 'node_status', 'file_form', 'node_form']);
             var shadow = {
                 module: 'node',
                 context: 'node_add',

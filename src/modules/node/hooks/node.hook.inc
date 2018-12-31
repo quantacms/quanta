@@ -77,7 +77,7 @@ function node_init(Environment $env, array $vars){
       Api::redirect('/404');
     }
     else {
-      die('404 - Page not found.');
+      die(t('404 - Page not found.'));
     }
   }
   // If user can't access the node, redirect to 403.
@@ -87,7 +87,7 @@ function node_init(Environment $env, array $vars){
       Api::redirect('/403');
     }
     else {
-      die('403 - Forbidden.');
+      die(t('403 - Forbidden.'));
     }
   }
 
@@ -104,13 +104,38 @@ function node_init(Environment $env, array $vars){
 function node_shadow_node_form(Environment $env, array $vars){
   /** @var Shadow $shadow */
   $shadow = $vars['shadow'];
-  $action_name = ($env->getContext() == \Quanta\Common\Node::NODE_ACTION_ADD ? 'create' : 'edit') . ' content';
 
-  $shadow->addTab($action_name, file_get_contents($env->getModulePath('node') . '/tpl/node_edit.inc'), 1);
-  $shadow->addTab('manage metadata', file_get_contents($env->getModulePath('node') . '/tpl/metadata_form.inc'), 2);
-  $shadow->addTab(NULL, file_get_contents($env->getModulePath('node') . '/tpl/node_data.inc'), 1, TRUE);
+  $shadow->addTab(NULL, file_get_contents($env->getModulePath('node') . '/tpl/node_data.inc'), 1);
   $shadow->addButton('edit-save', $env->getContext() == \Quanta\Common\Node::NODE_ACTION_DELETE ? t('Delete') : t('Save'));
+}
 
+/**
+ * Implements hook_shadow_node_edit().
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param array $vars
+ *   An array of variables.
+ */
+function node_shadow_node_edit(Environment $env, array $vars){
+  /** @var Shadow $shadow */
+  $shadow = $vars['shadow'];
+  $action_name = ($env->getContext() == \Quanta\Common\Node::NODE_ACTION_ADD ? 'create' : 'edit') . ' content';
+  $shadow->addTab($action_name, file_get_contents($env->getModulePath('node') . '/tpl/node_edit.inc'), 1);
+}
+
+/**
+ * Implements hook_shadow_node_metadata().
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param array $vars
+ *   An array of variables.
+ */
+function node_shadow_node_metadata(Environment $env, array $vars){
+  /** @var Shadow $shadow */
+  $shadow = $vars['shadow'];
+  $shadow->addTab('manage metadata', file_get_contents($env->getModulePath('node') . '/tpl/metadata_form.inc'), 2);
 }
 
 /**

@@ -41,11 +41,6 @@
     width: 100%;
 }
 
-#shadow-buttons {
-    float: left;
-    clear: left;
-}
-
 .fr-box.fr-basic .fr-element {
     height: 250px;
 }
@@ -54,27 +49,24 @@
     width: 100%;
 }
 
-.add-link {
-    color: #00aa00 !important;
-    margin: 3px !important;
+a.add-link {
+    color: #00aa00;
+    margin: 3px;
     text-decoration: none;
 }
 
-.edit-link {
-    color: #000000 !important;
-    margin: 3px !important;
+a.edit-link {
+    color: #000000;
+    margin: 3px;
     text-decoration: none;
 }
 
-.delete-link {
-    color: #aa0000 !important;
-    margin: 3px !important;
+a.delete-link {
+    color: #aa0000;
+    margin: 3px;
     text-decoration: none;
 }
+
 .node-item-actions a:hover {
     background: transparent !important;
-}
-
-textarea#edit_tpl {
-    width: 100%;
 }
