@@ -72,7 +72,7 @@ function localization_doctor_setup(Environment $env, array $vars) {
 }
 
 /**
- * Implements hook_shadow_extra().
+ * Implements hook_shadow_node_language().
  *
  * Add translation links to node edit shadow form.
  *
@@ -81,7 +81,10 @@ function localization_doctor_setup(Environment $env, array $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function localization_shadow_node_edit_extra(Environment $env, array $vars) {
+function localization_shadow_node_language(Environment $env, array $vars) {
+  /** @var Shadow $shadow */
+  $shadow = $vars['shadow'];
   $translate_links = new TranslateLinks($env, array(), NULL);
-  $vars['html'] .= $translate_links->getHtml();
+
+  $shadow->addExtra($translate_links->getHtml());
 }

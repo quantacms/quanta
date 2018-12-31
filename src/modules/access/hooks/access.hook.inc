@@ -9,7 +9,7 @@ namespace Quanta\Common;
  * @param $vars
  *   An array of variables.
  */
-function access_shadow_node_form(Environment $env, array $vars){
+function access_shadow_node_permissions(Environment $env, array $vars){
   /** @var Shadow $shadow */
   $shadow = &$vars['shadow'];
   $module_path = $env->getModulePath('access');

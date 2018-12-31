@@ -1,19 +1,19 @@
 <?php
 namespace Quanta\Common;
-
 /**
  * This class represents an user in the system.
  *
  * Users in Quanta CMS are just extensions of Node objects.
  */
 class User extends Node {
-  const USER_ANONYMOUS = "guest";
+  const USER_ANONYMOUS = "anonymous";
   const ROLE_ANONYMOUS = "anonymous";
   const ROLE_ADMIN = "admin";
   const ROLE_LOGGED = "logged";
+
   // TODO: seems arbitrary. Use a hook instead...
   const USER_PASSWORD_MIN_LENGTH = 8;
-  const USER_MIN_NAME_LENGTH =4;
+  const USER_MIN_NAME_LENGTH = 4;
   const USER_ACTION_LOGIN = "user_login";
   const USER_ACTION_EDIT = "user_edit";
   const USER_ACTION_EDIT_OWN = "user_edit_own";
@@ -144,6 +144,7 @@ class User extends Node {
       \Quanta\Common\Message::MESSAGE_TYPE_LOG
     );
     unset($_SESSION['user']);
+
     // TODO: adapt cookies.
     $response = new \stdClass();
     $response->redirect = '/' . $this->env->getRequestedPath();
@@ -184,12 +185,11 @@ class User extends Node {
           \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
         );
         new Message($this->env,
-          'User ' . $this->getName() . ' logged in',
+          t('User !user logged in', array('!user' => $this->getName())),
           \Quanta\Common\Message::MESSAGE_CONFIRM,
           \Quanta\Common\Message::MESSAGE_TYPE_LOG
         );
-
-        $this->roles += array('logged' => 'logged');
+        $this->roles += array(self::ROLE_LOGGED => self::ROLE_LOGGED);
         $_SESSION['user'] = $this->serializeForSession();
       }
       else {
@@ -214,7 +214,6 @@ class User extends Node {
     $response_json = json_encode($response);
     return $response_json;
 	}
-
 
   /**
    * Checks if the user is the current user.
