@@ -90,6 +90,10 @@ class Link extends HtmlTag {
       elseif (!empty($this->getTarget())) {
         // Load the node.
         $node = NodeFactory::load($this->env, $this->getTarget());
+        $current = NodeFactory::current($this->env);
+        if ($current->hasParent($node->getName())) {
+          $this->link_class[] = 'link-lineage-active';
+        }
         // Allow other modules to change the URL.
         $this->destination = '/' . $node->getName();
 
