@@ -164,10 +164,13 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
         $one_match = TRUE;
         $filter_check = array();
         $lineage = $node->getLineage();
+
         foreach ($lineage as $lineage_node) {
           /** @var Node $lineage_node */
           $filter_check[] = $lineage_node->getName();
         }
+        $filter_check[] = $node->getName();
+
         break;
 
       case 'context':
@@ -193,7 +196,6 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
     }
 
     if (!empty($filter_check)) {
-
       // Check if the filtered item corresponds to the user input.
       foreach ($filter_check as $check) {
 
@@ -239,7 +241,7 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
       }
     }
     else {
-      $filter_match = TRUE;
+      $filter_match = FALSE;
     }
 
   }
