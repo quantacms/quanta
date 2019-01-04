@@ -16,12 +16,12 @@ var refreshForms = function () {
  */
 var refreshAutocomplete = function() {
 
-  $(".autocomplete").each(function() {
-    // TODO FIX DOESN'T WORk
+  $("input.autocomplete").each(function() {
     var node = $(this).data('node');
     var options = {
       url: function(phrase) {
-        return "/autocomplete?search_string=" + phrase + "&search_node=" + node;
+        var autocomplete_path = "/autocomplete?search_string=" + phrase + "&search_node=" + node;
+        return autocomplete_path;
       },
       getValue: "name",
       placeholder: "write your tag here",

@@ -16,7 +16,7 @@ class Jumper extends Qtag {
    */
   public function render() {
     // Which folder to use.
-    $dirlist = new DirList($this->env, $this->getTarget(), 'jumper', array('sortbytime' => 'asc') + $this->attributes, 'jumper');
+    $dirlist = new DirList($this->env, $this->getTarget(), 'jumper', array('sort' => 'title') + $this->attributes, 'jumper');
 
     $ajax = (isset($this->attributes['ajax'])) ? $this->attributes['ajax'] : '_self';
     $empty = (isset($this->attributes['empty'])) ? $this->attributes['empty'] : '----------';
