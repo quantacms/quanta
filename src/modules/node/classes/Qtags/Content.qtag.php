@@ -1,5 +1,6 @@
 <?php
 namespace Quanta\Qtags;
+use Quanta\Common\Localization;
 use Quanta\Common\NodeFactory;
 use Quanta\Common\NodeTemplate;
 /**

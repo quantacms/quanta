@@ -147,6 +147,10 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
       case 'path':
         $filter_check = array($node->getName());
         break;
+      // Filter by current node path.
+      case 'language':
+        $filter_check = array(Localization::getLanguage($env));
+        break;
       // Filter by current node's father node.
       case 'father':
         $filter_check = array($node->getFather()->getName());
