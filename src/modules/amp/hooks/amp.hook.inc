@@ -9,7 +9,7 @@ namespace Quanta\Common;
  * @param array $vars
  *   An array of variables.
  */
-function amp_init(Environment $env, array $vars) {
+function amp_page_init(Environment $env, array $vars) {
   if (\Quanta\Common\Amp::isActive($env)) {
     $page = $env->getData('page');
     $page->setIndexFile('index-amp.html');
@@ -87,7 +87,7 @@ function amp_qtag_preload(Environment $env, array $vars) {
  *   An array of variables.
  */
 function amp_link_alter(Environment $env, array $vars) {
-  if (Amp::isActive($env) && $vars['attributes']['external'] == FALSE) {
+  if (Amp::isActive($env) && empty($vars['attributes']['external'])) {
     $vars['target'] = '/amp' . $vars['target'];
   }
 }
