@@ -68,7 +68,7 @@ function node_load_includes(Environment $env, array $vars){
  * @param array $vars
  *   An array of variables.
  */
-function node_init(Environment $env, array $vars){
+function node_page_init(Environment $env, array $vars) {
   $node = NodeFactory::current($env);
   // If the node does not exist, redirect to 404.
   if (!$node->exists && !isset($_REQUEST['shadow']) && $node->name != '404') {
