@@ -40,7 +40,6 @@ function file_load_includes(Environment $env, array $vars) {
  *   An array of variables.
  */
 function file_init(Environment $env, array $vars) {
-  $node = NodeFactory::current($env);
   // There is a request to upload a file.
   // TODO: move in actions / factory?
   if (!empty($_FILES)) {
@@ -51,6 +50,7 @@ function file_init(Environment $env, array $vars) {
   // There is a request to delete a file.
   // TODO: move in actions / factory?
   if (isset($_REQUEST[$file_delete_act])) {
+    $node = NodeFactory::current($env);
     $split_file_to_delete = explode('/', $_REQUEST[$file_delete_act]);
     FileObject::deleteFile($node, $split_file_to_delete[count($split_file_to_delete) - 1]);
     exit();

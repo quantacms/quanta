@@ -30,10 +30,10 @@ class NodeFactory {
       return $loaded_nodes[$node_name];
     }
 
-
     if (empty($language)) {
       $language = Localization::getLanguage($env);
     }
+
     $node = new Node($env, $node_name, NULL, $language);
     $vars = array('node' => &$node);
     $env->hook('node_open', $vars);
@@ -331,16 +331,21 @@ class NodeFactory {
    * Gets the current viewed node.
    *
    * @param Environment $env
+   *  The Environment.
+   * @param bool $reload
+   *  If TRUE, the loaded node will not be loaded from cache.
    *
-   * @return Node bool
+   * @return Node
+   *   The currently viewed node.
    */
-  public static function current(Environment $env) {
+  public static function current(Environment $env, $reload = FALSE) {
     static $current_node;
 
-    if (!empty($current_node)) {
+    if (!empty($current_node) && !$reload) {
       // Do nothing. Load from static cache.
     }
     elseif ($env->getContext() == \Quanta\Common\Node::NODE_ACTION_ADD) {
+      // Special case when we are in a "new node" add context.
       $current_node = NodeFactory::buildEmptyNode($env, $env->getRequestedPath());
     }
 		elseif ($env->getContext() == 'qtag') {
@@ -348,10 +353,7 @@ class NodeFactory {
 		}
     // We need to load the current node just once.
     else  {
-      $tpl = isset($_REQUEST['tpl']) ? $_REQUEST['tpl'] : NULL;
-      // Special case when we are in a "new node" add context.
-      $current_node = NodeFactory::load($env, $env->getRequestedPath(), $tpl);
-
+      $current_node = NodeFactory::load($env, $env->getRequestedPath());
     }
     return $current_node;
   }
