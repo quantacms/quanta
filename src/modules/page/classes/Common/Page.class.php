@@ -121,6 +121,9 @@ class Page extends DataContainer {
    * @return string
    */
   public function render() {
+    $vars = array('page' => &$this);
+    // Page complete.
+    $this->env->hook('page_render', $vars);
     return $this->html;
   }
 
