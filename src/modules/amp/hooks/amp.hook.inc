@@ -39,7 +39,7 @@ function amp_load_includes(Environment $env, array $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function amp_page_complete(Environment $env, array $vars) {
+function amp_page_render(Environment $env, array $vars) {
   if (Amp::isActive($env)) {
     $vars['page']->html = preg_replace('/style=\\"[^\\"]*\\"/', '', $vars['page']->html);
     $vars['page']->html = str_replace('<img', '<amp-img layout="intrinsic"', $vars['page']->html);
