@@ -89,7 +89,7 @@ class Carousel extends HtmlTag {
       $page->addCSS($module_path . '/assets/css/flickity-quanta.css');
       $carousel_id = 'flickity-' . $flickity_counter;
       $this->html_params['id'] = $carousel_id;
-      $this->html_params['class'] = 'flickity-carousel';
+      $this->html_params['class'] = 'flickity-carousel ' . $flickity_theme;
       $this->html_body = $list->render();
       $page->addJS('/src/modules/carousel/assets/js/flickity.pkgd.min.js', 'file');
       $page->addJS('window.addEventListener("DOMContentLoaded", function() {
