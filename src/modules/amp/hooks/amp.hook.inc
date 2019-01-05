@@ -9,7 +9,7 @@ namespace Quanta\Common;
  * @param array $vars
  *   An array of variables.
  */
-function amp_init(Environment $env, array $vars) {
+function amp_page_preload(Environment $env, array $vars) {
   if (\Quanta\Common\Amp::isActive($env)) {
     $page = $env->getData('page');
     $page->setIndexFile('index-amp.html');
@@ -39,7 +39,7 @@ function amp_load_includes(Environment $env, array $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function amp_page_complete(Environment $env, array $vars) {
+function amp_page_render(Environment $env, array $vars) {
   if (Amp::isActive($env)) {
     $vars['page']->html = preg_replace('/style=\\"[^\\"]*\\"/', '', $vars['page']->html);
     $vars['page']->html = str_replace('<img', '<amp-img layout="intrinsic"', $vars['page']->html);
@@ -87,7 +87,7 @@ function amp_qtag_preload(Environment $env, array $vars) {
  *   An array of variables.
  */
 function amp_link_alter(Environment $env, array $vars) {
-  if (Amp::isActive($env) && $vars['attributes']['external'] == FALSE) {
-    $vars['target'] = '/amp' . $vars['target'];
+  if (Amp::isActive($env) && empty($vars['attributes']['external'])) {
+    $vars['qtag']->destination = '/amp' . $vars['qtag']->destination;
   }
 }
