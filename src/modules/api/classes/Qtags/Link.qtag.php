@@ -115,8 +115,6 @@ class Link extends HtmlTag {
 
     // Prepare variables for Link hooks.
     $vars = array(
-      'target' => $this->getTarget(),
-      'attributes' => $this->attributes,
       'qtag' => &$this,
       );
     $this->env->hook('link_alter', $vars);
