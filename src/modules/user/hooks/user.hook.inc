@@ -26,7 +26,6 @@ function user_boot(Environment $env, array $vars) {
 function user_load_includes(Environment $env, array $vars) {
   $module_path = $env->getModulePath('user');
   $env->addInclude($module_path . '/assets/js/user.js');
-  $env->addInclude($module_path . '/assets/css/user.css');
 }
 
 /**

@@ -52,6 +52,9 @@
   // Run the init hook.
   $env->hook('init', $vars);
 
+  // Render the page.
+  print $env->getData('page')->render();
+
   // Run the complete hook.
   $env->hook('complete');
 

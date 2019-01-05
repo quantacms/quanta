@@ -164,8 +164,6 @@ function page_init(Environment $env, $vars) {
     // Build the page's HTML code.
     $page->buildHTML();
 
-    // Render the page.
-    print $page->render();
   }
 }
 
