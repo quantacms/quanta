@@ -23,7 +23,7 @@ class NodeFactory {
    * @return Node
    *   The built node object.
    */
-  public static function load(Environment $env, $node_name, $language = NULL, $force_reload = FALSE) {
+  public static function load(Environment $env, $node_name, $language = NULL, $force_reload = TRUE) {
     static $loaded_nodes;
     // Allow static caching of nodes. The factory doesn't load the same node two times.
     if (!$force_reload && !empty($loaded_nodes[$node_name])) {
@@ -348,9 +348,9 @@ class NodeFactory {
       // Special case when we are in a "new node" add context.
       $current_node = NodeFactory::buildEmptyNode($env, $env->getRequestedPath());
     }
-		elseif ($env->getContext() == 'qtag') {
+    elseif ($env->getContext() == 'qtag') {
       $current_node = NodeFactory::buildEmptyNode($env, NULL);
-		}
+    }
     // We need to load the current node just once.
     else  {
       $current_node = NodeFactory::load($env, $env->getRequestedPath());
@@ -392,10 +392,10 @@ class NodeFactory {
       $path = $nodedata['edit-path'];
     }
 
-		// TODO: why?
-		if (is_array($path)) {
-		  $path = array_pop($path);
-		}
+    // TODO: why?
+    if (is_array($path)) {
+      $path = array_pop($path);
+    }
     // Check the father of the node.
     $father = ($action == \Quanta\Common\Node::NODE_ACTION_ADD) ? $nodedata['edit-father'] : NULL;
     $node = new Node($env, $path, $father);
@@ -468,7 +468,7 @@ class NodeFactory {
 
       // User requested to delete a Node...
       case \Quanta\Common\Node::NODE_ACTION_DELETE:
-				// Check that the current user has the right to delete the node.
+        // Check that the current user has the right to delete the node.
         $has_access = (NodeAccess::check($env, \Quanta\Common\Node::NODE_ACTION_DELETE, array('node' => $node)));
         if ($has_access) {
           // Delete the node...
@@ -477,9 +477,9 @@ class NodeFactory {
           new Message($env, $node->getName() . ' was deleted correctly');
           $response->redirect = !empty($node->getData('redirect')) ? $node->getData('redirect') : ('/' . $node->getFather()->getName() . '/');
         }
-				else {
+        else {
           $response->redirect = '/403';
-				}
+        }
         break;
     }
 
