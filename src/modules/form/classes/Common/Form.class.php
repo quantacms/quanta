@@ -90,7 +90,7 @@ class Form extends DataContainer {
           return $this->getOkMessage();
         }
         else {
-          redirect($this->getRedirect());
+          \Quanta\Common\Api::redirect($this->getRedirect());
         }
       }
     }
