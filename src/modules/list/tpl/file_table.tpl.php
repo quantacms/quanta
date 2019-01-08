@@ -1,1 +1,1 @@
-<a class="file-link file-type-[FILE_ATTRIBUTE|name=type:{LISTITEM}]" href="{LISTITEM}">{LISTITEM}</a>
+<a class="file-link file-[FILE_ATTRIBUTE|name=type:{LISTITEM}]" href="{LISTITEM}">{LISTITEM}</a>
