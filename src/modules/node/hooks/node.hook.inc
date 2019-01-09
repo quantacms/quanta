@@ -199,12 +199,6 @@ function node_metadata(Environment $env, array $vars){
     );
   }
 
-  if (!empty($node->getKeywords())) {
-    $vars['metadata']['keywords'] = array(
-      'content' => (implode(',', $node->getKeywords())),
-    );
-  }
-
   $vars['metadata']['name'] = array(
     'content' => Api::filter_xss($author->getTitle()),
   );
