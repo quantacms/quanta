@@ -29,7 +29,7 @@ abstract class FormItem extends DataContainer {
     // Check all the form item's attributes.
     $this->setName($this->getInputAttr('name'));
     $this->setData('class', array('form-item form-item-' . $this->getType()));
-    $this->setData('title', !empty($this->getInputAttr('title')) ? $this->getInputAttr('title') : $this->getInputAttr('name'));
+    $this->setData('title', !empty($this->getInputAttr('title')) ? $this->getInputAttr('title') : '');
     $this->setData('label', !empty($this->getInputAttr('label')) ? $this->getInputAttr('label') : NULL);
     $this->setData('id', !empty($this->getInputAttr('id')) ? $this->getInputAttr('id') : ('input-' . $this->getInputAttr('name')));
 

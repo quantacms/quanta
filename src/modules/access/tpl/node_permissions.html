@@ -1,5 +1,5 @@
 <h2>Manage Permissions</h2>
-<div class="shadow-hint">Here you can change the permissions for this node, deciding who can do what.</div>
+[SHADOW_DESCRIPTION:Here you can change the permissions for this node, deciding who can do what.]
 [INPUT|title=View this node|multiple|type=select|values=inherit---Inherit,{LIST_VALUES:_roles}|name=node_view|empty_value=inherit|value={PERMISSION|name=node_view}:edit-permissions]
 [INPUT|title=Edit this node|multiple|type=select|values=inherit---Inherit,{LIST_VALUES:_roles}|name=node_edit|empty_value=inherit|value={PERMISSION|name=node_edit}:edit-permissions]
 [INPUT|title=Add other nodes inside this node|multiple|type=select|values=inherit---Inherit,{LIST_VALUES:_roles}|name=node_add|empty_value=inherit|value={PERMISSION|name=node_add}:edit-permissions]
