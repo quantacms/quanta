@@ -29,7 +29,10 @@ class UserAttribute extends Qtag {
       case 'first_name':
         $string = $user->getFirstName();
         break;
-
+      // User's full name (= title).
+      case 'title':
+        $string = $user->getTitle();
+        break;
       default:
         $string = NULL;
         break;

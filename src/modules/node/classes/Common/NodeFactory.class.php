@@ -1,4 +1,5 @@
 <?php
+
 namespace Quanta\Common;
 
 /**
@@ -72,7 +73,7 @@ class NodeFactory {
     $node = new Node($env, NULL);
     $node->forbidden = TRUE;
     $node->exists = TRUE;
-    $node->setBody('FORBIDDEN');
+    $node->setBody(t('Forbidden'));
     return $node;
   }
 
@@ -129,7 +130,7 @@ class NodeFactory {
    * @param $vars
    *  Mixed variables.
    */
-  public static function unlinkNodes($env, $symlink_name, $symlink_folder, $vars = array ()) {
+  public static function unlinkNodes($env, $symlink_name, $symlink_folder, $vars = array()) {
     $symlink_folder_node = NodeFactory::load($env, $symlink_folder);
     // Set the behavior to adopt if the symlink already exists.
     $if_not_exists = isset($vars['if_not_exists']) ? $vars['if_not_exists'] : 'error';
@@ -160,8 +161,7 @@ class NodeFactory {
     else {
       try {
         unlink($symlink_folder_node->path . '/' . $symlink_name);
-      }
-      catch (Exception $ex) {
+      } catch (Exception $ex) {
         new Message($vars['env'], 'Error: could not unlink ' . $symlink_name . ' from ' . $symlink_folder, \Quanta\Common\Message::MESSAGE_ERROR);
       }
     }
@@ -185,7 +185,7 @@ class NodeFactory {
    * @return bool
    *   True if the linking process was OK.
    */
-  public static function linkNodes($env, $source_node, $symlink_folder, $vars = array ()) {
+  public static function linkNodes($env, $source_node, $symlink_folder, $vars = array()) {
     // If no name is set for the symlink, use the source node name as default.
     $symlink_name = isset($vars['symlink_name']) ? $vars['symlink_name'] : $source_node;
 
@@ -233,8 +233,7 @@ class NodeFactory {
       try {
         symlink($from_node->path, $symlink_folder_node->path . '/' . $symlink_name);
         $linked_ok = TRUE;
-      }
-      catch (Exception $ex) {
+      } catch (Exception $ex) {
         new Message($vars['env'], 'Error: could not link ' . $source_node . ' to ' . $symlink_folder, \Quanta\Common\Message::MESSAGE_ERROR);
       }
     }
@@ -276,10 +275,10 @@ class NodeFactory {
    * @return Node
    * @internal param $node
    */
-  public static function buildNode($env, $name, $father, $vars = array ()) {
+  public static function buildNode($env, $name, $father, $vars = array()) {
     $node = NodeFactory::buildEmptyNode($env, $father);
 
-    if (empty($vars['skip_normalize'])){
+    if (empty($vars['skip_normalize'])) {
       $name = \Quanta\Common\Api::normalizePath($name);
     }
     $node->setName($name);
@@ -308,10 +307,6 @@ class NodeFactory {
 
         case 'timestamp':
           $node->setTimestamp($field_value);
-          break;
-
-        case 'keywords':
-          $node->setKeywords($field_value);
           break;
 
         default:
@@ -352,7 +347,7 @@ class NodeFactory {
       $current_node = NodeFactory::buildEmptyNode($env, NULL);
     }
     // We need to load the current node just once.
-    else  {
+    else {
       $current_node = NodeFactory::load($env, $env->getRequestedPath());
     }
     return $current_node;
@@ -423,21 +418,27 @@ class NodeFactory {
           if (isset($nodedata['edit-title'])) {
             // Setup all node data (title, Body, etc.)
             $node->setTitle($nodedata['edit-title']);
+          }
+          if (isset($nodedata['edit-content'])) {
             $node->setBody($nodedata['edit-content']);
+          }
+          if (isset($nodedata['edit-author'])) {
             $node->setAuthor($nodedata['edit-author']);
+          }
+          if (isset($nodedata['edit-teaser'])) {
             $node->setTeaser($nodedata['edit-teaser']);
-            $node->setKeywords($nodedata['edit-keywords']);
-
-            $node->setContent('<h1>' . $node->getTitle() . '</h1>' . $node->getBody());
+          }
+          if (isset($nodedata['edit-date'])) {
             $datetime = strtotime($nodedata['edit-date'] . ' ' . $nodedata['edit-time']);
             $node->setTimestamp($datetime > 0 ? $datetime : time());
           }
+
           // Also setup the temporary file directory for the upload.
           if (isset($nodedata['tmp_files_dir'])) {
             $node->setData('tmp_files_dir', $nodedata['tmp_files_dir']);
           }
 
-          $vars = array (
+          $vars = array(
             'node' => &$node,
             'data' => $nodedata,
             'action' => $action,
@@ -467,7 +468,8 @@ class NodeFactory {
         break;
 
       // User requested to delete a Node...
-      case \Quanta\Common\Node::NODE_ACTION_DELETE:
+      case
+      \Quanta\Common\Node::NODE_ACTION_DELETE:
         // Check that the current user has the right to delete the node.
         $has_access = (NodeAccess::check($env, \Quanta\Common\Node::NODE_ACTION_DELETE, array('node' => $node)));
         if ($has_access) {
@@ -501,7 +503,8 @@ class NodeFactory {
    * @return string
    *   The rendered HTML of the node object.
    */
-  public static function render(Environment $env, $node_name = NULL, $language = NULL) {
+  public
+  static function render(Environment $env, $node_name = NULL, $language = NULL) {
     $node = empty($node_name) ? NodeFactory::current($env) : NodeFactory::load($env, $node_name);
     $tpl = new NodeTemplate($env, $node);
     return $tpl->getHtml();
