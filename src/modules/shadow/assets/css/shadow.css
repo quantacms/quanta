@@ -188,12 +188,12 @@
     color: #aaa;
 }
 
-.description-row {
-   padding-bottom:30px;
-    padding-top: 8px;
+.shadow-description {
+   padding-bottom: 20px;
+    padding-top: 20px;
     font-style: italic;
     font-size: 0.8em;
-    color: #777;
+    color: #555;
 }
 
 #shadow-tabs #shadow-buttons {
