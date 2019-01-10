@@ -11,6 +11,7 @@ class UserAttribute extends Qtag {
    */
   public function render() {
     $user = ($this->getTarget() == NULL) ? UserFactory::current($this->env) : new User($this->env, $this->getTarget());
+
     switch ($this->attributes['name']) {
       // User's login name.
       case 'username':
