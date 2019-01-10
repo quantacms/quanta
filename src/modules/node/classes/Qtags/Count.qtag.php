@@ -29,6 +29,6 @@ class Count extends Qtag {
     // TODO: is this safe?
     $count_cmd = 'find ' . $nodeobj->path . ' ' . $depth . ' -type d | wc -l';
     exec($count_cmd, $results_arr);
-    return array_pop($results_arr);
+    return trim(array_pop($results_arr));
   }
 }
