@@ -18,10 +18,9 @@ class Input extends Qtag {
     $rendered = '';
 
     if (!(empty($this->attributes['name'])) && !(empty($form->getItem($this->attributes['name'])))) {
-
       $input = $form->getItem($this->attributes['name']);
       if ($input->isFirst()) {
-        $this->attributes['prefix'] = $form->renderFormOpen();
+        $rendered = $form->renderFormOpen() . $rendered;
       }
       $rendered .= ($form->isValidated()) ? '' : $input->renderFormItem();
     }
