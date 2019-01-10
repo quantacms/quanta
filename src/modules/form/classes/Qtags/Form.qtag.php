@@ -15,11 +15,12 @@ class Form extends Qtag {
   public function render() {
     $form = FormFactory::getForm($this->env, $this->getTarget());
     $form->loadAttributes($this->attributes);
-    $string = '';
+    $form_html = '';
     // If the form has been submitted, validate it.
     if ($form->isSubmitted() && ($validate_ok = $form->checkValidate())) {
-      $string = $validate_ok;
+      $form_html = $validate_ok;
     }
-    return $string . '</form>';
+    $form_html .= $form->renderFormClose();
+    return $form_html;
   }
 }

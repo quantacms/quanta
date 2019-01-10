@@ -59,7 +59,6 @@ function openShadow(shadowData) {
 
   $('#shadow-item').html('').attr('data-rel', shadow.context).load(shadowPath, function () {
     if (shadow.callback != undefined) {
-
       shadow.callback();
     }
 

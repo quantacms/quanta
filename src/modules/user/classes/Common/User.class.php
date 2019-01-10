@@ -19,7 +19,6 @@ class User extends Node {
   const USER_ACTION_EDIT_OWN = "user_edit_own";
   const USER_ACTION_REGISTER = "user_register";
   const USER_VALIDATE = "user_validate";
-  const USER_VALIDATION_ERROR = "validation_error";
 
   /** @var array $roles */
   public $roles = array();
@@ -28,14 +27,14 @@ class User extends Node {
    * Load the user object.
    */
   public function load() {
+
     if (strlen($this->name) > 0 && $this->exists) {
       $this->loadJSON();
       if (isset($this->json->roles)) {
         $this->roles = (array)$this->json->roles;
       }
-
       if (isset($this->json->password)) {
-        $this->setData('password', $this->json->password);
+        $this->setPassword($this->json->password);
       }
       if (isset($this->json->email)) {
         $this->setEmail($this->json->email);
@@ -46,10 +45,8 @@ class User extends Node {
       if (isset($this->json->last_name)) {
         $this->setLastName($this->json->last_name);
       }
-      if (isset($this->json->data)) {
-        $this->data = (array)$this->json->data;
-      }
     }
+
     $vars = array('user' => &$this);
     $this->env->hook('user_load', $vars);
   }
@@ -251,23 +248,6 @@ class User extends Node {
       $this->rebuildSession();
     }
     return TRUE;
-  }
-
-  /**
-   * Action to register or update an existing user.
-   *
-   * @return bool
-   *   TRUE if the user is valid and the process went smooth.
-   */
-  public function update() {
-    // Create a default title for the user node, if it's not set.
-    $this->setTitle($this->getData('first_name') . ' ' . $this->getData('last_name'));
-    $this->setFirstName($this->getData('first_name'));
-    $this->setLastName($this->getData('last_name'));
-    $this->setEmail($this->getData('email'));
-    $this->setPassword(UserFactory::passwordEncrypt($this->getPassword()));
-    $valid = $this->save();
-    return $valid;
   }
 
   /**
