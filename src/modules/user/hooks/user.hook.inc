@@ -138,10 +138,9 @@ function user_action_login(Environment $env, array $vars) {
  *   An array of variables.
  */
 function user_shadow_user_register_form(Environment $env, array $vars) {
-  $user = UserFactory::current($env);
-  $tab = '<h2>Create a free account</h2>' . UserFactory::renderUserEditForm($env, $env->getContext());
+  $tab = '<h2>Insert your data</h2>' . UserFactory::renderUserEditForm($env, $env->getContext());
   $vars['shadow']->addTab('Insert your data', $tab, 1);
-  $vars['shadow']->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Sign Up!');
+  $vars['shadow']->addButton('edit-save', t('Sign Up!'));
 }
 
 /**
@@ -157,22 +156,10 @@ function user_shadow_user_edit_form(Environment $env, array $vars) {
   $user = new User($env, $curr_user->name);
   /** @var Shadow $shadow */
   $shadow = $vars['shadow'];
-  // TODO: customizable titles.
-  switch($env->getContext()) {
-    case 'user_register':
-      $title = 'Create a free account';
-      break;
-    case 'user_edit_own':
-      $title = 'Edit your profile';
-      break;
-    case 'user_edit':
-    default:
-      $title = 'Edit user: ' . $user->getName();
-      break;
-  }
-  $tab = '<h2>' . $title . '</h2>' . UserFactory::renderUserEditForm($env, $env->getContext());
-  $shadow->addTab(t('Your Profile'), $tab, 1);
-  $shadow->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Update');
+
+  $tab = '<h2>' . t('Edit your Account') . '</h2>' . UserFactory::renderUserEditForm($env, $env->getContext());
+  $shadow->addTab(t('Edit your Account'), $tab, 1);
+  $shadow->addButton('edit-save', t('Update'));
 }
 
 /**
@@ -188,7 +175,7 @@ function user_shadow_user_login_form(Environment $env, array $vars) {
   /** @var Shadow $shadow */
   $shadow = $vars['shadow'];
   $shadow->addTab(t('Your Login Data'), $tab, 1);
-  $shadow->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Login');
+  $shadow->addButton('edit-save', 'Login');
 }
 
 /**
@@ -289,7 +276,7 @@ function user_user_validate(Environment $env, array $vars) {
 
   /** @var User $user */
   $user = $vars['user'];
-  $check_password = !$user->exists || strlen($user->getPassword()) > 0;
+  $check_password = !$user->exists || !empty($user->getData('new_password')) > 0;
 
   // Check if some user has the same email as the current one.
   exec('grep -r -i -o --include \*.json "\"email\"\:\"' . $user->getEmail() . '\"" ' . $env->dir['users'], $mail_exists);
@@ -297,23 +284,23 @@ function user_user_validate(Environment $env, array $vars) {
 
   // TODO: check also special characters.
   // Minimum user name length.
-  if (strlen($user->name) < USER_MIN_NAME_LENGTH) {
-    $user->addData('validation_errors', array('name' => t('Your username should have at least %length characters', array('%length' => USER_MIN_NAME_LENGTH))));
+  if (strlen($user->name) < \Quanta\Common\User::USER_MIN_NAME_LENGTH) {
+    $user->addData('validation_errors', array('name' => t('Your username should have at least %length characters', array('%length' => \Quanta\Common\User::USER_MIN_NAME_LENGTH))));
   }
   // Checks that username is alphanumeric.
-  if (!is_alphanumeric($user->name) && empty($vars['skip_validate']['username_alphanumeric'])) {
+  if (!\Quanta\Common\Api::is_alphanumeric($user->name) && empty($vars['skip_validate']['username_alphanumeric'])) {
     $user->addData('validation_errors', array('name' => t('Please use only letters and numbers for your username')));
   }
   // For register, check that no user with the same username already exists.
-  if ($user->exists && $env->getContext() == USER_ACTION_REGISTER) {
+  if ($user->exists && $env->getContext() == \Quanta\Common\User::USER_ACTION_REGISTER) {
     $user->addData('validation_errors', array('name' => t('Username %name already exists!', array('%name' => $user->name))));
   }
   // Checks that email is not used by other users.
-  if ($mail_exists && ($env->getContext() == USER_ACTION_REGISTER)) {
+  if ($mail_exists && ($env->getContext() == \Quanta\Common\User::USER_ACTION_REGISTER)) {
     $user->addData('validation_errors', array('email' => t('Email %address already exists!', array('%address' => $user->getEmail()))));
   }
   // Checks that email is in a valid format.
-  if (!valid_email($user->getEmail())) {
+  if (!\Quanta\Common\Api::valid_email($user->getEmail())) {
     $user->addData('validation_errors', array('email' => t('Please enter a valid E-mail address!')));
   }
   // Checks that old password matches new.
@@ -322,11 +309,11 @@ function user_user_validate(Environment $env, array $vars) {
   }
   // Checks password length.
   // TODO: make customizable in hooks.
-  if ($check_password && strlen($user->getPassword()) < USER_PASSWORD_MIN_LENGTH) {
-    $user->addData('validation_errors', array('password' => t('Password should be at least %length characters long.', array('%length' => USER_PASSWORD_MIN_LENGTH))));
+  if ($check_password && strlen($user->getData('new_password')) < \Quanta\Common\User::USER_PASSWORD_MIN_LENGTH) {
+    $user->addData('validation_errors', array('password' => t('Password should be at least %length characters long.', array('%length' => \Quanta\Common\User::USER_PASSWORD_MIN_LENGTH))));
   }
   // Checks that the repeated password matches the original.
-  if ($check_password && UserFactory::passwordEncrypt(($user->getData('password_rp')) != UserFactory::passwordEncrypt($user->getData('password')))) {
+  if ($check_password && UserFactory::passwordEncrypt(($user->getData('password_rp'))) != UserFactory::passwordEncrypt($user->getData('new_password'))) {
     $user->addData('validation_errors', array('password_rp' => 'Password fields are not the same.'));
   }
 

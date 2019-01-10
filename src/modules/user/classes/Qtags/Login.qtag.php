@@ -9,6 +9,7 @@ class Login extends Link {
    *   The rendered Qtag.
    */
   public function render() {
+
     $user = \Quanta\Common\UserFactory::current($this->env);
 
     if ($user->exists && $user->name != \Quanta\Common\User::USER_ANONYMOUS) {
