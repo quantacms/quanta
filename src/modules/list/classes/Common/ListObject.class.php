@@ -157,7 +157,7 @@ abstract class ListObject extends DataContainer {
     }
 
     // If the "clean" attribute is not present, add some wrapping html.
-    if (!empty($this->rendered_items) && empty($this->getAttribute('clean')))  {
+    if (empty($this->getAttribute('clean')))  {
       $output = '<' . $this->getData('list_html_tag') . ' '  . $ajax . $tpl . ' class="list ' . $this->getTpl() . ' list-' . $this->getTpl() . ' list-' . $this->node->getName() . ' ' . implode(' ', $classes) . '" data-node="' . $this->node->getName() . '">' . $output . '</' . $this->getData('list_html_tag') . '>';
     }
 
