@@ -29,14 +29,17 @@ class Shadow extends Page {
     $this->widget = $data->widget;
     $this->setLanguage(isset($data->language) ? $data->language : Localization::getLanguage($env));
 
-    if (isset($data->components)) {
-      $this->components = $data->components;
-    }
+/*
     if (is_array($data)) {
       foreach ($data as $key => $value) {
         $this->setData($key, $value);
       }
     }
+*/
+    if (isset($data->components)) {
+      $this->components = $data->components;
+    }
+
     if (isset($data->redirect)) {
       $this->setData('redirect', $data->redirect);
     }
