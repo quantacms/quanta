@@ -1,6 +1,5 @@
 <?php
 namespace Quanta\Qtags;
-use Quanta\Common\NodeFactory;
 
 /**
  * Retrieves the Author of a node.
@@ -13,7 +12,7 @@ class Author extends Link {
    *   The rendered Qtag.
    */
   public function render() {
-    $node = NodeFactory::loadOrCurrent($this->env, $this->getTarget());
+    $node = \Quanta\Common\NodeFactory::loadOrCurrent($this->env, $this->getTarget());
     $this->setTarget($node->getAuthor());
     return parent::render();
   }

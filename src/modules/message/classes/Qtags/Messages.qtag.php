@@ -12,6 +12,9 @@ class Messages extends Qtag {
    *   The rendered Qtag.
    */
   public function render() {
-    return \Quanta\Common\Message::burnMessages(\Quanta\Common\Message::MESSAGE_TYPE_SCREEN);
+    $messages = \Quanta\Common\Message::burnMessages(\Quanta\Common\Message::MESSAGE_TYPE_SCREEN);
+    if (!empty($messages)) {
+      return $messages;
+    }
   }
 }

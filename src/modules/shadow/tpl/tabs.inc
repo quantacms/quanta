@@ -1,16 +1,5 @@
-<div class="shadow-inner">
-  <div id="shadow-titles">
-    <ul class="shadow-titles-list">[SHADOW:tab-titles]</ul>
-    [SHADOW:buttons]
-  </div>
-  <div class="shadow-contents">
-      <div id="shadow-messages">
-          [MESSAGES]
-      </div>
-      <div id="shadow-extra">
-          [SHADOW:extra]
-      </div>
-    [SHADOW:tab-contents]
-    <div class="messages"></div>
-  </div>
-</div>
+[MESSAGES]
+[SHADOW|grid_id=shadow-titles|grid=align-content-start grid-span-md-3 grid-span-xl-2 grid-row-span-xl-10:tab-titles]
+[SHADOW|grid_id=shadow-contents|grid=align-content-start grid-span-md-9 grid-span-xl-10 grid-row-span-xl-11:tab-contents]
+[SHADOW|grid_id=shadow-extra|grid=grid-row-span-xl-1 grid-span-md-9 grid-span-xl-10 text-right:extra]
+[SHADOW|grid_id=shadow-buttons|grid=grid-start-1 text-left p-y-2 p-x-1 grid-span-md-3 grid-span-xl-2 grid-row-span-2:buttons]

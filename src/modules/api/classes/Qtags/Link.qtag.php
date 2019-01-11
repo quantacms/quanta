@@ -14,11 +14,16 @@ class Link extends HtmlTag {
    *   The Link Title (what appears in the <a title=... attribute).
    */
   public $link_title;
+
   /**
    * @var string $link_class
    *   The Link Classes (what appears in the <a class=... attribute).
    */
+  public $html_params = array('class' => 'link');
+
+  // TODO: deprecate.
   public $link_class = array();
+
   /**
    * @var string $link_id
    *   The Link Id (what appears in the <a id=... attribute).
@@ -69,7 +74,6 @@ class Link extends HtmlTag {
     $querystring = array();
     $this->link_id = !empty($this->attributes['link_id']) ? $this->attributes['link_id'] : '';
 
-    $this->link_class[] = 'link';
     if (empty($this->destination)) {
       $this->destination = '#';
       // Check if the target is a node or an external link.
@@ -148,7 +152,7 @@ class Link extends HtmlTag {
       }
     }
 
-    $this->html_params['class'] = implode(' ', $this->link_class);
+    $this->html_params['class'] .= ' ' . implode(' ', $this->link_class);
     $this->html_params['title'] = $this->link_title;
     $this->html_params['href'] = $this->destination . $query;
     $this->html_params['target'] = $this->link_target;
