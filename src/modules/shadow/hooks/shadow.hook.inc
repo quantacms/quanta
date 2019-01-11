@@ -58,19 +58,3 @@ function shadow_init(Environment $env, array $vars) {
     exit();
   }
 }
-
-/**
- * Implements hook_page_init().
- *
- * Add the Shadow popup's wrapper to HTML.
- * // TODO: could be entirely done in JS.
- *
- * @param Environment $env
- *   The Environment.
- * @param array $vars
- *   An array of variables.
- */
-function shadow_page_init(Environment $env, array $vars) {
-  $addcode = '<div id="shadow-outside"><div id="shadow-inside"></div><div id="shadow-item"></div></div>';
-  $vars['page']->html = preg_replace("/\<\/body\>/", $addcode . '</body>', $vars['page']->html);
-}

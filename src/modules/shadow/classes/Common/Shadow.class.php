@@ -1,5 +1,6 @@
 <?php
 namespace Quanta\Common;
+use Quanta\Qtags\ShadowTab;
 
 /**
  * Class Shadow
@@ -77,34 +78,35 @@ class Shadow extends Page {
     foreach ($tabs as $wtabs) {
       foreach ($wtabs as $tab) {
         $i++;
+        $attr = array();
+
+        $tab_title = new \Quanta\Qtags\ShadowTab($this->env, $attr, $i);
+        $tab_content = new \Quanta\Qtags\ShadowContent($this->env, $attr, $i);
+        $tab_title->setHtmlBody($tab['title']);
+
         // A tab can be null in case of single-page Shadows.
         if ($tab['title'] != NULL) {
           if (empty($enabled_tab)) {
             $enabled_tab = $i;
-            $add_classes = 'enabled';
+            $tab_title->addClass('enabled');
+            $tab_content->addClass('enabled');
           }
-          else {
-            $add_classes = '';
-          }
-          $tab_titles .= '<li data-title="' . $tab['title'] . '" class="shadow-title ' . $add_classes . '" >
-          <a href="#" data-rel="' . $i . '" id="shadow-title-' . $i . '">' . $tab['title'] . '</a>
-          </li>';
+          $tab_titles .= $tab_title->render();
         }
         else {
-          $add_classes = 'hidden';
+          $tab_content->addClass('hidden');
         }
-        $tab_contents .= '<div class="shadow-content shadow-content-' . $this->env->getContext() . ' ' . $tab['classes'] . ' ' . $add_classes . '" id="shadow-content-' . $i . '">' . $tab['content'] . '</div>';
+
+        $tab_content->setHtmlBody($tab['content']);
+        $tab_contents .= $tab_content->render();
       }
     }
     $this->setData('tab_titles', $tab_titles);
     $this->setData('tab_contents', $tab_contents);
     $this->setData('buttons', $this->buttons);
-    $this->setData('content',
-      '<div id="shadow-' . $this->widget . '">' .
-      file_get_contents($this->env->getModulePath('shadow') . '/tpl/' . $this->getWidget() . '.inc')) .
-    '</div>';
+    $this->setData('content', file_get_contents($this->env->getModulePath('shadow') . '/tpl/' . $this->getWidget() . '.inc'));
     $this->buildHTML();
-    return $this->html;
+    return '<div id="shadow-item" class="grid">' . $this->html . '</div>';
   }
 
   /**
