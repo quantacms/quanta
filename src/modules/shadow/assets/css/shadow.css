@@ -81,6 +81,15 @@
     display: block;
 }
 
+#shadow-contents {
+    min-height: 0;
+}
+
+
+.shadow-content{
+    overflow: scroll;
+}
+
 #shadow-contents .shadow-content {
     display: none;
 }
