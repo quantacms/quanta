@@ -35,6 +35,7 @@ class Shadow extends Content {
         foreach ($shadow->getData('buttons') as $action => $button) {
           $buttons .= '<a class="shadow-submit" id="' . $action . '">' . $button . '</a>';
         }
+        $buttons .= '<a class="shadow-cancel" id="cancel">Cancel</a>';
         $buttons .= '</div>';
         $string = $buttons;
         break;

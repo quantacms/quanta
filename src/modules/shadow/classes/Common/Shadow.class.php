@@ -109,7 +109,7 @@ class Shadow extends Page {
     $this->setData('buttons', $this->buttons);
     $this->setData('content', file_get_contents($this->env->getModulePath('shadow') . '/tpl/' . $this->getWidget() . '.inc'));
     $this->buildHTML();
-    return '<div id="shadow-item" class="grid">' . $this->html . '</div>';
+    return '<div id="shadow-item" class="grid grid-gap-0">' . $this->html . '</div>';
   }
 
   /**

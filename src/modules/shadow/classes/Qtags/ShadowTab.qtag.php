@@ -16,8 +16,7 @@ class ShadowTab extends Link {
     $this->html_params['data-rel'] = $this->getTarget();
     $this->setId("shadow-title-" . $this->getTarget());
     $this->addClass('shadow-title');
-    $this->addClass('p-x-1');
-    $this->addClass('p-y-1');
+    $this->addClass('p-1');
     $this->addClass($this->getAttribute('class'));
     return parent::render();
   }
