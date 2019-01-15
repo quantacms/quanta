@@ -58,8 +58,45 @@ class HtmlTag extends Qtag {
 
   /**
    * Helper function to add a class, useful in many situations.
+   *
+   * @param string $classname
+   *   The class to add.
    */
   public function addClass($classname) {
-    $this->html_params['class'] .= ' ' . $classname;
+    if (!isset($this->html_params['class'])) {
+      $this->html_params['class'] = $classname;
+    }
+    else {
+      $this->html_params['class'] .= ' ' . $classname;
+    }
+  }
+
+  /**
+   * Helper function to set an id for the HTML tag.
+   *
+   * @param string $id
+   *   The id of the tag.
+   */
+  public function setId($id) {
+    $this->html_params['id'] = $id;
+  }
+
+  /**
+   * Set the body of the HTML tag.
+   *
+   * @param string $body
+   */
+  public function setHtmlBody($body) {
+    $this->html_body = $body;
+  }
+
+  /**
+   * Get the body of the HTML tag.
+   *
+   * @return string
+   *   The HTML body of the tag.
+   */
+  public function getHtmlBody() {
+    return $this->html_body;
   }
 }
