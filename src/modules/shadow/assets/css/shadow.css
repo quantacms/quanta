@@ -11,6 +11,7 @@
 }
 
 #shadow-item {
+    grid-template-rows: auto 1fr; /* content (2nd element) has always maximum height */
     background: white;
     color: black;
     height: 100%;
@@ -18,10 +19,7 @@
 }
 
 .shadow-content {
-    padding: 20px;
-    padding-top: 0;
     text-align: left;
-    width: auto;
 }
 
 #edit-content, #edit-content-wrapper {
@@ -63,6 +61,10 @@
     text-decoration: none !important;
     font-size: 0.7em;
     font-weight: bold;
+
+    /* mobile */
+    float: left;
+    width: 50%;
 }
 
 #shadow-titles a.shadow-title.enabled {
@@ -83,11 +85,7 @@
 
 #shadow-contents {
     min-height: 0;
-}
-
-
-.shadow-content{
-    overflow: scroll;
+    overflow: auto;
 }
 
 #shadow-contents .shadow-content {
@@ -137,21 +135,22 @@
 }
 
 #shadow-buttons a {
-    font-size: 1.1em;
+    display: inline-block;
+    font-size: 17px;
     text-decoration: none;
-    border-radius: 15px;
+    border-radius: 8px;
     padding: 8px;
     cursor: pointer;
     text-transform: uppercase;
     font-family: Arial;
-    margin-right: 15px;
     background: #f3f3f4;
     border: 1px solid #aaa
 }
-
+#shadow-buttons a + a {
+    margin-left: 15px;
+}
 #shadow-buttons a:hover {
-    opacity: 0.7;
-    background: #fafafa;
+    background: #ddd;
 }
 
 .shadow-grouped-contents #shadow-buttons {
@@ -176,4 +175,21 @@
     opacity: 0.4 !important;
     cursor: none !important;
     pointer-events: none !important;
+}
+
+
+
+
+
+/* md: Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) {
+
+    #shadow-item {
+        grid-template-rows: 1fr; /* tabs & content (1st & 2nd element) has always maximum height */
+    }
+
+    #shadow-titles a.shadow-title {
+        float: none;
+        width: 100%;
+    }
 }

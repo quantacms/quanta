@@ -19,7 +19,11 @@ $(document).bind('refresh', function () {
       $(this).addClass('shadow-submitted');
       submitShadow();
     }
-  })
+  });
+
+  $('.shadow-cancel').on('click', function () {
+    closeShadow();
+  });
 });
 
 // Close the shadow overlay.
@@ -37,7 +41,7 @@ function closeShadow() {
  */
 function createShadow() {
   if (!($('#shadow-outside').length)) {
-    $("body").append('<div id="shadow-outside" class="grid p-y-3 p-x-3"></div>');
+    $("body").append('<div id="shadow-outside" class="grid p-1 p-md-3"></div>');
     // Close the shadow overlay when clicking outside the Shadow area.
     $('#shadow-outside').on('click', function (event) {
       if (event.target !== this)
