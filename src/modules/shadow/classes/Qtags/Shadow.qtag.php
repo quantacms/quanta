@@ -30,10 +30,12 @@ class Shadow extends Content {
         break;
 
       case 'buttons':
+        // TODO: move to qtag.
         $buttons = '<div id="shadow-buttons">';
         foreach ($shadow->getData('buttons') as $action => $button) {
           $buttons .= '<a class="shadow-submit" id="' . $action . '">' . $button . '</a>';
         }
+        $buttons .= '<a class="shadow-cancel" id="cancel">Cancel</a>';
         $buttons .= '</div>';
         $string = $buttons;
         break;
