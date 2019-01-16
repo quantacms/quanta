@@ -1,6 +1,5 @@
- <div class="shadow-content">
+[HTML_TAG|grid=shadow-inside align-self-center  margin-auto flex text-center p-1:
      [SHADOW:extra]
      [SHADOW:tab-contents]
-    <div class="messages"></div>
-    [SHADOW:buttons]
-  </div>
+     [SHADOW:buttons]
+]
