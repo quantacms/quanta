@@ -54,11 +54,11 @@ class QtagFactory {
             continue;
           }
           // Show the Qtag - don't render it.
-          elseif (!empty($qtag->attributes['showtag'])) {
+          elseif (isset($qtag->attributes['showtag'])) {
             $replacing[$tag_full] = Api::string_normalize(str_replace('|showtag', '', $tag_full));
           }
           // Show the Qtag - don't render it, and highlight it for readability.
-          elseif (!empty($qtag->attributes['highlight'])) {
+          elseif (isset($qtag->attributes['highlight'])) {
             $replacing[$tag_full] = $qtag->highlight();
           }
           // Replace the Qtag with its rendered HTML.
@@ -180,6 +180,7 @@ class QtagFactory {
         $qtag_attributes[$attribute_name] = TRUE;
       }
     }
+
     // Parse the qTag.
     $qtag = QtagFactory::buildQTag($env, $tag_name, $qtag_attributes, $target, $delimiters);
     return $qtag;
