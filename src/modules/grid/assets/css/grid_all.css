@@ -109,6 +109,10 @@ ul.grid {
   align-self: end;
 }
 
+.margin-auto {
+  margin: auto;
+}
+
 /* RESPONSIVE */
 
 /* MOBILE FIRST */

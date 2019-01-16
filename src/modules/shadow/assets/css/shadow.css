@@ -12,14 +12,14 @@
 
 #shadow-item {
     grid-template-rows: auto 1fr; /* content (2nd element) has always maximum height */
-    background: white;
     color: black;
     height: 100%;
 	font-family: "Arial" !important;
 }
 
-.shadow-content {
-    text-align: left;
+.shadow-inside .inner, #shadow-contents {
+    background: #fff;
+    padding: 10px;
 }
 
 #edit-content, #edit-content-wrapper {
@@ -100,8 +100,9 @@
     display: none;
 }
 
-#shadow-contents label {
-    display: inline-block;
+
+.form-item-label {
+    display: block;
     margin: 0;
     margin-top: 10px;
     font-weight: bold;
@@ -112,6 +113,7 @@
     letter-spacing: 1px;
     font-size: 0.8em;
     color: #444;
+    margin-bottom: 8px;
 }
 
 .shadow-description {
