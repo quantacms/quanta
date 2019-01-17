@@ -1,14 +1,14 @@
 <?php
 namespace Quanta\Common;
 
-define('INPUT_EMPTY_VALUE', '___INPUT_EMPTY_VALUE___');
-
 /**
  * Class FormItem
  * This class represents an abstract FormItem, to be extended by specific
  * form item types.
  */
 abstract class FormItem extends DataContainer {
+  const INPUT_EMPTY_VALUE = '___self::INPUT_EMPTY_VALUE___';
+
   public $env;
   private $name;
   protected $type;
@@ -151,7 +151,7 @@ abstract class FormItem extends DataContainer {
    */
   public function loadValue() {
     $submitted = $this->getSubmittedValue();
-    $value = (empty($submitted)) ? (($this->getInputAttr('value') != INPUT_EMPTY_VALUE ? $this->getInputAttr('value') : '')) : $submitted;
+    $value = (empty($submitted)) ? (($this->getInputAttr('value') != self::INPUT_EMPTY_VALUE ? $this->getInputAttr('value') : '')) : $submitted;
     $this->setValue($value);
   }
 
@@ -177,7 +177,7 @@ abstract class FormItem extends DataContainer {
    */
   public function loadAllowableValues() {
     if (!empty($this->getInputAttr('empty'))) {
-      $this->setData('allowable_values', self::parseAllowableValue($this->getInputAttr('empty')));
+      $this->setData('allowable_values', self::parseAllowableValue(self::INPUT_EMPTY_VALUE . '---' . $this->getInputAttr('empty')));
     }
 
     $values = array();
@@ -245,7 +245,7 @@ abstract class FormItem extends DataContainer {
    */
   public function getInputAttr($attribute) {
     return !isset($this->input_arr[$attribute]) ? NULL :
-      (empty($this->input_arr[$attribute]) ? INPUT_EMPTY_VALUE : $this->input_arr[$attribute]);
+      (empty($this->input_arr[$attribute]) ? self::INPUT_EMPTY_VALUE : $this->input_arr[$attribute]);
   }
 
   /**
@@ -382,7 +382,7 @@ abstract class FormItem extends DataContainer {
    *   The value of the form item.
    */
   public function getValue() {
-    return $this->getData('value') == INPUT_EMPTY_VALUE ? '' : $this->getData('value');
+    return $this->getData('value') == self::INPUT_EMPTY_VALUE ? '' : $this->getData('value');
   }
 
   /**
@@ -392,7 +392,7 @@ abstract class FormItem extends DataContainer {
    *   The default value of the form item.
    */
   public function getDefaultValue() {
-    return $this->getData('default_value') == INPUT_EMPTY_VALUE ? '' : $this->getData('default_value');
+    return $this->getData('default_value') == self::INPUT_EMPTY_VALUE ? '' : $this->getData('default_value');
   }
 
   /**
