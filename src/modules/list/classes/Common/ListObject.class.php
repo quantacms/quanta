@@ -184,7 +184,7 @@ abstract class ListObject extends DataContainer {
       $this->loaded = TRUE;
       new Message($this->env, t('%node is not a valid page. Full path: %fullpath',
         array('%node' => $this->node->getName(), '%fullpath' =>  $this->path)
-      ), MESSAGE_ERROR);
+      ), \Quanta\Common\Message::MESSAGE_ERROR);
       return FALSE;
     }
 
