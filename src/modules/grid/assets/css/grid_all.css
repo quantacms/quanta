@@ -113,6 +113,10 @@ ul.grid {
   margin: auto;
 }
 
+.hidden {
+  display: none;
+}
+
 /* RESPONSIVE */
 
 /* MOBILE FIRST */
