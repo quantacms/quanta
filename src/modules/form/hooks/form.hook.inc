@@ -53,15 +53,14 @@ function form_form_validate(Environment $env, array $vars) {
 function form_boot(Environment $env, array $vars) {
   // TODO: object oriented, using templates, etc. etc.
   if ($env->getRequestedPath() == 'autocomplete') {
-    $items = new \Quanta\Common\DirList($env, $_GET['search_node'], NULL);
-
     header("Content-type: application/json");
+    $items = new \Quanta\Common\DirList($env, $_REQUEST['search_node'], NULL);
     $results = array();
     $autocomplete_results = $items->getItems();
     foreach ($autocomplete_results as $node) {
 
       // TODO: check user access.
-      if (strpos($node->getTitle(), $_GET['search_string']) !== FALSE) {
+      if (strpos(strtolower($node->getTitle()), strtolower($_REQUEST['search_string'])) !== FALSE) {
         $results[] = array(
           'name' => $node->getName(),
           'title' => $node->getTitle(),

@@ -28,6 +28,20 @@ class Environment extends DataContainer {
   private $context;
 
   /**
+   * Call this method to get Singleton Environment.
+   *
+   * @return UserFactory
+   */
+  public static function get($host, $request_uri, $docroot)
+  {
+    static $inst = null;
+    if ($inst === null) {
+      $inst = new Environment($host, $request_uri, $docroot);
+    }
+    return $inst;
+  }
+
+  /**
    * Environment constructor.
    *
    * @param string $host
@@ -590,17 +604,11 @@ class Environment extends DataContainer {
           )
         ));
     }
-    elseif (empty($result)) {
-      new Message($this, t('Warning: there is no folder named !folder<br>Check integrity!',
-        array('!folder' => $folder)
-      ));
-    }
     else {
       Cache::storeNodePath($this, $result);
       return $result;
     }
 
-    // TODO: possible?
     return NULL;
   }
 
