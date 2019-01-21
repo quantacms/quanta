@@ -26,21 +26,6 @@ class Environment extends DataContainer {
   private $modules_loaded = array();
   private $includes = array();
   private $context;
-
-  /**
-   * Call this method to get Singleton Environment.
-   *
-   * @return UserFactory
-   */
-  public static function get($host, $request_uri, $docroot)
-  {
-    static $inst = null;
-    if ($inst === null) {
-      $inst = new Environment($host, $request_uri, $docroot);
-    }
-    return $inst;
-  }
-
   /**
    * Environment constructor.
    *

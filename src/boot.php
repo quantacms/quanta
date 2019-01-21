@@ -6,8 +6,10 @@
   require_once('modules/environment/classes/Common/Environment.class.php');
 
   // Create a new Environment.
-  $env = \Quanta\Common\Environment::get(empty($host) ? NULL : $host, empty($request_uri) ? NULL : $request_uri, empty($docroot) ? NULL : $docroot);
-
+  $env = new \Quanta\Common\Environment(
+    empty($host) ? NULL : $host,
+    empty($request_uri) ? NULL : $request_uri,
+    empty($docroot) ? NULL : $docroot);
   $vars = array();
 
   // Include the class autoloader.
