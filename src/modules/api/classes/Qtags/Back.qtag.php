@@ -5,7 +5,7 @@ namespace Quanta\Qtags;
  */
 
 class Back extends Link {
-  protected $html_params = array("onclick" => "history.back()");
+  public $html_params = array("onclick" => "history.back()");
   /**
    * Render the Qtag.
    *
