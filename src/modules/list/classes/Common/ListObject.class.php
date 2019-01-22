@@ -203,7 +203,7 @@ abstract class ListObject extends DataContainer {
     }
 
     if ($this->getAttribute('level') == 'leaf' || $this->getAttribute('level') == 'tree') {
-      $list_pages = $this->env->scanDirectoryDeep($this->path, '', array(), array(
+      $list_nodes = $this->env->scanDirectoryDeep($this->path, '', array(), array(
         'exclude_dirs' => \Quanta\Common\Environment::DIR_INACTIVE,
         'symlinks' => $symlinks,
         $this->scantype,
@@ -211,21 +211,21 @@ abstract class ListObject extends DataContainer {
       ));
     }
     else {
-      $list_pages = $this->env->scanDirectory($this->path, array(
+      $list_nodes = $this->env->scanDirectory($this->path, array(
         'exclude_dirs' => \Quanta\Common\Environment::DIR_INACTIVE,
         'type' => $this->scantype,
         'symlinks' => $symlinks
       ));
     }
 
-    foreach ($list_pages as $item) {
+    foreach ($list_nodes as $item) {
 
       $item_name = is_array($item) ? $item['name'] : $item;
 
       if ($this->scantype == \Quanta\Common\Environment::DIR_DIRS) {
         $node = NodeFactory::load($this->env, $item_name);
 
-        if ($node->exists && $this->validateStatus($node)) {
+        if ($node->exists && $this->validateListItem($node)) {
           $this->addItem($node);
         }
       }
@@ -265,16 +265,13 @@ abstract class ListObject extends DataContainer {
    * @return bool
    *   Returns true if the node status is the one for which the list is filtered.
    *
-   * TODO: deprecate and move as status filter.
    */
-  public function validateStatus($node) {
-     
-		if (!empty($this->status)) {
-      return (isset($this->status['all'])) || (isset ($this->status[$node->getStatus()]));
+  public function validateListItem($node) {
+    // Check if there is a filter set, and if it allows the item.
+    if (!empty($this->getData('list_filter')) && !_access_filter($this->env, $this->getData('list_filter'), $node)) {
+      return FALSE;
     }
-    else {
-      return TRUE;
-    }
+    return TRUE;
   }
 
   /**
@@ -428,7 +425,12 @@ abstract class ListObject extends DataContainer {
       $item = $items[$index];
     }
     else {
-      new Message($this->env, 'Undefined list index: ' . $index . ' while listing ' . $this->getNode()->getName(), MESSAGE_ERROR);
+      new Message($this->env, t('Undefined list index: !index while listing !node',
+        array(
+          '!index' => $index,
+          '!node' => $this->getNode()->getName())),
+        MESSAGE_ERROR
+      );
       $item = '';
     }
     return $item;
