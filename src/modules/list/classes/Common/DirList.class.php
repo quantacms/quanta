@@ -26,6 +26,7 @@ class DirList extends ListObject {
     if ($node_current->exists) {
       $node_father = $node_current->getFather();
     }
+
     // Cycle the subdirectories.
     foreach ($this->items as $dir_url => $node) {
 
@@ -35,10 +36,6 @@ class DirList extends ListObject {
         continue;
       }
 
-      // Check if there is a filter set, and if it allows the item.
-      if (!empty($this->getData('list_filter')) && !_access_filter($this->env, $this->getData('list_filter'), $node)) {
-        continue;
-      }
       $i++;
 
       // If there is a limit set, break when passing it.
