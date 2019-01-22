@@ -478,7 +478,7 @@ class NodeFactory {
           // Delete the node...
           $node->delete();
           // ...and display a confirmation message.
-          new Message($env, $node->getName() . ' was deleted correctly');
+          new Message($env, t('!node was deleted correctly', array('!node' => $node->getTitle())));
           $response->redirect = !empty($form_data['redirect']) ? $form_data['redirect'] : ('/' . $node->getFather()->getName() . '/');
         }
         else {
