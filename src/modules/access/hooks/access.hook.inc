@@ -144,6 +144,10 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
         $filter_check = $explode;
         break;
       // Filter by current node path.
+      case 'author':
+        $filter_check = array($node->getAuthor());
+        break;
+      // Filter by current node path.
       case 'path':
         $filter_check = array($node->getName());
         break;
