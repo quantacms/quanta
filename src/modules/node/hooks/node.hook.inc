@@ -146,7 +146,7 @@ function node_shadow_node_metadata(Environment $env, array $vars){
  * @param array $vars
  *   An array of variables.
  */
-function node_shadow_node_delete_form(Environment $env, array $vars){
+function node_shadow_node_delete(Environment $env, array $vars){
   /** @var Shadow $shadow */
   $shadow = $vars['shadow'];
   $node = $shadow->getNode();
