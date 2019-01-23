@@ -6,10 +6,10 @@ namespace Quanta\Qtags;
  * Renders the full rendered content of a node.
  *
  */
-class Content extends Qtag {
+class Content extends HtmlTag {
   /**
    * @return string
-   *   The rendered Qtag.
+   *   The rendered Htmltag.
    */
   public function render() {
     // We can't allow an empty target for content, as it would continue looping forever.
@@ -19,6 +19,7 @@ class Content extends Qtag {
     if (isset($this->attributes['editable'])) {
       $content = \Quanta\Common\NodeTemplate::wrap($this->env, $node, $content);
     }
-    return $content;
+    $this->html_body = $content;
+    return parent::render();
   }
 }
