@@ -7,7 +7,7 @@ namespace Quanta\Common;
  * form item types.
  */
 abstract class FormItem extends DataContainer {
-  const INPUT_EMPTY_VALUE = '___self::INPUT_EMPTY_VALUE___';
+  const INPUT_EMPTY_VALUE = '___INPUT_EMPTY_VALUE___';
 
   public $env;
   private $name;
