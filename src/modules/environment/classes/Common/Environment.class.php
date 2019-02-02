@@ -26,7 +26,6 @@ class Environment extends DataContainer {
   private $modules_loaded = array();
   private $includes = array();
   private $context;
-
   /**
    * Environment constructor.
    *
@@ -590,17 +589,11 @@ class Environment extends DataContainer {
           )
         ));
     }
-    elseif (empty($result)) {
-      new Message($this, t('Warning: there is no folder named !folder<br>Check integrity!',
-        array('!folder' => $folder)
-      ));
-    }
     else {
       Cache::storeNodePath($this, $result);
       return $result;
     }
 
-    // TODO: possible?
     return NULL;
   }
 

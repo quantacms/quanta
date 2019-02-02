@@ -5,7 +5,7 @@ $(document).bind('refresh', function() {
             module: 'node',
             context: 'node_delete',
             widget: 'single',
-            components: ['node_delete_form'],
+            components: ['node_delete','node_form'],
             node: $(this).attr('data-rel'),
             redirect: $(this).data('redirect')
         });

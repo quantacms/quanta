@@ -1,4 +1,3 @@
 <h2>[TEXT:Confirm Delete]</h2>
-[TEXT:You are about to delete this post]:<br/><br/>
+[SHADOW_DESCRIPTION:You are about to delete this post&colon;]
 <b>[TITLE]</b>
-<br/><br/>

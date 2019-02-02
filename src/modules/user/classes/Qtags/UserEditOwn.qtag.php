@@ -15,7 +15,7 @@ class UserEditOwn extends Link {
   public function render() {
     $user = ($this->getTarget() == NULL) ? UserFactory::current($this->env) : new User($this->env, $this->getTarget());
     $this->html_body = t('Edit your profile');
-    if (UserAccess::check($this->env, \Quanta\Common\User::USER_ACTION_EDIT, array('user' => $user))) {
+    if (UserAccess::check($this->env, \Quanta\Common\User::USER_ACTION_EDIT_OWN, array('user' => $user))) {
       return $user->exists ? parent::render() : $this->getTarget();
     }
     else {
