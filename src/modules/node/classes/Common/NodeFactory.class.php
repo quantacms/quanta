@@ -1,4 +1,5 @@
 <?php
+
 namespace Quanta\Common;
 
 /**
@@ -23,7 +24,7 @@ class NodeFactory {
    * @return Node
    *   The built node object.
    */
-  public static function load(Environment $env, $node_name, $language = NULL, $force_reload = FALSE) {
+  public static function load(Environment $env, $node_name, $language = NULL, $force_reload = TRUE) {
     static $loaded_nodes;
     // Allow static caching of nodes. The factory doesn't load the same node two times.
     if (!$force_reload && !empty($loaded_nodes[$node_name])) {
@@ -72,7 +73,7 @@ class NodeFactory {
     $node = new Node($env, NULL);
     $node->forbidden = TRUE;
     $node->exists = TRUE;
-    $node->setBody('FORBIDDEN');
+    $node->setBody(t('Forbidden'));
     return $node;
   }
 
@@ -129,7 +130,7 @@ class NodeFactory {
    * @param $vars
    *  Mixed variables.
    */
-  public static function unlinkNodes($env, $symlink_name, $symlink_folder, $vars = array ()) {
+  public static function unlinkNodes($env, $symlink_name, $symlink_folder, $vars = array()) {
     $symlink_folder_node = NodeFactory::load($env, $symlink_folder);
     // Set the behavior to adopt if the symlink already exists.
     $if_not_exists = isset($vars['if_not_exists']) ? $vars['if_not_exists'] : 'error';
@@ -160,8 +161,7 @@ class NodeFactory {
     else {
       try {
         unlink($symlink_folder_node->path . '/' . $symlink_name);
-      }
-      catch (Exception $ex) {
+      } catch (Exception $ex) {
         new Message($vars['env'], 'Error: could not unlink ' . $symlink_name . ' from ' . $symlink_folder, \Quanta\Common\Message::MESSAGE_ERROR);
       }
     }
@@ -185,7 +185,7 @@ class NodeFactory {
    * @return bool
    *   True if the linking process was OK.
    */
-  public static function linkNodes($env, $source_node, $symlink_folder, $vars = array ()) {
+  public static function linkNodes($env, $source_node, $symlink_folder, $vars = array()) {
     // If no name is set for the symlink, use the source node name as default.
     $symlink_name = isset($vars['symlink_name']) ? $vars['symlink_name'] : $source_node;
 
@@ -233,8 +233,7 @@ class NodeFactory {
       try {
         symlink($from_node->path, $symlink_folder_node->path . '/' . $symlink_name);
         $linked_ok = TRUE;
-      }
-      catch (Exception $ex) {
+      } catch (Exception $ex) {
         new Message($vars['env'], 'Error: could not link ' . $source_node . ' to ' . $symlink_folder, \Quanta\Common\Message::MESSAGE_ERROR);
       }
     }
@@ -276,10 +275,10 @@ class NodeFactory {
    * @return Node
    * @internal param $node
    */
-  public static function buildNode($env, $name, $father, $vars = array ()) {
+  public static function buildNode($env, $name, $father, $vars = array()) {
     $node = NodeFactory::buildEmptyNode($env, $father);
 
-    if (empty($vars['skip_normalize'])){
+    if (empty($vars['skip_normalize'])) {
       $name = \Quanta\Common\Api::normalizePath($name);
     }
     $node->setName($name);
@@ -308,10 +307,6 @@ class NodeFactory {
 
         case 'timestamp':
           $node->setTimestamp($field_value);
-          break;
-
-        case 'keywords':
-          $node->setKeywords($field_value);
           break;
 
         default:
@@ -348,11 +343,11 @@ class NodeFactory {
       // Special case when we are in a "new node" add context.
       $current_node = NodeFactory::buildEmptyNode($env, $env->getRequestedPath());
     }
-		elseif ($env->getContext() == 'qtag') {
+    elseif ($env->getContext() == 'qtag') {
       $current_node = NodeFactory::buildEmptyNode($env, NULL);
-		}
+    }
     // We need to load the current node just once.
-    else  {
+    else {
       $current_node = NodeFactory::load($env, $env->getRequestedPath());
     }
     return $current_node;
@@ -364,82 +359,91 @@ class NodeFactory {
    *
    * @param $env Environment
    * @param $action string
-   * @param $nodedata
+   * @param $form_data
    * @return string
    */
-  public static function requestAction(Environment $env, $action, $nodedata) {
-
-    // TODO: this shit is needed with new approach.
-    foreach ($nodedata as $k => $v) {
-      if (is_array($nodedata[$k]) && (count($nodedata[$k]) == 1)) {
-        $nodedata[$k] = array_pop($v);
+  public static function requestAction(Environment $env, $action, array $form_data) {
+    // TODO: this is needed with new approach.
+    foreach ($form_data as $k => $v) {
+      if (is_array($form_data[$k]) && (count($form_data[$k]) == 1)) {
+        $form_data[$k] = array_pop($v);
       }
     }
-
     // Prepare the response object.
     $response = new \stdClass();
-
-    // TODO: circular dependency to user.
     $user = UserFactory::current($env);
 
-    // TODO: refactor this stuff.
     // When user didn't enter a path for a new node, create a candidate
     // path based on title.
-    if (trim($nodedata['edit-path']) == '') {
-      $path = $env->getCandidatePath($nodedata['edit-title']);
+    if (($action == \Quanta\Common\Node::NODE_ACTION_ADD)) {
+      if (trim($form_data['edit-path']) == '') {
+        $node_name = $env->getCandidatePath($form_data['edit-title']);
+        $father = $form_data['edit-father'];
+      }
+      else {
+        $node_name = $form_data['edit-path'];
+        $father = NULL;
+      }
     }
     else {
-      $path = $nodedata['edit-path'];
+      $node_name = $form_data['edit-path'];
     }
 
-		// TODO: why?
-		if (is_array($path)) {
-		  $path = array_pop($path);
-		}
     // Check the father of the node.
-    $father = ($action == \Quanta\Common\Node::NODE_ACTION_ADD) ? $nodedata['edit-father'] : NULL;
-    $node = new Node($env, $path, $father);
+    $father = ($action == \Quanta\Common\Node::NODE_ACTION_ADD) ? $form_data['edit-father'] : NULL;
+    $node = new Node($env, $node_name, $father);
+
     // Setup the after-save redirect.
-    if (isset($nodedata['redirect'])) {
-      $node->setData('redirect', $nodedata['redirect']);
+    if (isset($form_data['redirect'])) {
+      $node->setData('redirect', $form_data['redirect']);
     }
 
+    // Perform the requested action.
     switch ($action) {
       case \Quanta\Common\Node::NODE_ACTION_ADD:
       case \Quanta\Common\Node::NODE_ACTION_EDIT:
         if ($action == \Quanta\Common\Node::NODE_ACTION_ADD) {
+          $check_access = $node->father;
           // Setup the path of the node to be created / updated.
-          $node->path = $node->father->path . '/' . $path;
+          $node->path = $node->father->path . '/' . $node_name;
           $node->setAuthor($user->getName());
         }
-        // TODO complete validation code.
-        if (!empty($nodedata['edit-thumbnail'])) {
-          $node->setThumbnail(Api::normalizeFilePath($nodedata['edit-thumbnail']));
+        else {
+          $check_access = $node;
         }
 
         // Check if the user can access node add / edit for this node.
-        $has_access = (NodeAccess::check($env, $action, array('node' => ($action == \Quanta\Common\Node::NODE_ACTION_ADD) ? $node->father : $node)));
-        if ($has_access) {
-          if (isset($nodedata['edit-title'])) {
+        $access_check = (NodeAccess::check($env, $action, array('node' => $check_access)));
+        if ($access_check) {
+          if (isset($form_data['edit-title'])) {
             // Setup all node data (title, Body, etc.)
-            $node->setTitle($nodedata['edit-title']);
-            $node->setBody($nodedata['edit-content']);
-            $node->setAuthor($nodedata['edit-author']);
-            $node->setTeaser($nodedata['edit-teaser']);
-            $node->setKeywords($nodedata['edit-keywords']);
-
-            $node->setContent('<h1>' . $node->getTitle() . '</h1>' . $node->getBody());
-            $datetime = strtotime($nodedata['edit-date'] . ' ' . $nodedata['edit-time']);
+            $node->setTitle($form_data['edit-title']);
+          }
+          if (isset($form_data['edit-content'])) {
+            $node->setBody($form_data['edit-content']);
+          }
+          if (isset($form_data['edit-author'])) {
+            $node->setAuthor($form_data['edit-author']);
+          }
+          if (isset($form_data['edit-teaser'])) {
+            $node->setTeaser($form_data['edit-teaser']);
+          }
+          if (isset($form_data['edit-date'])) {
+            $datetime = strtotime($form_data['edit-date'] . ' ' . $form_data['edit-time']);
             $node->setTimestamp($datetime > 0 ? $datetime : time());
           }
           // Also setup the temporary file directory for the upload.
-          if (isset($nodedata['tmp_files_dir'])) {
-            $node->setData('tmp_files_dir', $nodedata['tmp_files_dir']);
+          if (isset($form_data['tmp_files_dir'])) {
+            $node->setData('tmp_files_dir', $form_data['tmp_files_dir']);
+          }
+          // TODO complete validation code.
+          if (!empty($form_data['edit-thumbnail'])) {
+            $node->setThumbnail(Api::normalizeFilePath($form_data['edit-thumbnail']));
           }
 
-          $vars = array (
+          $vars = array(
             'node' => &$node,
-            'data' => $nodedata,
+            'data' => $form_data,
             'action' => $action,
           );
           // Run the node presave hook.
@@ -451,35 +455,35 @@ class NodeFactory {
             // Hook node_add_complete, node_edit_complete, etc.
             $env->hook($action . '_complete', $vars);
             // If the form has a redirect field, setup a redirect.
-            $response->redirect = !empty($node->getData('redirect')) ? $node->getData('redirect') : ('/' . $node->getName() . '/');
+            $response->redirect = !empty($form_data['redirect']) ? $form_data['redirect'] : ('/' . $node->getName() . '/');
           }
           else {
             // TODO: make this good.
             $response->errors = Message::burnMessages();
           }
         }
-
         else {
-          // Page not found.
+          // Access denied.
           $response->redirect = '/403';
         }
 
         break;
 
       // User requested to delete a Node...
-      case \Quanta\Common\Node::NODE_ACTION_DELETE:
-				// Check that the current user has the right to delete the node.
+      case
+      \Quanta\Common\Node::NODE_ACTION_DELETE:
+        // Check that the current user has the right to delete the node.
         $has_access = (NodeAccess::check($env, \Quanta\Common\Node::NODE_ACTION_DELETE, array('node' => $node)));
         if ($has_access) {
           // Delete the node...
           $node->delete();
           // ...and display a confirmation message.
-          new Message($env, $node->getName() . ' was deleted correctly');
-          $response->redirect = !empty($node->getData('redirect')) ? $node->getData('redirect') : ('/' . $node->getFather()->getName() . '/');
+          new Message($env, t('!node was deleted correctly', array('!node' => $node->getTitle())));
+          $response->redirect = !empty($form_data['redirect']) ? $form_data['redirect'] : ('/' . $node->getFather()->getName() . '/');
         }
-				else {
+        else {
           $response->redirect = '/403';
-				}
+        }
         break;
     }
 
@@ -501,7 +505,8 @@ class NodeFactory {
    * @return string
    *   The rendered HTML of the node object.
    */
-  public static function render(Environment $env, $node_name = NULL, $language = NULL) {
+  public
+  static function render(Environment $env, $node_name = NULL, $language = NULL) {
     $node = empty($node_name) ? NodeFactory::current($env) : NodeFactory::load($env, $node_name);
     $tpl = new NodeTemplate($env, $node);
     return $tpl->getHtml();

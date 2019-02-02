@@ -1,4 +1,5 @@
 <?php
+
 namespace Quanta\Common;
 /**
  * Class UserFactory
@@ -109,50 +110,81 @@ class UserFactory {
    * @return string
    */
   public static function requestAction(Environment $env, $action, array $form_data) {
-    $user = new User($env, array_pop($form_data['name']), '_users');
-    $env->setContext($action);
-    // TODO: this shit is needed with new approach.
+
+    // Prepare the response object.
+    // TODO: this is needed with new approach.
     foreach ($form_data as $k => $v) {
-
       if (is_array($form_data[$k]) && (count($form_data[$k]) == 1)) {
-        $v = array_pop($v);
+        $form_data[$k] = array_pop($v);
       }
-      $user->setData($k, $v);
     }
+    $response = new \stdClass();
 
+    $user = new User($env, $form_data['username'], '_users');
+
+    $vars = array('user' => $user);
     // Check if the current user is allowed to perform the action.
-    $can_edit = UserAccess::check($env, $action);
+    $access_check = UserAccess::check($env, $action, $vars);
 
     // If user does not have the permission, show an error message.
-    if (!$can_edit) {
-      new Message($env,
-        t('Sorry, you don\'t have the permissions to perform this action: ' . $action),
-        \Quanta\Common\Message::MESSAGE_WARNING,
-        \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
-      );
-    }
-    // If user has the permission, perform the requested action.
-    else {
+    if ($access_check) {
       switch ($action) {
         case \Quanta\Common\User::USER_ACTION_REGISTER:
-          if ($user->validate()) {
-            $user->update();
+        case \Quanta\Common\User::USER_ACTION_EDIT:
+        case \Quanta\Common\User::USER_ACTION_EDIT_OWN:
+
+          if (isset($form_data['first_name'])) {
+            $user->setFirstName($form_data['first_name']);
           }
-          break;
-        case USER_ACTION_EDIT:
-        case USER_ACTION_EDIT_OWN:
+          if (isset($form_data['last_name'])) {
+            $user->setLastName($form_data['last_name']);
+          }
+          if (isset($form_data['email'])) {
+            $user->setEmail($form_data['email']);
+          }
+          // Create a default title for the user node, if it's not set.
+          $user->setTitle($user->getFirstName() . ' ' . $user->getLastName());
 
-        // If the newly built user object is valid, rebuild the session to keep it updated.
-        if ($user->update()) {
-          $user->rebuildSession();
-        }
-        break;
-
-        default:
-          break;
+          if (!empty($form_data['password'])) {
+            $user->setData('new_password', $form_data['password']);
+            // Password repeat field, used for changing password.
+            $user->setData('password_rp', $form_data['password_rp']);
+          }
+          if (!empty($form_data['old_password'])) {
+            $user->setData('old_password', $form_data['old_password']);
+          }
+          // Run the node presave hook.
+          $env->hook('user_presave', $vars);
+          if ($user->validate()) {
+            if (!empty($user->getData('new_password'))) {
+              $user->setPassword(UserFactory::passwordEncrypt($user->getData('new_password')));
+            }
+            // If the newly built user object is valid, rebuild the session to keep it updated.
+            if ($user->save()) {
+              $user->rebuildSession();
+            }
+          }
+          else {
+            foreach ($user->getData('validation_errors') as $error) {
+              new Message($env,
+                $error,
+                \Quanta\Common\Message::MESSAGE_WARNING
+              );
+            }
+            // TODO: make this good.
+            $response->errors = Message::burnMessages();
+          }
+        $response->redirect = !empty($form_data['redirect']) ? $form_data['redirect'] : ('/' . $user->getName() . '/');
       }
     }
-    return $user;
+    else {
+      // Access denied.
+      $response->redirect = '/403';
+    }
+
+    // Encode the response JSON code.
+    $response_json = json_encode($response);
+    return $response_json;
   }
 
   /**

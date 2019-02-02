@@ -90,7 +90,7 @@ class Form extends DataContainer {
           return $this->getOkMessage();
         }
         else {
-          redirect($this->getRedirect());
+          \Quanta\Common\Api::redirect($this->getRedirect());
         }
       }
     }
@@ -338,7 +338,7 @@ class Form extends DataContainer {
    * @param $attributes
    */
   public function loadAttributes($attributes) {
-    $this->setType((isset($attributes['type'])) ? $attributes['type'] : 'form');
+    $this->setType((isset($attributes['type'])) ? $attributes['type'] : $this->getId());
     $this->setAction((isset($attributes['action'])) ? '/' . ($attributes['action']) : '?');
     $this->setTarget((isset($attributes['target'])) ? '/' . ($attributes['target']) : '_top');
     $this->setMethod((isset($attributes['method'])) ? $attributes['method'] : FORM_METHOD_POST);

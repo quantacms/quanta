@@ -1,8 +1,6 @@
-<div class="shadow-inner">
-  <div class="shadow-contents shadow-grouped-contents">
-      [SHADOW:extra]
-      [SHADOW:tab-contents]
-      [SHADOW:buttons]
-      <div class="messages"></div>
-  </div>
-</div>
+[HTML_TAG|grid=shadow-inside align-self-center  margin-auto flex text-center p-1:
+[SHADOW:extra]
+[SHADOW:tab-contents]
+[SHADOW:buttons]
+[MESSAGES]
+]

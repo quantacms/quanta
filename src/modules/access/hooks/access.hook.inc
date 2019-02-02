@@ -13,7 +13,7 @@ function access_shadow_node_permissions(Environment $env, array $vars){
   /** @var Shadow $shadow */
   $shadow = &$vars['shadow'];
   $module_path = $env->getModulePath('access');
-  $tab_contents =  file_get_contents($module_path . '/tpl/permissions_form.html');
+  $tab_contents =  file_get_contents($module_path . '/tpl/node_permissions.html');
   $shadow->addTab('manage permissions',$tab_contents, 5);
 }
 
@@ -142,6 +142,10 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
       case 'referer':
         $explode = explode('/', $_SERVER['HTTP_REFERER']);
         $filter_check = $explode;
+        break;
+      // Filter by current node path.
+      case 'author':
+        $filter_check = array($node->getAuthor());
         break;
       // Filter by current node path.
       case 'path':
