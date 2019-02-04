@@ -2,15 +2,15 @@
  * Add handlers to Gallery thumbnails for opening in overlay.
  * Created by aldotripiciano on 11/05/15.
  */
-
-
 $(document).ready(function() {
 
-    // Inizialize galleries only if there are items.
-    if ($('.list-gallery .list-item-gallery').length > 0){
+  // Inizialize galleries only if there are items.
+    if ($('.list-gallery-item').length > 0) {
 
+        alert("FINE");
         // Gallery functions.
         $('.list-gallery a.gallery-thumb').on('click', function(e) {
+            alert("OK");
             galleryOpen($(this));
             e.preventDefault();
         });
@@ -38,8 +38,6 @@ $(document).ready(function() {
             }
         });
 
-
-
         /**
          * Open a gallery thumbnail into the shadow.
          *
@@ -62,15 +60,7 @@ $(document).ready(function() {
                 closeShadow();
                 e.preventDefault();
             });
-
             return false;
         };
-
-
     }
-
-
-
 });
-
-
