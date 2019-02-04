@@ -6,11 +6,8 @@ $(document).ready(function() {
 
   // Inizialize galleries only if there are items.
     if ($('.list-gallery-item').length > 0) {
-
-        alert("FINE");
         // Gallery functions.
         $('.list-gallery a.gallery-thumb').on('click', function(e) {
-            alert("OK");
             galleryOpen($(this));
             e.preventDefault();
         });
