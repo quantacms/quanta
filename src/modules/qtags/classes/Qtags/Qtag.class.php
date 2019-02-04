@@ -72,10 +72,10 @@ class Qtag {
    * @param Environment $env
    *   The Environment.
    *
-   * @param string $attributes
+   * @param array $attributes
    *   The Qtag's attributes
    *
-   * @param array $target
+   * @param string $target
    *   The Qtag's target.
    */
   public function __construct(&$env, $attributes, $target, $tag = NULL) {
