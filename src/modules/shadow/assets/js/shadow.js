@@ -1,6 +1,6 @@
 var shadow;
 var shadowUpdated = false;
-
+var shadowConfirmClose = true;
 /**
  * Close the shadow overlay when clicking outside the Shadow area.
  */
@@ -16,8 +16,15 @@ $(document).bind('refresh', function () {
 
   $('.shadow-submit').on('click', function () {
     if (!($(this).hasClass('shadow-submitted'))) {
-      $(this).addClass('shadow-submitted');
-      submitShadow();
+      shadowConfirmClose = true;
+
+      $(document).trigger('shadow_save');
+
+      if (shadowConfirmClose) {
+        $(this).addClass('shadow-submitted');
+        // Trigger the shadow save hook.
+        submitShadow();
+      }
     }
   });
 
