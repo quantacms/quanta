@@ -34,8 +34,10 @@ class Menu extends HtmlTag {
       $links = explode("\n", trim($rendered));
     }
 
+    $i = 0;
     foreach ($links as $link) {
-      $links_html[] = '<li class="menu-link-item">' . $link . '</li>';
+      $i++;
+      $links_html[] = '<li class="menu-link-item menu-link-item-' . $i . '">' . $link . '</li>';
     }
 
     // Return the full nav.

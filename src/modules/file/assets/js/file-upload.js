@@ -31,8 +31,7 @@ $(function () {
         '</span>' +
         '<span class="progress-wrapper">' +
         '<span class="progress"></span>' +
-        '<input type="text" value="0" data-width="20" data-height="20"' +
-        ' data-fgColor="#0788a5" data-readOnly="1" data-bgColor="#3e4043" />' +
+        '<input type="text" value="0" data-width="20" data-height="20" />' +
         '</span>' +
         '<span class="file-qtag"></span>' +
 
@@ -71,7 +70,9 @@ $(function () {
 
       // Update the hidden input field and trigger a change
       // so that the jQuery knob plugin knows to update the dial
-      data.context.find('input').val(progress).change();
+      var red = 200 - (progress * 2);
+      var green = (progress * 2);
+      data.context.find('input').val(progress).css('width', progress + '%').css('background', 'rgb(' + red + ',' + green + ',0)').change();
 
       if (progress == 100) {
         data.context.removeClass('working');
