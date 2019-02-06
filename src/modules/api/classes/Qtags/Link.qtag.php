@@ -133,6 +133,11 @@ class Link extends HtmlTag {
       $this->link_class[] = $this->attributes['link_class'];
     }
 
+    // Check if there is a link target (_blank, ...).
+    if (!empty($this->attributes['link_target'])) {
+      $this->link_target = $this->attributes['link_target'];
+    }
+    
     // Check if there is a target language.
     if (!empty($this->attributes['language'])) {
       $this->querystring['lang'] = $this->attributes['language'];
