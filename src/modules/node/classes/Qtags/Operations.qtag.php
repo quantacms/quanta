@@ -19,6 +19,8 @@ class Operations extends HtmlTag {
     $this->html_body .= $edit->getHtml();
     $this->html_body .= $delete->getHtml();
 
-    return parent::render();
+    if (!empty($this->html_body)) {
+      return parent::render();
+    }
   }
 }

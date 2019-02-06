@@ -21,7 +21,7 @@ class Thumbnail extends Link {
     if (!empty($this->getAttribute('id'))) {
       $this->setAttribute('id', 'link-' . $this->getAttribute('id'));
     }
-    $this->destination = '/' . $node->getName();
+    $this->destination = '/' . (!empty($this->getAttribute('href')) ? $this->getAttribute('href') :  $node->getName());
     $this->html_body = $img->render();
     return parent::render();
   }

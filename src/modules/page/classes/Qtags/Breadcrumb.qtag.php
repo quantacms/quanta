@@ -8,18 +8,23 @@ use Quanta\Common\NodeFactory;
 class Breadcrumb extends HtmlTag {
   protected $html_tag = 'ul';
   protected $html_params = array('class' => 'breadcrumb');
+  private $breadcrumb_separator = ' | ';
+  private $breadcrumb_items = array();
   /**
    * @return string
    *   The rendered Qtag.
    */
   public function render() {
     $node = NodeFactory::current($this->env);
-    $node_home = NodeFactory::load($this->env, 'home');
     // Build the lineage of the node.
     $node->buildLineage();
     $breadcrumb = $node->getLineage();
+    if (!empty($this->getAttribute('separator'))) {
+      $this->breadcrumb_separator = $this->getAttribute('separator');
+    }
     // First item in breadcrumb is the home node, unless excluded by an attribute.
     if (empty($this->attributes['exclude_home'])) {
+      $node_home = NodeFactory::load($this->env, 'home');
       $breadcrumb = array('home' => $node_home) + $breadcrumb;
     }
     // Attribute to include current node in the breadcrumb.
@@ -31,13 +36,18 @@ class Breadcrumb extends HtmlTag {
     if (!empty($breadcrumb)) {
       foreach ($breadcrumb as $i => $node) {
         // Add only published nodes without "breadcrumb_exclude" param in json.
-        if ($node->isPublished() && !$node->getAttributeJSON('breadcrumb_exclude')) {
+        if ($node->isPublished() && empty($node->getAttributeJSON('breadcrumb_exclude'))) {
           $link_attr = array('link_class' => 'breadcrumb-link');
           $link = new Link($this->env, $link_attr, $node->getName());
-          $this->html_body .= '<li>' . $link->render() . '</li>';
+          $this->breadcrumb_items[] = '<li>' . $link->render() . '</li>';
         }
       }
+      // Don't create the breadcrumb if it's empty.
+      if (!empty($this->breadcrumb_items)) {
+        $this->html_body = implode($this->breadcrumb_separator, $this->breadcrumb_items);
+        return parent::render();
+      }
     }
-    return parent::render();
+
   }
 }

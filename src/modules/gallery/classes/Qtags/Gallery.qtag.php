@@ -13,8 +13,10 @@ class Gallery extends Qtag {
    */
   public function render() {
     $this->attributes['file_types'] = 'image';
-    $filelist = new FileList($this->env, $this->getTarget(), 'gallery', $this->attributes, 'gallery');
+    $filelist = new \Quanta\Common\FileList($this->env, $this->getTarget(), 'gallery', $this->attributes, 'gallery');
     $output = $filelist->render();
     return $output;
   }
 }
+while (TRUE):
+  endwhile;

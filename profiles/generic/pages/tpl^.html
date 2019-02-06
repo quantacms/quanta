@@ -11,7 +11,7 @@ order-lg--1 -> All elements have order:0 by default; setting order-lg--1 we set 
 
 p-x-1 -> set default single padding on X axis (left + right).
 -->
-[BREADCRUMB|grid=order-lg--1 p-x-1]
+[BREADCRUMB|grid=order-lg--1 p-x-1|exclude_home]
 
 <!--
 ============
@@ -45,7 +45,7 @@ text-left -> align text on left by default.
 
 The referenced node for content structure is _side-first (see _components/_side-first).
 -->
-[ASIDE|grid_id=side-first|grid=order-lg--1 grid-start-lg-1 grid-span-md-4 grid-span-lg-3 grid-span-xl-2 p-x-1 p-y-3 text-left:_side-first]
+[ASIDE|id=side-first|class=order-lg--1 grid-start-lg-1 grid-span-md-4 grid-span-lg-3 grid-span-xl-2 p-x-1 p-y-3 text-left:_side-first]
 
 <!--
 ===========
@@ -59,4 +59,4 @@ text-left -> align text on left by default.
 
 The referenced node for content structure is _side-second (see _components/_side-second).
 -->
-[ASIDE|grid_id=side-second|grid=grid-span-lg-3 grid-span-xl-2 p-x-1 p-y-3 text-left:_side-second]
+[ASIDE|id=side-second|class=grid-span-lg-3 grid-span-xl-2 p-x-1 p-y-3 text-left:_side-second]

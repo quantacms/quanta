@@ -1,7 +1,7 @@
 <h2>Manage Permissions</h2>
 [SHADOW_DESCRIPTION:Here you can change the permissions for this node, deciding who can do what.]
-[INPUT|title=View this node|multiple|type=select|values=inherit---Inherit,{LIST_VALUES:_roles}|name=node_view|empty_value=inherit|value={PERMISSION|name=node_view}:edit-permissions]
-[INPUT|title=Edit this node|multiple|type=select|values=inherit---Inherit,{LIST_VALUES:_roles}|name=node_edit|empty_value=inherit|value={PERMISSION|name=node_edit}:edit-permissions]
-[INPUT|title=Add other nodes inside this node|multiple|type=select|values=inherit---Inherit,{LIST_VALUES:_roles}|name=node_add|empty_value=inherit|value={PERMISSION|name=node_add}:edit-permissions]
-[INPUT|title=Delete this node|multiple|type=select|values=inherit---Inherit,{LIST_VALUES:_roles}|name=node_delete|empty_value=inherit|value={PERMISSION|name=node_delete}:edit-permissions]
+[INPUT|title=View this node|multiple|type=select|values=inherit---Inherit,{LIST_VALUES|sort=title:_roles}|name=node_view|empty_value=inherit|value={PERMISSION|name=node_view}:edit-permissions]
+[INPUT|title=Edit this node|multiple|type=select|values=inherit---Inherit,{LIST_VALUES|sort=title:_roles}|name=node_edit|empty_value=inherit|value={PERMISSION|name=node_edit}:edit-permissions]
+[INPUT|title=Add other nodes inside this node|multiple|type=select|values=inherit---Inherit,{LIST_VALUES|sort=title:_roles}|name=node_add|empty_value=inherit|value={PERMISSION|name=node_add}:edit-permissions]
+[INPUT|title=Delete this node|multiple|type=select|values=inherit---Inherit,{LIST_VALUES|sort=title:_roles}|name=node_delete|empty_value=inherit|value={PERMISSION|name=node_delete}:edit-permissions]
 [FORM|name=permissions:edit-permissions]

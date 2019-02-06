@@ -52,12 +52,12 @@
   // Run the init hook.
   $env->hook('init', $vars);
 
-
   // Render the page.
   print $env->getData('page')->render();
 
   // Run the complete hook.
   $env->hook('complete');
+
 
   // Complete the boot process.
   exit();
@@ -78,3 +78,4 @@
   function t($string, $replace = array()) {
     return \Quanta\Common\Localization::t($string, $replace);
   }
+
