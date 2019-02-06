@@ -1,3 +1,7 @@
+/* RESPONSIVE */
+
+/* MOBILE FIRST */
+
 .actionbutton.flickity-carousel {
   position: relative;
   color: #fff;
@@ -88,11 +92,6 @@
   opacity: 1;
 }
 
-
-
-/* RESPONSIVE */
-
-/* MOBILE FIRST */
 
 .actionbutton .flickity-button {
   display:none;
