@@ -76,6 +76,7 @@ $(function () {
 
       if (progress == 100) {
         data.context.removeClass('working');
+        data.context.find('input').fadeOut('slow');
         $(document).trigger('refresh');
       }
     },

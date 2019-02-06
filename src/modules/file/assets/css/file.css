@@ -6,8 +6,12 @@
 ul.file_admin  .progress-wrapper {
     position: absolute;
     left: 0px;
-    bottom: -15px;
+    bottom: 0px;
     width: 100%;
+}
+
+ul.file_admin  .progress-wrapper input {
+    opacity: 0.5;
 }
 ul.file_admin .progressBar {
     border: 0;
@@ -144,8 +148,7 @@ li.list-item {
     vertical-align:middle;
 }
 .sort-handle::after{
-    content:"\f047"; /* fa-arrows */
-    font-family: "FontAwesome";
+    content:"↕"; /* fa-arrows */
     font-size:20px;
     line-height:20px;
     color:#333;
