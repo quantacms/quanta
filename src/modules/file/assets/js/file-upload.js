@@ -76,7 +76,7 @@ $(function () {
 
       if (progress == 100) {
         data.context.removeClass('working');
-        data.context.find('input').fadeOut('slow');
+        //data.context.find('input').fadeOut('slow');
         $(document).trigger('refresh');
       }
     },
@@ -225,10 +225,12 @@ $(document).bind('refresh', function () {
     var qtag_suggestion ='/qtag/[FILE_QTAG_SUGGESTION|' + tag_attr + ':' + encodeURIComponent(filename) +']';
     $(this).load(qtag_suggestion);
   });
-
-
-
 });
 
-
-
+$(document).bind('shadow_save', function () {
+  $('.progressBar').each(function() {
+    if ($(this).val() != 100) {
+      shadowConfirmClose = confirm('Upload of files still in progress. Are you sure you want to save?');
+    }
+  })
+});
