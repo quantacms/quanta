@@ -51,7 +51,7 @@ class FileList extends ListObject {
       if (!empty($this->limit) && $i > $this->limit) {
         break;
       }
-      $classes = array('file-list-item', 'list-' . $this->getTpl() . '-item', 'list-item-' . $i, (($i % 2) == 0) ? 'list-item-even' : 'list-item-odd');
+      $classes = array('file-list-item', 'list-item-' . $this->getTpl(), 'list-item-' . $i, (($i % 2) == 0) ? 'list-item-even' : 'list-item-odd');
 
       if ((($file_types == FALSE) || $file_types == $file->getType()) && $file->isPublic()) {
 

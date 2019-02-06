@@ -144,8 +144,7 @@ li.list-item {
     vertical-align:middle;
 }
 .sort-handle::after{
-    content:"\f047"; /* fa-arrows */
-    font-family: "FontAwesome";
+    content:"↕"; /* fa-arrows */
     font-size:20px;
     line-height:20px;
     color:#333;
