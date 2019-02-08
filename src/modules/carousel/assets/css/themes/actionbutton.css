@@ -8,6 +8,7 @@
   height: 0;
   padding-bottom: 56.25%;
   overflow-y: hidden;
+  background: blue;
 }
 .actionbutton .flickity-viewport {
   position: absolute;
