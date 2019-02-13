@@ -24,11 +24,11 @@
     $env->mapClasses();
   }
 
-  // Check if the current request is a file rendering request.
-  \Quanta\Common\FileFactory::checkFile($env);
-
   // Start the user session.
   $env->startSession();
+
+  // Check if the current request is a file rendering request.
+  \Quanta\Common\FileFactory::checkFile($env);
 
   // Run the boot hook.
   $env->hook('boot');
