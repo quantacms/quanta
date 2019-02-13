@@ -5,15 +5,20 @@
 
 ul.file_admin  .progress-wrapper {
     position: absolute;
-    right: -60px;
+    left: 0px;
+    bottom: 0px;
+    width: 100%;
+}
+
+ul.file_admin  .progress-wrapper input {
+    opacity: 0.5;
 }
 ul.file_admin .progressBar {
     border: 0;
     display: block;
-    width: 45px;
+    width: 60px;
     text-align: center;
-    margin-left: 15px;
-    margin-top: -20px;
+    font-size: 1em;
 
 }
 
@@ -143,8 +148,7 @@ li.list-item {
     vertical-align:middle;
 }
 .sort-handle::after{
-    content:"\f047"; /* fa-arrows */
-    font-family: "FontAwesome";
+    content:"↕"; /* fa-arrows */
     font-size:20px;
     line-height:20px;
     color:#333;
@@ -168,6 +172,7 @@ a.file-link {
 ul.file_admin {
     margin: 0;
     padding: 0;
+    position: relative;
 }
 
 ul.file_admin  li {

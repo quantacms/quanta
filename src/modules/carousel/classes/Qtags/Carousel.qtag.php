@@ -1,7 +1,5 @@
 <?php
 namespace Quanta\Qtags;
-use Quanta\Common\DirList;
-use Quanta\Common\Page;
 
 
 /**
@@ -23,7 +21,7 @@ class Carousel extends HtmlTag {
     if (empty($flickity_counter)) {
       $flickity_counter++;
     }
-    /** @var Page $page */
+    /** @var \Quanta\Common\Page $page */
     $page = $this->env->getData('page');
 
     // TODO: create a class for the carousel.
@@ -37,12 +35,12 @@ class Carousel extends HtmlTag {
 
       case self::CAROUSEL_DIRS:
         $tpl = isset($this->attributes['tpl']) ? $this->attributes['tpl'] : 'flickity-carousel';
-        $list = new DirList($this->env, $this->getTarget(), $tpl, array('clean' => true, 'class' => 'flickity-carousel') + $this->attributes, $module);
+        $list = new \Quanta\Common\DirList($this->env, $this->getTarget(), $tpl, array('clean' => true, 'class' => 'flickity-carousel') + $this->attributes, $module);
         break;
 
       case self::CAROUSEL_FILES:
         $tpl = isset($this->attributes['tpl']) ? $this->attributes['tpl'] : 'flickity-file-carousel';
-        $list = new FileList($this->env, $this->getTarget(), $tpl, array('clean' => true, 'class' => 'flickity-carousel') + $this->attributes, $module);
+        $list = new \Quanta\Common\FileList($this->env, $this->getTarget(), $tpl, array('clean' => true, 'class' => 'flickity-carousel') + $this->attributes, $module);
         break;
 
       default:

@@ -51,16 +51,24 @@ class FileList extends ListObject {
       if (!empty($this->limit) && $i > $this->limit) {
         break;
       }
+      $classes = array('file-list-item', 'list-item-' . $this->getTpl(), 'list-item-' . $i, (($i % 2) == 0) ? 'list-item-even' : 'list-item-odd');
+
       if ((($file_types == FALSE) || $file_types == $file->getType()) && $file->isPublic()) {
 
         // TODO: not a beautiful approach. Invent something better.
         $list_item = preg_replace("/\{LISTITEM\}/is", Api::string_normalize($file->getPath()), $tpl);
         $list_item = preg_replace("/\{LISTNODE\}/is", Api::string_normalize($this->getNode()->getName()), $list_item);
         $list_item = QtagFactory::transformCodeTags($this->env, $list_item);
+        $vars = array(
+          'list' => &$this,
+          'list_item' => &$list_item,
+          'list_item_counter' => $i,
+          'list_item_classes' => &$classes,
+        );
+        $this->env->hook('list_item', $vars);
 
         // If "clean" mode is set don't add wrapping li tags.
         if (empty($this->getAttribute('clean'))) {
-          $classes = array('file-list-item', 'list-item-' . $this->getTpl(), 'list-item-' . $i);
           $list_item = '<' . $this->getData('list_item_html_tag') . ' class="' . implode(' ', $classes) . '" data-index="' . $i . '">' . $list_item . '</' . $this->getData('list_item_html_tag') . '>';
         }
 
@@ -80,7 +88,6 @@ class FileList extends ListObject {
 
     // Which field to use for sorting.
     switch ($this->sort) {
-
 
       case 'type':
         $check = strcasecmp($x->getType(), $y->getType()) > 0;
