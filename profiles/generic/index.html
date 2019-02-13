@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+    <!-- Variables, that you can use throughout the site. -->
+    {VARIABLE|set=Quanta CMS example:site_name}
     <!--
     index.html
     This file (index.html) serves as a main skeleton for all the site's pages.
@@ -15,7 +17,7 @@
         [META_DATA]
         [CSS|runlast]
         [CSS|runlast|refresh|external:/assets/css/style.css]
-        <title>[TITLE] - QuantaCMS example</title>
+        <title>[TITLE] - {VARIABLE:site_name}</title>
     </head>
 
     <!-- Body -->
@@ -24,13 +26,13 @@
         [MESSAGES]
     
         <!-- Site's header -->
-        [HEADER|grid_id=header|grid=p-1:_header]
+        [HEADER|id=header:_header]
 
         <!-- Currently viewed node's content -->
-        [MAIN|grid_id=grid-main]
+        [MAIN|id=grid-main|class=grid]
     
         <!-- Site's footer -->
-        [FOOTER|grid_id=footer:_footer]
+        [FOOTER|id=footer:_footer]
 
         [JS|runlast]
     </body>
