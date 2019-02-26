@@ -33,3 +33,11 @@ header nav.menu li {
 header nav.menu li + li {
   margin-left: 15px;
 }
+
+.width-100, 
+.width-100-img {
+  width: 100%;
+}
+.width-100-img img{
+  width: 100%;
+}
