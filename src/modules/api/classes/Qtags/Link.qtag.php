@@ -71,7 +71,6 @@ class Link extends HtmlTag {
    *   The rendered Qtag.
    */
   public function render() {
-    $querystring = array();
     $this->link_id = !empty($this->attributes['link_id']) ? $this->attributes['link_id'] : '';
 
     if (empty($this->destination)) {
@@ -140,10 +139,12 @@ class Link extends HtmlTag {
     
     // Check if there is a target language.
     if (!empty($this->attributes['language'])) {
-      $this->querystring['lang'] = $this->attributes['language'];
+      $this->querystring[] = 'lang=' . $this->attributes['language'];
     }
+
+
     // Sets a query string.
-    $query = (!empty($querystring)) ? ('?' . implode('&', $this->querystring)) : '';
+    $query = (!empty($this->querystring)) ? ('?' . implode('&', $this->querystring)) : '';
 
     // TODO: make just a big variable "data".
     // Check Quanta data types.
