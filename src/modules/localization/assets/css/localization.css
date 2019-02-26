@@ -1,3 +1,8 @@
+.language_switcher {
+	padding: 0;
+	margin: 0;
+}
+
 .language_switcher .dir-list-item, .translate_links .dir-list-item {
 	display: inline-block;
 	padding: 3px;
@@ -7,7 +12,7 @@
 }
 
 .language_switcher .list-selected, .translate_links .list-selected {
-	background: #ddd;
+	font-weight: bold;
 }
 
 .language_switcher_compact .dir-list-item{

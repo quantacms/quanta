@@ -28,6 +28,9 @@ body.grid {
   grid-auto-flow: dense;
 }
 
+/* RESPONSIVE */
+/* MOBILE FIRST */
+
 .grid-gap-0 {
   grid-gap: 0;
 }
@@ -66,9 +69,6 @@ body.grid {
 .grid-row-gap-3 {
   grid-row-gap: calc(var(--gap-size) * 3);
 }
-
-/* RESPONSIVE */
-/* MOBILE FIRST */
 
 .grid-start-1 {
   grid-column-start: 1;
@@ -216,6 +216,45 @@ body.grid {
 }
 /* md: Medium devices (tablets, 768px and up) */
 @media (min-width: 768px) {
+  .grid-gap-md-0 {
+    grid-gap: 0;
+  }
+  .grid-gap-md-1 {
+    grid-gap: var(--gap-size);
+  }
+  .grid-gap-md-2 {
+    grid-gap: calc(var(--gap-size) * 2);
+  }
+  .grid-gap-md-3 {
+    grid-gap: calc(var(--gap-size) * 3);
+  }
+  
+  .grid-column-gap-md-0 {
+    grid-column-gap: 0;
+  }
+  .grid-column-gap-md-1 {
+    grid-column-gap: var(--gap-size);
+  }
+  .grid-column-gap-md-2 {
+    grid-column-gap: calc(var(--gap-size) * 2);
+  }
+  .grid-column-gap-md-3 {
+    grid-column-gap: calc(var(--gap-size) * 3);
+  }
+  
+  .grid-row-gap-md-0 {
+    grid-row-gap: 0;
+  }
+  .grid-row-gap-md-1 {
+    grid-row-gap: var(--gap-size);
+  }
+  .grid-row-gap-md-2 {
+    grid-row-gap: calc(var(--gap-size) * 2);
+  }
+  .grid-row-gap-md-3 {
+    grid-row-gap: calc(var(--gap-size) * 3);
+  }
+
   .grid-start-md-1 {
     grid-column-start: 1;
   }
@@ -366,6 +405,45 @@ body.grid {
 
 /* lg: Large devices (desktops, 992px and up) */
 @media (min-width: 992px) {
+  .grid-gap-lg-0 {
+    grid-gap: 0;
+  }
+  .grid-gap-lg-1 {
+    grid-gap: var(--gap-size);
+  }
+  .grid-gap-lg-2 {
+    grid-gap: calc(var(--gap-size) * 2);
+  }
+  .grid-gap-lg-3 {
+    grid-gap: calc(var(--gap-size) * 3);
+  }
+  
+  .grid-column-gap-lg-0 {
+    grid-column-gap: 0;
+  }
+  .grid-column-gap-lg-1 {
+    grid-column-gap: var(--gap-size);
+  }
+  .grid-column-gap-lg-2 {
+    grid-column-gap: calc(var(--gap-size) * 2);
+  }
+  .grid-column-gap-lg-3 {
+    grid-column-gap: calc(var(--gap-size) * 3);
+  }
+  
+  .grid-row-gap-lg-0 {
+    grid-row-gap: 0;
+  }
+  .grid-row-gap-lg-1 {
+    grid-row-gap: var(--gap-size);
+  }
+  .grid-row-gap-lg-2 {
+    grid-row-gap: calc(var(--gap-size) * 2);
+  }
+  .grid-row-gap-lg-3 {
+    grid-row-gap: calc(var(--gap-size) * 3);
+  }
+
   .grid-start-lg-1 {
     grid-column-start: 1;
   }
@@ -509,6 +587,45 @@ body.grid {
 
 /* xl: Extra large devices (large desktops, 1200px and up) */
 @media (min-width: 1200px) {
+  .grid-gap-xl-0 {
+    grid-gap: 0;
+  }
+  .grid-gap-xl-1 {
+    grid-gap: var(--gap-size);
+  }
+  .grid-gap-xl-2 {
+    grid-gap: calc(var(--gap-size) * 2);
+  }
+  .grid-gap-xl-3 {
+    grid-gap: calc(var(--gap-size) * 3);
+  }
+  
+  .grid-column-gap-xl-0 {
+    grid-column-gap: 0;
+  }
+  .grid-column-gap-xl-1 {
+    grid-column-gap: var(--gap-size);
+  }
+  .grid-column-gap-xl-2 {
+    grid-column-gap: calc(var(--gap-size) * 2);
+  }
+  .grid-column-gap-xl-3 {
+    grid-column-gap: calc(var(--gap-size) * 3);
+  }
+  
+  .grid-row-gap-xl-0 {
+    grid-row-gap: 0;
+  }
+  .grid-row-gap-xl-1 {
+    grid-row-gap: var(--gap-size);
+  }
+  .grid-row-gap-xl-2 {
+    grid-row-gap: calc(var(--gap-size) * 2);
+  }
+  .grid-row-gap-xl-3 {
+    grid-row-gap: calc(var(--gap-size) * 3);
+  }
+
   .grid-start-xl-1 {
     grid-column-start: 1;
   }
@@ -651,7 +768,46 @@ body.grid {
 
 /* xxl: XXL devices (very large desktops, 1440px and up) */
 @media (min-width: 1440px) {
-    .grid-start-xxl-1 {
+  .grid-gap-xxl-0 {
+    grid-gap: 0;
+  }
+  .grid-gap-xxl-1 {
+    grid-gap: var(--gap-size);
+  }
+  .grid-gap-xxl-2 {
+    grid-gap: calc(var(--gap-size) * 2);
+  }
+  .grid-gap-xxl-3 {
+    grid-gap: calc(var(--gap-size) * 3);
+  }
+  
+  .grid-column-gap-xxl-0 {
+    grid-column-gap: 0;
+  }
+  .grid-column-gap-xxl-1 {
+    grid-column-gap: var(--gap-size);
+  }
+  .grid-column-gap-xxl-2 {
+    grid-column-gap: calc(var(--gap-size) * 2);
+  }
+  .grid-column-gap-xxl-3 {
+    grid-column-gap: calc(var(--gap-size) * 3);
+  }
+  
+  .grid-row-gap-xxl-0 {
+    grid-row-gap: 0;
+  }
+  .grid-row-gap-xxl-1 {
+    grid-row-gap: var(--gap-size);
+  }
+  .grid-row-gap-xxl-2 {
+    grid-row-gap: calc(var(--gap-size) * 2);
+  }
+  .grid-row-gap-xxl-3 {
+    grid-row-gap: calc(var(--gap-size) * 3);
+  }
+
+  .grid-start-xxl-1 {
     grid-column-start: 1;
   }
   .grid-start-xxl-2 {
