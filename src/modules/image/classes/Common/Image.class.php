@@ -54,6 +54,7 @@ class Image extends FileObject {
           break;
 
         default:
+          $this->setData($attname, $attributes);
           break;
       }
     }
@@ -84,21 +85,6 @@ class Image extends FileObject {
   public function getTitle() {
     return $this->title;
   }
-
-  /**
-   * Render the image.
-   * @param string $mode
-   * @return string
-   */
-  public function render($mode = self::IMAGE_RENDER_FULL) {
-    $style = (count($this->css) > 0) ? 'style="' . implode(';', $this->css) . '" ' : '';
-    $class = (count($this->class) > 0) ? implode(' ', $this->class) : '';
-    $width = ($this->width > 0) ? 'width="' . $this->width . '"' : '';
-    $height = ($this->height > 0) ? 'height="' . $this->height . '"' : '';
-    $img = '<img ' . $width . ' ' . $height . ' alt="' . $this->getTitle() . '" class="image ' . $class . '" src="' . $this->path . '" ' . $style . " />";
-    return $img;
-  }
-
 
   /**
    * Generate a thumbnail of an image.
