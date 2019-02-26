@@ -63,8 +63,15 @@ class Img extends HtmlTag {
       // Generate the thumbnail of the requested image.
       $newthumbfile = $image->generateThumbnail($this->env, $vars);
 
-      // TODO: stupid way to get to the tmp folder...
+      // TODO: stupid way to get to the tmp thumbs folder...
       $this->src = '/thumbs/' . $newthumbfile;
+
+      // TODO: redundant with Image.class.php?.
+      if (!empty($this->getAttribute('autosize'))) {
+        $get_size = getimagesize($this->env->dir['thumbs'] . '/' . $newthumbfile);
+        $image->width = $get_size[0];
+        $image->height = $get_size[1];
+      }
 
     }
     else {
