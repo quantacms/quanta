@@ -15,7 +15,7 @@ class Phone extends Link {
     // Remove all spaces, W3C standard.
     $tel = preg_replace('/\s+/', '', $this->getTarget());
     $this->link_body = $tel;
-    $this->destination = htmlspecialchars("tel&colon;" . $tel);
+    $this->destination = htmlspecialchars("tel:" . $tel);
     return parent::render();
   }
 }
