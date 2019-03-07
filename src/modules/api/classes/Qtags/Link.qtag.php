@@ -89,6 +89,11 @@ class Link extends HtmlTag {
         $this->external = TRUE;
         $this->destination = $this->getTarget();
       }
+      // Link to an anchor.
+      elseif (substr($this->getTarget(), 0, 1) == '#') {
+        $this->link_class[] = 'link-anchor';
+        $this->destination = $this->getTarget();
+      }
       // Link to a node.
       elseif (!empty($this->getTarget())) {
         // Load the node.
