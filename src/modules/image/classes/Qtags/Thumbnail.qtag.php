@@ -5,7 +5,7 @@ use Quanta\Common\NodeFactory;
 /**
  * Renders an image.
  */
-class Thumbnail extends Link {
+class Thumbnail extends ImgThumb {
   /**
    * Render the Qtag.
    *
@@ -16,13 +16,13 @@ class Thumbnail extends Link {
     $node = NodeFactory::loadOrCurrent($this->env, $this->getTarget());
     $this->setAttribute('node', $node->getName());
     $this->setTarget($node->getThumbnail());
-    $img = new ImgThumb($this->env, $this->getAttributes(), $this->getTarget());
-    // We use a prefix to avoid a double id for the link and the image.
-    if (!empty($this->getAttribute('id'))) {
-      $this->setAttribute('id', 'link-' . $this->getAttribute('id'));
+    $html = parent::render();
+    if (empty($this->getAttribute('link')) || $this->getAttribute('link') != 'false') {
+      $link = new Link($this->env, $this->getAttributes(), $node->getName());
+      $link->destination = '/' . (!empty($this->getAttribute('href')) ? $this->getAttribute('href') :  $node->getName());
+      $link->setHtmlBody($html);
+      $html = $link->render();
     }
-    $this->destination = '/' . (!empty($this->getAttribute('href')) ? $this->getAttribute('href') :  $node->getName());
-    $this->html_body = $img->render();
-    return parent::render();
+    return $html;
   }
 }
