@@ -43,26 +43,32 @@ function mail_form_type_mailform_submit(Environment $env, array $vars) {
   $mail = new Mail($env, time() . '_' . rand(10000, 99999), $queue->getName());
   $body = '';
 
-  $form = $vars['form'];
-  $items = $form->getItems();
+  $form_state = $vars['form_state'];
+
+  $items = $form_state->getItems();
 
   foreach ($items as $item) {
     /** @var FormItem $item */
     $value = $item->getValue()[0];
 
     // Non-html email: convert newlines.
-    if (($item->getType() == 'text') && empty($item->getInputAttr('wysiwyg')))  {
+    if (($item->getType() == 'text') && empty($item->getAttribute('wysiwyg')))  {
       $value = nl2br($value);
     }
     // Submit all the values except the submit button.
     if ($item->getType() != 'submit') {
+      if (empty($value)) {
+        $value = '--- ';
+      }
       $body .= '<b>' . $item->getLabel() . '</b>: <br>' . $value . '<br><br>';
     }
   }
-  // Run all mailform hooks to elaborate the form.
-  $vars = array('mail' => &$mail, 'form' => &$form);
-  $env->hook('mailform_' . $vars['form']->getId() . '_send', $vars);
+
   $mail->setBody($body);
+  // Run all mailform hooks to elaborate the form.
+  $vars = array('mail' => &$mail, 'form' => &$form_state);
+  $env->hook('mailform_' . $vars['form']->getId() . '_send', $vars);
+
   //$mail->save();
   $mail->send();
 }

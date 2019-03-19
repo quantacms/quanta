@@ -1,5 +1,5 @@
 <?php
-namespace Quanta\Common;
+namespace Quanta\Qtags;
 
 /**
  * Class FormItemAutocomplete
