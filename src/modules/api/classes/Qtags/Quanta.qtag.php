@@ -11,6 +11,6 @@ class Quanta extends Qtag {
    *   The rendered Qtag.
    */
   public function render() {
-    return '<span class="powered-by-quanta">Powered by <a href="https://www.quanta.org">Quanta CMS</a></span>';
+    return '<span class="powered-by-quanta">Powered by <a target="_blank" href="https://www.quanta.org">Quanta CMS</a></span>';
   }
 }
