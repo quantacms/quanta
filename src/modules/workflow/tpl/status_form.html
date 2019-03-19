@@ -1,4 +1,5 @@
 <h2>Edit Status</h2>
 [SHADOW_DESCRIPTION:Here you can edit this node's status]
-[INPUT|type=select|title=Status|values={LIST_VALUES:_statuses}|value={ATTRIBUTE|name=status}|name=edit-status:status-form]
-[FORM:status-form]
+[FORM|name=status_form:
+[INPUT|type=select|title=Status|values={LIST_VALUES:_statuses}|value={ATTRIBUTE|name=status}|name=edit-status:status_form]
+]
