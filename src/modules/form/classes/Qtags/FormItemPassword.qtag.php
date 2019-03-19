@@ -1,5 +1,5 @@
 <?php
-namespace Quanta\Common;
+namespace Quanta\Qtags;
 
 /**
  * Class FormItemString
@@ -7,6 +7,7 @@ namespace Quanta\Common;
  */
 class FormItemPassword extends FormItemString {
   public $type = 'password';
+  protected $html_tag = 'input';
 
   /**
    * @return string
