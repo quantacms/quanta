@@ -1,4 +1,6 @@
 <?php
+namespace Quanta\Common;
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 /**
@@ -8,7 +10,7 @@ use PHPMailer\PHPMailer\Exception;
  * Time: 16:45
  */
 
-class Mail extends Quanta\Common\Node {
+class Mail extends Node {
   /**
    * Send an email using phpmailer.
    */
@@ -51,7 +53,7 @@ class Mail extends Quanta\Common\Node {
 		}
 		catch(Exception $ex) {
       // Catch any errors.
-      new Message($this->env, t('Mailer Error: %error', array('%error' => $mail->ErrorInfo)), MESSAGE_ERROR);
+      new Message($this->env, t('Mailer Error: %error', array('%error' => $mail->ErrorInfo)), Message::MESSAGE_ERROR);
 		}
   }
 } 
