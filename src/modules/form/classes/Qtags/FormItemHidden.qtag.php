@@ -7,4 +7,6 @@ namespace Quanta\Qtags;
  */
 class FormItemHidden extends FormItemString {
   public $type = 'hidden';
+  protected $label_position = Label::LABEL_HIDDEN;
+
 }
