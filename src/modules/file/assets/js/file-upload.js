@@ -142,6 +142,7 @@ var refreshFileActions = function (fileElement) {
 
     // Initialize set thumbnail buttons.
     $('.set-thumbnail').on('click', function () {
+
       if (!($(this).hasClass('selected-thumbnail'))) {
         $('#edit_thumbnail').val($(this).data('filename'));
       }

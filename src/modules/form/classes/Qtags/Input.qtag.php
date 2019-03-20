@@ -71,6 +71,8 @@ class Input extends HtmlTag {
         $this->addClass('has-validation-errors');
       }
 
+      // Prevent the wrapper from having the same id as the input item.
+      $this->setAttribute('id', 'wrapper-' . $this->form_item->getName());
       return parent::render();
     }
   }
