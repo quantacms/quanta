@@ -68,12 +68,6 @@ abstract class FormItem extends HtmlTag {
     $this->checkMultiple();
     $this->checkLimit();
     $this->checkDistinct();
-
-
-    // TODO: make this better and move elsewhere in validation function.
-    if (!empty($_REQUEST['form']) && !empty($_SESSION['validation_errors'][$_REQUEST['form']][$this->getName()])) {
-      $this->addClass('validation-error');
-    }
     $this->loadValue();
     $this->loadDefault();
     $this->loadAllowableValues();
