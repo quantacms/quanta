@@ -85,10 +85,9 @@ class Node extends JSONDataContainer {
 
       // If node is not in cache, load it from file system.
       else {
-        $result = $this->env->nodePath($this->getName());
         // TODO: unify path and path.
-        $this->path = $result;
-        $this->exists = $result != NULL;
+        $this->path = $this->env->nodePath($this->getName());
+        $this->exists = $this->path != NULL;
       }
 
     } // ...Adding a new node. No values to load.
