@@ -15,7 +15,7 @@
   // Include the class autoloader.
   require_once('autoload.php');
 
-  // Load the environment.
+// Load the environment.
   $env->load();
 
   // If classes are not mapped yet (i.e. in a fresh install), we need to manually include Environment, so it can
