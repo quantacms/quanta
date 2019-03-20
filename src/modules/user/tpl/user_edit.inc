@@ -1,3 +1,4 @@
+[FORM|name=user-form:
 [SHADOW_DESCRIPTION:Here you can edit your profile data.]
 [INPUT|type=hidden|required|name=action|value={SHADOW:context}:user-form]
 
@@ -8,4 +9,4 @@
 [INPUT|filter=context@user_edit_own|title={TEXT:Old Password}|type=password|id=old_password|required|name=old_password:user-form]
 [INPUT|title={TEXT|filter=context@user_edit_own:New }{TEXT:Password}|type=password|id=edit_password|required|name=password:user-form]
 [INPUT|title={TEXT|filter=context@user_edit_own:New }{TEXT:Password Repeat}|type=password|id=edit_password_rp|required|name=password_rp:user-form]
-[FORM:user-form]
+]
