@@ -9,6 +9,10 @@ use Quanta\Common\Api;
  * Creates a link to another node in the system.
  */
 class Link extends HtmlTag {
+  const LINK_INTERNAL = "internal";
+  const LINK_EXTERNAL = "external";
+  const LINK_ANCHOR = "anchor";
+
   /**
    * @var string $link_title
    *   The Link Title (what appears in the <a title=... attribute).
@@ -45,10 +49,10 @@ class Link extends HtmlTag {
    */
   public $destination = NULL;
   /**
-   * @var string $external
-   *   If true, will create a simple link to the target/destination.
+   * @var string $type
+   *   Link type (internal, external, anchor, etc.).
    */
-  public $external = FALSE;
+  public $type = FALSE;
   /**
    * @var array $querystring
    *   A key-value array of querystring parameters.
@@ -86,16 +90,18 @@ class Link extends HtmlTag {
       }
       // Link to a specific resource (i.e. to an image).
       elseif (!empty($this->attributes['external'])) {
-        $this->external = TRUE;
+        $this->setType(self::LINK_EXTERNAL);
         $this->destination = $this->getTarget();
       }
       // Link to an anchor.
       elseif (substr($this->getTarget(), 0, 1) == '#') {
         $this->link_class[] = 'link-anchor';
+        $this->setType(self::LINK_ANCHOR);
         $this->destination = $this->getTarget();
       }
       // Link to a node.
       elseif (!empty($this->getTarget())) {
+        $this->setType(self::LINK_INTERNAL);
         // Load the node.
         $node = NodeFactory::load($this->env, $this->getTarget());
         $current = NodeFactory::current($this->env);
@@ -108,7 +114,7 @@ class Link extends HtmlTag {
         // Add classes...
         $this->link_class[] = 'link-' . Api::string_normalize($node->getName());
         // Check if this node's link is identical to the current node.
-        if (($this->destination . '/') == $this->env->request_uri) {
+        if (($this->getTarget()) == $this->env->request_path) {
           $this->link_class[] = 'link-active';
         }
         $this->attributes['rel'] = $node->getName();
@@ -141,12 +147,6 @@ class Link extends HtmlTag {
     if (!empty($this->attributes['link_target'])) {
       $this->link_target = $this->attributes['link_target'];
     }
-    
-    // Check if there is a target language.
-    if (!empty($this->attributes['language'])) {
-      $this->querystring[] = 'lang=' . $this->attributes['language'];
-    }
-
 
     // Sets a query string.
     $query = (!empty($this->querystring)) ? ('?' . implode('&', $this->querystring)) : '';
@@ -173,5 +173,13 @@ class Link extends HtmlTag {
 
     return parent::render();
 
+  }
+
+  public function getType() {
+    return $this->type;
+  }
+
+  public function setType($type) {
+    $this->type = $type;
   }
 }

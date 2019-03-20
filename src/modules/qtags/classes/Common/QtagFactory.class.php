@@ -146,6 +146,9 @@ class QtagFactory {
     $tag_delimited = substr($tag_full, 1, strlen($tag_full) - 2);
     $tag = explode(':', $tag_delimited);
     $tag_name_p = $tag[0];
+    if ($tag_name_p == '$') {
+      $tag_name_p = 'VARIABLE';
+    }
     // If there is more than one : we have to just consider the FIRST chunk
     // and unify the rest.
     if (count($tag) > 1) {
