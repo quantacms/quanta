@@ -31,10 +31,10 @@ class Input extends HtmlTag {
     $values = $this->form_item->getValue();
     $i = 0;
     // Load and render all existing values...
-    // @TODO refactor!.
+
     foreach ($values as $value) {
       // Set the current value of the form item.
-      $this->form_item->setCurrentValue($value);
+      $this->form_item->setDefaultValue($value);
       if ($i > 0) {
         $this->setId($this->getId() . '_' . $i);
       }
