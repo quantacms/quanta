@@ -104,6 +104,22 @@ class Api {
   }
 
   /**
+   * Strip all qtags from a string.
+   *
+   * @param string $string
+   *   The string to be stripped.
+   *
+   * @param array $keep_qtags
+   *   Some Qtags that could be kept.
+   *
+   * @return string
+   *   The normalized string.
+   */
+  public static function strip_qtags($string, $keep_qtags = array()) {
+    return preg_replace('/\{.*?\}/', '',  preg_replace('/\[.*?\]/', '', $string));
+  }
+
+  /**
    * Normalize a path by replacing all special characters.
    *
    * @param string $s
