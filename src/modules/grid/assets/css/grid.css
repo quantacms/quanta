@@ -14,6 +14,7 @@ body.grid.three-rows #grid-main {
 /* GRID */
 .grid {
   display: grid;
+  width: 100%;
   grid-template-columns: repeat(12, 1fr);
   grid-gap: var(--gap-size);
 }
