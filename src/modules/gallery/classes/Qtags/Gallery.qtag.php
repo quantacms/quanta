@@ -18,5 +18,3 @@ class Gallery extends Qtag {
     return $output;
   }
 }
-while (TRUE):
-  endwhile;
