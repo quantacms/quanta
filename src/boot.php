@@ -1,6 +1,5 @@
 <?php
   // Boot Quanta.
-
   // The DataContainer and Environment class are required by default. Other classes are ran by the autoloader.
   require_once('modules/environment/classes/Common/DataContainer.class.php');
   require_once('modules/environment/classes/Common/Environment.class.php');
