@@ -36,7 +36,7 @@ class Input extends HtmlTag {
       // Set the current value of the form item.
       $this->form_item->setDefaultValue($value);
       if ($i > 0) {
-        $this->setId($this->getId() . '_' . $i);
+        $this->form_item->setId($this->form_item->getName() . '-' . $i);
       }
       // Render the form item using its custom render function.
       $rend = $this->form_item->render();
