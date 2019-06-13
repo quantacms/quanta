@@ -175,10 +175,22 @@ class Link extends HtmlTag {
 
   }
 
+  /**
+   * Gets the link type (external, anchor or internal).
+   *
+   * @return string
+   *   The link's type.
+   */
   public function getType() {
     return $this->type;
   }
 
+  /**
+   * Sets the link type (external, anchor or internal).
+   *
+   * @param string $type
+   *   The link's type.
+   */
   public function setType($type) {
     $this->type = $type;
   }

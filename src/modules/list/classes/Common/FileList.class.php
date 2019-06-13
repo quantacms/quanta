@@ -14,8 +14,8 @@ class FileList extends ListObject {
   public $filefield = 'files';
 
   public function start() {
-    if (!empty($this->getAttribute('file_field'))) {
-      $this->filefield = $this->getAttribute('file_field');
+    if (!empty($this->getData('file_field'))) {
+      $this->filefield = $this->getData('file_field');
     }
 
   }
@@ -29,7 +29,7 @@ class FileList extends ListObject {
    */
   public function generateList() {
 
-    $file_types = $this->getAttribute('file_types');
+    $file_types = $this->getData('file_types');
 
     $i = 0;
     $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
@@ -68,7 +68,7 @@ class FileList extends ListObject {
         $this->env->hook('list_item', $vars);
 
         // If "clean" mode is set don't add wrapping li tags.
-        if (empty($this->getAttribute('clean'))) {
+        if (empty($this->getData('clean'))) {
           $list_item = '<' . $this->getData('list_item_html_tag') . ' class="' . implode(' ', $classes) . '" data-index="' . $i . '">' . $list_item . '</' . $this->getData('list_item_html_tag') . '>';
         }
 
@@ -135,7 +135,7 @@ class FileList extends ListObject {
   public function addItem($file) {
     // Check that this file belongs to the file field as in json.
     // TODO: why this was done?.
-    //      $node_files = array_flip($this->getNode()->getAttributeJSON($this->filefield));.
+    //      $node_files = array_flip($this->getNode()->getDataJSON($this->filefield));.
     // if (!isset($node_files[$file->getPath()])) {
     //  new Message($this->env, 'File absent from JSON file: ' . $file->getName() . '. Please re-save this node to fix the problem.');
     // }
