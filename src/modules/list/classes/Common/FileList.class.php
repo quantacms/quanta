@@ -28,7 +28,6 @@ class FileList extends ListObject {
    * @internal param $page
    */
   public function generateList() {
-
     $file_types = $this->getAttribute('file_types');
 
     $i = 0;
