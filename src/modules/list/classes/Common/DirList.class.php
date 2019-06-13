@@ -46,7 +46,7 @@ class DirList extends ListObject {
       $classes = array('dir-list-item', 'list-' . $this->getTpl() . '-item', 'list-item-' . $i, (($i % 2) == 0) ? 'list-item-even' : 'list-item-odd');
 
       // Check if the list item is the current / active one.
-      if ($node->isCurrent() || ($this->getAttribute('active_items') == $node->getName())) {
+      if ($node->isCurrent() || ($this->getData('active_items') == $node->getName())) {
         $classes[] = 'list-selected';
       }
       if (isset($node_father) && $node_father->exists && ($node_father->getName() == $node->getName())) {
@@ -67,7 +67,7 @@ class DirList extends ListObject {
       );
       $this->env->hook('list_item', $vars);
 
-      $editable = $this->getAttribute('editable');
+      $editable = $this->getData('editable');
       // Wrap in the inline editor.
       if (empty($editable) || $editable == 'true') {
         $list_item = NodeTemplate::wrap($this->env, $node, $list_item);
@@ -75,7 +75,7 @@ class DirList extends ListObject {
 
       // If the "clean" attribute is not present, add some wrapping html.
       // Check if output should be list item or plain.
-      if (empty($this->getAttribute('clean'))) {
+      if (empty($this->getData('clean'))) {
         $list_item = '<' . $this->getData('list_item_html_tag') . ' class="' . implode(' ', $classes) . '">' . $list_item . '</' . $this->getData('list_item_html_tag') . '>';
       }
       $this->rendered_items[] = $list_item;
@@ -120,7 +120,7 @@ class DirList extends ListObject {
 
         default:
           //Sort by Number DESC
-          $check = ($x->getAttributeJSON($this->sort) < $y->getAttributeJSON($this->sort));
+          $check = ($x->getDataJSON($this->sort) < $y->getDataJSON($this->sort));
           break;
       }
 
