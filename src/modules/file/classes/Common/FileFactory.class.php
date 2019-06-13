@@ -28,11 +28,11 @@ class FileFactory {
         $mods = array_flip(apache_get_modules());
         if (isset($mods['mod_xsendfile'])) {
           // TODO: support for xsendfile.
-          readfile($file);
+          // readfile($file);
         }
         else {
           //TODO : slow, insecure...
-          readfile($file);
+           readfile($file);
         }
         exit();
       }
