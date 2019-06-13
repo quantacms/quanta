@@ -96,11 +96,11 @@ class Qtag {
     // change access rules or perform other interactions.
     $this->env->hook('qtag_preload', $vars);
 
+    // Default empty string value for the Qtag.
+    $this->html = '';
+
     // Check that current user has access to the qtag. Empty the qtag if it's not.
-    if (!$this->getAccess()) {
-      $this->html = '';
-    }
-    elseif (!$this->rendered) {
+    if ($this->getAccess() && !$this->rendered) {
       $this->html = $this->render();
       $this->rendered = TRUE;
       // Let other modules hook into the rendered qtag.

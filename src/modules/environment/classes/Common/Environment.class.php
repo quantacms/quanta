@@ -524,7 +524,8 @@ class Environment extends DataContainer {
    *   The result of the node search.
    */
   private function findNodePath($folder) {
-    $findcmd = 'find ' . $this->dir['docroot'] . '/ -name "' . $folder . '"';
+    // TODO: cleaner way to exclude folders in _modules.
+    $findcmd = 'find ' . $this->dir['docroot'] . '/ -type d -name "' . $folder . '" -not -path */_modules*';
     // TODO: sometimes getting empty folder. Why? Temporary fix.
     if (empty($folder)) {
       return NULL;
@@ -582,10 +583,10 @@ class Environment extends DataContainer {
     }
     if (count($found_folders) > 1) {
       new Message($this,
-        t('Warning: there is more than one folder named !folder: <br/>!folders<br>Check integrity!',
+        t('Warning: there is more than one folder named !folder: <br/>!folds<br>Check integrity!',
           array(
             '!folder' => $folder,
-            '!folders' => var_export($found_folders, 1),
+            '!folds' => var_export($found_folders, 1),
           )
         ));
     }
