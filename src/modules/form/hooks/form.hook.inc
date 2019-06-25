@@ -30,8 +30,8 @@ function form_boot(Environment $env, array $vars) {
   // Autocomplete.
   // TODO: object oriented, using templates, etc. etc.
   if ($env->getRequestedPath() == 'autocomplete') {
-    _form_json_autocomplete_results($env, $vars);
-    die();
+    print _form_json_autocomplete_results($env, $vars);
+    exit();
   }
 }
 
@@ -62,5 +62,5 @@ function _form_json_autocomplete_results($env, $vars) {
       );
     }
   }
-  print json_encode($results);
+  return json_encode($results);
 }

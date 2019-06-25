@@ -33,6 +33,9 @@ class Form extends HtmlTag {
 
     $this->form_state = \Quanta\Common\FormFactory::getFormState($this->env, $this->getAttribute('name'));
 
+    if (!empty($this->getAttribute('name'))) {
+      $this->setId($this->getAttribute('name'));
+    }
     $this->form_state->setType($this->getAttribute('type'));
     $this->html_params['action'] = !empty($this->getAttribute('action')) ? $this->getAttribute('action') : '?';
     $this->html_params['target'] = !empty($this->getAttribute('target')) ? $this->getAttribute('target') : '_top';
