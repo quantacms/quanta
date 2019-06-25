@@ -46,12 +46,12 @@ function file_init(Environment $env, array $vars) {
     FileObject::checkUploads($env);
     exit();
   }
-  $file_delete_act = \Quanta\Common\Node::NODE_ACTION_DELETE_FILE;
+
   // There is a request to delete a file.
   // TODO: move in actions / factory?
-  if (isset($_REQUEST[$file_delete_act])) {
+  if (isset($_REQUEST[\Quanta\Common\Node::NODE_ACTION_DELETE_FILE])) {
     $node = NodeFactory::current($env);
-    $split_file_to_delete = explode('/', $_REQUEST[$file_delete_act]);
+    $split_file_to_delete = explode('/', $_REQUEST[\Quanta\Common\Node::NODE_ACTION_DELETE_FILE]);
     FileObject::deleteFile($node, $split_file_to_delete[count($split_file_to_delete) - 1]);
     exit();
   }
@@ -68,7 +68,6 @@ function file_init(Environment $env, array $vars) {
  *   An array of variables.
  */
 function file_node_presave(Environment $env, array $vars) {
-  // TODO: move in File or create FileFactory module.
   /** @var Node $node */
   $node = $vars['node'];
   $data = $vars['data'];
@@ -83,6 +82,7 @@ function file_node_presave(Environment $env, array $vars) {
     }
   }
 
+  //
   foreach ($uploaded_files as $form_name => $uploaded_file_list) {
     // Save list of uploaded files for this file field in json.
     $node->json->{$form_name} = $uploaded_file_list;

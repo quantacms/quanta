@@ -9,15 +9,16 @@ namespace Quanta\Common;
  *
  */
 class FileList extends ListObject {
+  const DEFAULT_FILE_FIELD = 'files';
+
   protected $scantype = \Quanta\Common\Environment::DIR_FILES;
   /** @var string $filename */
-  public $filefield = 'files';
+  public $filefield = self::DEFAULT_FILE_FIELD;
 
   public function start() {
     if (!empty($this->getData('file_field'))) {
       $this->filefield = $this->getData('file_field');
     }
-
   }
 
   /**
@@ -86,17 +87,20 @@ class FileList extends ListObject {
    */
   public function sortBy($x, $y) {
 
-    // Which field to use for sorting.
+    // Switch field to use for sorting.
     switch ($this->sort) {
 
+      // Sort files by file type.
       case 'type':
         $check = strcasecmp($x->getType(), $y->getType()) > 0;
         break;
 
+      // Sort files by file size.
       case 'size':
         $check = ($x->getFileSize() < $y->getFileSize());
         break;
 
+      // Order files by weight (as they are sorted using the UI).
       case 'weight':
         if (!empty($this->getNode()->json->{$this->filefield})) {
           // Rearrange Files according with what was set in the node json.
@@ -116,7 +120,8 @@ class FileList extends ListObject {
           $check = FALSE;
         }
         break;
-        
+
+      // Sort files alphabetically by Name (default).
       case 'name':
       default:
       $check = strcasecmp($x->getName(), $y->getName()) > 0;
@@ -133,13 +138,12 @@ class FileList extends ListObject {
    *   The file to be added.
    */
   public function addItem($file) {
-    // Check that this file belongs to the file field as in json.
-    // TODO: why this was done?.
-    //      $node_files = array_flip($this->getNode()->getDataJSON($this->filefield));.
-    // if (!isset($node_files[$file->getPath()])) {
-    //  new Message($this->env, 'File absent from JSON file: ' . $file->getName() . '. Please re-save this node to fix the problem.');
-    // }
-    $this->items[] = $file;
+    $node_files = array_flip($this->getNode()->getAttributeJSON($this->filefield));
+    // The "files" filefield is used in the standard Quanta files, containing all uploaded files in the folder.
+    // For other file inputs, filter files by those that have been uploaded through that specific input.
+    if (($this->filefield == self::DEFAULT_FILE_FIELD) || isset($node_files[$file->getPath()])) {
+      $this->items[] = $file;
+    }
 
   }
 }
