@@ -120,7 +120,7 @@ class DirList extends ListObject {
 
         default:
           //Sort by Number DESC
-          $check = ($x->getDataJSON($this->sort) < $y->getDataJSON($this->sort));
+          $check = ($x->getAttributeJSON($this->sort) < $y->getAttributeJSON($this->sort));
           break;
       }
 

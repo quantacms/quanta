@@ -164,7 +164,10 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
         $filter_check = array($user->getName());
         break;
       // Filter by current user's role.
-      case 'user_role':
+			case 'status':
+        $filter_check = array($node->getStatus());
+				break;
+			case 'user_role':
         $filter_check = $user->getRoles();
         break;
       // Filter by node's lineage (father, grandfather, and all ancestors!).
@@ -192,10 +195,6 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
           /** @var Node $category_node */
           $filter_check[] = $category_node->getName();
         }
-        break;
-
-      case 'status':
-        $filter_check = array($node->getStatus());
         break;
 
       default:
