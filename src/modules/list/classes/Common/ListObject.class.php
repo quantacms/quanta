@@ -187,7 +187,6 @@ abstract class ListObject extends DataContainer {
 
     // Attribute used for applying filtering to a list's results.
     if (!empty($this->getData('list_filter'))) {
-      $this->setData('list_filter', $this->getData('list_filter'));
     }
 
     if ($this->getData('level') == 'leaf' || $this->getData('level') == 'tree') {
