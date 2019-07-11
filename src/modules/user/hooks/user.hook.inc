@@ -201,7 +201,7 @@ function user_action_user_edit(Environment $env, array $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function user_action_user_edit_own(Environment $env, array $vars) {
+function user_action_user_edit_own(Environment $env, array &$vars) {
   user_action_user_edit($env, $vars);
 }
 
@@ -214,36 +214,23 @@ function user_action_user_edit_own(Environment $env, array $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function user_action_user_register(Environment $env, array $vars) {
+function user_user_form_form_submit(Environment $env, array &$vars) {
+
   // Prepare the response object.
-  $response = new stdClass();
-  $user = UserFactory::requestAction($env, $vars['data']['action'], $vars['data']);
-  // Check if there are validation errors.
-  if (!empty($user->getData('validation_errors'))) {
-    foreach ($user->getData('validation_errors') as $error) {
-      new Message($env,
-        $error,
-        \Quanta\Common\Message::MESSAGE_WARNING
-      );
-    }
-    $response->errors = Message::burnMessages();
-  }
-  else {
-    // Perform the registration of the user.
-    $username = array_pop($vars['data']['name']);
-    $user = UserFactory::load($env, $username);
+  $response = new \stdClass();
+
+  /** @var FormState $form_state */
+  $form_state = $vars['form_state'];
+
+  UserFactory::requestAction($env, $vars['form_state']->getType(), $form_state);
+
+  // Perform the registration of the user.
+  $user = UserFactory::load($env, $form_state->getData('username'));
     // Immediate login of the user. TODO: make this optional.
-    $user->logIn(NULL,
-      t('Hello %user, thank you for signing up. You are now a registered member.',
-        array('%user' => $username)),
+    $user->logIn(NULL, t('Hello %user, thank you for signing up. You are now a registered member.', array('%user' => $form_state->getData('username'))),
       TRUE);
-    $response->redirect = NodeFactory::current($env)->getName();
-  }
-
+    $vars['user'] = $user;
   // Encode the response JSON code.
-  $response_json = json_encode($response);
-
-  exit($response_json);
 }
 
 /**
@@ -272,49 +259,61 @@ function user_action_logout(Environment $env, array $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function user_user_validate(Environment $env, array $vars) {
+function user_user_form_form_validate(Environment $env, &$vars) {
 
-  /** @var User $user */
-  $user = $vars['user'];
-  $check_password = !$user->exists || !empty($user->getData('new_password')) > 0;
+  /** @var FormState $form_state */
+  $form_state = $vars['form_state'];
+
+  // Check if using email or username field as an username.
+  $username_field = !empty($vars['username_field']) ? $vars['username_field'] : 'username';
+  $username = $form_state->getData($username_field);
+  $user = UserFactory::load($env, $username);
+
+  $check_password = !($user->exists) || ($form_state->getType() == \Quanta\Common\User::USER_ACTION_REGISTER);
 
   // Check if some user has the same email as the current one.
-  exec('grep -r -i -o --include \*.json "\"email\"\:\"' . $user->getEmail() . '\"" ' . $env->dir['users'], $mail_exists);
-  $mail_exists = UserFactory::getUserFromField($env, 'email', $user->getEmail());
+  // TODO: find a better way to do the same?
+  //exec('grep -r -i -o --include \*.json "\"email\"\:\"' . $user->getEmail() . '\"" ' . $env->dir['users'], $mail_exists);
+  $mail_exists = UserFactory::getUserFromField($env, 'email', $form_state->getData('email'));
 
   // TODO: check also special characters.
   // Minimum user name length.
-  if (strlen($user->name) < \Quanta\Common\User::USER_MIN_NAME_LENGTH) {
-    $user->addData('validation_errors', array('name' => t('Your username should have at least %length characters', array('%length' => \Quanta\Common\User::USER_MIN_NAME_LENGTH))));
+  if ($username_field == 'username') {
+
+    if (strlen($username) < \Quanta\Common\User::USER_MIN_NAME_LENGTH) {
+      $form_state->validationError('username', t('Your username should have at least %length characters', array('%length' => \Quanta\Common\User::USER_MIN_NAME_LENGTH)));
+    }
+    // Checks that username is alphanumeric.
+    if (!\Quanta\Common\Api::is_alphanumeric($user->name) && empty($vars['skip_validate']['username_alphanumeric'])) {
+      $form_state->validationError('username', t('Please use only letters and numbers for your username'));
+    }
+    // For register, check that no user with the same username already exists.
+    if ($user->exists && ($form_state->getType() == \Quanta\Common\User::USER_ACTION_REGISTER)) {
+      $form_state->validationError('username', t('Username %name already exists!', array('%name' => $user->name)));
+    }
   }
-  // Checks that username is alphanumeric.
-  if (!\Quanta\Common\Api::is_alphanumeric($user->name) && empty($vars['skip_validate']['username_alphanumeric'])) {
-    $user->addData('validation_errors', array('name' => t('Please use only letters and numbers for your username')));
-  }
-  // For register, check that no user with the same username already exists.
-  if ($user->exists && $env->getContext() == \Quanta\Common\User::USER_ACTION_REGISTER) {
-    $user->addData('validation_errors', array('name' => t('Username %name already exists!', array('%name' => $user->name))));
-  }
+
   // Checks that email is not used by other users.
-  if ($mail_exists && ($env->getContext() == \Quanta\Common\User::USER_ACTION_REGISTER)) {
-    $user->addData('validation_errors', array('email' => t('Email %address already exists!', array('%address' => $user->getEmail()))));
+  if ($mail_exists && ($form_state->getType() == \Quanta\Common\User::USER_ACTION_REGISTER)) {
+    $form_state->validationError('email', t('Email %address already exists!', array('%address' => $user->getEmail())));
   }
   // Checks that email is in a valid format.
-  if (!\Quanta\Common\Api::valid_email($user->getEmail())) {
-    $user->addData('validation_errors', array('email' => t('Please enter a valid E-mail address!')));
+  if (!\Quanta\Common\Api::valid_email($form_state->getData('email'))) {
+    $form_state->validationError('email', t('Please enter a valid E-mail address!'));
   }
   // Checks that old password matches new.
   if ($check_password && $user->exists && (!empty($user->getData('old_password'))) && ($user->getPassword() != UserFactory::passwordEncrypt($user->getData('old_password')))) {
-    $user->addData('validation_errors', array('old_password' => t('The old password you entered is not valid. Please try again.')));
+    $form_state->validationError('old_password', t('The old password you entered is not valid. Please try again.'));
   }
+
   // Checks password length.
   // TODO: make customizable in hooks.
-  if ($check_password && strlen($user->getData('new_password')) < \Quanta\Common\User::USER_PASSWORD_MIN_LENGTH) {
-    $user->addData('validation_errors', array('password' => t('Password should be at least %length characters long.', array('%length' => \Quanta\Common\User::USER_PASSWORD_MIN_LENGTH))));
+  if ($check_password && (strlen($form_state->getData('password')) < \Quanta\Common\User::USER_PASSWORD_MIN_LENGTH)) {
+    $form_state->validationError('password', t('Password should be at least %length characters long.', array('%length' => \Quanta\Common\User::USER_PASSWORD_MIN_LENGTH)));
   }
   // Checks that the repeated password matches the original.
-  if ($check_password && UserFactory::passwordEncrypt(($user->getData('password_rp'))) != UserFactory::passwordEncrypt($user->getData('new_password'))) {
-    $user->addData('validation_errors', array('password_rp' => 'Password fields are not the same.'));
+  if ($check_password && ($form_state->getData('password_rp') != $form_state->getData('password'))) {
+    $form_state->validationError('password_rp', 'Password fields are not the same.');
   }
 
 }

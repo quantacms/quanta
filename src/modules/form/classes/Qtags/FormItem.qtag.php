@@ -429,11 +429,28 @@ abstract class FormItem extends HtmlTag {
   /**
    * Return the value of a form item.
    *
+   * @param bool $pop
+   *   If true, return only the first element of the array, as a string.
+   *
    * @return mixed
    *   The value of the form item.
    */
-  public function getValue() {
-    return $this->value == self::INPUT_EMPTY_VALUE ? '' : $this->value;
+  public function getValue($pop = FALSE) {
+    $return_value = $this->value == self::INPUT_EMPTY_VALUE ? '' : $this->value;
+    if ($pop && is_array($return_value)) {
+      $return_value = array_pop($return_value);
+    }
+    return $return_value;
+  }
+
+  /**
+   * Return the string value of a form item.
+   *
+   * @return mixed
+   *   The value of the form item.
+   */
+  public function getStringValue() {
+    return $this->getValue(TRUE);
   }
 
   /**

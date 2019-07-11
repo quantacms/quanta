@@ -69,6 +69,7 @@ class Environment extends DataContainer {
     $this->dir['sites'] = $this->dir['quanta'] . '/sites';
     $this->dir['src'] = $this->dir['quanta'] . '/src';
     $this->dir['profiles'] = $this->dir['quanta'] . '/profiles';
+
     $this->dir['docroot'] = $this->dir['sites'] . '/' . $this->host;
     $this->dir['static'] = $this->dir['quanta'] . '/static';
     $this->dir['tmp_global'] = $this->dir['static'] . '/tmp';
@@ -76,6 +77,7 @@ class Environment extends DataContainer {
     $this->dir['vendor'] = $this->dir['quanta'] . '/vendor';
     $this->dir['modules_core'] = $this->dir['src'] . '/modules';
     $this->dir['modules_custom'] = $this->dir['docroot'] . '/_modules';
+    $this->dir['users'] = $this->dir['docroot'] . '/_users';
 
     // TODO: move to files module.
     $this->dir['tmp_files'] = $this->dir['tmp'] . '/files';
@@ -404,7 +406,6 @@ class Environment extends DataContainer {
    *   Returns TRUE if any module was implementing the hook.
    */
   public function hook($function, array &$vars = array()) {
-
     $env = &$this;
     $hooked = FALSE;
     foreach ($this->getLoadedModules() as $module) {
