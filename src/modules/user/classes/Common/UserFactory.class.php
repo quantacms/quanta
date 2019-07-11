@@ -105,76 +105,54 @@ class UserFactory {
    *   The Environment.
    * @param $action
    *   The Action.
-   * @param $form_data
+   * @param FormState $form_state
+   *  The Form State.
    *
    * @return string
+   *  A Json representation of the user.
    */
-  public static function requestAction(Environment $env, $action, array $form_data) {
+  public static function requestAction(Environment $env, $action, FormState $form_state) {
 
-    // Prepare the response object.
-    // TODO: this is needed with new approach.
-    foreach ($form_data as $k => $v) {
-      if (is_array($form_data[$k]) && (count($form_data[$k]) == 1)) {
-        $form_data[$k] = array_pop($v);
-      }
-    }
     $response = new \stdClass();
 
-    $user = new User($env, $form_data['username'], '_users');
+    $user = new User($env, $form_state->getData('username'), '_users');
 
     $vars = array('user' => $user);
-    // Check if the current user is allowed to perform the action.
+    // Check if the current user is allowed to perform the requested action.
     $access_check = UserAccess::check($env, $action, $vars);
-
-    // If user does not have the permission, show an error message.
     if ($access_check) {
       switch ($action) {
         case \Quanta\Common\User::USER_ACTION_REGISTER:
         case \Quanta\Common\User::USER_ACTION_EDIT:
         case \Quanta\Common\User::USER_ACTION_EDIT_OWN:
 
-          if (isset($form_data['first_name'])) {
-            $user->setFirstName($form_data['first_name']);
+          if (!empty($form_state->getData('first_name'))) {
+            $user->setFirstName($form_state->getData('first_name'));
           }
-          if (isset($form_data['last_name'])) {
-            $user->setLastName($form_data['last_name']);
+          if (!empty($form_state->getData('last_name'))) {
+            $user->setLastName($form_state->getData('last_name'));
           }
-          if (isset($form_data['email'])) {
-            $user->setEmail($form_data['email']);
+          if (!empty($form_state->getData('email'))) {
+            $user->setEmail($form_state->getData('email'));
           }
+
           // Create a default title for the user node, if it's not set.
           $user->setTitle($user->getFirstName() . ' ' . $user->getLastName());
 
-          if (!empty($form_data['password'])) {
-            $user->setData('new_password', $form_data['password']);
-            // Password repeat field, used for changing password.
-            $user->setData('password_rp', $form_data['password_rp']);
-          }
-          if (!empty($form_data['old_password'])) {
-            $user->setData('old_password', $form_data['old_password']);
-          }
-          // Run the node presave hook.
+          // Hook user presave.
           $env->hook('user_presave', $vars);
-          if ($user->validate()) {
-            if (!empty($user->getData('new_password'))) {
-              $user->setPassword(UserFactory::passwordEncrypt($user->getData('new_password')));
-            }
-            // If the newly built user object is valid, rebuild the session to keep it updated.
-            if ($user->save()) {
-              $user->rebuildSession();
-            }
+
+          // Set user's password.
+          if (!empty($form_state->getData('password'))) {
+            $user->setPassword(UserFactory::passwordEncrypt($form_state->getData('password')));
+          }
+          // If the newly built user object is valid, rebuild the session to keep it updated.
+          if ($user->save()) {
+            $user->rebuildSession();
           }
           else {
-            foreach ($user->getData('validation_errors') as $error) {
-              new Message($env,
-                $error,
-                \Quanta\Common\Message::MESSAGE_WARNING
-              );
-            }
-            // TODO: make this good.
-            $response->errors = Message::burnMessages();
+            die("ERROR");
           }
-        $response->redirect = !empty($form_data['redirect']) ? $form_data['redirect'] : ('/' . $user->getName() . '/');
       }
     }
     else {
@@ -214,10 +192,16 @@ class UserFactory {
     return $user;
   }
 
-
   /**
    * Renders an user edit form
-   * @param $context
+   *
+   * @deprecated from next Quanta version.
+   *
+   * @param Environment $env
+   *   The Environment.
+   * @param sring $context
+   *   The current context.
+   *
    * @return bool|string
    */
   public static function renderUserEditForm(Environment $env, $context) {
@@ -228,6 +212,7 @@ class UserFactory {
 
   /**
    * Renders a Login form.
+   * @deprecated from next Quanta version.
    * TODO: refactor and move elsewhere.
    *
    * @return string
