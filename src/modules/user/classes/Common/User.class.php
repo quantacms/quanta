@@ -132,7 +132,8 @@ class User extends Node {
   public function addRole($role) {
     if (!($this->hasRole($role))) {
       // TODO: check that the role is a real existing one!
-      $this->roles[] = $role;
+      // TODO: create Role entity.
+      $this->roles[$role] = $role;
     }
   }
 
