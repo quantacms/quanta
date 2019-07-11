@@ -1,7 +1,6 @@
 <?php
 namespace Quanta\Common;
 
-
 define("FORM_PAGE_FORM", '___page_form___');
 /**
  * Class Form
@@ -40,6 +39,11 @@ class FormState extends DataContainer {
     // Determine in which page the form loads.
     $this->setId($form_id);
     $this->setType($form_type);
+
+    // Add Request Data to the form state.
+    foreach ($_REQUEST as $key => $value) {
+      $this->addData($key, $value);
+    }
   }
 
   /**
@@ -51,25 +55,39 @@ class FormState extends DataContainer {
   public function checkValidate() {
     // FORM submission handler.
     if ($this->isSubmitted()) {
+
       //$this->setData('validation_errors', array());
       // Run validation hooks for the form.
       $vars = array('form_state' => &$this);
+
+      // Form pre-validation (Generic).
+      $this->env->hook('form_pre_validate', $vars);
+
+      // Form pre-validation by ID hook.
+      $this->env->hook($this->getId() . '_form_pre_validate', $vars);
+
+      // Form validation (Generic)
       $this->env->hook('form_validate', $vars);
+
       // Form validation by type hook.
       if (!empty($this->getType())) {
         $this->env->hook('form_type_' . $this->getType() . '_validate', $vars);
       }
       // Form validation by ID hook.
       $this->env->hook($this->getId() . '_form_validate', $vars);
+
       // Check if any form item has thrown validation errors...
       if (empty($this->getData('validation_errors'))) {
         $this->validated = TRUE;
         $this->env->hook('form_submit', $vars);
         $this->env->hook('form_type_' . $this->getType() . '_submit', $vars);
         $this->env->hook($this->getId() . '_form_submit', $vars);
+        $this->env->hook('form_type_' . $this->getType() . '_after_submit', $vars);
+        $this->env->hook($this->getId() . '_form_after_submit', $vars);
       }
       else {
-        // Form has validation errors. Nothing to do here.
+        // Form has validation errors.
+        $this->env->hook('form_validation_errors', $vars);
       }
     }
     // If the form has not been submitted, it can not been validated.

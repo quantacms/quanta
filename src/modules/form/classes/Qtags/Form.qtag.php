@@ -44,7 +44,7 @@ class Form extends HtmlTag {
 
     // Check if the form has been submitted.
     // If the form has been submitted, validate it.
-    if ($this->form_state->isSubmitted() && $this->form_state->checkValidate()) {
+    if ($this->form_state->isSubmitted() && $this->form_state->isValidated()) {
       // If there are no errors, redirect OR show the OK message of the form.
       if (!empty($this->getAttribute('redirect'))) {
         \Quanta\Common\Api::redirect($this->getAttribute('redirect'));
