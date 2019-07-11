@@ -27,12 +27,18 @@ function form_load_includes(Environment $env, array $vars) {
  *   An array of variables.
  */
 function form_boot(Environment $env, array $vars) {
+  // Check if there is a submitted form, and generated its state.
+  if (isset($_REQUEST['form'])) {
+    $form_state = \Quanta\Common\FormFactory::getFormState($env, $_REQUEST['form']);
+    $form_state->checkValidate();
+  }
   // Autocomplete.
   // TODO: object oriented, using templates, etc. etc.
   if ($env->getRequestedPath() == 'autocomplete') {
     print _form_json_autocomplete_results($env, $vars);
     exit();
   }
+
 }
 
 /**
