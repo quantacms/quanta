@@ -227,8 +227,7 @@ function user_user_form_form_submit(Environment $env, array &$vars) {
   // Perform the registration of the user.
   $user = UserFactory::load($env, $form_state->getData('username'));
     // Immediate login of the user. TODO: make this optional.
-    $user->logIn(NULL, t('Hello %user, thank you for signing up. You are now a registered member.', array('%user' => $form_state->getData('username'))),
-      TRUE);
+    $user->logIn(NULL, NULL, array('%user' => $form_state->getData('username')), TRUE);
     $vars['user'] = $user;
   // Encode the response JSON code.
 }

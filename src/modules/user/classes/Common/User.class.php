@@ -159,9 +159,9 @@ class User extends Node {
    * @return mixed $response_json
    *   The JSON-encoded response to the logout action.
    */
-  public function logOut() {
+  public function logOut($message = 'You logged out') {
     new Message($this->env,
-      t('You logged out'),
+      t($message),
       \Quanta\Common\Message::MESSAGE_CONFIRM,
       \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
     );
@@ -195,10 +195,6 @@ class User extends Node {
    *   A JSON encrypted response to the login action.
    */
   public function logIn($password, $success_message = NULL, $force_login = FALSE) {
-		// Create a default success message.
-    if (!isset($success_message)) {
-      $success_message = 'Welcome ' . $this->getTitle() . '! You logged in';
-    }
     // If user dir doesn't exist.
     if (!($this->exists)) {
       new Message($this->env, $this->getName() . ' is not a valid username. Please try to [LOGIN] again', \Quanta\Common\Message::MESSAGE_WARNING, \Quanta\Common\Message::MESSAGE_TYPE_SCREEN);
@@ -206,11 +202,13 @@ class User extends Node {
     }
     else {
       if ($this->checkPassword($password) || $force_login) {
-				new Message($this->env,
-          $success_message,
-          \Quanta\Common\Message::MESSAGE_CONFIRM,
-          \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
-        );
+				if (!empty($success_message)) {
+          new Message($this->env,
+            $success_message,
+            \Quanta\Common\Message::MESSAGE_CONFIRM,
+            \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
+          );
+        }
         new Message($this->env,
           t('User !user logged in', array('!user' => $this->getName())),
           \Quanta\Common\Message::MESSAGE_CONFIRM,
