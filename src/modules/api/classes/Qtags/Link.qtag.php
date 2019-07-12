@@ -79,6 +79,13 @@ class Link extends HtmlTag {
 
     if (empty($this->destination)) {
       $this->destination = '#';
+
+      $query_explode = explode('?', $this->getTarget());
+      // Support for querystring
+      if (count($query_explode) > 1) {
+        $this->setTarget($query_explode[0]);
+        $this->querystring = explode('&', $query_explode[1]);
+      }
       // Check if the target is a node or an external link.
       // External link with a protocol (ex. http://).
       if (!empty($this->attributes['protocol'])) {
@@ -148,6 +155,9 @@ class Link extends HtmlTag {
       $this->link_target = $this->attributes['link_target'];
     }
 
+    if (!empty($this->getAttribute('querystring'))) {
+      $this->querystring = explode('&', $this->getAttribute('querystring'));
+    }
     // Sets a query string.
     $query = (!empty($this->querystring)) ? ('?' . implode('&', $this->querystring)) : '';
 
