@@ -63,6 +63,8 @@ class Form extends HtmlTag {
       $this->html_body .= $this->getTarget();
     }
 
+    // Add attached HTML.
+    $this->html_body .= $this->form_state->attach;
     return parent::render();
   }
 
@@ -154,5 +156,4 @@ class Form extends HtmlTag {
   public function setOkMessage($ok_message) {
     $this->ok_message = $ok_message;
   }
-
 }

@@ -163,13 +163,10 @@
     pointer-events: none !important;
 }
 
-/* md: Medium devices (tablets, 768px and up) */
 @media (min-width: 768px) {
-
     #shadow-item {
         grid-template-rows: 1fr; /* tabs & content (1st & 2nd element) has always maximum height */
     }
-
     #shadow-titles a.shadow-title {
         float: none;
         width: 100%;
