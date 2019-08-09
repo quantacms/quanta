@@ -12,5 +12,4 @@ namespace Quanta\Common;
 function gallery_load_includes(Environment $env, array $vars) {
   $module_path = $env->getModulePath('gallery');
   $env->addInclude($module_path . '/assets/js/gallery.js');
-  $env->addInclude($module_path . '/assets/css/gallery.css');
 }

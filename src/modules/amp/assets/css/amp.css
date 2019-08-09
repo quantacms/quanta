@@ -18,20 +18,14 @@ amp-carousel .slide .caption a {
   color: #fff;
 }
 .link-image {
-  line-height:0; /* Remove extra-height */ 
+  line-height:0;
 }
-
-
-
-/* style menu buttons like links */
 button[on] {
   background: none;
   padding: 0;
   border: none;
   cursor: pointer;
 }
-
-/* AMP SIDEBAR */
 amp-sidebar {
   background: #fff;
 }

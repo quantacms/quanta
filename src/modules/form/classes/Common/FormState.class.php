@@ -20,6 +20,10 @@ class FormState extends DataContainer {
    * @var string $type
    */
   public $type;
+  /**
+   * @var string $attach
+   */
+  public $attach;
 
   /**
    *
@@ -220,4 +224,25 @@ class FormState extends DataContainer {
   public function validationError($form_item, $error) {
     $this->addData('validation_errors', array($form_item => $error));
   }
+
+  /**
+   * Attaches some HTML to the form.
+   *
+   * @param $label
+   *   Label of the attached HTML (to avoid double inclusions).
+   * @param $html
+   *   HTML to attach.
+   */
+  public function attach($label, $html) {
+    static $attaches;
+    if (empty($attaches)) {
+      $attaches = array();
+    }
+    if (empty($attaches[$label])) {
+      $this->attach .= $html;
+      $attaches[$label] = TRUE;
+    }
+
+  }
+
 }

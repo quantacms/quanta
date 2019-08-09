@@ -11,7 +11,6 @@ namespace Quanta\Common;
 function manager_load_includes(Environment $env, array $vars) {
   $module_path = $env->getModulePath('manager');
   $env->addInclude($module_path . '/assets/js/manager.js');
-  $env->addInclude($module_path . '/assets/css/manager.css');
 }
 
 /**
@@ -26,6 +25,9 @@ function manager_init(Environment $env, array $vars) {
   if ($env->getRequestedPath() == 'expand') {
     $node = NodeFactory::load($env, $_GET['node']);
     $manager = new Manager($env, $node);
+    $css_attributes = array();
+    $manager_css = new \Quanta\Qtags\Css($env, $css_attributes, $env->getModulePath('manager') . '/assets/css/manager.css');
+    print $manager_css->render();
     print $manager->renderTree($_GET['path']);
     exit;
   }
