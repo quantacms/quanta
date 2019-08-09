@@ -148,7 +148,7 @@ li.list-item {
     vertical-align:middle;
 }
 .sort-handle::after{
-    content:"↕"; /* fa-arrows */
+    content:"↕";
     font-size:20px;
     line-height:20px;
     color:#333;
@@ -190,7 +190,6 @@ ul.file_admin  li {
 .file-document {
     background-image: url('/modules/file/assets/img/icons/doc.png');
 }
-
 .file-pdf {
     background-image: url('/modules/file/assets/img/icons/pdf.png');
 }

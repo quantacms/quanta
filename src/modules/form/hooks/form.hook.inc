@@ -13,8 +13,6 @@ function form_load_includes(Environment $env, array $vars) {
   $module_path = $env->getModulePath('form');
   $env->addInclude($module_path . '/assets/css/form.css');
   $env->addInclude($module_path . '/assets/js/form.js');
-  $env->addInclude($module_path . '/addons/autocomplete/easy-autocomplete.min.css');
-  $env->addInclude($module_path . '/addons/autocomplete/easy-autocomplete.themes.min.css');
   $env->addInclude($module_path . '/addons/autocomplete/jquery.easy-autocomplete.min.js');
 }
 
