@@ -332,7 +332,8 @@ class FileObject extends DataContainer {
       'wma',
       'txt',
       'xls',
-      'xlsx'
+      'xlsx',
+      'wav',
     );
 
     // Create a temporary upload directory.
