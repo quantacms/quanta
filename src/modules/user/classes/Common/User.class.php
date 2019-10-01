@@ -195,11 +195,13 @@ class User extends Node {
    *   A JSON encrypted response to the login action.
    */
   public function logIn($password, $success_message = NULL, $force_login = FALSE) {
+
     // If user dir doesn't exist.
     if (!($this->exists)) {
       new Message($this->env, $this->getName() . ' is not a valid username. Please try to [LOGIN] again', \Quanta\Common\Message::MESSAGE_WARNING, \Quanta\Common\Message::MESSAGE_TYPE_SCREEN);
       new Message($this->env, 'Someone tried to login with wrong username: ' . $this->name, \Quanta\Common\Message::MESSAGE_WARNING, \Quanta\Common\Message::MESSAGE_TYPE_LOG);
     }
+
     else {
       if ($this->checkPassword($password) || $force_login) {
 				if (!empty($success_message)) {
@@ -218,6 +220,7 @@ class User extends Node {
         $_SESSION['user'] = $this->serializeForSession();
       }
       else {
+        return FALSE;
         // Show an error message for wrong password.
         new Message($this->env,
           t('Wrong username or password. Please try again'),

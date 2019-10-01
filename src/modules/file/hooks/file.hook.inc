@@ -131,26 +131,6 @@ function file_node_after_save(Environment $env, array $vars) {
 }
 
 /**
- * Implements hook_node_load().
- *
- * @param Environment $env
- *   The Environment.
- * @param $vars
- *   An array of variables.
- */
-function file_node_load(Environment $env, array $vars) {
-  /** @var Node $node */
-  $node = $vars['node'];
-  // When saving a node, select the pre-created temporary files dir.
-  if (!empty($_REQUEST['json']) && ($json = json_decode($_REQUEST['json'])) && isset($json->tmp_files_dir)) {
-    $node->setData('tmp_files_dir', array_pop($json->tmp_files_dir));
-  }
-  else {
-    $node->setData('tmp_files_dir', $node->getName() . '-' . $env->getData('timestamp'));
-  }
-}
-
-/**
  * Implements hook_page_init().
  *
  * @param Environment $env
@@ -161,10 +141,9 @@ function file_node_load(Environment $env, array $vars) {
 function file_page_init(Environment $env, array $vars) {
   // If a Shadow is open, initialize file upload libraries.
   if (Shadow::isOpen($env)) {
-    $attributes = array('file_inline' => TRUE, 'refresh' => TRUE, 'module' => 'jquery');
-    print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/jquery-ui.min.js');
-    print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/jquery.ui.widget.js');
-    print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/jquery.tablesorter.js');
+    /** @var Page $page */
+    $page = $vars['page'];
+    // TODO: print is not a good approach.
     $attributes = array('file_inline' => TRUE, 'refresh' => TRUE, 'module' => 'file');
     print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/jquery.knob.js');
     print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/jquery.iframe-transport.js');
