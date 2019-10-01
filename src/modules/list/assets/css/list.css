@@ -54,3 +54,6 @@
 	transform: scale(1);
 	opacity: 1;
 }
+.list-sortable .dir-list-item {
+	position: relative;
+}

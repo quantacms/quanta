@@ -184,14 +184,6 @@ function node_metadata(Environment $env, array $vars){
     $vars['metadata']['description'] = array(
       'content' => Api::filter_xss($node->getTeaser()),
     );
-    // Twitter description.
-    $vars['metadata']['twitter:description'] = array(
-      'content' => Api::filter_xss($node->getTeaser()),
-    );
-    // Twitter card.
-    $vars['metadata']['twitter:card'] = array(
-      'content' => Api::filter_xss($node->getTeaser()),
-    );
     // OG description.
     $vars['metadata']['og:description'] = array(
       'property' => 'og:description',
@@ -229,19 +221,7 @@ function node_metadata(Environment $env, array $vars){
       'content' => $env->getData('request_url') . $node->getThumbnail(),
     );
 
-    $vars['metadata']['twitter:image'] = array(
-      'content' => $env->getData('request_url') . $node->getThumbnail(),
-    );
   }
-
-
-
-
-  $vars['metadata']['twitter:title'] = array(
-    'content' => Api::filter_xss($node->getTitle()),
-  );
-
-
 
 }
 

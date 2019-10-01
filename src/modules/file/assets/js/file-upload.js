@@ -34,7 +34,6 @@ $(function () {
         '<input type="text" value="0" data-width="20" data-height="20" />' +
         '</span>' +
         '<span class="file-qtag"></span>' +
-
         '</li>');
 
 

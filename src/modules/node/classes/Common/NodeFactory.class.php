@@ -309,6 +309,10 @@ class NodeFactory {
           $node->setTimestamp($field_value);
           break;
 
+        case 'weight':
+          $node->setWeight($field_value);
+          break;
+
         default:
           $node->json->{$field_name} = $field_value;
           break;
@@ -427,6 +431,9 @@ class NodeFactory {
           }
           if (isset($form_data['edit-teaser'])) {
             $node->setTeaser($form_data['edit-teaser']);
+          }
+          if (isset($form_data['edit-weight'])) {
+            $node->setWeight($form_data['edit-weight']);
           }
           if (isset($form_data['edit-date'])) {
             $datetime = strtotime($form_data['edit-date'] . ' ' . $form_data['edit-time']);
