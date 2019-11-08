@@ -73,10 +73,14 @@ class DirList extends ListObject {
         $list_item = NodeTemplate::wrap($this->env, $node, $list_item);
       }
 
+      if ($this->sortable) {
+      }
+
+      // TODO: use the Qtag HTMLTAG approach.
       // If the "clean" attribute is not present, add some wrapping html.
       // Check if output should be list item or plain.
       if (empty($this->getData('clean'))) {
-        $list_item = '<' . $this->getData('list_item_html_tag') . ' class="' . implode(' ', $classes) . '">' . $list_item . '</' . $this->getData('list_item_html_tag') . '>';
+        $list_item = '<' . $this->getData('list_item_html_tag') . ' class="' . implode(' ', $classes) . '" ' . ($this->sortable ? 'data-node="' . $node->getName() . '"' : '') . '>' . $list_item . '</' . $this->getData('list_item_html_tag') . '>';
       }
       $this->rendered_items[] = $list_item;
     }

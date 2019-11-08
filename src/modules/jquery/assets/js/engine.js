@@ -49,20 +49,26 @@ var action = function(dataJson) {
  * @param data
  */
 var actionSuccess = function(data) {
-    if (data.errors) {
-        $('.messages').html(data.errors).fadeIn('slow');
-        $('.shadow-submitted').removeClass('shadow-submitted');
+  if (typeof data !== 'object') {
+    alert("There was an error with your submission.");
+    console.log(data);
+    return false;
+  }
 
-        setTimeout(function() {
-            $('.messages').fadeOut('slow');
-        }, 6000);
+  // TODO: better way to display errors.
+  if (data.errors) {
+    $('.messages').html(data.errors).fadeIn('slow');
+    $('.shadow-submitted').removeClass('shadow-submitted');
 
-    }
-    else if (data.redirect == undefined) {
-        alert("There was an error with your submission.");
-    } else {
-        top.location.href = data.redirect;
-    }
+    setTimeout(function() {
+      $('.messages').fadeOut('slow');
+    }, 6000);
+  }
+  if (data.redirect != undefined) {
+    top.location.href = data.redirect;
+  }
+  return true;
+
 };
 
 /**
@@ -83,11 +89,9 @@ return str.replace(/&/g, "&amp;")
     .replace(/'/g, "&#039;");
 };
 
+
 // Inizializza.
 $(document).ready(function() {
     $(document).trigger('refresh');
 });
 
-$(document).bind('refresh', function(ev) {
-    //refreshButtons();
-});

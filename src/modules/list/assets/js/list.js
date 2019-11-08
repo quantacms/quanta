@@ -19,6 +19,21 @@ var refreshLists = function () {
             });
         }
     });
+
+  $('.list-sortable').each(function() {
+
+    $(this).sortable({
+      update: function(e) {
+        var nodes = $(this).sortable('toArray', { key: "data-node", attribute: "data-node"});
+        action('{"action": "node_weight_update", "nodes": ' + JSON.stringify(nodes)+ '}');
+
+      },
+      start: function(e) {
+      },
+      stop: function(e) {
+      }
+    });
+  });
 };
 
 
