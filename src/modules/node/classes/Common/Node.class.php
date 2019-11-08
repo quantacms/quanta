@@ -35,6 +35,7 @@ class Node extends JSONDataContainer {
   public $thumbnail = NULL;
   protected $lineage = array();
   public $tpl = NULL;
+  public $weight = 0;
   public $forbidden = FALSE;
 
   /**
@@ -148,6 +149,10 @@ class Node extends JSONDataContainer {
     if (isset($this->json->timestamp)) {
       $this->setTimestamp($this->json->timestamp);
     }
+    // Load the weight of the node.
+    if (isset($this->json->weight)) {
+      $this->setWeight($this->json->weight);
+    }
     // Load the node Thumbnail from json.
     if (isset($this->json->thumbnail)) {
       $this->setThumbnail($this->json->thumbnail);
@@ -180,6 +185,7 @@ class Node extends JSONDataContainer {
     $this->json->title = $this->getTitle();
     $this->json->thumbnail = $this->getThumbnail();
     $this->json->timestamp = empty($this->getTimestamp()) ? time() : $this->getTimestamp();
+    $this->json->weight = empty($this->getWeight()) ? time() : $this->getWeight();
     $this->json->status = $this->getStatus();
   }
 
@@ -227,18 +233,26 @@ class Node extends JSONDataContainer {
   }
 
   /**
-   * Load node with its variables internally.
+   * Load node with its internal variables.
    */
   public function load() {
-    $vars = array('node' => &$this);
-    // TODO: running a hook at each node load is too CPU intensive. Deprecate node load hooks.
-    $this->env->hook('node_load', $vars);
-    //TODO: find a better way to check node existence
+
+    // TODO: following code should not be here. Moved from former hook node load.
+    // When saving a node, select the pre-created temporary files dir.
+    if (!empty($_REQUEST['json']) && ($json = json_decode($_REQUEST['json'])) && isset($json->tmp_files_dir)) {
+      $this->setData('tmp_files_dir', array_pop($json->tmp_files_dir));
+    }
+    else {
+      $this->setData('tmp_files_dir', $this->getName() . '-' . $this->getData('timestamp'));
+    }
+
+    //TODO: find a better way to check node existence.
     if (!isset($this->json->timestamp) && $this->exists) {
       $this->buildContent();
     }
+
+    // TODO: what to do when no timestamp has been set?
     if (!$this->exists || ($this->getTimestamp() == NULL)) {
-      // TODO: what to do when no timestamp has been set?
       $this->setTimestamp(time());
     }
   }
@@ -352,7 +366,7 @@ class Node extends JSONDataContainer {
     // Reload the node JSON.
     $this->updateJSON();
     // Save the node json (excluding some fields such as path.)
-    $this->saveJSON(array('name', 'path', 'exists', 'path', 'father', 'data'));
+    $this->saveJSON(array('name', 'path', 'exists', 'father', 'data'));
     $this->env->hook('node_after_save', $vars);
   }
 
@@ -552,6 +566,26 @@ class Node extends JSONDataContainer {
     date_default_timezone_set('UTC');
 
     return date('d-m-Y', $this->getTimestamp());
+  }
+
+  /**
+   * Get the weight of the node.
+   *
+   * @return int
+   *   The weight of the Node.
+   */
+  public function getWeight() {
+    return $this->weight;
+  }
+
+  /**
+   * Set the weight of the node.
+   *
+   * @param $weight
+   *   The weight of the node.
+   */
+  public function setWeight($weight) {
+    $this->weight = $weight;
   }
 
   /**
