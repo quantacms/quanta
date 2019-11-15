@@ -26,7 +26,6 @@ class DirList extends ListObject {
     if ($node_current->exists) {
       $node_father = $node_current->getFather();
     }
-
     // Cycle the subdirectories.
     foreach ($this->items as $dir_url => $node) {
 
@@ -71,9 +70,6 @@ class DirList extends ListObject {
       // Wrap in the inline editor.
       if (empty($editable) || $editable == 'true') {
         $list_item = NodeTemplate::wrap($this->env, $node, $list_item);
-      }
-
-      if ($this->sortable) {
       }
 
       // TODO: use the Qtag HTMLTAG approach.

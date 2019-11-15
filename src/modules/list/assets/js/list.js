@@ -22,6 +22,7 @@ var refreshLists = function () {
 
   $('.list-sortable').each(function() {
 
+    // Render sortable items list.
     $(this).sortable({
       update: function(e) {
         var nodes = $(this).sortable('toArray', { key: "data-node", attribute: "data-node"});
