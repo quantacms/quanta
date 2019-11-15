@@ -75,8 +75,9 @@ class Img extends HtmlTag {
 
     }
     else {
-      $this->src = $image->external ? $image->getRelativePath() : $this->getTarget();
-    }
+      $this->src = $image->external ? $image->getRelativePath() : ($node->name . '/' . $this->getTarget());
+		  
+		}
     // Generate the image's url.
     if (isset($this->attributes['url'])) {
       $rendered = $this->src;

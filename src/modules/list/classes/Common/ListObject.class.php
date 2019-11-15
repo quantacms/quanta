@@ -113,7 +113,6 @@ abstract class ListObject extends DataContainer {
       $page->addJS('/modules/jquery/assets/js/jquery-ui.min.js');
       $page->addJS('/modules/jquery/assets/js/jquery.ui.widget.js');
       $page->addJS('/modules/jquery/assets/js/jquery.tablesorter.js');
-      $classes[] = 'list-sortable';
     }
     $this->load();
   }
@@ -162,6 +161,9 @@ abstract class ListObject extends DataContainer {
       $output = $this->getData('empty_message');
     }
 
+		if ($this->sortable) {
+      $classes[] = 'list-sortable';
+		}
     // If the "clean" attribute is not present, add some wrapping html.
     if (empty($this->getData('clean')))  {
       $output = '<' . $this->getData('list_html_tag') . ' '  . $ajax . $tpl . ' class="list ' . $this->getTpl() . ' list-' . $this->getTpl() . ' list-' . $this->node->getName() . ' ' . implode(' ', $classes) . '" data-node="' . $this->node->getName() . '">' . $output . '</' . $this->getData('list_html_tag') . '>';
