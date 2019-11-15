@@ -124,14 +124,44 @@ class User extends Node {
   }
 
   /**
+   * Add role to the user.
+   *
+   * @param array
+   *   All the User's roles.
+   */
+  public function addRole($role) {
+    if (!($this->hasRole($role))) {
+      // TODO: check that the role is a real existing one!
+      // TODO: create Role entity.
+      $this->roles[$role] = $role;
+    }
+  }
+
+  /**
+   * Remove a role from the user.
+   *
+   * @param array
+   *   All the User's roles.
+   */
+  public function removeRole($role) {
+    foreach ($this->roles as $k => $user_role) {
+      if (trim($user_role) == trim($role)) {
+        unset($this->roles[$k]);
+        break;
+      }
+    }
+    sort($this->roles);
+  }
+
+  /**
    * Log out the user.
    *
    * @return mixed $response_json
    *   The JSON-encoded response to the logout action.
    */
-  public function logOut() {
+  public function logOut($message = 'You logged out') {
     new Message($this->env,
-      t('You logged out'),
+      t($message),
       \Quanta\Common\Message::MESSAGE_CONFIRM,
       \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
     );
@@ -165,22 +195,22 @@ class User extends Node {
    *   A JSON encrypted response to the login action.
    */
   public function logIn($password, $success_message = NULL, $force_login = FALSE) {
-		// Create a default success message.
-    if (!isset($success_message)) {
-      $success_message = 'Welcome ' . $this->getTitle() . '! You logged in';
-    }
+
     // If user dir doesn't exist.
     if (!($this->exists)) {
       new Message($this->env, $this->getName() . ' is not a valid username. Please try to [LOGIN] again', \Quanta\Common\Message::MESSAGE_WARNING, \Quanta\Common\Message::MESSAGE_TYPE_SCREEN);
       new Message($this->env, 'Someone tried to login with wrong username: ' . $this->name, \Quanta\Common\Message::MESSAGE_WARNING, \Quanta\Common\Message::MESSAGE_TYPE_LOG);
     }
+
     else {
       if ($this->checkPassword($password) || $force_login) {
-				new Message($this->env,
-          $success_message,
-          \Quanta\Common\Message::MESSAGE_CONFIRM,
-          \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
-        );
+				if (!empty($success_message)) {
+          new Message($this->env,
+            $success_message,
+            \Quanta\Common\Message::MESSAGE_CONFIRM,
+            \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
+          );
+        }
         new Message($this->env,
           t('User !user logged in', array('!user' => $this->getName())),
           \Quanta\Common\Message::MESSAGE_CONFIRM,
@@ -190,6 +220,7 @@ class User extends Node {
         $_SESSION['user'] = $this->serializeForSession();
       }
       else {
+        return FALSE;
         // Show an error message for wrong password.
         new Message($this->env,
           t('Wrong username or password. Please try again'),
@@ -248,25 +279,6 @@ class User extends Node {
       $this->rebuildSession();
     }
     return TRUE;
-  }
-
-  /**
-   * Validate the user as a valid user.
-   *
-   * TODO: start moving validations in hooks only. Take out of class itself.
-   *
-   * @return bool
-   *   Returns true if the constructed user is valid.
-   */
-  public function validate() {
-    // Allow skipping standard user validation using a hook.
-    $vars = array('user' => $this, 'skip_validate' => array());
-    // Pre validate hook (to interact with validation criterias.
-    $this->env->hook('user_pre_validate', $vars);
-    // Validate hook.
-    $this->env->hook('user_validate', $vars);
-
-    return empty($this->getData('validation_errors'));
   }
 
   /**

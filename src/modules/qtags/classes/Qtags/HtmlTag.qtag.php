@@ -6,7 +6,7 @@ namespace Quanta\Qtags;
 class HtmlTag extends Qtag {
   protected $html_tag = 'div';
   protected $html_params = array();
-  protected $html_body = NULL;
+  protected $html_body = FALSE;
   protected $html_self_close = FALSE;
 
   /**
@@ -32,17 +32,20 @@ class HtmlTag extends Qtag {
       }
     }
     // Set the body of the html tag.
-    if (empty($this->html_body)) {
+    if ($this->html_body === FALSE) {
       $this->html_body = $this->getTarget();
     }
     // Open the HTML tag.
     $html = '<' . $this->html_tag . ' ';
     // Add the attributes.
     foreach ($this->html_params as $param_name => $param_value) {
-      $html .= $param_name . ' ';
-      if (!empty($param_value)) {
-        $html .= '="' . $param_value . '" ';
+      if (!empty($param_name)) {
+        $html .= $param_name . '="' . $param_value . '"';
       }
+      else {
+        $html .= $param_value;
+      }
+      $html .= ' ';
     }
     // Self closing tag (i.e. <img />).
     if ($this->html_self_close) {
@@ -79,6 +82,16 @@ class HtmlTag extends Qtag {
    */
   public function setId($id) {
     $this->html_params['id'] = $id;
+  }
+
+  /**
+   * Gets the id for the HTML tag.
+   *
+   * @param string $id
+   *   The id of the tag.
+   */
+  public function getId() {
+    return !empty($this->html_params['id']) ? $this->html_params['id'] : NULL;
   }
 
   /**

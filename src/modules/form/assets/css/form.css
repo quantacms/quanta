@@ -1,40 +1,24 @@
-.form-item.validation-error input,
-.form-item.validation-error select,
-.form-item.validation-error textarea
-{
-    border: 1px solid red !important;
-}
-
 .form-item-disabled {
     color: #bbb;
 }
 
 .validation-error {
     color: white;
-    background: red;
-    padding-left: 5px;
-    padding-right: 5px;
-    height: 20px;
-    line-height: 20px;
-    font-size: 10px;
+    background: #ee0000;
+    padding: 5px;
+    margin: 8px;
+    font-size: 0.5em;
     font-family: "Verdana";
     text-align: center;
-    border-radius: 15px;
     text-transform: uppercase;
     display: inline-block;
-    position: absolute;
-    bottom: -25px;
-    left: 0;
-    overflow:scroll;
-    overflow-y: hidden;
-    white-space:nowrap;
-
 }
 
 div.has-validation-errors {
     border-style: dashed;
     border-width: 1px;
-    border-color: red;
+    border-color: #ee0000;
+    padding: 8px;
 
 }
 
@@ -69,4 +53,19 @@ div.has-validation-errors {
 .form-item.required label:after {
     content: " *";
     color: red;
+}
+
+
+.form-item-label {
+    margin: 0;
+    margin-top: 10px;
+    font-weight: bold;
+    padding-right: 8px;
+    border: none;
+    padding-left: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.8em;
+    color: #444;
+    margin-bottom: 8px;
 }

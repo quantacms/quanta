@@ -65,6 +65,7 @@ class ShareButtons extends HtmlTag {
     if (!empty($this->share_text)) {
       $this->html_body = '<h3>' . t($this->share_text) . '</h3>' . $this->html_body;
     }
+
     return parent::render();
   }
 }

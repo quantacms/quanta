@@ -46,12 +46,12 @@ function file_init(Environment $env, array $vars) {
     FileObject::checkUploads($env);
     exit();
   }
-  $file_delete_act = \Quanta\Common\Node::NODE_ACTION_DELETE_FILE;
+
   // There is a request to delete a file.
   // TODO: move in actions / factory?
-  if (isset($_REQUEST[$file_delete_act])) {
+  if (isset($_REQUEST[\Quanta\Common\Node::NODE_ACTION_DELETE_FILE])) {
     $node = NodeFactory::current($env);
-    $split_file_to_delete = explode('/', $_REQUEST[$file_delete_act]);
+    $split_file_to_delete = explode('/', $_REQUEST[\Quanta\Common\Node::NODE_ACTION_DELETE_FILE]);
     FileObject::deleteFile($node, $split_file_to_delete[count($split_file_to_delete) - 1]);
     exit();
   }
@@ -68,7 +68,6 @@ function file_init(Environment $env, array $vars) {
  *   An array of variables.
  */
 function file_node_presave(Environment $env, array $vars) {
-  // TODO: move in File or create FileFactory module.
   /** @var Node $node */
   $node = $vars['node'];
   $data = $vars['data'];
@@ -83,6 +82,7 @@ function file_node_presave(Environment $env, array $vars) {
     }
   }
 
+  //
   foreach ($uploaded_files as $form_name => $uploaded_file_list) {
     // Save list of uploaded files for this file field in json.
     $node->json->{$form_name} = $uploaded_file_list;
@@ -131,26 +131,6 @@ function file_node_after_save(Environment $env, array $vars) {
 }
 
 /**
- * Implements hook_node_load().
- *
- * @param Environment $env
- *   The Environment.
- * @param $vars
- *   An array of variables.
- */
-function file_node_load(Environment $env, array $vars) {
-  /** @var Node $node */
-  $node = $vars['node'];
-  // When saving a node, select the pre-created temporary files dir.
-  if (!empty($_REQUEST['json']) && ($json = json_decode($_REQUEST['json'])) && isset($json->tmp_files_dir)) {
-    $node->setData('tmp_files_dir', array_pop($json->tmp_files_dir));
-  }
-  else {
-    $node->setData('tmp_files_dir', $node->getName() . '-' . $env->getData('timestamp'));
-  }
-}
-
-/**
  * Implements hook_page_init().
  *
  * @param Environment $env
@@ -161,10 +141,9 @@ function file_node_load(Environment $env, array $vars) {
 function file_page_init(Environment $env, array $vars) {
   // If a Shadow is open, initialize file upload libraries.
   if (Shadow::isOpen($env)) {
-    $attributes = array('file_inline' => TRUE, 'refresh' => TRUE, 'module' => 'jquery');
-    print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/jquery-ui.min.js');
-    print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/jquery.ui.widget.js');
-    print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/jquery.tablesorter.js');
+    /** @var Page $page */
+    $page = $vars['page'];
+    // TODO: print is not a good approach.
     $attributes = array('file_inline' => TRUE, 'refresh' => TRUE, 'module' => 'file');
     print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/jquery.knob.js');
     print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/jquery.iframe-transport.js');

@@ -118,6 +118,7 @@ function submitShadow() {
   $(document).trigger('shadow_' + shadow.context + '_submit');
   var form_items = {};
   $('#shadow-outside').find('input, textarea, select').each(function () {
+
     var item_name = $(this).attr('name');
     if (form_items[item_name] == undefined) {
       form_items[item_name] = [];
