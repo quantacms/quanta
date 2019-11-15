@@ -13,4 +13,5 @@ function jquery_boot(Environment $env, array $vars) {
   $module_path = $env->getModulePath('jquery');
   $env->addInclude($module_path . '/assets/js/jquery.min.js');
   $env->addInclude($module_path . '/assets/js/engine.js');
+
 }

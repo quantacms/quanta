@@ -73,7 +73,7 @@ function page_doctor_setup(Environment $env, $vars) {
     $doctor->talk('Not Found');
 
     // Choose an installation profile for Quanta.
-    $profiles = $env->scanDirectory($env->dir['profiles'], array('type' => DIR_DIRS));
+    $profiles = $env->scanDirectory($env->dir['profiles'], array('type' => \Quanta\Common\Environment::DIR_DIRS));
     sort($profiles);
     $profiles_choice = array();
     $profile_chosen = NULL;

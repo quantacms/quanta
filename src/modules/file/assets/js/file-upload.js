@@ -1,11 +1,10 @@
 $(function () {
-
+  if (!($('.upload-files').length)) {return;}
   $('.drop a').click(function () {
     // Simulate a click on the file input button
     // to show the file browser dialog
     $(this).parent().find('input').click();
   });
-
   // Initialize the jQuery File Upload plugin
   $('.upload-files').fileupload({
 
@@ -34,7 +33,6 @@ $(function () {
         '<input type="text" value="0" data-width="20" data-height="20" />' +
         '</span>' +
         '<span class="file-qtag"></span>' +
-
         '</li>');
 
 
@@ -182,7 +180,9 @@ var refreshFileActions = function (fileElement) {
 
 
 var refreshThumbnail = function() {
+
   var thumb_href = $('#edit_thumbnail').val();
+
   $('.set-thumbnail').val('set as thumbnail');
   $('.selected-thumbnail').removeClass('selected-thumbnail');
   $('a[data-filename="' + thumb_href + '"]').addClass('selected-thumbnail').closest('.list-item-file_admin').find('.set-thumbnail').val('unset as thumbnail').addClass('selected-thumbnail');
@@ -196,7 +196,7 @@ $(document).bind('refresh', function () {
   });
 
   $('.list-file_admin').each(function() {
-    $(this).sortable({
+		$(this).sortable({
       handle: '.sort-handle',
       update: function(e) {
       },

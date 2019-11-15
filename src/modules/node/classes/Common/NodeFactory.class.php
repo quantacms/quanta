@@ -309,6 +309,10 @@ class NodeFactory {
           $node->setTimestamp($field_value);
           break;
 
+        case 'weight':
+          $node->setWeight($field_value);
+          break;
+
         default:
           $node->json->{$field_name} = $field_value;
           break;
@@ -428,6 +432,9 @@ class NodeFactory {
           if (isset($form_data['edit-teaser'])) {
             $node->setTeaser($form_data['edit-teaser']);
           }
+          if (isset($form_data['edit-weight'])) {
+            $node->setWeight($form_data['edit-weight']);
+          }
           if (isset($form_data['edit-date'])) {
             $datetime = strtotime($form_data['edit-date'] . ' ' . $form_data['edit-time']);
             $node->setTimestamp($datetime > 0 ? $datetime : time());
@@ -452,6 +459,8 @@ class NodeFactory {
           // If the node is validated, proceed with saving it.
           if ($node->validate()) {
             $node->save();
+            // Hook node_add_complete, node_edit_complete, etc.
+            $env->hook('node_after_save', $vars);
             // Hook node_add_complete, node_edit_complete, etc.
             $env->hook($action . '_complete', $vars);
             // If the form has a redirect field, setup a redirect.
@@ -505,8 +514,7 @@ class NodeFactory {
    * @return string
    *   The rendered HTML of the node object.
    */
-  public
-  static function render(Environment $env, $node_name = NULL, $language = NULL) {
+  public static function render(Environment $env, $node_name = NULL, $language = NULL) {
     $node = empty($node_name) ? NodeFactory::current($env) : NodeFactory::load($env, $node_name);
     $tpl = new NodeTemplate($env, $node);
     return $tpl->getHtml();

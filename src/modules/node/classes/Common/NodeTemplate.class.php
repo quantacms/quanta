@@ -134,5 +134,6 @@ class NodeTemplate extends DataContainer {
 
     // Set the template. By default, if no template file is found, a node renders its body.
     $this->html = (!empty($this->getData('tpl_file'))) ? file_get_contents($this->getData('tpl_file')) : $this->node->getBody();
+
   }
 }

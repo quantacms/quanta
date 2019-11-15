@@ -22,6 +22,7 @@ class UserAccess extends Access {
    */
   public static function check(Environment $env, $action, array $vars = array()) {
     $access = new UserAccess($env, $action, $vars);
+
     return $access->checkAction();
   }
 

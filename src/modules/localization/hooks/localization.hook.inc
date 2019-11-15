@@ -27,7 +27,13 @@ function localization_load_includes(Environment $env, array $vars) {
  */
 function localization_boot(Environment $env, array $vars) {
   $env->sysdir('languages', Localization::$system_path);
-  if (isset($_GET['lang'])) {
+
+  if (Localization::hasEnabledLanguage($env, $env->request[1])) {
+    Localization::switchLanguage($env, $env->request[1]);
+  }
+  // Old approach.
+  // TODO: deprecate.
+  elseif (isset($_GET['lang'])) {
     Localization::switchLanguage($env, $_GET['lang']);
   }
 }
@@ -87,4 +93,16 @@ function localization_shadow_node_language(Environment $env, array $vars) {
   $translate_links = new TranslateLinks($env, array(), NULL);
 
   $shadow->addExtra($translate_links->getHtml());
+}
+
+function localization_link_alter($env, $vars) {
+  /** @var \Quanta\Qtags\Link $link */
+  $link = $vars['qtag'];
+  $lang = !empty($link->getAttribute('language')) ? $link->getAttribute('language') : Localization::getLanguage($env);
+
+  // Check if a language prefix must be added to the destination URL.
+  // We don't add the prefix if we are using a "session" based language negotiation.
+  if (($link->getType() == 'internal') && !(empty($link->getAttribute('language')) && Localization::getLanguageNegotiation($env) != Localization::LANGUAGE_NEGOTIATION_PREFIX)) {
+    $link->destination = '/' . $lang . $link->destination;
+  }
 }

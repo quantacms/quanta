@@ -69,6 +69,7 @@ class Environment extends DataContainer {
     $this->dir['sites'] = $this->dir['quanta'] . '/sites';
     $this->dir['src'] = $this->dir['quanta'] . '/src';
     $this->dir['profiles'] = $this->dir['quanta'] . '/profiles';
+
     $this->dir['docroot'] = $this->dir['sites'] . '/' . $this->host;
     $this->dir['static'] = $this->dir['quanta'] . '/static';
     $this->dir['tmp_global'] = $this->dir['static'] . '/tmp';
@@ -76,6 +77,7 @@ class Environment extends DataContainer {
     $this->dir['vendor'] = $this->dir['quanta'] . '/vendor';
     $this->dir['modules_core'] = $this->dir['src'] . '/modules';
     $this->dir['modules_custom'] = $this->dir['docroot'] . '/_modules';
+    $this->dir['users'] = $this->dir['docroot'] . '/_users';
 
     // TODO: move to files module.
     $this->dir['tmp_files'] = $this->dir['tmp'] . '/files';
@@ -404,7 +406,6 @@ class Environment extends DataContainer {
    *   Returns TRUE if any module was implementing the hook.
    */
   public function hook($function, array &$vars = array()) {
-
     $env = &$this;
     $hooked = FALSE;
     foreach ($this->getLoadedModules() as $module) {
@@ -463,6 +464,7 @@ class Environment extends DataContainer {
       }
       $vars = array('data' => (array) $this->request_json);
       $this->hook('action_' . $this->request_json->action, $vars);
+      exit;
     }
   }
 
@@ -524,7 +526,8 @@ class Environment extends DataContainer {
    *   The result of the node search.
    */
   private function findNodePath($folder) {
-    $findcmd = 'find ' . $this->dir['docroot'] . '/ -name "' . $folder . '"';
+    // TODO: cleaner way to exclude folders in _modules.
+    $findcmd = 'find ' . $this->dir['docroot'] . '/ -type d -name "' . $folder . '" -not -path */_modules*';
     // TODO: sometimes getting empty folder. Why? Temporary fix.
     if (empty($folder)) {
       return NULL;
@@ -582,10 +585,10 @@ class Environment extends DataContainer {
     }
     if (count($found_folders) > 1) {
       new Message($this,
-        t('Warning: there is more than one folder named !folder: <br/>!folders<br>Check integrity!',
+        t('Warning: there is more than one folder named !folder: <br/>!folds<br>Check integrity!',
           array(
             '!folder' => $folder,
-            '!folders' => var_export($found_folders, 1),
+            '!folds' => var_export($found_folders, 1),
           )
         ));
     }

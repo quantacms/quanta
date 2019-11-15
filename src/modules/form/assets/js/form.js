@@ -68,10 +68,12 @@ var refreshMultiple = function (inputItem) {
   $('*[name=' + inputItemName + ']').each(function() {
     inputCounter++;
       var form_item_remove_id = 'form-item-remove-' + $(this).attr('id');
-      if (!$('#' + form_item_remove_id).length) {
-        $(this).after('<input type="button" rel="' + $(this).attr('id') + '" id="' + form_item_remove_id + '" class="form-item-remove" value="-" />');
+
+    if (!($('#' + form_item_remove_id).length)) {
+
+      $(this).after('<input type="button" rel="' + $(this).attr('id') + '" id="' + form_item_remove_id + '" class="form-item-remove" value="-" />');
         $('#' + form_item_remove_id).unbind().bind('click', function () {
-          $(this).closest('.form-item-multiple-wrapper').detach();
+          $(this).closest('.form-item-multiple-wrapper').remove();
           refreshMultiple(inputItem);
           refreshAutocomplete();
         });
@@ -80,13 +82,12 @@ var refreshMultiple = function (inputItem) {
 
   // Remove - button if only one element present.
   if (inputCounter < 2) {
-    wrapper.find('.form-item-remove').detach();
+    wrapper.find('.form-item-remove').remove();
   }
   // Preparing the + button. Remove the existing one...
   var form_item_add_id = 'form-item-add-' + inputItemName;
   var last_item = $('*[name=' + inputItemName + ']').last();
-  $('#' + form_item_add_id).detach();
-
+  $('#' + form_item_add_id).remove();
 
   // Add the + button... only if limit not reached.
   if ((limit == undefined) || !limit || (totItems < limit)) {

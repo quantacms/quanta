@@ -2,7 +2,7 @@
 namespace Quanta\Qtags;
 
 /**
- * Renders a FontAwesome icon.
+ * Deprecated - see FAS_ICON and FAB_ICON to Render a FontAwesome icon.
  */
 class FaIcon extends Qtag {
   /**

@@ -329,9 +329,11 @@ class FileObject extends DataContainer {
       'mp4',
       'mov',
       'm4a',
+      'wma',
       'txt',
       'xls',
-      'xlsx'
+      'xlsx',
+      'wav',
     );
 
     // Create a temporary upload directory.
