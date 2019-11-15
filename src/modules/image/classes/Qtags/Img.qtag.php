@@ -56,7 +56,7 @@ class Img extends HtmlTag {
       $vars = array(
         'w_max' => $image->width,
         'h_max' => $image->height,
-        'image_action' => $op,
+        'operation' => $op,
         'compression' => $compression,
         'fallback' => $fallback,
       );
