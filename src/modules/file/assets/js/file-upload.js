@@ -1,11 +1,10 @@
 $(function () {
-
+  if (!($('.upload-files').length)) {return;}
   $('.drop a').click(function () {
     // Simulate a click on the file input button
     // to show the file browser dialog
     $(this).parent().find('input').click();
   });
-
   // Initialize the jQuery File Upload plugin
   $('.upload-files').fileupload({
 
@@ -197,7 +196,7 @@ $(document).bind('refresh', function () {
   });
 
   $('.list-file_admin').each(function() {
-    $(this).sortable({
+		$(this).sortable({
       handle: '.sort-handle',
       update: function(e) {
       },
