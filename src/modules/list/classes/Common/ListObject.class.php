@@ -100,6 +100,21 @@ abstract class ListObject extends DataContainer {
     $this->setData('list_html_tag', !empty($this->getData('list_html_tag')) ? $this->getData('list_html_tag') : 'ul');
     $this->setData('list_item_html_tag', !empty($this->getData('list_item_html_tag')) ? $this->getData('list_item_html_tag') : 'li');
 
+
+    if (!empty($this->getData('sortable'))) {
+
+      if (NodeAccess::check($this->env, Node::NODE_ACTION_EDIT, array('node' => $this->getNode()))) {
+        $this->sortable = TRUE;
+      }
+      $this->setData('sort', 'weight');
+      $this->setData('asc', TRUE);
+
+      $page = ($this->env->getData('page'));
+      $page->addJS('/modules/jquery/assets/js/jquery-ui.min.js');
+      $page->addJS('/modules/jquery/assets/js/jquery.ui.widget.js');
+      $page->addJS('/modules/jquery/assets/js/jquery.tablesorter.js');
+      $classes[] = 'list-sortable';
+    }
     $this->load();
   }
 
@@ -123,9 +138,6 @@ abstract class ListObject extends DataContainer {
    */
   public function render($attributes = array()) {
 
-    if (!empty($this->getData('sortable'))) {
-      $this->sortable = TRUE;
-    }
     // Check if the list was already generated. If not, generate it.
     if (!($this->generated)) {
       $this->generate();
@@ -141,10 +153,6 @@ abstract class ListObject extends DataContainer {
       if (!empty($this->getData('grid_list'))) {
         $classes[] = $this->getData('grid_list');
       }
-    }
-
-    if ($this->sortable) {
-      $classes[] = 'list-sortable';
     }
 
     $ajax = (!empty($this->getData('ajax'))) ? ' rel="' . $this->getData('ajax') . '"'  : '';

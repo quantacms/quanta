@@ -15,19 +15,3 @@ function jquery_boot(Environment $env, array $vars) {
   $env->addInclude($module_path . '/assets/js/engine.js');
 
 }
-
-/**
- * Implements hook_page_init();
- * @param $vars
- */
-function jquery_page_init(Environment $env, &$vars) {
-  $user = UserFactory::current($env);
-  // TODO: not a decent criteria for deciding when to include jquery widgets.
-  if ($user->hasRole('logged')) {
-    /** @var Page $page */
-    $page = $vars['page'];
-    $page->addJS('/modules/jquery/assets/js/jquery-ui.min.js');
-    $page->addJS('/modules/jquery/assets/js/jquery.ui.widget.js');
-    $page->addJS('/modules/jquery/assets/js/jquery.tablesorter.js');
-  }
-}
