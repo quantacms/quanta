@@ -17,10 +17,13 @@ class Carousel extends HtmlTag {
    *   The rendered Qtag.
    */
   public function render() {
-    static $flickity_counter;
+    $flickity_counter = $this->env->getData('flickity_counter');
     if (empty($flickity_counter)) {
-      $flickity_counter++;
+      $flickity_counter = 0;
     }
+    $flickity_counter++;
+		$this->env->setData('flickity_counter', $flickity_counter);
+
     /** @var \Quanta\Common\Page $page */
     $page = $this->env->getData('page');
 
