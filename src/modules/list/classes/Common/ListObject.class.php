@@ -28,6 +28,9 @@ abstract class ListObject extends DataContainer {
   public $rendered_items = array();
 
 
+  /** @var array $exclude_tree */
+  protected $exclude_tree = array();
+
   /** @var array $replacements */
   protected $replacements = array();
 
@@ -69,6 +72,11 @@ abstract class ListObject extends DataContainer {
   public function __construct(&$env, $path, $tpl, $attr_arr = array(), $module = NULL) {
     $this->env = $env;
     $this->tpl = strtolower($tpl);
+
+    // Check if there are tree items that should not be expanded.
+    if (isset($attr_arr['exclude_tree'])) {
+      $this->exclude_tree = array_flip(explode(',', $attr_arr['exclude_tree']));
+    }
 
     // Check if the template is in a different module than the default.
     if (!empty($module)) {
@@ -210,7 +218,9 @@ abstract class ListObject extends DataContainer {
     }
 
     if ($this->getData('level') == 'leaf' || $this->getData('level') == 'tree') {
+
       $list_nodes = $this->env->scanDirectoryDeep($this->path, '', array(), array(
+        'exclude_tree' => $this->exclude_tree,
         'exclude_dirs' => \Quanta\Common\Environment::DIR_INACTIVE,
         'symlinks' => $symlinks,
         $this->scantype,
@@ -219,6 +229,7 @@ abstract class ListObject extends DataContainer {
     }
     else {
       $list_nodes = $this->env->scanDirectory($this->path, array(
+        'exclude_tree' => $this->exclude_tree,
         'exclude_dirs' => \Quanta\Common\Environment::DIR_INACTIVE,
         'type' => $this->scantype,
         'symlinks' => $symlinks
@@ -449,4 +460,13 @@ abstract class ListObject extends DataContainer {
     $this->node = $node;
   }
 
+  /**
+   * Checks if the list is empty.
+   *
+   * @return bool
+   *   Returns true if the list is empty.
+   */
+  public function isEmpty() {
+    return (count($this->getRenderedItems()) == 0);
+  }
 }
