@@ -226,6 +226,16 @@ class Qtag {
   }
 
   /**
+   * Checks if a Qtag has a specific attribute.
+   *
+   * @return bool
+   *   True if the attribute is set on the Qtag.
+   */
+  public function hasAttribute($attr_name) {
+    return isset($this->attributes[$attr_name]);
+  }
+
+  /**
    * Sets a Qtag's specific attribute.
    *
    * @param $attr_name
