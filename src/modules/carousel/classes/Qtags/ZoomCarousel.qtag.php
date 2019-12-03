@@ -5,9 +5,7 @@ namespace Quanta\Qtags;
  * Create a visual carousel based on a node list.
  * We are using the flickity plugin for rendering the carousel.
  */
-class FileCarousel extends Carousel {
-  public $carousel_plugin = 'zoom';
-
+class ZoomCarousel extends FileCarousel {
   /**
    * Render the Qtag.
    *
@@ -15,8 +13,8 @@ class FileCarousel extends Carousel {
    *   The rendered Qtag.
    */
   public function render() {
-    $this->attributes['carousel-type'] = \Quanta\Qtags\Carousel::CAROUSEL_FILES;
-
+    $this->addClass('xzoom-thumbs');
+    $this->attributes['tpl'] = 'zoom';
     return parent::render();
   }
 }
