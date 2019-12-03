@@ -10,6 +10,8 @@ class Carousel extends HtmlTag {
   const CAROUSEL_FILES = 'carousel_files';
   const CAROUSEL_DIRS = 'carousel_dirs';
   public $carousel_type = self::CAROUSEL_DIRS;
+  public $carousel_plugin = 'flickity';
+
   /**
    * Render the Qtag.
    *
@@ -24,6 +26,7 @@ class Carousel extends HtmlTag {
     $flickity_counter++;
 		$this->env->setData('flickity_counter', $flickity_counter);
 
+		$node = \Quanta\Common\NodeFactory::loadOrCurrent($this->env, $this->getTarget());
     /** @var \Quanta\Common\Page $page */
     $page = $this->env->getData('page');
 
@@ -71,6 +74,7 @@ class Carousel extends HtmlTag {
 
     // Cycle the attributes.
     $carousel_attributes_arr = array();
+
     foreach ($carousel_attributes as $k => $attr) {
       $carousel_attributes_arr[] = $k . ':' . (isset($this->attributes[$k]) ? $this->attributes[$k] : $attr);
     }
@@ -86,16 +90,38 @@ class Carousel extends HtmlTag {
         $page->addCSS($module_path . '/assets/css/themes/' . $flickity_theme . '.css');
       }
       // TODO: support relative path to JS.
-      $page->addCSS($module_path . '/assets/css/flickity.min.css');
-      $page->addCSS($module_path . '/assets/css/flickity-quanta.css');
-      $carousel_id = 'flickity-' . $flickity_counter;
-      $this->html_params['id'] = $carousel_id;
-      $this->html_params['class'] = 'flickity-carousel ' . $flickity_theme;
+
+
+      switch ($this->carousel_plugin) {
+
+        case 'zoom':
+          $img_attr = array('class' => "xzoom");
+          $main_img = new Img($this->env, $img_attr, $node->getThumbnail());
+          $main_img->setAttribute('node', $node->getName());
+
+          $this->setAttribute('prefix', '<img id="main_image" class="xzoom" src="' . $node->getThumbnail() . '" xoriginal="' . $node->getThumbnail() . '');
+          $page->addCSS($module_path . '/assets/css/xzoom.css');
+          $page->addJS('/src/modules/carousel/assets/js/xzoom.js?test=' . rand(1, 100000), 'file');
+          $page->addJS('$(".xzoom, .xzoom-gallery").xzoom({tint: "#333", Xoffset: 15});', 'inline');
+          break;
+        case 'flickity':
+
+        default:
+        $carousel_id = 'flickity-' . $flickity_counter;
+        $this->html_params['id'] = $carousel_id;
+
+        $this->html_params['class'] = 'flickity-carousel ' . $flickity_theme;
+
+        $page->addCSS($module_path . '/assets/css/flickity.min.css');
+          $page->addCSS($module_path . '/assets/css/flickity-quanta.css');
+          $page->addJS('/src/modules/carousel/assets/js/flickity.pkgd.min.js', 'file');
+          $page->addJS('window.addEventListener("DOMContentLoaded", function() {
+          $("#' . $carousel_id . '").flickity({' . implode(',', $carousel_attributes_arr) . '});
+          });', 'inline');
+        break;
+      }
       $this->html_body = $list->render();
-      $page->addJS('/src/modules/carousel/assets/js/flickity.pkgd.min.js', 'file');
-      $page->addJS('window.addEventListener("DOMContentLoaded", function() {
-        $("#' . $carousel_id . '").flickity({' . implode(',', $carousel_attributes_arr) . '});
-        });', 'inline');
+
     }
     return parent::render();
   }
