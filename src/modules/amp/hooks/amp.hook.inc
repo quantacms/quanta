@@ -44,6 +44,7 @@ function amp_page_render(Environment $env, array $vars) {
     $vars['page']->html = preg_replace('/style=\\"[^\\"]*\\"/', '', $vars['page']->html);
     $vars['page']->html = str_replace('<img', '<amp-img layout="intrinsic"', $vars['page']->html);
     $vars['page']->html = str_replace('<form', '<amp-form layout="intrinsic"', $vars['page']->html);
+    $vars['page']->html = str_replace('<iframe', '<amp-iframe layout="intrinsic"', $vars['page']->html);
     $vars['page']->html = str_replace('<style>', '<style amp-custom>', $vars['page']->html);
     $vars['page']->html = str_replace('!important', '', $vars['page']->html);
     // TODO: where does this target pmc_ext come from?
