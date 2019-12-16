@@ -173,7 +173,7 @@ abstract class ListObject extends DataContainer {
       $classes[] = 'list-sortable';
 		}
     // If the "clean" attribute is not present, add some wrapping html.
-    if (empty($this->getData('clean')))  {
+    if (empty($this->getData('clean')) && (empty($this->getData('hide_if_empty')) || !empty($this->rendered_items)))  {
       $output = '<' . $this->getData('list_html_tag') . ' '  . $ajax . $tpl . ' class="list ' . $this->getTpl() . ' list-' . $this->getTpl() . ' list-' . $this->node->getName() . ' ' . implode(' ', $classes) . '" data-node="' . $this->node->getName() . '">' . $output . '</' . $this->getData('list_html_tag') . '>';
     }
 
