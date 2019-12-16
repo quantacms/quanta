@@ -104,6 +104,7 @@ class Carousel extends HtmlTag {
           $page->addJS('/src/modules/carousel/assets/js/xzoom.js?test=' . rand(1, 100000), 'file');
           $page->addJS('$(".xzoom, .xzoom-gallery").xzoom({tint: "#333", Xoffset: 15});', 'inline');
           break;
+
         case 'flickity':
 
         default:
