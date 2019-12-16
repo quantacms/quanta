@@ -99,7 +99,7 @@ class Carousel extends HtmlTag {
           $main_img = new Img($this->env, $img_attr, $node->getThumbnail());
           $main_img->setAttribute('node', $node->getName());
 
-          $this->setAttribute('prefix', '<img id="main_image" class="xzoom" src="' . $node->getThumbnail() . '" xoriginal="' . $node->getThumbnail() . '');
+          $this->setAttribute('prefix', '<img id="main_image" class="xzoom" src="' . $node->getThumbnail() . '" xoriginal="' . $node->getThumbnail() . '" />');
           $page->addCSS($module_path . '/assets/css/xzoom.css');
           $page->addJS('/src/modules/carousel/assets/js/xzoom.js?test=' . rand(1, 100000), 'file');
           $page->addJS('$(".xzoom, .xzoom-gallery").xzoom({tint: "#333", Xoffset: 15});', 'inline');
