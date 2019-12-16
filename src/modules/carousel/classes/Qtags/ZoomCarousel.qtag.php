@@ -7,6 +7,8 @@ namespace Quanta\Qtags;
  * We are using the flickity plugin for rendering the carousel.
  */
 class ZoomCarousel extends FileCarousel {
+  public $carousel_plugin = 'zoom';
+
   /**
    * Render the Qtag.
    *
