@@ -19,7 +19,7 @@ class Breadcrumb extends HtmlTag {
     // Build the lineage of the node.
     $node->buildLineage();
     $breadcrumb = $node->getLineage();
-    if (!empty($this->getAttribute('separator'))) {
+    if ($this->hasAttribute('separator')) {
       $this->breadcrumb_separator = $this->getAttribute('separator');
     }
     // First item in breadcrumb is the home node, unless excluded by an attribute.

@@ -1,2 +1,2 @@
 [LINK:[LISTITEM]]
-[TREE:[LISTITEM]]
+[TREE|hide_if_empty=true:[LISTITEM]]
