@@ -97,7 +97,7 @@ class NodeTemplate extends DataContainer {
         if ($tpl_sublevel > 0) {
           $min = '';
           // We support 5 levels of sub-level templates for now.
-          // level 1 = tpl-.html
+          // level 1 = tpl^.html
           // level 2 = tpl--.html
           // etc...
           // "node/subnode/tpl-" has priority over "node/tpl--"
