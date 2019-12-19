@@ -98,9 +98,10 @@ class Image extends FileObject {
    */
   public function generateThumbnail(Environment $env, array $vars) {
 
+
     $maxw = isset($vars['w_max']) ? $vars['w_max'] : 0;
     $maxh = isset($vars['h_max']) ? $vars['h_max'] : 0;
-    $img_action = isset($vars['image_action']) ? $vars['image_action'] : 0;
+    $img_action = isset($vars['operation']) ? $vars['operation'] : 0;
     $compression = isset($vars['compression']) ? $vars['compression'] : 0;
     $fallback = isset($vars['fallback']) ? $vars['fallback'] : 0;
 
@@ -131,7 +132,6 @@ class Image extends FileObject {
     if (is_file($thumb_image_path)) {
       return $thumbfile;
     }
-
     // If the image file is broken, use the default broken image.
     if (!is_file($img_path)) {
       // Check if if set a fallback image.
