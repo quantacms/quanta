@@ -24,6 +24,8 @@
 }
 .shadow-inside .inner, #shadow-contents {
     padding: 10px;
+    background: #fff;
+
 }
 
 #edit-content, #edit-content-wrapper {
