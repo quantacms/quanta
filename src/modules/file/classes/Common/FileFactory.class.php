@@ -24,10 +24,24 @@ class FileFactory {
       $nodepath = Cache::getStoredNodePath($env, $env->request[count($env->request) - 2]);
       $file = $nodepath . '/' . urldecode($filename);
       if (is_file($file)) {
-        header('Content-Type: ' . mime_content_type($file));
+
+        if (isset($_GET['download'])) {
+          header('Pragma: public');
+          header('Expires: 0');
+          header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+          header('Cache-Control: private', false); // required for certain browsers
+          header('Content-Type: application/pdf');
+
+          header('Content-Disposition: attachment; filename="'. basename($file) . '";');
+          header('Content-Transfer-Encoding: binary');
+          header('Content-Length: ' . filesize($file));
+        }
+        else {
+          header('Content-Type: ' . mime_content_type($file));
+        }
+        // TODO: support for xsendfile.
         $mods = array_flip(apache_get_modules());
         if (isset($mods['mod_xsendfile'])) {
-          // TODO: support for xsendfile.
           // readfile($file);
         }
         else {

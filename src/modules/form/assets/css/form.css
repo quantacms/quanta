@@ -58,7 +58,7 @@ div.has-validation-errors {
 
 .form-item-label {
     margin: 0;
-    margin-top: 10px;
+    margin-top: 18px;
     font-weight: bold;
     padding-right: 8px;
     border: none;
@@ -67,5 +67,4 @@ div.has-validation-errors {
     letter-spacing: 1px;
     font-size: 0.8em;
     color: #444;
-    margin-bottom: 8px;
 }

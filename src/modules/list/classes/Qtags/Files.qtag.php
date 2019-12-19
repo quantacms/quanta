@@ -5,7 +5,7 @@ use Quanta\Common\FileList;
 /**
  * Create a list of files.
  */
-class FILES extends Qtag {
+class Files extends Qtag {
   /**
    * Render the Qtag.
    *
