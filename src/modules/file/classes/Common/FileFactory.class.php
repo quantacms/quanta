@@ -24,7 +24,7 @@ class FileFactory {
       $nodepath = Cache::getStoredNodePath($env, $env->request[count($env->request) - 2]);
       $file = $nodepath . '/' . urldecode($filename);
       if (is_file($file)) {
-
+        // Request for a file download.
         if (isset($_GET['download'])) {
           header('Pragma: public');
           header('Expires: 0');
@@ -46,7 +46,8 @@ class FileFactory {
         }
         else {
           //TODO : slow, insecure...
-           readfile($file);
+          // Render a file.
+          readfile($file);
         }
         exit();
       }
