@@ -16,9 +16,12 @@
     height: 100%;
 	font-family: "Arial" !important;
 }
-
-.shadow-inside .inner, #shadow-contents {
+.shadow-inside {
     background: #fff;
+    max-height: 90%;
+    overflow: auto;
+}
+.shadow-inside .inner, #shadow-contents {
     padding: 10px;
 }
 

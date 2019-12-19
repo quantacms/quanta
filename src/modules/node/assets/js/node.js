@@ -1,11 +1,13 @@
 $(document).bind('refresh', function() {
   $('.category-toggle').on('click', function(e) {
+
     var node = $(this).data('node');
     var add_title = $(this).data('add-title');
     var remove_title = $(this).data('remove-title');
     var category = $(this).data('category');
     var toggle_href = '/qtag/[CATEGORY_TOGGLE|add_title=' + add_title + '|remove_title=' + remove_title + '|node=' + node + '|toggle:' + category + ']';
     $(this).load(toggle_href);
+
     e.preventDefault();
   });
 
