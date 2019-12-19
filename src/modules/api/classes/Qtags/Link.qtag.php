@@ -77,6 +77,9 @@ class Link extends HtmlTag {
   public function render() {
     $this->link_id = !empty($this->attributes['link_id']) ? $this->attributes['link_id'] : '';
 
+    if (!empty($this->attributes['downloadable'])) {
+      $this->querystring['download'] = TRUE;
+    }
     if (empty($this->destination)) {
       $this->destination = '#';
 
