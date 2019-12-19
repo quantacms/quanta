@@ -301,9 +301,13 @@ abstract class ListObject extends DataContainer {
     // Set the sort order.
     if (!empty($this->getData('sort'))) {
       $this->sort = $this->getData('sort');
-      uasort($this->items, array($this, 'sortBy'));
-      if (!empty($this->getData('asc'))) {
-        $this->items = array_reverse($this->items);
+      if ($this->sort == 'random') {
+        //shuffle($this->items);
+      } else {
+        uasort($this->items, array($this, 'sortBy'));
+        if (!empty($this->getData('asc'))) {
+          $this->items = array_reverse($this->items);
+        }
       }
     }
 
