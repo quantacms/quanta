@@ -196,6 +196,7 @@ class User extends Node {
    */
   public function logIn($password, $success_message = NULL, $force_login = FALSE) {
 
+    $vars = array('user' => $this);
     // If user dir doesn't exist.
     if (!($this->exists)) {
       new Message($this->env, $this->getName() . ' is not a valid username. Please try to [LOGIN] again', \Quanta\Common\Message::MESSAGE_WARNING, \Quanta\Common\Message::MESSAGE_TYPE_SCREEN);
@@ -218,9 +219,13 @@ class User extends Node {
         );
         $this->roles += array(self::ROLE_LOGGED => self::ROLE_LOGGED);
         $_SESSION['user'] = $this->serializeForSession();
+        $this->env->hook('user_login', $vars);
+
       }
       else {
-        return FALSE;
+          $this->env->hook('user_wrong_login', $vars);
+
+          return FALSE;
         // Show an error message for wrong password.
         new Message($this->env,
           t('Wrong username or password. Please try again'),
