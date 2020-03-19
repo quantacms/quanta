@@ -38,6 +38,10 @@ class Input extends HtmlTag {
       if ($i > 0) {
         $this->form_item->setId($this->form_item->getName() . '-' . $i);
       }
+      // Add a class to the form item directly.
+      if (!empty($this->getAttribute('input_class'))) {
+        $this->form_item->addClass($this->getAttribute('input_class'));
+      }
       // Render the form item using its custom render function.
       $rend = $this->form_item->render();
       // If the item is multiple, add a wrapper for this instance.
