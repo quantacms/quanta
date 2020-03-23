@@ -37,10 +37,12 @@ class FormFactory {
    */
   public static function getFormState($env, $form_id = FORM_PAGE_FORM) {
     $form_state = $env->getData('form_' . $form_id);
+
     if (empty($form_state)) {
       $form_state = FormFactory::createFormState($env, $form_id);
       $env->setData('form_' . $form_id, $form_state);
     }
+    $form_state->setType($form_state->getData('form_type'));
     return $form_state;
   }
 
