@@ -32,7 +32,13 @@ class Mail extends Node {
     $mail->SMTPAuth = !empty($this->getData('SMTPAuth')) ? $this->getData('SMTPAuth') : true;
     $mail->SMTPSecure = !empty($this->getData('SMTPSecure')) ? $this->getData('SMTPSecure') : 'tls';
     $mail->SMTPDebug = !empty($this->getData('SMTPDebug')) ? $this->getData('SMTPDebug') : 0;
-		$mail->Username = $this->getData('username');
+    $mail->CharSet = !empty($this->getData('CharSet')) ? $this->getData('CharSet') : "UTF-8";
+    if (!empty($this->getData('attachments'))) {
+      foreach ($this->getData('attachments') as $attachment) {
+        $mail->addAttachment($attachment);
+      }
+    }
+    $mail->Username = $this->getData('username');
     $mail->Password = $this->getData('password');
     $mail->Port = $this->getData('port');
     $mail->setFrom($this->getData('from'), $this->getData('from_name'));
