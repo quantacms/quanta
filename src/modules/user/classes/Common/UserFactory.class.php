@@ -118,6 +118,7 @@ class UserFactory {
     $user = new User($env, $form_state->getData('username'), '_users');
 
     $vars = array('user' => $user);
+
     // Check if the current user is allowed to perform the requested action.
     $access_check = UserAccess::check($env, $action, $vars);
     if ($access_check) {
