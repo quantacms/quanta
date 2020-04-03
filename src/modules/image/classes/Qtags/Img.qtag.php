@@ -41,7 +41,7 @@ class Img extends HtmlTag {
 
     // Load classes.
     if (!empty($this->attributes['img_class'])) {
-      $this->html_params['class'] .= $this->attributes['img_class'];
+      $this->html_params['class'] .= ' ' . $this->attributes['img_class'];
     }
     // When there is a request for editing the Image "on the fly" (i.e. scale or resize)...
     // ...Proceed with creating and rendering the new manipulated image.
