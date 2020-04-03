@@ -206,7 +206,7 @@ function user_action_user_edit_own(Environment $env, array &$vars) {
 }
 
 /**
- * Implements hook_action_user_register().
+ * Implements hook_user_form_form_submit().
  * There is an user registration request.
  *
  * @param Environment $env
@@ -218,7 +218,6 @@ function user_user_form_form_submit(Environment $env, array &$vars) {
 
   // Prepare the response object.
   $response = new \stdClass();
-
   /** @var FormState $form_state */
   $form_state = $vars['form_state'];
 
@@ -227,7 +226,7 @@ function user_user_form_form_submit(Environment $env, array &$vars) {
   // Perform the registration of the user.
   $user = UserFactory::load($env, $form_state->getData('username'));
     // Immediate login of the user. TODO: make this optional.
-    $user->logIn(NULL, NULL, array('%user' => $form_state->getData('username')), TRUE);
+    // $user->logIn(NULL, NULL, array('%user' => $form_state->getData('username')), TRUE);
     $vars['user'] = $user;
   // Encode the response JSON code.
 }
