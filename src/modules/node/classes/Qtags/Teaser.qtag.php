@@ -20,7 +20,7 @@ class Teaser extends Qtag {
     if (empty($teaser) && !empty($this->getAttribute('trim')) ) {
       // Default max length for trimmed body: 255 characters. Can be overridden by trim_length attribute.
       $max_length = !empty($this->getAttribute('trim_length')) ? $this->getAttribute('trim_length') : 255;
-      $teaser = substr(\Quanta\Common\Api::strip_qtags($node->getBody()), 0, $max_length);
+      $teaser = substr(\Quanta\Common\Api::strip_qtags(strip_tags($node->getBody())), 0, $max_length);
     }
     if (!empty($teaser)) {
       if (isset($this->attributes['editable'])) {
