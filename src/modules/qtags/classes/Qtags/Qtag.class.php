@@ -221,8 +221,9 @@ class Qtag {
    * @return mixed
    *   The Qtag's attribute value.
    */
-  public function getAttribute($attr_name) {
-    return !empty($this->attributes[$attr_name]) ? $this->attributes[$attr_name] : NULL;
+  public function getAttribute($attr_name, $empty_value = NULL) {
+
+    return !empty($this->attributes[$attr_name]) ? $this->attributes[$attr_name] : $empty_value;
   }
 
   /**
