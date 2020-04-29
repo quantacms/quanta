@@ -13,6 +13,11 @@ class AmpLink extends Qtag {
    */
   public function render() {
     $node = NodeFactory::current($this->env);
-    return '<link rel="amphtml" href="' . ($this->env->getBaseUrl() . '/amp/' . $node->getName()) . '">';
+
+    $node = NodeFactory::current($this->env);
+    $protocol = $this->getAttribute('protocol', 'http');
+    $url = empty($this->getAttribute('domain')) ? $this->env->getBaseUrl() : $protocol . '://' . $this->getAttribute('domain');
+
+    return '<link rel="amphtml" href="' . ($url . '/amp/' . $node->getName()) . '">';
   }
 }
