@@ -13,6 +13,8 @@ class CanonicalLink extends Qtag {
    */
   public function render() {
     $node = NodeFactory::current($this->env);
-    return '<link rel="canonical" href="' . ($this->env->getBaseUrl() . '/' . $node->getName()) . '">';
+    $protocol = $this->getAttribute('protocol', 'http');
+    $url = empty($this->getAttribute('domain')) ? $this->env->getBaseUrl() : $protocol . '://' . $this->getAttribute('domain');
+    return '<link rel="canonical" href="' . $url . '/' . $node->getName() . '">';
   }
 }
