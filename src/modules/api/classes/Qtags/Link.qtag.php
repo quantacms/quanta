@@ -76,7 +76,7 @@ class Link extends HtmlTag {
    */
   public function render() {
     $this->link_id = !empty($this->attributes['link_id']) ? $this->attributes['link_id'] : '';
-
+    $node = NULL;
     if (!empty($this->attributes['downloadable'])) {
       $this->querystring['download'] = TRUE;
     }
@@ -140,6 +140,7 @@ class Link extends HtmlTag {
     // Prepare variables for Link hooks.
     $vars = array(
       'qtag' => &$this,
+      'node' => $node,
       );
     $this->env->hook('link_alter', $vars);
 
