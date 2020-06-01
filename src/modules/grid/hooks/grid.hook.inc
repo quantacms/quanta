@@ -95,19 +95,19 @@ function grid_list_item(Environment $env, array $vars) {
     // Specific item.
     $vars['list_item_classes'][] = $list->getData('grid_list_item_' . $vars['list_item_counter']);
   }
-  elseif($is_grouped && !empty($list->getData('grid_list_item_group_' . $group_counter))) {
+  if ($is_grouped && !empty($list->getData('grid_list_item_group_' . $group_counter))) {
     // Specific item in the interval.
     $vars['list_item_classes'][] = $list->getData('grid_list_item_group_' . $group_counter);
   }
-  elseif(!empty($list->getData('grid_list_item_odd') && ($vars['list_item_counter'] % 2 == 1))) {
+  if (!empty($list->getData('grid_list_item_odd') && ($vars['list_item_counter'] % 2 == 1))) {
     // Odd items.
     $vars['list_item_classes'][] = $list->getData('grid_list_item_odd');
   }
-  elseif(!empty($list->getData('grid_list_item_even') && ($vars['list_item_counter'] % 2 == 0))) {
+  if (!empty($list->getData('grid_list_item_even') && ($vars['list_item_counter'] % 2 == 0))) {
     // Even items.
     $vars['list_item_classes'][] = $list->getData('grid_list_item_even');
   }
-  elseif(!empty($list->getData('grid_list_item'))) {
+  if (!empty($list->getData('grid_list_item'))) {
     // Default items.
     $vars['list_item_classes'][] = $list->getData('grid_list_item');
   }
