@@ -104,7 +104,7 @@ class Image extends FileObject {
     $maxw = isset($vars['w_max']) ? $vars['w_max'] : 0;
     $maxh = isset($vars['h_max']) ? $vars['h_max'] : 0;
     $img_action = isset($vars['operation']) ? $vars['operation'] : 0;
-    $compression = isset($vars['compression']) ? $vars['compression'] : 0;
+    $compression = isset($vars['compression']) ? $vars['compression'] : 70;
     $fallback = isset($vars['fallback']) ? $vars['fallback'] : 0;
 
     if ($maxw == 'auto') {

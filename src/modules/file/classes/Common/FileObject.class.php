@@ -190,6 +190,7 @@ class FileObject extends DataContainer {
     switch ($extension) {
       case 'jpg':
       case 'png':
+      case 'svg':
       case 'bmp':
       case 'gif':
       case 'jpeg':
@@ -329,11 +330,13 @@ class FileObject extends DataContainer {
       'mp4',
       'mov',
       'm4a',
+      'm4u',
       'wma',
       'txt',
       'xls',
       'xlsx',
       'wav',
+      'svg',
     );
 
     // Create a temporary upload directory.
