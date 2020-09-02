@@ -198,7 +198,9 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
         break;
 
       default:
-
+        if (!empty($filter_type) && !empty($node->getAttributeJSON($filter_type))) {
+          $filter_check[] = $node->getAttributeJSON($filter_type);
+        }
         break;
     }
 
