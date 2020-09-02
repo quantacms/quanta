@@ -20,7 +20,7 @@ function social_metadata(Environment $env, array $vars){
     );
     // Twitter card.
     $vars['metadata']['twitter:card'] = array(
-      'content' => Api::filter_xss($node->getTeaser()),
+	    'content' => 'summary',
     );
   }
   // Twitter thumbnail.

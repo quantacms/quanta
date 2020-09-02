@@ -179,17 +179,16 @@ function node_metadata(Environment $env, array $vars){
     'content' => 'utf-8',
   );
 
-  if (!empty($node->getTeaser())) {
-    // Meta description.
-    $vars['metadata']['description'] = array(
-      'content' => Api::filter_xss($node->getTeaser()),
-    );
-    // OG description.
-    $vars['metadata']['og:description'] = array(
-      'property' => 'og:description',
-      'content' => Api::filter_xss($node->getTeaser()),
-    );
-  }
+  // Meta description.
+  $vars['metadata']['description'] = array(
+    'content' => Api::filter_xss(empty($node->getTeaser()) ? $node->getTitle() : $node->getTeaser()),
+  );
+  // OG description.
+  $vars['metadata']['og:description'] = array(
+    'property' => 'og:description',
+    'content' => Api::filter_xss(empty($node->getTeaser()) ? $node->getTitle() : $node->getTeaser()),
+  );
+  
 
   $vars['metadata']['name'] = array(
     'content' => Api::filter_xss($author->getTitle()),
@@ -201,23 +200,19 @@ function node_metadata(Environment $env, array $vars){
 
   // OG metadata.
   $vars['metadata']['og:title'] = array(
-    'property' => 'og:title',
     'content' => Api::filter_xss($node->getTitle()),
   );
 
   $vars['metadata']['og:type'] = array(
-    'property' => 'og:type',
     'content' => 'article',
   );
 
   $vars['metadata']['og:url'] = array(
-    'property' => 'og:url',
     'content' => $env->getData('request_url'),
   );
 
   if (!empty($node->getThumbnail())) {
     $vars['metadata']['og:image'] = array(
-      'property' => 'og:image',
       'content' => $env->getData('request_url') . $node->getThumbnail(),
     );
 
