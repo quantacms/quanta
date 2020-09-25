@@ -51,12 +51,16 @@ class DirList extends ListObject {
       if (isset($node_father) && $node_father->exists && ($node_father->getName() == $node->getName())) {
         $classes[] = 'list-selected-father';
       }
+      /*
       foreach($this->replacements as $string => $replace) {
         $tpl = preg_replace("/" . str_replace('[', '\[', str_replace(']', '\]', $string)) . "/is", Api::string_normalize($replace), $tpl);
       }
+      */
       // TODO: not so beautiful to include a fake qTag. Can be done better.
-      $list_item = QtagFactory::transformCodeTags($this->env, preg_replace("/\[LISTITEM\]/is", Api::string_normalize($dir_url), $tpl));
-      $list_item = QtagFactory::transformCodeTags($this->env, preg_replace("/\[LISTNODE\]/is", Api::string_normalize($this->getNode()->getName()), $list_item));
+      $list_item = preg_replace("/\[LISTCOUNTER\]/is", $i, $tpl);
+      $list_item = preg_replace("/\[LISTITEM\]/is", Api::string_normalize($dir_url), $list_item);
+      $list_item = preg_replace("/\[LISTNODE\]/is", Api::string_normalize($this->getNode()->getName()), $list_item);
+      $list_item = QtagFactory::transformCodeTags($this->env, $list_item);
 
       $vars = array(
         'list' => &$this,
