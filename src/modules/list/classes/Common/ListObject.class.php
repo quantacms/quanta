@@ -2,7 +2,7 @@
 namespace Quanta\Common;
 
 /**
- * Class DirList
+ * Class ListObject
  * This class is providing "listing" features useful to scan a folder and
  * render the files and folders contained into it.
  */
