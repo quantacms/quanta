@@ -154,7 +154,9 @@ abstract class ListObject extends DataContainer {
     $separator = empty($this->getData('separator')) ? '' : $this->getData('separator');
     $output = implode($separator, $this->rendered_items);
     $classes = array();
-
+    if (!empty($this->getData('class'))) {
+      $classes[] = $this->getData('class');
+    }
     if (!empty($this->getData('grid'))) {
       $classes[] = 'grid';
       if (!empty($this->getData('grid_list'))) {
