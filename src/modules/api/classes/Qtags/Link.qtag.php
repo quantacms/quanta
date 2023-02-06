@@ -136,6 +136,8 @@ class Link extends HtmlTag {
 
     // Sets the link title (<a title=...).
     $this->link_title = empty($this->attributes['link_title']) ? strip_tags($this->html_body) : $this->attributes['link_title'];
+    // Sets the link title (<a title=...).
+    $this->link_anchor = empty($this->attributes['link_anchor']) ? NULL : $this->attributes['link_anchor'];
 
     // Prepare variables for Link hooks.
     $vars = array(
@@ -164,6 +166,7 @@ class Link extends HtmlTag {
     }
     // Sets a query string.
     $query = (!empty($this->querystring)) ? ('?' . implode('&', $this->querystring)) : '';
+    $anchor = (!empty($this->link_anchor)) ? ('#' . $this->link_anchor) : '';
 
     // TODO: make just a big variable "data".
     // Check Quanta data types.
@@ -179,7 +182,7 @@ class Link extends HtmlTag {
 
     $this->html_params['class'] .= ' ' . implode(' ', $this->link_class);
     $this->html_params['title'] = $this->link_title;
-    $this->html_params['href'] = $this->destination . $query;
+    $this->html_params['href'] = $this->destination . $anchor . $query;
     $this->html_params['target'] = $this->link_target;
     if (!empty($this->link_id)) {
       $this->html_params['id'] = $this->link_id;
