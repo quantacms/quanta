@@ -66,7 +66,7 @@ class FileObject extends DataContainer {
     $this->setExtension(strtolower($exp[count($exp) - 1]));
     $this->setName (($name == NULL) ? $file_path : $name);
     $this->setType(FileObject::getFileType($this->extension));
-    $this->exists = is_file($this->path);
+    $this->exists = is_file($this->getRealPath());
   }
 
   /**
