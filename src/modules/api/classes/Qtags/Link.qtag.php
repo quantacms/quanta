@@ -77,6 +77,7 @@ class Link extends HtmlTag {
   public function render() {
     $this->link_id = !empty($this->attributes['link_id']) ? $this->attributes['link_id'] : '';
     $node = NULL;
+    $is_current = FALSE;
     if (!empty($this->attributes['downloadable'])) {
       $this->querystring['download'] = TRUE;
     }
@@ -126,6 +127,7 @@ class Link extends HtmlTag {
         // Check if this node's link is identical to the current node.
         if (($this->getTarget()) == $this->env->request_path) {
           $this->link_class[] = 'link-active';
+          $is_current = TRUE;
         }
         $this->attributes['rel'] = $node->getName();
         if (empty($this->html_body)) {
@@ -182,7 +184,12 @@ class Link extends HtmlTag {
 
     $this->html_params['class'] .= ' ' . implode(' ', $this->link_class);
     $this->html_params['title'] = $this->link_title;
-    $this->html_params['href'] = $this->destination . $anchor . $query;
+    $destination = $this->destination;
+    // If anchor is on the same page, omit the URL.
+    if ($is_current && !empty($anchor)) {
+      $destination = '';
+    }
+    $this->html_params['href'] = $destination . $anchor . $query;
     $this->html_params['target'] = $this->link_target;
     if (!empty($this->link_id)) {
       $this->html_params['id'] = $this->link_id;
