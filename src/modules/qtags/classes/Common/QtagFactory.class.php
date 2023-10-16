@@ -29,6 +29,7 @@ class QtagFactory {
    *
    */
   public static function checkCodeTags(Environment &$env, $html, array $options = array(), $regex_options = 's') {
+    $check_tags = array();	  
     $replacing = array();
     // Find all qtags using regular expressions (both { and [ bracket types are valid for now).
     $regexs = array();
@@ -69,7 +70,9 @@ class QtagFactory {
 
       }
     }
-    return $replacing;
+    $check_tags['replaces'] = $replacing;
+    return $check_tags;
+
   }
 
   /**
@@ -95,14 +98,14 @@ class QtagFactory {
     while (TRUE) {
       $transformed++;
       // Parse all the Qtags in the given html.
-      $replaces = (QtagFactory::checkCodeTags($env, $html, $options));
+      $check_tags = (QtagFactory::checkCodeTags($env, $html, $options));
 
-      if (empty($replaces)) {
+      if (empty($check_tags['replaces'])) {
         break;
       }
 
       // Do all the Qtag replacements in the given html.
-      foreach ($replaces as $qtag => $replace) {
+      foreach ($check_tags['replaces'] as $qtag => $replace) {
         if (is_array($replace)) {
           $replace = implode(\Quanta\Common\Environment::GLOBAL_SEPARATOR, $replace);
         }

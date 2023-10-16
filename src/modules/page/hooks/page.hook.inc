@@ -39,7 +39,10 @@ function page_body_classes(Environment $env, $vars) {
 function page_boot(Environment $env, $vars) {
   $env->sysdir('pages', 'pages');
   $env->sysdir('system', '_system');
-
+  // Start ads.txt configuration.
+  if ($env->request[count($env->request) - 1] == 'ads.txt') {
+    exit();
+  }
   // Start robots.txt configuration.
   // TODO: object oriented, using templates, etc. etc.
   if ($env->request[count($env->request) - 1] == 'robots.txt') {
