@@ -140,7 +140,7 @@ function file_node_after_save(Environment $env, array $vars) {
  */
 function file_page_init(Environment $env, array $vars) {
   // If a Shadow is open, initialize file upload libraries.
-  if (Shadow::isOpen($env)) {
+	if (Shadow::isOpen($env)) {
     /** @var Page $page */
     $page = $vars['page'];
     // TODO: print is not a good approach.

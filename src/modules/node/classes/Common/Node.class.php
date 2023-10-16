@@ -1,8 +1,5 @@
 <?php
 namespace Quanta\Common;
-
-
-
 date_default_timezone_set('UTC');
 
 /**
@@ -90,7 +87,6 @@ class Node extends JSONDataContainer {
         $this->path = $this->env->nodePath($this->getName());
         $this->exists = $this->path != NULL;
       }
-
     } // ...Adding a new node. No values to load.
     else {
       $this->setName(self::NODE_NEW);
