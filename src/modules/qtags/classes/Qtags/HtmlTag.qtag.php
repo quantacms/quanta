@@ -56,6 +56,10 @@ class HtmlTag extends Qtag {
       $html .= $this->html_body;
       $html .= '</' . $this->html_tag . '>';
     }
+
+    if (!empty($this->getAttribute('prefix'))) {
+	    $html = $this->getAttribute('prefix') . $html;
+    }
     return $html;
   }
 
