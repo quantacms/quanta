@@ -72,7 +72,7 @@ class DirList extends ListObject {
 
       $editable = $this->getData('editable');
       // Wrap in the inline editor.
-      if (empty($editable) || $editable == 'true') {
+      if ($editable == 'true') {
         $list_item = NodeTemplate::wrap($this->env, $node, $list_item);
       }
 
