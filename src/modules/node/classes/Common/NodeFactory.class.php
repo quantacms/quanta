@@ -463,8 +463,8 @@ class NodeFactory {
             $env->hook('node_after_save', $vars);
             // Hook node_add_complete, node_edit_complete, etc.
             $env->hook($action . '_complete', $vars);
-            // If the form has a redirect field, setup a redirect.
-            $response->redirect = !empty($form_data['redirect']) ? $form_data['redirect'] : ('/' . $node->getName() . '/');
+	    // If the form has a redirect field, setup a redirect.
+            $response->redirect = !empty($form_data['redirect']) ? $form_data['redirect'] : ('/' . $node->getName());
           }
           else {
             // TODO: make this good.

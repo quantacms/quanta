@@ -23,6 +23,7 @@ class NodeAccess extends Access {
   public static function check(Environment $env, $action, array $vars = array()) {
     static $access_checked;
 
+    if (isset($_GET['test'])) {print_r($access_checked);print '<br><br>';}
     // Static cache of access controls.
     if (empty($access_checked)) {
       $access_checked = array();

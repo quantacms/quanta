@@ -38,6 +38,9 @@ class FormItemSelect extends FormItem {
       if ($this->getCurrentValue() == $option_key) {
         $option->html_params['selected'] = 'selected';
       }
+      elseif ($this->getDefaultValue() == $option_key) {
+        $option->html_params['selected'] = 'selected';
+      }
       $option->setHtmlBody($option_value);
       $this->html_body .= $option->render();
     }

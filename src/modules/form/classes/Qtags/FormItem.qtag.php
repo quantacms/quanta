@@ -232,7 +232,7 @@ abstract class FormItem extends HtmlTag {
     $single_value = array_pop($value);
 
     // If there is already a value set for the input item, ignore the default.
-    $this->default_value = !empty($single_value) ? $single_value : $this->getAttribute('default');
+    $this->default_value = $this->getAttribute('default');
   }
 
   /**
