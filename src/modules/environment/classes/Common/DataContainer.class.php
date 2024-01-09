@@ -9,7 +9,7 @@ abstract class DataContainer {
    * @var Environment $env
    */
   protected $env;
-  protected $data = array();
+  public $data = array();
   public $language;
 
   /**
