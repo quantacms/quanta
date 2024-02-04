@@ -63,7 +63,8 @@ class Node extends JSONDataContainer {
     // TODO: move to nodefactory.
     // Checking if this is not a new node.
     if ($name != self::NODE_NEW) {
-      $this->setName(strtolower($name));
+	    $this->setName($name);
+	    //strtolower($name));
       // TODO: language!
       // Load node from cache (RAM) if it has been already loaded.
       $cached = Cache::get($this->env, 'node', $this->name);
