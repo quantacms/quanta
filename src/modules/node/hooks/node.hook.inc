@@ -70,11 +70,20 @@ function node_load_includes(Environment $env, array $vars){
  */
 function node_page_init(Environment $env, array $vars) {
   $node = NodeFactory::current($env);
+  
   // If the node does not exist, redirect to 404.
   if (!$node->exists && !isset($_REQUEST['shadow']) && $node->name != '404') {
-    $node_404 = NodeFactory::load($env, '404');
+	  // SSH challenge
+	  // TODO: move elsewhere. 
+	  if (strpos($env->request_uri, 'acme-challenge') > 0) {
+		  $open = $env->dir['docroot'] . substr($env->request_uri,0,-1);
+		  die(file_get_contents($open));
+	  }
+
+	  $node_404 = NodeFactory::load($env, '404');
+
     if ($node_404->exists) {
-      Api::redirect('/404');
+      Api::redirect('/404/?'. $node->name);
     }
     else {
       die(t('404 - Page not found.'));
