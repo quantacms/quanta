@@ -18,7 +18,7 @@ class Link extends HtmlTag {
    *   The Link Title (what appears in the <a title=... attribute).
    */
   public $link_title;
-
+  public $link_anchor;
   /**
    * @var string $link_class
    *   The Link Classes (what appears in the <a class=... attribute).
@@ -83,8 +83,8 @@ class Link extends HtmlTag {
     }
     if (empty($this->destination)) {
       $this->destination = '#';
-
-      $query_explode = explode('?', $this->getTarget());
+  
+      $query_explode = ($this->getTarget() != NULL) ? explode('?', $this->getTarget()) : array();
       // Support for querystring
       if (count($query_explode) > 1) {
         $this->setTarget($query_explode[0]);
@@ -105,7 +105,7 @@ class Link extends HtmlTag {
         $this->destination = $this->getTarget();
       }
       // Link to an anchor.
-      elseif (substr($this->getTarget(), 0, 1) == '#') {
+      elseif (($this->getTarget() != NULL) && (substr($this->getTarget(), 0, 1) == '#')) {
         $this->link_class[] = 'link-anchor';
         $this->setType(self::LINK_ANCHOR);
         $this->destination = $this->getTarget();
@@ -137,7 +137,12 @@ class Link extends HtmlTag {
     }
 
     // Sets the link title (<a title=...).
-    $this->link_title = empty($this->attributes['link_title']) ? strip_tags($this->html_body) : $this->attributes['link_title'];
+    if (isset($this->attributes['link_title'])) {
+      $this->link_title = $this->attributes['link_title'];
+    }
+    else {
+      $this->link_title = empty($this->html_body) ? '' : strip_tags($this->html_body);
+    }
     // Sets the link title (<a title=...).
     $this->link_anchor = empty($this->attributes['link_anchor']) ? NULL : $this->attributes['link_anchor'];
 

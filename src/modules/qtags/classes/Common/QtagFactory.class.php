@@ -109,8 +109,12 @@ class QtagFactory {
         if (is_array($replace)) {
           $replace = implode(\Quanta\Common\Environment::GLOBAL_SEPARATOR, $replace);
         }
-        $html = str_replace($qtag, $replace, $html);
-      }
+        if ($replace == NULL) {
+            $replace = '';
+          }
+          $html = str_replace($qtag, $replace, $html);
+        
+      } 
 
     }
     return $html;

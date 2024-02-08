@@ -264,8 +264,14 @@ class Api {
    *   The filtered string.
    */
   public static function filter_xss($string) {
-    $filtered_string = htmlspecialchars($string, ENT_QUOTES,'utf-8');
+    if ($string != NULL) {
+      $filtered_string = htmlspecialchars($string, ENT_QUOTES,'utf-8');
+    }
+    else {
+      $filtered_string = '';
+    }
     return $filtered_string;
+
   }
 
   /**
