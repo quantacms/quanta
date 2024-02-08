@@ -36,6 +36,8 @@ abstract class FormItem extends HtmlTag {
   protected $current_value;
   /** @var mixed $default_value */
   protected $default_value;
+  /** @var mixed $input_arr */
+  protected $input_arr;
 
 
   /**
@@ -205,7 +207,9 @@ abstract class FormItem extends HtmlTag {
       }
     } // ...otherwise look for the values attribute (that might be NULL, of course!)
     else {
-      $values = explode(',', $this->getAttribute('values'));
+      if ($this->getAttribute('values') != NULL) {
+	$values = explode(',', $this->getAttribute('values'));
+      }
     }
 
     // Check the allowable values for this form item.
@@ -229,8 +233,10 @@ abstract class FormItem extends HtmlTag {
    */
   public function loadDefault() {
     $value = $this->getValue();
-    $single_value = array_pop($value);
-
+    // TODO: PROBABLY WRONG. 
+    if (is_array($value)) {
+    	$single_value = array_pop($value);
+    }
     // If there is already a value set for the input item, ignore the default.
     $this->default_value = $this->getAttribute('default');
   }
@@ -294,7 +300,7 @@ abstract class FormItem extends HtmlTag {
    * @param $attribute
    * @return bool|null
    */
-  public function getAttribute($attribute) {
+  public function getAttribute($attribute, $empty_value = NULL) {
     return !isset($this->input_arr[$attribute]) ? NULL :
       (empty($this->input_arr[$attribute]) ? self::INPUT_EMPTY_VALUE : $this->input_arr[$attribute]);
   }
@@ -409,7 +415,7 @@ abstract class FormItem extends HtmlTag {
    */
   public function setValue($value = NULL) {
     // In order to support multiple values, we use an array.
-    if (!is_array($value)) {
+    if (($value != NULL) && !is_array($value)) {
       $value = explode(\Quanta\Common\Environment::GLOBAL_SEPARATOR, $value);
     }
     $this->value = $value;

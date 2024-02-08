@@ -115,7 +115,12 @@ class DirList extends ListObject {
           break;
 
         case 'title':
-          $check = strcasecmp($x->getTitle(), $y->getTitle()) > 0;
+          if (($x->getTitle() != NULL) && ($y->getTitle() != NULL)) {
+            $check = strcasecmp($x->getTitle(), $y->getTitle()) > 0;
+          }
+            else {
+            $check = -1;
+            }
           break;
 
         case 'time':

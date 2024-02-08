@@ -34,11 +34,13 @@ class Img extends HtmlTag {
     if (isset($this->attributes['alt'])) {
       $this->alt = $this->attributes['alt'];
     }
-    else {
+    elseif ($this->getTarget() != NULL) {
       $split_target = explode('.', $this->getTarget());
       $this->alt = str_replace('-', ' ', \Quanta\Common\Api::string_normalize($split_target[0]));
     }
-
+    else {
+      $this->alt = '';
+    }
     // Load classes.
     if (!empty($this->attributes['img_class'])) {
       $this->html_params['class'] .= ' ' . $this->attributes['img_class'];

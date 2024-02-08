@@ -25,13 +25,12 @@ class Input extends HtmlTag {
       // TODO: add other useful smart hooks.
       $this->env->hook('form_item_validate', $vars);
       $this->env->hook($this->getFormState()->getId() . '_form_item_validate', $vars);
-
     }
 
-    $values = $this->form_item->getValue();
+    $form_item_values = $this->form_item->getValue();
+    $values = is_array($form_item_values) ? $form_item_values : array($form_item_values);
     $i = 0;
     // Load and render all existing values...
-
     foreach ($values as $value) {
       // Set the current value of the form item.
       $this->form_item->setDefaultValue($value);
@@ -43,9 +42,9 @@ class Input extends HtmlTag {
         $this->form_item->addClass($this->getAttribute('input_class'));
       }
       // Render the form item using its custom render function.
-      $rend = $this->form_item->render();
+      $html = $this->form_item->render();
       // If the item is multiple, add a wrapper for this instance.
-      $this->html_body .= ($this->form_item->isMultiple()) ? ('<div class="form-item-multiple-wrapper">' . $rend . '</div>') :  $rend;
+      $this->html_body .= ($this->form_item->isMultiple()) ? ('<div class="form-item-multiple-wrapper">' . $html . '</div>') :  $html;
       $i++;
     }
 
@@ -61,7 +60,7 @@ class Input extends HtmlTag {
         $label = new Label($this->env, $label_attributes, $this->form_item->getId());
         if ($this->form_item->getLabelPosition() == Label::LABEL_ASIDE) {
           $this->html_body = $this->html_body . $label->render();
-        }
+	}
         elseif ($this->form_item->getLabelPosition() == Label::LABEL_ON_TOP) {
           $this->html_body = $label->render() . $this->html_body;
         }

@@ -21,6 +21,10 @@ class FormState extends DataContainer {
    */
   public $type;
   /**
+   * @var string $id
+   */
+  public $id;
+  /**
    * @var string $attach
    */
   public $attach;

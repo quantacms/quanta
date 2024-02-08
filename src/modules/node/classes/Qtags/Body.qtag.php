@@ -15,7 +15,6 @@ class Body extends Qtag {
     // TODO: breaks the HTML, but we definitely need a xss filter for this tag.
     // $body = Api::filter_xss($node->getBody());
     $body = $node->getBody();
-    $body = str_replace(':', ':', $body);
     if (isset($attributes['editable'])) {
       $body = NodeTemplate::wrap($this->env, $node, $body);
     }

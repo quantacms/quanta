@@ -414,8 +414,13 @@ class Node extends JSONDataContainer {
    */
   public function getTeaser() {
     // TODO: why not using api::stringNormalize?
-    $teaser = (strlen(trim($this->teaser)) > 0) ? preg_replace('/\[[^>]*\]/', '', strip_tags($this->teaser)) : NULL;
-    return $teaser;
+   if ($this->teaser != NULL) {
+	  $teaser = preg_replace('/\[[^>]*\]/', '', strip_tags($this->teaser));
+   }
+   else {
+   	$teaser = '';
+   }
+   return $teaser;
   }
 
   /**

@@ -48,8 +48,8 @@ class FileObject extends DataContainer {
    */
   public function __construct(&$env, $file_path, $node = NULL, $name = NULL) {
     $this->env = $env;
-
-    if (strpos($file_path, '/') !== FALSE) {
+    // Check for external file.
+    if (($file_path != NULL) && (strpos($file_path, '/') !== FALSE)) {
       $this->external = TRUE;
       $this->setNode(NodeFactory::current($env));
 
@@ -62,13 +62,17 @@ class FileObject extends DataContainer {
     }
     $this->setFileName($name);
     $this->setPath($file_path);
-    $exp = explode('.', $file_path);
-    $this->setExtension(strtolower($exp[count($exp) - 1]));
-    $this->setName (($name == NULL) ? $file_path : $name);
-    $this->setType(FileObject::getFileType($this->extension));
-    $this->exists = is_file($this->getRealPath());
+    if ($file_path == NULL) {
+      $this->exists = FALSE;
+    }
+    else {
+      $exp = explode('.', $file_path);
+      $this->setExtension(strtolower($exp[count($exp) - 1]));
+      $this->setName (($name == NULL) ? $file_path : $name);
+      $this->setType(FileObject::getFileType($this->extension));
+      $this->exists = is_file($this->getRealPath());
+    }
   }
-
   /**
    * Check if the file is public (meaning it can be viewed / downloaded).
    *
