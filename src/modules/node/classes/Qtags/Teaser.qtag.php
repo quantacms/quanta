@@ -14,7 +14,7 @@ class Teaser extends Qtag {
    */
   public function render() {
     $node = \Quanta\Common\NodeFactory::loadOrCurrent($this->env, $this->getTarget());
-    $teaser = \Quanta\Common\Api::filter_xss($node->getTeaser());
+    $teaser = \Quanta\Common\Api::string_normalize(\Quanta\Common\Api::filter_xss($node->getTeaser()));
 
     // If teaser field is not valorized, and teaser has the "trim" attribute, try using trimmed body as teaser.
     if (empty($teaser) && !empty($this->getAttribute('trim')) ) {
@@ -23,9 +23,6 @@ class Teaser extends Qtag {
       $teaser = substr(\Quanta\Common\Api::strip_qtags(strip_tags($node->getBody())), 0, $max_length);
     }
     if (!empty($teaser)) {
-      if (isset($this->attributes['editable'])) {
-        $teaser = \Quanta\Common\NodeTemplate::wrap($this->env, $node, $teaser);
-      }
       return $teaser;
     }
   }
