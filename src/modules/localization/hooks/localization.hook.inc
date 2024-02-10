@@ -102,7 +102,7 @@ function localization_link_alter($env, $vars) {
 
   // Check if a language prefix must be added to the destination URL.
   // We don't add the prefix if we are using a "session" based language negotiation.
-  if (($link->getType() == 'internal') && !(empty($link->getAttribute('language')) && Localization::getLanguageNegotiation($env) != Localization::LANGUAGE_NEGOTIATION_PREFIX)) {
+  if (($link->getType() == 'internal') && (Localization::getLanguageNegotiation($env) == Localization::LANGUAGE_NEGOTIATION_PREFIX)) {
     $link->destination = '/' . $lang . $link->destination;
   }
 }
