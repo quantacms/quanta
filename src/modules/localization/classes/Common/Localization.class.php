@@ -83,12 +83,13 @@ class Localization {
     // If the fallback language has not been defined...
     if (empty($env->getData('fallback_language'))) {
       $vars = array();
-      $env->hook('fallback_language', $vars);
       $vars = array('fallback_language' => NULL);
+      $env->hook('fallback_language', $vars);
       // Let modules set a default fallback language.
       if (empty($vars['fallback_language'])) {
         $language_list = Localization::getEnabledLanguages($env);
-        $fallback = array_pop($language_list);
+	
+	$fallback = array_pop($language_list);
       }
       else {
         $fallback = $vars['fallback_language'];
