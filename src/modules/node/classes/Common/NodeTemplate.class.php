@@ -88,6 +88,9 @@ class NodeTemplate extends DataContainer {
     if (is_file($this->node->path . '/tpl.html')) {
       $this->setData('tpl_file', $this->node->path . '/tpl.html');
     }
+    elseif (is_file($this->env->dir['tpl'] . '/' . $this->node->name . '_tpl.html')) {
+    	$this->setData('tpl_file', $this->env->dir['tpl'] . '/' . $this->node->name . '_tpl.html');
+    }
     else {
       // Navigate the node's lineage looking for a suitable template.
       foreach ($lineages as $lineage) {
@@ -103,10 +106,18 @@ class NodeTemplate extends DataContainer {
           // "node/subnode/tpl-" has priority over "node/tpl--"
           for ($i = 1; $i <= 5; $i++) {
             $min .= '-';
-            $file = $lineage->path . '/tpl' . $min . '.html';
-            if ($tpl_sublevel == $i && file_exists($file)) {
+	    $file = $lineage->path . '/tpl' . $min . '.html';
+	    $file_tpl = $this->env->dir['tpl'] . '/' . $lineage->name . '_tpl' . $min . '.html';
+	    if ($tpl_sublevel == $i) {
+		if (file_exists($file)) {
               // tpl matches sublevel and distance form current node position: add it!
-              $tpl[$tpl_sublevel] = $file;
+		  $tpl[$tpl_sublevel] = $file;
+		}
+		elseif (file_exists($file_tpl)) {
+		  $tpl[$tpl_sublevel] = $file_tpl;
+		}
+		else {
+		}
             }
           }
         }
@@ -115,7 +126,11 @@ class NodeTemplate extends DataContainer {
         // If tpl^.html exists - template applies to all sublevels of the node.
         if (!isset($tpl_catch_all) && is_file($lineage->path . '/tpl^.html')) {
           $tpl_catch_all = $lineage->path . '/tpl^.html';
-        }
+	}
+	elseif (!isset($tpl_catch_all) && is_file($this->env->dir['tpl'] . '/' . $lineage->name . '_tpl^.html')) {
+          $tpl_catch_all = $this->env->dir['tpl'] . '/' . $lineage->name . '_tpl^.html';
+	}
+
         $tpl_sublevel++;
       }
 
@@ -129,6 +144,9 @@ class NodeTemplate extends DataContainer {
       // If no sub-level template find (it has priority) check if there is a catchall template.
       elseif (isset($tpl_catch_all)) {
         $this->setData('tpl_file', $tpl_catch_all);
+      }
+      else {
+      	// TODO: what to do if No template?
       }
     }
 
