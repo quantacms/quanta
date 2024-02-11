@@ -136,14 +136,14 @@ class Shadow extends Page {
    *   The tab title.
    * @param string $content
    *   The tab content.
-   * @param int $weight
+   * @param double $weight
    *   The tab weight.
    * @param string $classes
    *   Classes of the tabbed item.
    */
   public function addTab($title, $content, $weight = 1, $classes = NULL) {
     while (isset($this->tabs[$weight])) {
-      $weight += 0.1;
+      $weight += 1;
     }
     $this->tabs[$weight][$this->env->getContext()] = array('title' => $title, 'content' => $content, 'classes' => $classes);
   }

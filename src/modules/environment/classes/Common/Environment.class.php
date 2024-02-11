@@ -11,6 +11,7 @@ class Environment extends DataContainer {
   const DIR_DIRS = 'dirs';
   const DIR_FILES = 'files';
   const DIR_MODULES = 'modules';
+  const DIR_TPL = 'tpl';
   const QUANTA_ROOT = '__ROOT__';
   const GLOBAL_SEPARATOR = '@\@/@\@/@\@/@';
 
@@ -78,7 +79,8 @@ class Environment extends DataContainer {
     $this->dir['modules_core'] = $this->dir['src'] . '/modules';
     $this->dir['modules_custom'] = $this->dir['docroot'] . '/_modules';
     $this->dir['users'] = $this->dir['docroot'] . '/_users';
-
+    $this->dir['tpl'] = $this->dir['docroot'] . '/_tpl';
+	
     // TODO: move to files module.
     $this->dir['tmp_files'] = $this->dir['tmp'] . '/files';
     $this->dir['log'] = $this->dir['tmp'] . '/log';
@@ -527,7 +529,7 @@ class Environment extends DataContainer {
    */
   private function findNodePath($folder) {
     // TODO: cleaner way to exclude folders in _modules.
-    $findcmd = 'find ' . $this->dir['docroot'] . '/ -type d -name "' . $folder . '" -not -path */_modules*';
+    $findcmd = 'find ' . $this->dir['docroot'] . '/ -type d -name "' . $folder . '" -not -path */_modules* -not -path *.git*';
     // TODO: sometimes getting empty folder. Why? Temporary fix.
     if (empty($folder)) {
       return NULL;
