@@ -38,12 +38,13 @@ class HtmlTag extends Qtag {
     // Open the HTML tag.
     $html = '<' . $this->html_tag . ' ';
     // Add the attributes.
-    foreach ($this->attributes as $attribute_name => $attribute_value) {
-    	if (substr($attribute_name, 0, 5) == 'attr-') {
-		$this->html_params[substr($attribute_name, 5)] = $attribute_value;
-	}
+    if (is_array($this->attributes)) {
+    	foreach ($this->attributes as $attribute_name => $attribute_value) {
+	    	if (substr($attribute_name, 0, 5) == 'attr-') {
+			$this->html_params[substr($attribute_name, 5)] = $attribute_value;
+		}
+    	}
     }
-
     foreach ($this->html_params as $param_name => $param_value) {
       if (!empty($param_name)) {
         $html .= $param_name . '="' . $param_value . '"';
