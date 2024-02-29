@@ -26,7 +26,8 @@ function localization_load_includes(Environment $env, array $vars) {
  *   An array of variables.
  */
 function localization_boot(Environment $env, array $vars) {
-  $env->sysdir('languages', Localization::$system_path);
+  $env->sysdir('languages', Localization::$dir_languages);
+  $env->sysdir('translations', Localization::$dir_translations);
 
   if (Localization::hasEnabledLanguage($env, $env->request[1])) {
     Localization::switchLanguage($env, $env->request[1]);

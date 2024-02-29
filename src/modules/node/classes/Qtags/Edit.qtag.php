@@ -6,6 +6,9 @@ namespace Quanta\Qtags;
  */
 class Edit extends Link {
   public $link_class = array('edit-link');
+  public $language;
+  public $widget;
+  public $components;
 
   protected $html_body = '&#9998;';
   /**
