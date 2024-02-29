@@ -11,7 +11,9 @@ class Localization {
   const LANGUAGE_NEGOTIATION_SESSION = "session";
   const LANGUAGE_NEGOTIATION_PREFIX = "path";
   const DIR_LANGUAGES = "_languages";
-  public static $system_path = self::DIR_LANGUAGES;
+  const DIR_TRANSLATIONS = "_translations";
+  public static $dir_languages = self::DIR_LANGUAGES;
+  public static $dir_translations = self::DIR_TRANSLATIONS;
 
   /**
    * Environment's language is always current one.
@@ -163,5 +165,27 @@ class Localization {
       $string = str_replace($k, $replacement, $string);
     }
     return $string;
+  }
+
+  public static function translatableText(Environment $env, $text, $tag = NULL, $lang = NULL) {
+    if ($lang == NULL) {
+    	$lang = $_SESSION['language'];
+    }
+    if ($tag != NULL) {
+      $node = NodeFactory::load($env, $tag);
+      if (!($node->exists)) {
+	$attributes = array('title' => $text);
+	$node = NodeFactory::buildNode($env, $tag, Localization::DIR_TRANSLATIONS, $attributes);
+      }
+      elseif ($node->hasTranslation($lang) && ($node->title != NULL)){
+	return $node->title;
+	}	
+
+      else {
+      
+	return $text;
+      }
+    }
+    return $text; 
   }
 }

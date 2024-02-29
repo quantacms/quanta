@@ -52,7 +52,7 @@ class Node extends JSONDataContainer {
 
     $this->env = $env;
     $this->json = new \stdClass();
-
+ 
     // Load node's language.
     $this->setLanguage(!empty($language) ? $language : Localization::getLanguage($this->env));
 
@@ -67,8 +67,9 @@ class Node extends JSONDataContainer {
 	    $this->setName($name);
 	    //strtolower($name));
       // TODO: language!
-      // Load node from cache (RAM) if it has been already loaded.
-      $cached = Cache::get($this->env, 'node', $this->name);
+	    // Load node from cache (RAM) if it has been already loaded.
+
+      $cached = Cache::get($this->env, 'node', $this->cacheTag());
       if ($cached) {
         foreach (get_object_vars($cached) as $key => $value) {
           $this->{$key} = $value;
@@ -168,6 +169,10 @@ class Node extends JSONDataContainer {
     return ($this->getStatus() == self::NODE_STATUS_PUBLISHED);
   }
 
+  public function cacheTag() {
+
+   return $this->name . '_' . $this->getLanguage(); 
+  }
   /**
    * Update node's json values.
    *
@@ -264,7 +269,7 @@ class Node extends JSONDataContainer {
     $vars = array('node' => &$this);
 
     $this->env->hook('node_build', $vars);
-    Cache::set($this->env, 'node', $this->name, $this);
+    Cache::set($this->env, 'node', $this->cacheTag(), $this);
   }
 
   /**

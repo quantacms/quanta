@@ -26,6 +26,8 @@ class NodeFactory {
    */
   public static function load(Environment $env, $node_name, $language = NULL, $force_reload = TRUE, $classname = 'Node') {
     static $loaded_nodes;
+
+     
     // Allow static caching of nodes. The factory doesn't load the same node two times.
     if (!$force_reload && !empty($loaded_nodes[$node_name])) {
       return $loaded_nodes[$node_name];
