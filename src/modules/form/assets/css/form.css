@@ -57,8 +57,10 @@ div.has-validation-errors {
   color: #333;
 }
 
+.form-item-multiple-wrapper {
+display: flex;
+}
 .form-item-select.form-item-multiple {
-width: 70% !important;
 text-align: left;
 }
 
@@ -66,7 +68,22 @@ text-align: left;
     padding: 6px;
     text-align: center;
     display: inline-block;
-    width: 15%;
+    width: 30px;
+border-radius: 20px;
+border: 1px solid #aaa;
+margin-left: 5px;
+font-size: 16px;
+padding: 0;
+margin-bottom: 10px;
+}
+
+.form-item-add:hover, .form-item-remove:hover {
+opacity: 0.6;
+cursor: pointer;
+}
+
+.form-item-multiple {
+margin-bottom: 10px;
 }
 
 .form-item.required label:after {
@@ -81,4 +98,8 @@ text-align: left;
   font-size: 16px;
   color: #333;
   font-weight: 500;
+}
+
+.ck-voice-label {
+display: none;
 }
