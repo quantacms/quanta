@@ -456,7 +456,7 @@ class Environment extends DataContainer {
   }
 
   /**
-   * Check if there are any queued actions in the requeqst.
+   * Check if there are any queued actions in the request.
    */
   public function checkActions() {
     if (isset($this->request_json->action)) {

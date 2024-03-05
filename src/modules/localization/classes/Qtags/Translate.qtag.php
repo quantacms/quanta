@@ -6,6 +6,7 @@ use Quanta\Common\NodeFactory;
  * Renders a translate link for a Node.
  */
 class Translate extends Edit {
+  public $link_body;
   /**
    * Render the Qtag.
    *
