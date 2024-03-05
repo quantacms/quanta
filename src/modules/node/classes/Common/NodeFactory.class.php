@@ -38,6 +38,10 @@ class NodeFactory {
     }
 
     $node = new Node($env, $node_name, NULL, $language);
+    if (!($node->hasTranslation($language))) {
+      $fallback = Localization::getFallbackLanguage($env);
+      $node = new Node($env, $node_name, NULL, 'it');
+    }
     $vars = array('node' => &$node);
     $env->hook('node_open', $vars);
     $loaded_nodes[$node_name] = $node;
