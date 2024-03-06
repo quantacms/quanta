@@ -23,7 +23,10 @@ class Localization {
    * @return mixed
    */
   public static function getLanguage(Environment $env) {
-    if (!empty($_SESSION['language'])) {
+    if (!empty($env->getData('language'))) { 
+      $lang = $env->getData('language'); 
+    }
+    elseif (!empty($_SESSION['language'])) {
       $lang = $_SESSION['language'];
     }
     else {
@@ -135,9 +138,18 @@ class Localization {
    *   A language code to switch into.
    */
   public static function switchLanguage(Environment $env, $lang) {
+    if (isset($_GET['update_language'])) {
+   	$lang = $_GET['update_language']; 
+    }
     $language = NodeFactory::load($env, $lang);
     if ($language->exists) {
-      $_SESSION['language'] = $lang;
+
+      if (isset($_GET['update_language'])) {
+      	$_SESSION['language'] = $lang;
+      } 
+
+      $env->setData('language', $lang);
+      
       if (isset($_GET['notify'])){
         new Message($env, 'Language switched to ' . $language->getTitle());
       }
@@ -182,7 +194,6 @@ class Localization {
 	}	
 
       else {
-      
 	return $text;
       }
     }
