@@ -74,11 +74,13 @@ function openShadow(shadowData) {
     shadow.widget = 'tabs';
   }
 
-  var shadowPath = '/' + ((shadow.node != undefined) ? (shadow.node + '/') : '');
+  // Define what to edit with shadow (URL).
+  var shadowPath = '/' + ((shadow.node != undefined) ? (shadow.node) : '');
   shadowPath += '?shadow=' + JSON.stringify(shadow);
 
+  // Add Language prefix for multilingual opening.
   if (shadow.language != undefined) {
-    shadowPath += '&lang=' + shadow.language;
+    shadowPath = '/' + shadow.language + shadowPath;
   }
 
   $('#shadow-outside').html('').attr('data-rel', shadow.context).load(shadowPath, function () {
