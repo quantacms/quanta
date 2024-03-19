@@ -76,17 +76,32 @@ function openShadow(shadowData) {
 
   // Define what to edit with shadow (URL).
   var shadowPath = '/' + ((shadow.node != undefined) ? (shadow.node) : '');
-  shadowPath += '?shadow=' + JSON.stringify(shadow);
+  shadowPath += '/?shadow=' + JSON.stringify(shadow);
 
   // Add Language prefix for multilingual opening.
   if (shadow.language != undefined) {
     shadowPath = '/' + shadow.language + shadowPath;
   }
 
+	// Retrieve the current URL
+var currentUrl = window.location.href;
+
+// Retrieve the protocol (http: or https:)
+var protocol = window.location.protocol;
+
+// Retrieve the host (domain.com, including port if present)
+var host = window.location.host;
+
+// Construct the base URL (protocol + "//" + host)
+var baseUrl = protocol + "//" + host;
+	shadowPath = baseUrl + shadowPath;
+	console.log(shadowPath);
   $('#shadow-outside').html('').attr('data-rel', shadow.context).load(shadowPath, function () {
     if (shadow.callback != undefined) {
       shadow.callback();
     }
+
+	
 
     $(document).trigger('refresh');
     // Include attached scripts if present.
