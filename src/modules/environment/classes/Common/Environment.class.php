@@ -487,8 +487,7 @@ class Environment extends DataContainer {
         break;
       }
       else {
-        $i++;
-        $candidate_path = $candidate_path . '-' . $i;
+        $candidate_path = $candidate_path . '-' . time() . '-' . rand(1000,9999);
       }
     }
     return $candidate_path;
