@@ -373,6 +373,9 @@ class NodeFactory {
    * @return string
    */
   public static function requestAction(Environment $env, $action, array $form_data) {
+    // TODO language management needs many further check that language actually exists
+    // As well as security checks.
+    $language = isset($form_data['language']) ? (array_pop($form_data['language'])) : $env->getData('language');
     // TODO: this is needed with new approach.
     foreach ($form_data as $k => $v) {
       if (is_array($form_data[$k]) && (count($form_data[$k]) == 1)) {
@@ -401,7 +404,7 @@ class NodeFactory {
 
     // Check the father of the node.
     $father = ($action == \Quanta\Common\Node::NODE_ACTION_ADD) ? $form_data['edit-father'] : NULL;
-    $node = new Node($env, $node_name, $father);
+    $node = new Node($env, $node_name, $father, $language);
 
     // Setup the after-save redirect.
     if (isset($form_data['redirect'])) {
