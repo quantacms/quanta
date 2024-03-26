@@ -26,16 +26,24 @@ function localization_load_includes(Environment $env, array $vars) {
  *   An array of variables.
  */
 function localization_boot(Environment $env, array $vars) {
+  // This language negotiation happens first time a visitor 
+  // sees the site. It uses browser's language to select a 
+  // "desired" language.
+
+  if (!isset($_SESSION['language'])) {
+  	$acceptLang = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
+  	$prefLangs = explode(',', $acceptLang);
+  	$strings = explode('-', $prefLangs[0]);
+	$lang = $strings[0];
+  } else {
+      $lang = $env->request[1];
+  }
+
   $env->sysdir('languages', Localization::$dir_languages);
   $env->sysdir('translations', Localization::$dir_translations);
 
-  if (Localization::hasEnabledLanguage($env, $env->request[1])) {
-    Localization::switchLanguage($env, $env->request[1]);
-  }
-  // Old approach.
-  // TODO: deprecate.
-  elseif (isset($_GET['lang'])) {
-    Localization::switchLanguage($env, $_GET['lang']);
+  if (Localization::hasEnabledLanguage($env, $lang)) {
+    Localization::switchLanguage($env, $lang);
   }
 }
 

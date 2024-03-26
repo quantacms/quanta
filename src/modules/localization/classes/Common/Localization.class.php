@@ -23,7 +23,10 @@ class Localization {
    * @return mixed
    */
   public static function getLanguage(Environment $env) {
-    if (!empty($_SESSION['language'])) {
+    if (!empty($env->getData('language'))) { 
+      $lang = $env->getData('language'); 
+    }
+    elseif (!empty($_SESSION['language'])) {
       $lang = $_SESSION['language'];
     }
     else {
@@ -134,15 +137,33 @@ class Localization {
    * @param string $lang
    *   A language code to switch into.
    */
-  public static function switchLanguage(Environment $env, $lang) {
+  public static function switchLanguage(Environment $env, $lang, $update_language = FALSE) {
+    
+    // This is triggered when there is an active "language switch" request
+    // such as when a language switcher link is clicked.
+    if (isset($_GET['update_language'])) {
+      $update_language = $_GET['update_language'];
+    }
+    if ($update_language && !empty($update_language)) {
+      $lang = $_GET['update_language']; 
+    }
     $language = NodeFactory::load($env, $lang);
     if ($language->exists) {
-      $_SESSION['language'] = $lang;
+      // Change the session's language if there is an explicit request to do so.
+      if (isset($_GET['update_language'])) {
+      	$_SESSION['language'] = $lang;
+      } 
+	
+      // Setup the language.
+      $env->setData('language', $lang);
+
+      // TODO: deprecate or enhance.
       if (isset($_GET['notify'])){
         new Message($env, 'Language switched to ' . $language->getTitle());
       }
     }
     else {
+      // TODO: error should be more severe. We should never end in this state.
       new Message($env, 'Error - this language is not enabled: ' . $lang);
     }
   }
@@ -182,7 +203,6 @@ class Localization {
 	}	
 
       else {
-      
 	return $text;
       }
     }
