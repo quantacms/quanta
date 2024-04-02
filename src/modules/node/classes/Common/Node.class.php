@@ -18,6 +18,8 @@ class Node extends JSONDataContainer {
   const NODE_STATUS_PUBLISHED = 'node-status-published';
   const NODE_STATUS_UNPUBLISHED = 'node-status-unpublished';
   const NODE_PERMISSION_INHERIT = 'inherit';
+  const NODE_PERMISSION_SELF = 'self';
+
   const NODE_NEW = '__NEW__';
   
   public $title;
