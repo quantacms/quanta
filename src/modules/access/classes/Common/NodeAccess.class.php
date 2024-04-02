@@ -23,7 +23,6 @@ class NodeAccess extends Access {
   public static function check(Environment $env, $action, array $vars = array()) {
     static $access_checked;
 
-    if (isset($_GET['test'])) {print_r($access_checked);print '<br><br>';}
     // Static cache of access controls.
     if (empty($access_checked)) {
       $access_checked = array();
@@ -82,7 +81,24 @@ class NodeAccess extends Access {
             foreach ($perm_array as $perm_role => $counter) {
               if ($this->actor->hasRole($perm_role)) {
                 $can_access = TRUE;
-              }
+	      }
+	      // "Self" means the user has the permission if he's the same
+	      // as the node (nodes can be users) or if any node in his lineage 
+	      // is the same as the node.
+	      elseif ($perm_role == 'author')  {
+		$can_access = (
+		  $this->actor->getName() == $this->node->getAuthor()
+		);
+	      }
+	      // "Self" means the user has the permission if he's the same
+	      // as the node (nodes can be users) or if any node in his lineage 
+	      // is the same as the node.
+	      elseif ($perm_role == 'self')  {
+		$can_access = (
+		  ($this->actor->getName() == $this->node->getName()) || 
+		  ($this->node->hasParent($this->actor->getName()))
+		);
+	      }
             }
           }
         } 
