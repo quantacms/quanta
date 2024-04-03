@@ -452,6 +452,9 @@ class NodeFactory {
           if (isset($form_data['tmp_files_dir'])) {
             $node->setData('tmp_files_dir', $form_data['tmp_files_dir']);
           }
+          if (isset($form_data['files_count'])) {
+            $node->setData('files_count', $form_data['files_count']);
+          }
           // TODO complete validation code.
           if (!empty($form_data['edit-thumbnail'])) {
             $node->setThumbnail(Api::normalizeFilePath($form_data['edit-thumbnail']));
