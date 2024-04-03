@@ -13,7 +13,8 @@ class FormItemFile extends FormItemString {
    * @return mixed
    */
   function render() {
-    $isMultiple = $this->getAttribute('multiple') == "false" ? "" : "multiple";
+    $isMultiple = $this->getAttribute('single') ? "" : "multiple";
+    $this->html_params['single'] = $this->getAttribute('single');
     switch($this->getAttribute('plugin')) {
       case 'drop':
       default:
