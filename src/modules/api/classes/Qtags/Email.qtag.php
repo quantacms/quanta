@@ -5,6 +5,7 @@ namespace Quanta\Qtags;
  */
 class Email extends Link {
   public $external = TRUE;
+  public $link_body;
   /**
    * Render the Qtag.
    *
