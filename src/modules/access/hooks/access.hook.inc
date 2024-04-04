@@ -199,7 +199,7 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
 
       default:
         if (!empty($filter_type) && !empty($node->getAttributeJSON($filter_type))) {
-          $filter_check[] = $node->getAttributeJSON($filter_type);
+		$filter_check[] = $node->getAttributeJSON($filter_type);
         }
         break;
     }
@@ -215,8 +215,13 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
             $filter_value = str_replace('!', '', $filter_value);
           }
 
-          $filter_match = ($check == $filter_value);
-
+	  // If comparing with an array of values, check if the value is in the array.
+	  if (is_array($check)) {
+		  $filter_match = in_array($filter_value, $check);
+	  }
+	  else {
+		  $filter_match = ($check == $filter_value);
+	  }
           if ($filter_match && !isset($negate)) {
             unset($one_match);
             $break = TRUE;
