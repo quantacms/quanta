@@ -88,6 +88,10 @@ class Attribute extends Qtag {
         $string = $node->getWeight();
         break;
 
+        case 'files_count':
+          $string = (string) count($node->getAttributeJSON("files")) ?? "0";
+          break;
+
       default:
         $string = '';
         new Message($this->env, t('Error: trying to fetch the invalid attribute %attribute', array('%attribute' => $this->attributes['name']), \Quanta\Common\Message::MESSAGE_WARNING));
