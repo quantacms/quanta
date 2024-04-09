@@ -205,7 +205,6 @@ class Node extends JSONDataContainer {
    *   The JSON attribute.
    */
   public function getAttributeJSON($attr_name, $normalize = TRUE) {
-
     if (!isset($this->json->{$attr_name})) {
       return NULL;
     }
@@ -250,6 +249,11 @@ class Node extends JSONDataContainer {
     else {
       $this->setData('tmp_files_dir', $this->getName() . '-' . $this->getData('timestamp'));
     }
+
+    if (!empty($_REQUEST['json']) && ($json = json_decode($_REQUEST['json'])) && isset($json->files_count)) {
+      $this->setData('files_count', $json->files_count);
+    }
+   
 
     //TODO: find a better way to check node existence.
     if (!isset($this->json->timestamp) && $this->exists) {
