@@ -38,8 +38,7 @@ function environment_boot(Environment $env, $vars){
   $envFilePath= $_SERVER['DOCUMENT_ROOT']. '/sites/'.$host.'/.env';
   // Check if the .env file exists
     if (file_exists($envFilePath)) {
-        // Load the .env file into an array
-        //$env_vars = parse_ini_file($envFilePath);
+        // get env file contents
         $fileContent = file_get_contents($envFilePath);
         // Split the content into lines
         $lines = explode("\n", $fileContent);
