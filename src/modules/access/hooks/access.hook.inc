@@ -136,6 +136,7 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
     $filter_match = FALSE;
     $break = FALSE;
     $one_match = FALSE;
+    
     switch ($filter_type) {
       // Filter by HTTP referer.
       case 'referer':
@@ -211,7 +212,6 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
       // Check if the filtered item corresponds to the user input.
       foreach ($filter_check as $check) {
         foreach ($filter_values as $filter_value) {
-
           if (substr($filter_value, 0, 1) == '!') {
             $negate = TRUE;
             $filter_value = str_replace('!', '', $filter_value);
