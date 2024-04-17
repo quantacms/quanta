@@ -478,7 +478,7 @@ class Node extends JSONDataContainer {
    */
   public function delete() {
      // Define the destination folder path
-     $destinationFolder = $this->env->dir['tmp'] . '/trashbin/' . time();
+     $destinationFolder = $this->env->dir['trashbin'] . '/' . time();
 
  
     // Create the destination folder if it doesn't exist
