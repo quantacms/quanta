@@ -225,7 +225,6 @@ class User extends Node {
       else {
           $this->env->hook('user_wrong_login', $vars);
 
-          return FALSE;
         // Show an error message for wrong password.
         new Message($this->env,
           t('Wrong username or password. Please try again'),
