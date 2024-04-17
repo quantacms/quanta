@@ -486,16 +486,16 @@ class Node extends JSONDataContainer {
           // Create the destination folder if it doesn't exist with full permissions (0777)
         if (!mkdir($destinationFolder, 0777, true)) {
           // If directory creation fails, show an error and exit
-          $errorMessage = "Failed to create destination folder.";
+          $errorMessage = t("Failed to create destination folder.");
         }
       }
 
     // Check if the source file exists before moving
     elseif(!file_exists($this->path)) {
       // If the source file doesn't exist, show an error and exit
-      $errorMessage = "Source file does not exist.";
+      $errorMessage = t("Source file does not exist.");
     }
-    else{
+
     // Move the node to the trashbin folder
     $sourceFile = $this->path;
     $destinationFile = $destinationFolder . '/' . basename($this->path);
@@ -517,13 +517,17 @@ class Node extends JSONDataContainer {
       }
       else{
         // Handle the case where the move operation failed
-        $errorMessage = "Failed to move the file.";
+        $errorMessage = t("Failed to move the file.");
       }
-    }
+   
     if (isset($errorMessage)) {
       // Handle error message
       // TODO: Show the error message
-      return;
+      new Message($this->env,
+      $errorMessage,
+      \Quanta\Common\Message::MESSAGE_WARNING,
+      \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
+    );
   }
  
     
