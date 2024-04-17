@@ -137,7 +137,6 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
     $break = FALSE;
     $one_match = FALSE;
    
-
     switch ($filter_type) {
       // Filter by HTTP referer.
       case 'referer':
@@ -210,11 +209,9 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
     }
 
     if (!empty($filter_check)) {
-      
       // Check if the filtered item corresponds to the user input.
       foreach ($filter_check as $check) {
        
-
         foreach ($filter_values as $filter_value) {
 
           if (substr($filter_value, 0, 1) == '!') {
