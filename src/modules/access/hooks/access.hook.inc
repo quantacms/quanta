@@ -108,6 +108,7 @@ function access_qtag_preload(Environment $env, array $vars) {
  *   Returns true if the access check was positive.
  */
 function _access_filter($env, $criteria, $node, $user = NULL) {
+
   // Explode the criteria values.
   $filter = explode(',', $criteria);
 
@@ -135,7 +136,6 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
     $filter_match = FALSE;
     $break = FALSE;
     $one_match = FALSE;
-   
    
 
     switch ($filter_type) {
@@ -226,7 +226,7 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
 	  if (is_array($check)) {
 		  $filter_match = in_array($filter_value, $check);
 	  }
-    elseif($filter_value == "__empty__"){
+    elseif($filter_value == \Quanta\Common\Access::EMPTY_FILTER){
       $filter_match = !$check; 
     }
 	  else {
