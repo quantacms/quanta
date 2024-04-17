@@ -108,7 +108,6 @@ function access_qtag_preload(Environment $env, array $vars) {
  *   Returns true if the access check was positive.
  */
 function _access_filter($env, $criteria, $node, $user = NULL) {
-
   // Explode the criteria values.
   $filter = explode(',', $criteria);
 
@@ -136,6 +135,8 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
     $filter_match = FALSE;
     $break = FALSE;
     $one_match = FALSE;
+   
+   
 
     switch ($filter_type) {
       // Filter by HTTP referer.
@@ -197,6 +198,10 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
         }
         break;
 
+      case 'thumbnail':
+        $filter_check = array($node->getThumbnail());
+        break;
+
       default:
         if (!empty($filter_type) && !empty($node->getAttributeJSON($filter_type))) {
 		$filter_check[] = $node->getAttributeJSON($filter_type);
@@ -205,8 +210,10 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
     }
 
     if (!empty($filter_check)) {
+      
       // Check if the filtered item corresponds to the user input.
       foreach ($filter_check as $check) {
+       
 
         foreach ($filter_values as $filter_value) {
 
@@ -219,6 +226,9 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
 	  if (is_array($check)) {
 		  $filter_match = in_array($filter_value, $check);
 	  }
+    elseif($filter_value == "__empty__"){
+      $filter_match = !$check; 
+    }
 	  else {
 		  $filter_match = ($check == $filter_value);
 	  }
