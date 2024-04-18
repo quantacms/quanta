@@ -75,6 +75,7 @@ class Environment extends DataContainer {
     $this->dir['static'] = $this->dir['quanta'] . '/static';
     $this->dir['tmp_global'] = $this->dir['static'] . '/tmp';
     $this->dir['tmp'] = $this->dir['tmp_global'] . '/' . $this->host;
+    $this->dir['trashbin'] = $this->dir['tmp'] . '/trashbin';
     $this->dir['vendor'] = $this->dir['quanta'] . '/vendor';
     $this->dir['modules_core'] = $this->dir['src'] . '/modules';
     $this->dir['modules_custom'] = $this->dir['docroot'] . '/_modules';
