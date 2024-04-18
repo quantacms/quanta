@@ -1,8 +1,8 @@
 ![alt text](https://www.quanta.org/assets/img/q_cms.png)
 # Quanta Cms #
-An innovative, DB-free Content Management System for web and application development, based on the principles of Quantum physics.
+An innovative, DB-free Framework for web and application development, based on the principles of Quantum physics.
 
-Originally designed by Aldo Tripiciano in 2015, Quanta is now proudly free and open source.
+Originally designed by Aldo Tripiciano in 2014, Quanta is now proudly free and open source.
 
 Detailed info is available at the official website: https://www.quanta.org
 
@@ -18,31 +18,30 @@ Quanta is a CMS thought for developers, offering a number of features out of the
 
 - Pre-defined installation profiles (including modules, themes and general entities)
 - A customizable UI backend ("Shadow"), also used for overlay forms
-- qTags, a special agnostic markup allowing the creation of nestable Tags that are incapsulated into templates, allowing the creation of complex applications with huge reduction of coding times
+- Qtags, an agnostic markup language allowing the creation of nestable Tags that are incapsulated into templates, allowing the creation of complex applications with huge reduction of coding times
 - Inline editing of content
-- A batch tool ("Doctor") for install, update, diagnostic and repair
+- A batch tool (Doctor) for installing, updating, diagnostic and repairing the system.
 - User management tools
 - Inline Form management
 - Workflow management (Draft->Published statuses, etc.)
 - Taxonomy management
 - Multilingualism / Internationalization 
-- Widget / Web service tools
-- NO-database approach, completely eliminating DB-related attacks such as SQL injections
-- Big applications are easy to distribute on multiple machines, Virtualized or Cloud-based servers, thanks to the file-system based data model
-- Pre-defined integrated functionalities (Blog, Carousels and Slideshows, Media Playlists, Maps, XML Sitemaps, Widgets, and much more)
+- Widget / Web service tools based on Qtags
+- Many Pre-defined integrated Qtags (Blog, Carousels and Slideshows, Galleries, Media Playlists, Maps, XML Sitemaps, Widgets, and much more)
 
 Quanta's Architecture
 ----------------------------------
-Quanta's Architecture is built on a modular, Object Oriented PHP approach, using standard design patterns, yet not adhering to the traditional MVC model. 
+Quanta's Architecture is built on a modular, Object Oriented PHP approach, not adhering to the traditional MVC model. 
 
 Quanta uses the follow design patterns:
 
 ### Factory
 All Quanta entities such Nodes, Pages, Templates, Qtags, etc. are constructed and manipulated via static methods implemented in Factory classes. 
+The classes are dynamically loaded at run-time using an __autoload__ routine.
 
 ### Front Controller
-All requests (excluding static files, that are served directly) are served via the centralized __boot.php__ file. 
-The boot file processes the request, triggering in the process. 
+All requests (excluding static files, that are served directly) are elaborated and served via the centralized __boot.php__ file. 
+The boot file processes the request, bootstraps Quanta and renders. 
 
 ### Template Method
 Through the use of "hooks" function, custom modules can intercept every phase of the content loading phase, manipulate the data and change the behavior of standard processes. 
@@ -53,7 +52,7 @@ Quanta's internal architecture is based on:
 * Internal caching and indexation of directories through an internal vocabulary
 * JSON storage of data and metadata
 * Template engine allowing creation and override individual template for individual or multiple entities
-* CSS Grid approach natively supported by qTags
+* CSS Grid approach natively supported by Qtags
 * Node-level access control (roles, permissions, etc.)
 * Views system
 
@@ -78,7 +77,7 @@ Installation
 -----------------
 Quick kickstart guide:
 
-1. Clone the latest release of the Quanta repo
+1. Clone the latest release of the Quanta repository
 
 2. Create a host pointing to your quanta folder (i.e. myproject.com => /var/www/quanta)
 

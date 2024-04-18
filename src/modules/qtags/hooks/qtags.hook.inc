@@ -26,6 +26,11 @@ function qtags_page_complete(Environment $env, array $vars) {
  *   An array of variables.
  */
 function qtags_boot(Environment $env, array $vars) {
+  if ($env->request[1] == 'q') {
+    $env->setContext('qtag');
+		print QtagFactory::transformCodeTags($env, '[' . $env->request[2] . '|' . urldecode($env->request[3]) . ']');
+    exit;
+  }
   if ($env->request[1] == 'qtag') {
     $env->setContext('qtag');
 		print QtagFactory::transformCodeTags($env, urldecode($env->request[2]));

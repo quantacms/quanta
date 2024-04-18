@@ -1,0 +1,90 @@
+/* RESPONSIVE */
+
+/* MOBILE FIRST */
+
+.multipleitems.flickity-carousel {
+  position: relative;
+  color: #fff;
+}
+
+.multipleitems .node-item {
+  /* display 1 item */
+  width: 100%;
+}
+
+.multipleitems .slide {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.multipleitems .slide-text {
+  opacity: 0.5;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  background: white;
+  text-align: center;
+  display: none;
+}
+
+.multipleitems .slide-title {
+  position: absolute;
+  bottom: 25px;
+  left: 0;
+  background: rgba(255,255,255,0.8);
+  text-align: center;
+  width: 100%;
+  padding: 15px;
+  font-size: 18px;
+  line-height: 22px;
+}
+
+.multipleitems .slide-img img {
+  position: absolute;
+  z-index: -1;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  object-position: center;
+  object-fit: cover;
+}
+
+.multipleitems .flickity-page-dots {
+  bottom: 20px;
+}
+
+
+.multipleitems .flickity-link {
+	text-decoration: none;
+}
+
+
+
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) {
+
+  .multipleitems .node-item {
+    /* display 2 items */
+    width: 50%;
+    padding: 0 10px;
+  }
+
+  .multipleitems .slide-title {
+    font-size: 30px;
+    line-height: 40px;
+  }
+
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+
+  .multipleitems .node-item {
+    /* display 3 items */
+    width: calc(100% / 3);
+  }
+
+}
+

@@ -4,7 +4,8 @@ namespace Quanta\Qtags;
  * Renders a "back" button link.
  */
 
-class Back extends Qtag {
+class Back extends Link {
+  public $html_params = array("onclick" => "history.back()");
   /**
    * Render the Qtag.
    *
@@ -12,7 +13,8 @@ class Back extends Qtag {
    *   The rendered Qtag.
    */
   public function render() {
-    $title = isset($this->attributes['title']) ? $this->attributes['title'] : t('Back');
-    return '<a href="#" onclick="history.back()">' . $title . '</a>';
+    $this->html_body = t('Back');
+
+    return parent::render();
   }
 }

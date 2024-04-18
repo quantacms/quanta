@@ -5,15 +5,20 @@
 
 ul.file_admin  .progress-wrapper {
     position: absolute;
-    right: -60px;
+    left: 0px;
+    bottom: 0px;
+    width: 100%;
+}
+
+ul.file_admin  .progress-wrapper input {
+    opacity: 0.5;
 }
 ul.file_admin .progressBar {
     border: 0;
     display: block;
-    width: 45px;
+    width: 60px;
     text-align: center;
-    margin-left: 15px;
-    margin-top: -20px;
+    font-size: 1em;
 
 }
 
@@ -143,8 +148,7 @@ li.list-item {
     vertical-align:middle;
 }
 .sort-handle::after{
-    content:"\f047"; /* fa-arrows */
-    font-family: "FontAwesome";
+    content:"↕";
     font-size:20px;
     line-height:20px;
     color:#333;
@@ -168,6 +172,7 @@ a.file-link {
 ul.file_admin {
     margin: 0;
     padding: 0;
+    position: relative;
 }
 
 ul.file_admin  li {
@@ -175,36 +180,42 @@ ul.file_admin  li {
     margin-left: 0;
 }
 
-.file-document {
-    background-image: url('../img/icons/doc.png');
+.file-link {
+    background-repeat: no-repeat;
 }
-
+.file-list-item, .file_table {
+    display: block;
+    padding: 0;
+}
+.file-document {
+    background-image: url('/modules/file/assets/img/icons/doc.png');
+}
 .file-pdf {
-    background-image: url('../img/icons/pdf.png');
+    background-image: url('/modules/file/assets/img/icons/pdf.png');
 }
 
 .file-xml {
-    background-image: url('../img/icons/xml.png');
+    background-image: url('/modules/file/assets/img/icons/xml.png');
 }
 
 .file-image {
-    background-image: url('../img/icons/img.png');
+    background-image: url('/modules/file/assets/img/icons/img.png');
 }
 
 .file-audio {
-    background-image: url('../img/icons/audio.png');
+    background-image: url('/modules/file/assets/img/icons/audio.png');
 }
 
 .file-archive {
-    background-image: url('../img/icons/zip.png');
+    background-image: url('/modules/file/assets/img/icons/zip.png');
 }
 
 .file-video {
-    background-image: url('../img/icons/video.png');
+    background-image: url('/modules/file/assets/img/icons/video.png');
 }
 
 .file-sheet {
-    background-image: url('../img/icons/xls.png')
+    background-image: url('/modules/file/assets/img/icons/xls.png')
 }
 
 .selected-thumbnail {

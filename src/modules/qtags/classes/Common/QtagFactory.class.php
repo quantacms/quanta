@@ -29,6 +29,7 @@ class QtagFactory {
    *
    */
   public static function checkCodeTags(Environment &$env, $html, array $options = array(), $regex_options = 's') {
+    $check_tags = array();	  
     $replacing = array();
     // Find all qtags using regular expressions (both { and [ bracket types are valid for now).
     $regexs = array();
@@ -54,11 +55,11 @@ class QtagFactory {
             continue;
           }
           // Show the Qtag - don't render it.
-          elseif (!empty($qtag->attributes['showtag'])) {
+          elseif (isset($qtag->attributes['showtag'])) {
             $replacing[$tag_full] = Api::string_normalize(str_replace('|showtag', '', $tag_full));
           }
           // Show the Qtag - don't render it, and highlight it for readability.
-          elseif (!empty($qtag->attributes['highlight'])) {
+          elseif (isset($qtag->attributes['highlight'])) {
             $replacing[$tag_full] = $qtag->highlight();
           }
           // Replace the Qtag with its rendered HTML.
@@ -69,7 +70,9 @@ class QtagFactory {
 
       }
     }
-    return $replacing;
+    $check_tags['replaces'] = $replacing;
+    return $check_tags;
+
   }
 
   /**
@@ -95,19 +98,23 @@ class QtagFactory {
     while (TRUE) {
       $transformed++;
       // Parse all the Qtags in the given html.
-      $replaces = (QtagFactory::checkCodeTags($env, $html, $options));
+      $check_tags = (QtagFactory::checkCodeTags($env, $html, $options));
 
-      if (empty($replaces)) {
+      if (empty($check_tags['replaces'])) {
         break;
       }
 
       // Do all the Qtag replacements in the given html.
-      foreach ($replaces as $qtag => $replace) {
+      foreach ($check_tags['replaces'] as $qtag => $replace) {
         if (is_array($replace)) {
           $replace = implode(\Quanta\Common\Environment::GLOBAL_SEPARATOR, $replace);
         }
-        $html = str_replace($qtag, $replace, $html);
-      }
+        if ($replace == NULL) {
+            $replace = '';
+          }
+          $html = str_replace($qtag, $replace, $html);
+        
+      } 
 
     }
     return $html;
@@ -146,15 +153,22 @@ class QtagFactory {
     $tag_delimited = substr($tag_full, 1, strlen($tag_full) - 2);
     $tag = explode(':', $tag_delimited);
     $tag_name_p = $tag[0];
-    // If there is more than one : we have to just consider the LAST chunk
-    // and unify the rest.
-    $target = (count($tag) > 1) ? $tag[count($tag) - 1] : NULL;
-    for ($i = 0; $i < (count($tag) - 1); $i++) {
-      $tag_name_p .= ':' . $tag[$i];
+    if ($tag_name_p == '$') {
+      $tag_name_p = 'VARIABLE';
     }
+    // If there is more than one : we have to just consider the FIRST chunk
+    // and unify the rest.
+    if (count($tag) > 1) {
+      unset($tag[0]);
+      $target = implode(':', $tag);
+    }
+    else {
+      $target = NULL;
+    }
+
     // Load the attributes of the qtag.
     $attributes = explode($delimiters[2], $tag_name_p);
-    $tag_name = (count($attributes) > 1) ? $attributes[0] : $tag[0];
+    $tag_name = $attributes[0];
     $qtag_attributes = array();
     unset($attributes[0]);
 
@@ -176,6 +190,7 @@ class QtagFactory {
         $qtag_attributes[$attribute_name] = TRUE;
       }
     }
+
     // Parse the qTag.
     $qtag = QtagFactory::buildQTag($env, $tag_name, $qtag_attributes, $target, $delimiters);
     return $qtag;
@@ -211,4 +226,25 @@ class QtagFactory {
     return $qtag;
   }
 
+  /**
+   * Convert a standard (class) name of a Qtag to its capitalized counterpart.
+   * I.e. BodyClasses => BODY_CLASSES.
+   *
+   * @param $qtag
+   *   The standard (Class) name of the Qtag.
+   *
+   * @return string
+   *   The "capitalized" version of the Qtag.
+   */
+  public static function capitalizeQtag($qtag) {
+    $capitalized = '';
+    for ($i = 0; $i < strlen($qtag); $i++) {
+      $letter = substr($qtag, $i, 1);
+      if ($i != 0 && ctype_upper($letter)) {
+        $capitalized .= "_";
+      }
+      $capitalized .= $letter;
+    }
+    return strtoupper($capitalized);
+  }
 }

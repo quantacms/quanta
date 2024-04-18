@@ -2,7 +2,7 @@
 namespace Quanta\Common;
 
 /**
- * Class DirList
+ * Class ListObject
  * This class is providing "listing" features useful to scan a folder and
  * render the files and folders contained into it.
  */
@@ -27,8 +27,9 @@ abstract class ListObject extends DataContainer {
   /** @var array $rendered_items */
   public $rendered_items = array();
 
-  /** @var array $attributes */
-  private $attributes = array();
+
+  /** @var array $exclude_tree */
+  protected $exclude_tree = array();
 
   /** @var array $replacements */
   protected $replacements = array();
@@ -52,6 +53,9 @@ abstract class ListObject extends DataContainer {
   /** @var string $sort */
   protected $sort;
 
+  /** @var bool $sortable */
+  protected $sortable = FALSE;
+
   /**
    * ListObject constructor.
    * @param Environment $env
@@ -68,6 +72,11 @@ abstract class ListObject extends DataContainer {
   public function __construct(&$env, $path, $tpl, $attr_arr = array(), $module = NULL) {
     $this->env = $env;
     $this->tpl = strtolower($tpl);
+
+    // Check if there are tree items that should not be expanded.
+    if (isset($attr_arr['exclude_tree'])) {
+      $this->exclude_tree = array_flip(explode(',', $attr_arr['exclude_tree']));
+    }
 
     // Check if the template is in a different module than the default.
     if (!empty($module)) {
@@ -93,12 +102,26 @@ abstract class ListObject extends DataContainer {
     }
 
     foreach ($attr_arr as $attr_key => $attr_val) {
-      $this->setAttribute($attr_key, $attr_val);
+      $this->setData($attr_key, $attr_val);
     }
 
-    $this->setData('list_html_tag', !empty($this->getAttribute('list_html_tag')) ? $this->getAttribute('list_html_tag') : 'ul');
-    $this->setData('list_item_html_tag', !empty($this->getAttribute('list_item_html_tag')) ? $this->getAttribute('list_item_html_tag') : 'li');
+    $this->setData('list_html_tag', !empty($this->getData('list_html_tag')) ? $this->getData('list_html_tag') : 'ul');
+    $this->setData('list_item_html_tag', !empty($this->getData('list_item_html_tag')) ? $this->getData('list_item_html_tag') : 'li');
 
+
+    if (!empty($this->getData('sortable'))) {
+
+      if (NodeAccess::check($this->env, Node::NODE_ACTION_EDIT, array('node' => $this->getNode()))) {
+        $this->sortable = TRUE;
+      }
+      $this->setData('sort', 'weight');
+      $this->setData('asc', TRUE);
+
+      $page = ($this->env->getData('page'));
+      $page->addJS('/modules/jquery/assets/js/jquery-ui.min.js');
+      $page->addJS('/modules/jquery/assets/js/jquery.ui.widget.js');
+      $page->addJS('/modules/jquery/assets/js/jquery.tablesorter.js');
+    }
     $this->load();
   }
 
@@ -108,16 +131,6 @@ abstract class ListObject extends DataContainer {
   public function getModulePath() {
     $module = $this->env->getModule($this->module);
     return $module['path'];
-  }
-
-  /**
-   * Set attributes, typically passed in the wiki tag.
-   * @param $attr_name
-   * @param $attr_value
-   */
-
-  public function setAttribute($attr_name, $attr_value) {
-    $this->attributes[$attr_name] = $attr_value;
   }
 
   /**
@@ -138,31 +151,36 @@ abstract class ListObject extends DataContainer {
       $this->generated = TRUE;
     }
 
-    $separator = empty($this->getAttribute('separator')) ? '' : $this->getAttribute('separator');
+    $separator = empty($this->getData('separator')) ? '' : $this->getData('separator');
     $output = implode($separator, $this->rendered_items);
     $classes = array();
-
-    if (!empty($this->getAttribute('grid'))) {
+    if (!empty($this->getData('class'))) {
+      $classes[] = $this->getData('class');
+    }
+    if (!empty($this->getData('grid'))) {
       $classes[] = 'grid';
-      if (!empty($this->getAttribute('grid_list'))) {
-        $classes[] = $this->getAttribute('grid_list');
+      if (!empty($this->getData('grid_list'))) {
+        $classes[] = $this->getData('grid_list');
       }
     }
 
-    $ajax = (!empty($this->getAttribute('ajax'))) ? ' rel="' . $this->getAttribute('ajax') . '"'  : '';
-    $tpl = (!empty($this->getAttribute('tpl'))) ? ' data-tpl="' . $this->getAttribute('tpl') . '"' : '';
+    $ajax = (!empty($this->getData('ajax'))) ? ' rel="' . $this->getData('ajax') . '"'  : '';
+    $tpl = (!empty($this->getData('tpl'))) ? ' data-tpl="' . $this->getData('tpl') . '"' : '';
 
-    if (!empty($this->getAttribute('empty_message')) && (count($this->rendered_items) == 0)) {
-      $output = $this->getAttribute('empty_message');
+    if (!empty($this->getData('empty_message')) && (count($this->rendered_items) == 0)) {
+      $output = $this->getData('empty_message');
     }
 
+		if ($this->sortable) {
+      $classes[] = 'list-sortable';
+		}
     // If the "clean" attribute is not present, add some wrapping html.
-    if (empty($this->getAttribute('clean')))  {
+    if (empty($this->getData('clean')) && (empty($this->getData('hide_if_empty')) || !empty($this->rendered_items)))  {
       $output = '<' . $this->getData('list_html_tag') . ' '  . $ajax . $tpl . ' class="list ' . $this->getTpl() . ' list-' . $this->getTpl() . ' list-' . $this->node->getName() . ' ' . implode(' ', $classes) . '" data-node="' . $this->node->getName() . '">' . $output . '</' . $this->getData('list_html_tag') . '>';
     }
 
     // If the "nolinks" attribute is present, remove links from output.
-    if ($this->getAttribute('nolinks')) {
+    if ($this->getData('nolinks')) {
       $output = preg_replace('/<a[^>]+\>/i', "", $output);
     }
 
@@ -184,48 +202,50 @@ abstract class ListObject extends DataContainer {
       $this->loaded = TRUE;
       new Message($this->env, t('%node is not a valid page. Full path: %fullpath',
         array('%node' => $this->node->getName(), '%fullpath' =>  $this->path)
-      ), MESSAGE_ERROR);
+      ), \Quanta\Common\Message::MESSAGE_ERROR);
       return FALSE;
     }
 
     $this->start();
 
-    $symlinks = $this->getAttribute('symlinks');
+    $symlinks = $this->getData('symlinks');
 
     // TODO: discontinue.
-    if (!empty($this->getAttribute('status'))) {
-      $this->status = array_flip(explode(',', $this->getAttribute('status')));
+    if (!empty($this->getData('status'))) {
+      $this->status = array_flip(explode(',', $this->getData('status')));
     }
 
     // Attribute used for applying filtering to a list's results.
-    if (!empty($this->getAttribute('list_filter'))) {
-      $this->setData('list_filter', $this->getAttribute('list_filter'));
+    if (!empty($this->getData('list_filter'))) {
     }
 
-    if ($this->getAttribute('level') == 'leaf' || $this->getAttribute('level') == 'tree') {
-      $list_pages = $this->env->scanDirectoryDeep($this->path, '', array(), array(
+    if ($this->getData('level') == 'leaf' || $this->getData('level') == 'tree') {
+
+      $list_nodes = $this->env->scanDirectoryDeep($this->path, '', array(), array(
+        'exclude_tree' => $this->exclude_tree,
         'exclude_dirs' => \Quanta\Common\Environment::DIR_INACTIVE,
         'symlinks' => $symlinks,
         $this->scantype,
-        'level' => $this->getAttribute('level')
+        'level' => $this->getData('level')
       ));
     }
     else {
-      $list_pages = $this->env->scanDirectory($this->path, array(
+      $list_nodes = $this->env->scanDirectory($this->path, array(
+        'exclude_tree' => $this->exclude_tree,
         'exclude_dirs' => \Quanta\Common\Environment::DIR_INACTIVE,
         'type' => $this->scantype,
         'symlinks' => $symlinks
       ));
     }
 
-    foreach ($list_pages as $item) {
+    foreach ($list_nodes as $item) {
 
       $item_name = is_array($item) ? $item['name'] : $item;
 
       if ($this->scantype == \Quanta\Common\Environment::DIR_DIRS) {
         $node = NodeFactory::load($this->env, $item_name);
 
-        if ($node->exists && $this->validateStatus($node)) {
+        if ($node->exists && $this->validateListItem($node)) {
           $this->addItem($node);
         }
       }
@@ -265,47 +285,42 @@ abstract class ListObject extends DataContainer {
    * @return bool
    *   Returns true if the node status is the one for which the list is filtered.
    *
-   * TODO: deprecate and move as status filter.
    */
-  public function validateStatus($node) {
-     
-		if (!empty($this->status)) {
-      return (isset($this->status['all'])) || (isset ($this->status[$node->getStatus()]));
+  public function validateListItem($node) {
+    // Check if there is a filter set, and if it allows the item.
+    if (!empty($this->getData('list_filter')) && !_access_filter($this->env, $this->getData('list_filter'), $node)) {
+      return FALSE;
     }
-    else {
-      return TRUE;
-    }
+    return TRUE;
   }
 
   /**
    * Load all attributes invoked on the list.
    */
   private function loadAttributes() {
-		foreach ($this->getAttributes() as $attr_name => $attr) {
-      switch ($attr_name) {
-        case 'reverse': {
-          $this->items = array_reverse($this->items);
-          break;
-        }
-        // TODO: Add default sort by weight.
-        // Check list sorting.
-        case 'sort':
-          $this->sort = $attr;
-          uasort($this->items, array($this, 'sortBy'));
-          if (!empty($this->getAttribute('asc'))) {
-            $this->items = array_reverse($this->items);
-          }
-          break;
-        // Set a limit for items to display.
-        case 'limit':
-          $this->limit = $attr;
-          break;
 
-        default:
-          // Unkown attribute for generic list - do nothing.
-          // TODO: maybe add an error message?
-          break;
+
+    // Set the sort order.
+    if (!empty($this->getData('sort'))) {
+      $this->sort = $this->getData('sort');
+      if ($this->sort == 'random') {
+        //shuffle($this->items);
+      } else {
+        uasort($this->items, array($this, 'sortBy'));
+        if (!empty($this->getData('asc'))) {
+          $this->items = array_reverse($this->items);
+        }
       }
+    }
+
+    // Reverse the sort order.
+    if (!empty($this->getData('reverse'))) {
+      $this->items = array_reverse($this->items);
+    }
+
+    // Sets a limit.
+    if (!empty($this->getData('limit'))) {
+      $this->limit = $this->getData('limit');
     }
 	}
 
@@ -322,35 +337,7 @@ abstract class ListObject extends DataContainer {
 	public function replace($string, $replacement) {
 	  $this->replacements[$string] = $replacement;
   }
-
-  /**
-   * Gets the attributes of the list.
-   *
-   * @return array
-   *   The attributes of the list.
-   */
-  public function getAttributes() {
-    return $this->attributes;
-  }
-
-  /**
-   * Gets a specific attribute of the list.
-   *
-   * @param $attr_name
-   *   The attribute to get.
-   *
-   * @return mixed
-   *   The attribute.
-   */
-  public function getAttribute($attr_name) {
-
-    if (isset($this->attributes[$attr_name])) {
-      return $this->attributes[$attr_name];
-    }
-    else {
-      return FALSE;
-    }
-  }
+  
 
   /**
    * Generate the list items.
@@ -428,7 +415,12 @@ abstract class ListObject extends DataContainer {
       $item = $items[$index];
     }
     else {
-      new Message($this->env, 'Undefined list index: ' . $index . ' while listing ' . $this->getNode()->getName(), MESSAGE_ERROR);
+      new Message($this->env, t('Undefined list index: !index while listing !node',
+        array(
+          '!index' => $index,
+          '!node' => $this->getNode()->getName())),
+        MESSAGE_ERROR
+      );
       $item = '';
     }
     return $item;
@@ -474,4 +466,13 @@ abstract class ListObject extends DataContainer {
     $this->node = $node;
   }
 
+  /**
+   * Checks if the list is empty.
+   *
+   * @return bool
+   *   Returns true if the list is empty.
+   */
+  public function isEmpty() {
+    return (count($this->getRenderedItems()) == 0);
+  }
 }

@@ -20,7 +20,13 @@ class MetaData extends Qtag {
       foreach ($meta_content as $type => $value) {
         $properties[] = $type . '="' . $value . '"';
       }
-      $metatags[] = '<meta name="' . $meta_name . '" ' . str_replace("\n"," ",implode(' ', $properties)) . ' />';
+      if (strpos($meta_name, ':') > 0) {
+	      $use = 'property';
+      }
+      else {
+	      $use = 'name';
+      }
+      $metatags[] = '<meta ' . $use . '="' . $meta_name . '" ' . str_replace("\n"," ",implode(' ', $properties)) . ' />';
     }
 
     return implode("\n", $metatags);  }

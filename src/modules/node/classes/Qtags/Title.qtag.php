@@ -15,7 +15,7 @@ class Title extends Qtag {
    */
   public function render() {
     $node = NodeFactory::loadOrCurrent($this->env, $this->getTarget());
-    $title = Api::filter_xss($node->getTitle());
+    $title = Api::string_normalize(Api::filter_xss($node->getTitle()));
     if (isset($this->attributes['editable'])) {
       $title = NodeTemplate::wrap($this->env, $node, $title);
     }

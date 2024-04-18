@@ -1,8 +1,7 @@
 <?php
+
 namespace Quanta\Qtags;
-use Quanta\Common\NodeFactory;
-use Quanta\Common\Api;
-use Quanta\Common\NodeTemplate;
+
 /**
  *
  * Renders the teaser of a node.
@@ -14,11 +13,17 @@ class Teaser extends Qtag {
    *   The rendered Qtag.
    */
   public function render() {
-    $node = NodeFactory::loadOrCurrent($this->env, $this->getTarget());
-    $teaser = Api::filter_xss($node->getTeaser());
-    if (isset($this->attributes['editable'])) {
-      $teaser = NodeTemplate::wrap($this->env, $node, $teaser);
+    $node = \Quanta\Common\NodeFactory::loadOrCurrent($this->env, $this->getTarget());
+    $teaser = \Quanta\Common\Api::string_normalize(\Quanta\Common\Api::filter_xss($node->getTeaser()));
+
+    // If teaser field is not valorized, and teaser has the "trim" attribute, try using trimmed body as teaser.
+    if (empty($teaser) && !empty($this->getAttribute('trim')) ) {
+      // Default max length for trimmed body: 255 characters. Can be overridden by trim_length attribute.
+      $max_length = !empty($this->getAttribute('trim_length')) ? $this->getAttribute('trim_length') : 255;
+      $teaser = substr(\Quanta\Common\Api::strip_qtags(strip_tags($node->getBody())), 0, $max_length);
     }
-    return $teaser;
+    if (!empty($teaser)) {
+      return $teaser;
+    }
   }
 }

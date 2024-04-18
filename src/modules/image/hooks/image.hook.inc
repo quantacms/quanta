@@ -11,7 +11,7 @@ namespace Quanta\Common;
  * @param array $vars
  *   An array of variables.
  */
-function image_clear_cache($env, $vars) {
+function image_doctor_clear_cache($env, $vars) {
   /** @var Doctor $doctor */
   $doctor = $vars['doctor'];
   $doctor->op('Deleting all thumbnails...');

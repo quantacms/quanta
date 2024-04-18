@@ -42,7 +42,7 @@ class Manager extends DataContainer {
         $lines[] = $this->renderLeaf($leaf);
       }
     }
-    return '<ul id="tree-' . $path . '">' . implode('', $lines) . '</ul><script>refreshManagerLeaves();</script></ul>';
+    return '<ul class="manager-tree" id="tree-' . $path . '">' . implode('', $lines) . '</ul><script>refreshManagerLeaves();</script></ul>';
   }
 
   /**

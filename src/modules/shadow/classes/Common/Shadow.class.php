@@ -1,5 +1,6 @@
 <?php
 namespace Quanta\Common;
+use Quanta\Qtags\ShadowTab;
 
 /**
  * Class Shadow
@@ -8,6 +9,7 @@ class Shadow extends Page {
   private $tabs = array();
   private $widget;
   public $buttons = array();
+  public $extra = array();
   public $components = array();
   /**
    * @var Node $node.
@@ -27,14 +29,17 @@ class Shadow extends Page {
     $this->widget = $data->widget;
     $this->setLanguage(isset($data->language) ? $data->language : Localization::getLanguage($env));
 
-    if (isset($data->components)) {
-      $this->components = $data->components;
-    }
+/*
     if (is_array($data)) {
       foreach ($data as $key => $value) {
         $this->setData($key, $value);
       }
     }
+*/
+    if (isset($data->components)) {
+      $this->components = $data->components;
+    }
+
     if (isset($data->redirect)) {
       $this->setData('redirect', $data->redirect);
     }
@@ -54,7 +59,7 @@ class Shadow extends Page {
    */
   public function loadComponents() {
     foreach ($this->components as $component) {
-      $vars = array('shadow' => &$this);
+	    $vars = array('shadow' => &$this);
       $this->env->hook('shadow_' . $component, $vars);
     }
   }
@@ -66,6 +71,8 @@ class Shadow extends Page {
     $tabs = $this->getTabs();
     $tab_titles = '';
     $tab_contents = '';
+    $enabled_tab = NULL;
+
     $i = 0;
     ksort($tabs);
 
@@ -74,11 +81,27 @@ class Shadow extends Page {
     foreach ($tabs as $wtabs) {
       foreach ($wtabs as $tab) {
         $i++;
+        $attr = array();
+
+        $tab_title = new \Quanta\Qtags\ShadowTab($this->env, $attr, $i);
+        $tab_content = new \Quanta\Qtags\ShadowContent($this->env, $attr, $i);
+        $tab_title->setHtmlBody($tab['title']);
+
         // A tab can be null in case of single-page Shadows.
         if ($tab['title'] != NULL) {
-          $tab_titles .= '<li data-title="' . $tab['title'] . '" class="shadow-title ' . (($i == 1) ? 'enabled' : '') . '" ><a href="#" data-rel="' . $i . '" id="shadow-title-' . $i . '">' . $tab['title'] . '</a></li>';
+          if (empty($enabled_tab)) {
+            $enabled_tab = $i;
+            $tab_title->addClass('enabled');
+            $tab_content->addClass('enabled');
+          }
+          $tab_titles .= $tab_title->render();
         }
-        $tab_contents .= '<div class="shadow-content shadow-content-' . $this->env->getContext() . ' ' . $tab['classes'] . ' ' . (($i == 1) ? 'enabled' : '') . '" id="shadow-content-' . $i . '">' . $tab['content'] . '</div>';
+        else {
+          $tab_content->addClass('hidden');
+        }
+
+        $tab_content->setHtmlBody($tab['content']);
+        $tab_contents .= $tab_content->render();
       }
     }
     $this->setData('tab_titles', $tab_titles);
@@ -86,7 +109,7 @@ class Shadow extends Page {
     $this->setData('buttons', $this->buttons);
     $this->setData('content', file_get_contents($this->env->getModulePath('shadow') . '/tpl/' . $this->getWidget() . '.inc'));
     $this->buildHTML();
-    return $this->html;
+    return '<div id="shadow-item" class="grid grid-gap-0">' . $this->html . '</div>';
   }
 
   /**
@@ -113,16 +136,38 @@ class Shadow extends Page {
    *   The tab title.
    * @param string $content
    *   The tab content.
-   * @param int $weight
+   * @param double $weight
    *   The tab weight.
    * @param string $classes
    *   Classes of the tabbed item.
    */
   public function addTab($title, $content, $weight = 1, $classes = NULL) {
     while (isset($this->tabs[$weight])) {
-      $weight += 0.1;
+      $weight += 1;
     }
     $this->tabs[$weight][$this->env->getContext()] = array('title' => $title, 'content' => $content, 'classes' => $classes);
+  }
+
+  /**
+   * Add an extra HTML to the Shadow form.
+   *
+   * @param string $content
+   *   The extra content.
+   * @param int $weight
+   *   The extra content weight.
+   */
+  public function addExtra($content, $weight = 1) {
+    $this->addData('extra', array(array('content' => $content, 'weight' => $weight)));
+  }
+
+  /**
+   * Get the Shadow's extra html.
+   *
+   * @return array
+   *   The shadow's extra content.
+   */
+  public function getExtra() {
+    return $this->getData('extra');
   }
 
   /**

@@ -46,6 +46,7 @@ body.grid.three-rows #grid-main {
 ul.grid {
   margin: 0;
   padding: 0;
+  list-style: none;
 }
 
 .grid>img {
@@ -106,6 +107,66 @@ ul.grid {
 
 .align-self-end {
   align-self: end;
+}
+
+.justify-items-start {
+  justify-content: start;
+}
+
+.justify-items-center {
+  justify-content: center;
+}
+
+.justify-items-end {
+  justify-items: end;
+}
+
+.justify-items-stretch {
+  justify-items: stretch;
+}
+
+.justify-self-start {
+  justify-content: start;
+}
+
+.justify-self-center {
+  justify-content: center;
+}
+
+.justify-self-end {
+  justify-items: end;
+}
+
+.justify-self-stretch {
+  justify-items: stretch;
+}
+
+.justify-content-start {
+  justify-content: start;
+}
+
+.justify-content-center {
+  justify-content: center;
+}
+
+.justify-content-space-between {
+  justify-content: space-between;
+}
+
+.justify-content-space-around {
+  justify-content: space-around;
+}
+
+.justify-content-space-evenly {
+  justify-content: space-evenly;
+}
+
+.margin-auto {
+  margin: auto;
+}
+
+.hidden {
+  display: none;
 }
 
 /* RESPONSIVE */

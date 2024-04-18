@@ -5,15 +5,12 @@ namespace Quanta\Common;
 /**
  * This class allows creation, manipulation and transformation
  * of Images.
- * It extends a basic File class, to which it adds image editing functions.
+ * It extends the basic FileObject class, to which it adds image editing functions.
  *
  */
-define('IMAGE_RENDER_FULL', 'image_full');
-
-/**
- * Class Image
- */
 class Image extends FileObject {
+   const IMAGE_RENDER_FULL = 'image_full';
+
   /** @var int $width */
   public $width = '';
   /** @var int $height */
@@ -22,18 +19,16 @@ class Image extends FileObject {
   public $css = array();
   /** @var array $class */
   public $class = array();
-  /** @var string $linkto */
-  public $linkto = NULL;
   /** @var string $title */
   public $title = NULL;
 
   /**
-   * Load image attributes.
-   * @param $attributes
+   * Load the image's  attributes.
+   *
+   * @param array $attributes
    */
   public function loadAttributes($attributes) {
     foreach ($attributes as $attname => $attribute) {
-
       // Check the image size as input by the user.
       if (preg_match_all('/[0-9|auto]x[0-9|auto]/', $attname, $matches)) {
         $size = explode('x', $attname);
@@ -48,9 +43,6 @@ class Image extends FileObject {
         case 'float':
           $this->css[] = 'float:' . $attribute;
           break;
-        case 'link':
-          $this->linkto = $attribute;
-          break;
         case 'title':
           $this->setTitle($attribute);
           break;
@@ -62,6 +54,7 @@ class Image extends FileObject {
           break;
 
         default:
+          $this->setData($attname, $attributes);
           break;
       }
     }
@@ -71,11 +64,12 @@ class Image extends FileObject {
 
     // If width or height are not specified, get it from img directly. (Slow).
     if (empty($this->width) || empty($this->height)) {
-      $get_size = getimagesize($this->getRealPath());
-      $this->width = $get_size[0];
-      $this->height = $get_size[1];
+      if (is_file($this->getRealPath())) {
+        $get_size = getimagesize($this->getRealPath());
+        $this->width = $get_size[0];
+        $this->height = $get_size[1];
+      }
     }
-
   }
 
   /**
@@ -95,23 +89,6 @@ class Image extends FileObject {
   }
 
   /**
-   * Render the image.
-   * @param string $mode
-   * @return string
-   */
-  public function render($mode = IMAGE_RENDER_FULL) {
-    $imgurl = (strpos($this->path, '/') !== FALSE) ? $this->path : '/' . $this->node->getName() . '/' . $this->path;
-    $style = (count($this->css) > 0) ? 'style="' . implode(';', $this->css) . '" ' : '';
-    $class = (count($this->class) > 0) ? implode(' ', $this->class) : '';
-    $width = ($this->width > 0) ? 'width="' . $this->width . '"' : '';
-    $height = ($this->height > 0) ? 'height="' . $this->height . '"' : '';
-    $img = '<img ' . $width . ' ' . $height . ' alt="' . $this->getTitle() . '" class="image ' . $class . '" src="' . $imgurl . '" ' . $style . " />";
-    return $img;
-
-  }
-
-
-  /**
    * Generate a thumbnail of an image.
    *
    * @param Environment $env
@@ -121,14 +98,14 @@ class Image extends FileObject {
    * @return string
    *   The url of the generated thumbnail.
    */
-  public function generateThumbnail($env, $vars) {
+  public function generateThumbnail(Environment $env, array $vars) {
+
 
     $maxw = isset($vars['w_max']) ? $vars['w_max'] : 0;
     $maxh = isset($vars['h_max']) ? $vars['h_max'] : 0;
-    $img_action = isset($vars['image_action']) ? $vars['image_action'] : 0;
-    $compression = isset($vars['compression']) ? $vars['compression'] : 0;
+    $img_action = isset($vars['operation']) ? $vars['operation'] : 0;
+    $compression = isset($vars['compression']) ? $vars['compression'] : 70;
     $fallback = isset($vars['fallback']) ? $vars['fallback'] : 0;
-
 
     if ($maxw == 'auto') {
       $maxw = 0;
@@ -146,7 +123,7 @@ class Image extends FileObject {
 
     // Get the File path for the image
     $thumb_root = $env->dir['thumbs'];
-    $thumbfile = 'thumb-' . str_replace(' ', '-', str_replace('/', '-', $this->node->getName() . '-' . $this->width . 'x' . $this->height . '-' . $this->getName()));
+    $thumbfile = 'thumb-' . str_replace(' ', '-', str_replace('/', '-', $this->getNode()->getName() . '-' . $this->width . 'x' . $this->height . '-' . $this->getName()));
 
     $img_path = $this->getRealPath();
     $thumb_image_path = $thumb_root . '/' . $thumbfile;
@@ -157,7 +134,6 @@ class Image extends FileObject {
     if (is_file($thumb_image_path)) {
       return $thumbfile;
     }
-
     // If the image file is broken, use the default broken image.
     if (!is_file($img_path)) {
       // Check if if set a fallback image.
@@ -222,6 +198,7 @@ class Image extends FileObject {
       or print("Cannot create new GIF image: " . $img_path);
     }
 
+
     // header("Content-type: image/" . $img_extension);
 
 
@@ -229,6 +206,7 @@ class Image extends FileObject {
     // to the next step
 
     if ($img) {
+
 
       // We now need to decide how to resize the image
 
@@ -310,7 +288,6 @@ class Image extends FileObject {
 
       }
       elseif ($img_action == "crop") {
-
         // Get scale ratio
 
         $scale = max($img_thumb_width / $img_orig_width,
@@ -337,8 +314,6 @@ class Image extends FileObject {
         // we will need to crop the image, leaving
         // the height identical but halving
         // the width to 50
-
-        if ($scale < 1) {
 
           // Calculate the new height and width
           // based on the scale
@@ -433,7 +408,7 @@ class Image extends FileObject {
           imagealphablending($img, true);
           imagesavealpha($img, true);
         }
-      }
+
 
       // Display the image using the header function to specify
       // the type of output our page is giving

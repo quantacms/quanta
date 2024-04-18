@@ -21,7 +21,7 @@ class FilePreview extends Qtag {
       $node->setName(\Quanta\Common\Node::NODE_NEW);
     }
 
-    $file = new FileObject($this->env, $this->getTarget(), \Quanta\Common\Node::NODE_NEW);
+    $file = new FileObject($this->env, $this->getTarget(), $node);
     $preview = '';
     switch($file->getType()) {
       case 'image':

@@ -13,6 +13,7 @@ class Text extends Qtag {
    *   The rendered Qtag.
    */
   public function render() {
-    return t($this->getTarget());
+    $tag = !isset($this->attributes['tag']) ? NULL : $this->attributes['tag'];
+    return \Quanta\Common\Localization::translatableText($this->env, $this->getTarget(), $tag);
   }
 }

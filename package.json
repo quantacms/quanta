@@ -1,0 +1,23 @@
+{
+  "name": "quanta",
+  "version": "1.0.0",
+  "description": "![alt text](https://www.quanta.org/assets/img/q_cms.png) # Quanta Cms # An innovative, DB-free Framework for web and application development, based on the principles of Quantum physics.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quantacms/quanta.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/quantacms/quanta/issues"
+  },
+  "homepage": "https://github.com/quantacms/quanta#readme"
+}

@@ -9,7 +9,7 @@ namespace Quanta\Common;
  * @param array $vars
  *   An array of variables.
  */
-function page_load_includes($env, $vars) {
+function page_load_includes(Environment $env, $vars) {
   $module_path = $env->getModulePath('page');
   $env->addInclude($module_path . '/assets/css/page.css');
 }
@@ -22,7 +22,7 @@ function page_load_includes($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function page_body_classes($env, $vars) {
+function page_body_classes(Environment $env, $vars) {
   $vars['page']->addData('body_classes', array('page'));
 }
 
@@ -36,10 +36,13 @@ function page_body_classes($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function page_boot($env, $vars) {
+function page_boot(Environment $env, $vars) {
   $env->sysdir('pages', 'pages');
   $env->sysdir('system', '_system');
-
+  // Start ads.txt configuration.
+  if ($env->request[count($env->request) - 1] == 'ads.txt') {
+    exit();
+  }
   // Start robots.txt configuration.
   // TODO: object oriented, using templates, etc. etc.
   if ($env->request[count($env->request) - 1] == 'robots.txt') {
@@ -62,7 +65,7 @@ function page_boot($env, $vars) {
  * @param array $vars
  *   Miscellaneous environment / page variables.
  */
-function page_doctor_setup($env, $vars) {
+function page_doctor_setup(Environment $env, $vars) {
   /** @var Doctor $doctor */
   $doctor = $vars['doctor'];
   $doctor->op('Installing basic pages!');
@@ -73,7 +76,7 @@ function page_doctor_setup($env, $vars) {
     $doctor->talk('Not Found');
 
     // Choose an installation profile for Quanta.
-    $profiles = $env->scanDirectory($env->dir['profiles'], array('type' => DIR_DIRS));
+    $profiles = $env->scanDirectory($env->dir['profiles'], array('type' => \Quanta\Common\Environment::DIR_DIRS));
     sort($profiles);
     $profiles_choice = array();
     $profile_chosen = NULL;
@@ -151,7 +154,7 @@ function page_doctor_setup($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function page_init($env, $vars) {
+function page_init(Environment $env, $vars) {
   if (empty($env->getData('page'))) {
     // Start page's standard index.html.
     $page = new \Quanta\Common\Page($env);
@@ -164,8 +167,6 @@ function page_init($env, $vars) {
     // Build the page's HTML code.
     $page->buildHTML();
 
-    // Render the page.
-    print $page->render();
   }
 }
 
@@ -179,7 +180,7 @@ function page_init($env, $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function page_doctor($env, $vars) {
+function page_doctor(Environment $env, $vars) {
   /** @var Doctor $doctor */
   $doctor = $vars['doctor'];
   

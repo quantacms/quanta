@@ -14,25 +14,9 @@ class GridCarousel extends Qtag {
    *   The rendered Qtag.
    */
   public function render() {
-    if (Amp::isActive($this->env)) {
-      // Google AMP carousel.
-      $this->attributes['module'] = 'grid';
-      $this->attributes['tpl'] = 'grid-carousel-amp';
-      $this->attributes['carousel_width'] = '400';
-      $this->attributes['carousel_height'] = '260';
-      $this->attributes['carousel_autoplay'] = 'true';
-      $this->attributes['carousel_type'] = 'slides';
-      $carousel = new AmpCarousel($this->env, $this->getTarget(), $this->attributes);
-
-    } else {
-      // Classic flickity carousel.
-      $this->attributes['module'] = 'grid';
-      $this->attributes['tpl'] = 'grid-carousel';
-      $this->attributes['flickity_theme'] = 'actionbutton';
-      $this->attributes['pageDots'] = 'true';
-      $this->attributes['editable'] = 'false';
-      $carousel = new Carousel($this->env, $this->getTarget(), $this->attributes);
-    }
-    return $carousel->render();
+    $wrapper_html_tag = !empty($this->attributes['wrapper_html_tag']) ? $this->attributes['wrapper_html_tag'] : 'div';
+    $wrapper_id = !empty($this->attributes['wrapper_id']) ? $this->attributes['wrapper_id'] : '';
+    $wrapper_class = !empty($this->attributes['wrapper_class']) ? $this->attributes['wrapper_class'] : '';
+    return  '<' . $wrapper_html_tag . (!empty($wrapper_id) ? ' id="' . $wrapper_id . '"' : '') . (!empty($wrapper_class) ? ' class="' . $wrapper_class . '"' : '') . '>' . $this->getTarget() . '</' . $wrapper_html_tag . '>';
   }
 }

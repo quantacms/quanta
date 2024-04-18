@@ -1,6 +1,5 @@
 <?php
 namespace Quanta\Qtags;
-use Quanta\Common\UserFactory;
 /**
  * Renders an user edit link.
  */
@@ -10,7 +9,9 @@ class UserAttribute extends Qtag {
    *   The rendered Qtag.
    */
   public function render() {
-    $user = ($this->getTarget() == NULL) ? UserFactory::current($this->env) : new User($this->env, $this->getTarget());
+    $user = ($this->getTarget() == NULL) ? \Quanta\Common\UserFactory::current($this->env) : new \Quanta\Common\User($this->env, $this->getTarget());
+
+    
     switch ($this->attributes['name']) {
       // User's login name.
       case 'username':
@@ -29,9 +30,17 @@ class UserAttribute extends Qtag {
       case 'first_name':
         $string = $user->getFirstName();
         break;
-
+      // User's full name (= title).
+      case 'title':
+        $string = $user->getTitle();
+        break;
       default:
-        $string = NULL;
+	if (!empty($user->json->{$this->attributes['name']})) {
+		$string = $user->json->{$this->attributes['name']};
+	}
+	else {
+		$string = '';
+	}
         break;
     }
     return $string;

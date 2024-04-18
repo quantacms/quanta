@@ -1,12 +1,12 @@
+var hasMultipleAttribute= true;
 $(function () {
-
-
+  if (!($('.upload-files').length)) { return; }
+  
   $('.drop a').click(function () {
     // Simulate a click on the file input button
     // to show the file browser dialog
     $(this).parent().find('input').click();
   });
-
   // Initialize the jQuery File Upload plugin
   $('.upload-files').fileupload({
 
@@ -18,8 +18,11 @@ $(function () {
     add: function (e, data) {
 
       var tmp_files_dir = ($('#tmp_files_dir').val());
-
-      console.log(data.paramName);
+      // Access the file input element
+      var fileInputElement = data.fileInput[0];
+      // Check if the file input has the 'multiple' attribute
+      hasMultipleAttribute = fileInputElement.hasAttribute('multiple');
+      
       var form_name = data.paramName;
 
       // TODO: should use a normal QTAG.
@@ -32,15 +35,18 @@ $(function () {
         '</span>' +
         '<span class="progress-wrapper">' +
         '<span class="progress"></span>' +
-        '<input type="text" value="0" data-width="20" data-height="20"' +
-        ' data-fgColor="#0788a5" data-readOnly="1" data-bgColor="#3e4043" />' +
+        '<input type="text" value="0" data-width="20" data-height="20" />' +
         '</span>' +
         '<span class="file-qtag"></span>' +
-
         '</li>');
 
 
       var ul = $(this).closest('.shadow-content').find('ul');
+
+      if(!hasMultipleAttribute){
+        // Hide only the old contents of the UL element
+        ul.children().hide();
+      }
 
       // Add the HTML to the UL element
       data.context = tpl.appendTo(ul);
@@ -72,10 +78,13 @@ $(function () {
 
       // Update the hidden input field and trigger a change
       // so that the jQuery knob plugin knows to update the dial
-      data.context.find('input').val(progress).change();
+      var red = 200 - (progress * 2);
+      var green = (progress * 2);
+      data.context.find('input').val(progress).css('width', progress + '%').css('background', 'rgb(' + red + ',' + green + ',0)').change();
 
       if (progress == 100) {
         data.context.removeClass('working');
+        //data.context.find('input').fadeOut('slow');
         $(document).trigger('refresh');
       }
     },
@@ -116,6 +125,10 @@ $(function () {
 var refreshFileActions = function (fileElement) {
   var filename = fileElement.find('.file-link').data('filename');
   var formname = fileElement.closest('.shadow-content').find('form').attr('id');
+  var inputFileInsideForm = fileElement.closest('.shadow-content').find('form').find('input[type="file"]');
+  // Check if inputFileInsideForm has the 'multiple' attribute
+  hasMultipleAttribute= inputFileInsideForm.attr('multiple') !== undefined;
+ 
   if (fileElement.find('.file-preview').length) {
     fileElement.prepend('<input type="hidden" class="file-name" name="uploaded_file' + '-' + formname + '-' + filename + '" value="' + filename + '" >');
   }
@@ -123,7 +136,7 @@ var refreshFileActions = function (fileElement) {
   /**
    * Open manage file settings form on mouse enter.
    */
-  fileElement.on('mouseenter', function() {
+  fileElement.on('mouseenter', function () {
     if ($(this).hasClass('is-editing')) {
       return;
     }
@@ -131,12 +144,15 @@ var refreshFileActions = function (fileElement) {
 
     // Create file actions.
     if (!$(this).find('.file-actions').length) {
+      var actionsButtons= '<div class="file-actions">';
+      if(hasMultipleAttribute){
+        actionsButtons += '<input type="button" class="set-thumbnail" data-filename="' + filename + '" value="" />';
+      }
+      actionsButtons += '<input type="button" class="delete-file" value="delete file" />' +
+      '</div>';
       // Append file actions to manage files.
-      $(this).append('<div class="file-actions">' +
-        '<input type="button" class="set-thumbnail" data-filename="' + filename + '" value="" />' +
-        '<input type="button" class="delete-file" value="delete file" />' +
-        '</div>'
-      );
+      $(this).append(actionsButtons);
+      
     }
 
     // Initialize set thumbnail buttons.
@@ -180,8 +196,10 @@ var refreshFileActions = function (fileElement) {
 };
 
 
-var refreshThumbnail = function() {
+var refreshThumbnail = function () {
+
   var thumb_href = $('#edit_thumbnail').val();
+
   $('.set-thumbnail').val('set as thumbnail');
   $('.selected-thumbnail').removeClass('selected-thumbnail');
   $('a[data-filename="' + thumb_href + '"]').addClass('selected-thumbnail').closest('.list-item-file_admin').find('.set-thumbnail').val('unset as thumbnail').addClass('selected-thumbnail');
@@ -194,14 +212,14 @@ $(document).bind('refresh', function () {
     refreshThumbnail();
   });
 
-  $('.list-file_admin').each(function() {
+  $('.list-file_admin').each(function () {
     $(this).sortable({
       handle: '.sort-handle',
-      update: function(e) {
+      update: function (e) {
       },
-      start: function(e) {
+      start: function (e) {
       },
-      stop: function(e) {
+      stop: function (e) {
       }
     });
   });
@@ -209,25 +227,27 @@ $(document).bind('refresh', function () {
   var node_name = $('#edit_path').val();
   var tmp_files_dir = ($('#tmp_files_dir').val());
 
-  $('.file-preview').each(function() {
+  $('.file-preview').each(function () {
     var filelink = $(this).parent().find('.file-link');
     var filename = filelink.data('filename');
     var tag_attr = (filelink.data('filenew') != undefined) ? ('tmp_path=' + tmp_files_dir) : ('node=' + node_name);
-    var qtag ='/qtag/[FILE_PREVIEW|' + tag_attr + ':' + encodeURIComponent(filename) + ']';
+    var qtag = '/qtag/[FILE_PREVIEW|' + tag_attr + ':' + encodeURIComponent(filename) + ']';
     $(this).load(qtag);
   });
 
-  $('.file-qtag').each(function() {
+  $('.file-qtag').each(function () {
     var filelink = $(this).parent().find('.file-link');
     var filename = filelink.data('filename');
     var tag_attr = (filelink.data('filenew') != undefined) ? ('tmp_path=' + tmp_files_dir) : ('node=' + node_name);
-    var qtag_suggestion ='/qtag/[FILE_QTAG_SUGGESTION|' + tag_attr + ':' + encodeURIComponent(filename) +']';
+    var qtag_suggestion = '/qtag/[FILE_QTAG_SUGGESTION|' + tag_attr + ':' + encodeURIComponent(filename) + ']';
     $(this).load(qtag_suggestion);
   });
-
-
-
 });
 
-
-
+$(document).bind('shadow_save', function () {
+  $('.progressBar').each(function () {
+    if ($(this).val() != 100) {
+      shadowConfirmClose = confirm('Upload of files still in progress. Are you sure you want to save?');
+    }
+  })
+});
