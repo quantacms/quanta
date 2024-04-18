@@ -477,19 +477,61 @@ class Node extends JSONDataContainer {
    * Delete this node by adding a __ prefix to the folder.
    */
   public function delete() {
-    $np = explode('/', $this->path);
-    $rmname = '__' . $np[count($np) - 1] . '_' . time();
-    $np[count($np) - 1] = $rmname;
-    // Delete file is indeed not an immediate deletion: it adds __ to folder name.
-    // This is useful in order to recover a node that was accidentally deleted.
-    //unlink($this->path);
-    rename($this->path, implode('/', $np));
-    new Message($this->env,
-      t('User deleted this node: !node.', array('!node' => $this->getName())),
-      \Quanta\Common\Message::MESSAGE_GENERIC,
-      \Quanta\Common\Message::MESSAGE_TYPE_LOG,
-      'node'
+     // Define the destination folder path
+     $destinationFolder = $this->env->dir['trashbin'] . '/' . time();
+
+ 
+    // Create the destination folder if it doesn't exist
+    if (!is_dir($destinationFolder)) {
+          // Create the destination folder if it doesn't exist with full permissions (0777)
+        if (!mkdir($destinationFolder, 0777, true)) {
+          // If directory creation fails, show an error and exit
+          $errorMessage = t("Failed to create destination folder.");
+        }
+      }
+
+    // Check if the source file exists before moving
+    elseif(!file_exists($this->path)) {
+      // If the source file doesn't exist, show an error and exit
+      $errorMessage = t("Source file does not exist.");
+    }
+
+    // Move the node to the trashbin folder
+    $sourceFile = $this->path;
+    $destinationFile = $destinationFolder . '/' . basename($this->path);
+    
+
+    // Use exec to execute the shell command
+    $command = "mv \"$sourceFile\" \"$destinationFile\"";
+    exec($command, $output, $return);
+
+      // Check if the move was successful
+      if ($return === 0) {
+        // Node moved successfully
+        new Message($this->env,
+        t('User deleted this node: !node.', array('!node' => $this->getName())),
+        \Quanta\Common\Message::MESSAGE_GENERIC,
+        \Quanta\Common\Message::MESSAGE_TYPE_LOG,
+        'node'
+        );
+      }
+      else{
+        // Handle the case where the move operation failed
+        $errorMessage = t("Failed to move the file.");
+      }
+   
+    if (isset($errorMessage)) {
+      // Handle error message
+      // TODO: Show the error message
+      new Message($this->env,
+      $errorMessage,
+      \Quanta\Common\Message::MESSAGE_WARNING,
+      \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
     );
+  }
+ 
+    
+   
   }
 
   /**
