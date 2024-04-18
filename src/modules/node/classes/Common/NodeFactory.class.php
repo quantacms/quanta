@@ -475,8 +475,10 @@ class NodeFactory {
             $env->hook('node_after_save', $vars);
             // Hook node_add_complete, node_edit_complete, etc.
             $env->hook($action . '_complete', $vars);
-	    // If the form has a redirect field, setup a redirect.
-            $response->redirect = !empty($form_data['redirect']) ? $form_data['redirect'] : ('/' . $node->getName());
+            // Check if 'current_url' is set in the form data, if not, default to the father node's name.
+            $redirect_url= isset($form_data['current_url']) ? $form_data['current_url'] : '/' . $node->getFather()->getName() . '/';
+            // Set the redirect URL in the response. If 'redirect' is not empty in the form data, use it, otherwise, use the calculated $redirect_url.
+            $response->redirect = !empty($form_data['redirect']) ? $form_data['redirect'] : $redirect_url;
           }
           else {
             // TODO: make this good.
@@ -500,8 +502,10 @@ class NodeFactory {
           $node->delete();
           // ...and display a confirmation message.
           new Message($env, t('!node was deleted correctly', array('!node' => $node->getTitle())));
-          $response->redirect = !empty($form_data['redirect']) ? $form_data['redirect'] : ('/' . $node->getFather()->getName() . '/');
-        }
+          // Check if 'current_url' is set in the form data, if not, default to the father node's name.
+          $redirect_url= isset($form_data['current_url']) ? $form_data['current_url'] : '/' . $node->getFather()->getName() . '/';
+          // Set the redirect URL in the response. If 'redirect' is not empty in the form data, use it, otherwise, use the calculated $redirect_url.
+          $response->redirect = !empty($form_data['redirect']) ? $form_data['redirect'] : $redirect_url;        }
         else {
           $response->redirect = '/403';
         }

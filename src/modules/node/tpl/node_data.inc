@@ -6,4 +6,5 @@
 [INPUT|id=files_count|type=hidden|required|name=files_count|value={ATTRIBUTE|name=files_count|no_qtags}:node_data]
 [INPUT|type=hidden|title=father|id=edit_father|required|name=edit-father|value={ATTRIBUTE|name=father}:node_data]
 [INPUT|type=hidden|id=language|required|name=language|value={LANGUAGE}:node_data]
+[INPUT|type=hidden|id=current_url|required|name=current_url:node_data]
 ]
