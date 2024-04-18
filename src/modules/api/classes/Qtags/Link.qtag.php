@@ -8,22 +8,26 @@ use Quanta\Common\Api;
 /**
  * Creates a link to another node in the system.
  */
-class Link extends Qtag {
-  /**
-   * @var string $link_body
-   *   The Link Body (HTML).
-   */
-  public $link_body;
+class Link extends HtmlTag {
+  const LINK_INTERNAL = "internal";
+  const LINK_EXTERNAL = "external";
+  const LINK_ANCHOR = "anchor";
+
   /**
    * @var string $link_title
    *   The Link Title (what appears in the <a title=... attribute).
    */
   public $link_title;
+  public $link_anchor;
   /**
    * @var string $link_class
    *   The Link Classes (what appears in the <a class=... attribute).
    */
+  public $html_params = array('class' => 'link');
+
+  // TODO: deprecate.
   public $link_class = array();
+
   /**
    * @var string $link_id
    *   The Link Id (what appears in the <a id=... attribute).
@@ -45,10 +49,10 @@ class Link extends Qtag {
    */
   public $destination = NULL;
   /**
-   * @var string $external
-   *   If true, will create a simple link to the target/destination.
+   * @var string $type
+   *   Link type (internal, external, anchor, etc.).
    */
-  public $external = FALSE;
+  public $type = FALSE;
   /**
    * @var array $querystring
    *   A key-value array of querystring parameters.
@@ -61,29 +65,31 @@ class Link extends Qtag {
   public $protocol = NULL;
 
   /**
-   * The actual <a param... list of params.
-   * @var array
+   * The HTML tag.
+   * @var string
    */
-  private $link_params = array();
+  protected $html_tag = 'a';
 
   /**
    * @return string
    *   The rendered Qtag.
    */
   public function render() {
-    $querystring = array();
     $this->link_id = !empty($this->attributes['link_id']) ? $this->attributes['link_id'] : '';
-
-    // TODO: inconsistent tag attribute (title) and Qtag field (link_body). Adapt somehow.
-    if (isset($this->attributes['title'])) {
-      $this->link_body = $this->attributes['title'];
+    $node = NULL;
+    $is_current = FALSE;
+    if (!empty($this->attributes['downloadable'])) {
+      $this->querystring['download'] = TRUE;
     }
-    // Sets the link title (<a title=...).
-    $this->link_title = empty($this->attributes['link_title']) ? strip_tags($this->link_body) : $this->attributes['link_title'];
-
-    $this->link_class[] = 'link';
     if (empty($this->destination)) {
       $this->destination = '#';
+  
+      $query_explode = ($this->getTarget() != NULL) ? explode('?', $this->getTarget()) : array();
+      // Support for querystring
+      if (count($query_explode) > 1) {
+        $this->setTarget($query_explode[0]);
+        $this->querystring = explode('&', $query_explode[1]);
+      }
       // Check if the target is a node or an external link.
       // External link with a protocol (ex. http://).
       if (!empty($this->attributes['protocol'])) {
@@ -92,22 +98,26 @@ class Link extends Qtag {
         $this->attributes['rel'] = NULL;
         // TODO: Find a better solution for &colon; instead of : to avoid conflicts in multiple qtags.
         $this->destination = $this->protocol . '&colon;//' . $this->getTarget();
-        if (empty($this->link_body)) {
-          $this->link_body = $this->getTarget();
-        }
       }
       // Link to a specific resource (i.e. to an image).
       elseif (!empty($this->attributes['external'])) {
-        $this->external = TRUE;
+        $this->setType(self::LINK_EXTERNAL);
+        $this->destination = $this->getTarget();
+      }
+      // Link to an anchor.
+      elseif (($this->getTarget() != NULL) && (substr($this->getTarget(), 0, 1) == '#')) {
+        $this->link_class[] = 'link-anchor';
+        $this->setType(self::LINK_ANCHOR);
         $this->destination = $this->getTarget();
       }
       // Link to a node.
       elseif (!empty($this->getTarget())) {
+        $this->setType(self::LINK_INTERNAL);
         // Load the node.
         $node = NodeFactory::load($this->env, $this->getTarget());
-        // Load the link body / html.
-        if (empty($this->link_body)) {
-          $this->link_body = $node->getTitle();
+        $current = NodeFactory::current($this->env);
+        if ($current->hasParent($node->getName())) {
+          $this->link_class[] = 'link-lineage-active';
         }
         // Allow other modules to change the URL.
         $this->destination = '/' . $node->getName();
@@ -115,20 +125,37 @@ class Link extends Qtag {
         // Add classes...
         $this->link_class[] = 'link-' . Api::string_normalize($node->getName());
         // Check if this node's link is identical to the current node.
-        if (($this->destination . '/') == $this->env->request_uri) {
+        if (($this->getTarget()) == $this->env->request_path) {
           $this->link_class[] = 'link-active';
+          $is_current = TRUE;
         }
         $this->attributes['rel'] = $node->getName();
+        if (empty($this->html_body)) {
+          $this->html_body = $node->getTitle();
+        }
       }
     }
 
+    // Sets the link title (<a title=...).
+    if (isset($this->attributes['link_title'])) {
+      $this->link_title = $this->attributes['link_title'];
+    }
+    else {
+      $this->link_title = empty($this->html_body) ? '' : strip_tags($this->html_body);
+    }
+    // Sets the link title (<a title=...).
+    $this->link_anchor = empty($this->attributes['link_anchor']) ? NULL : $this->attributes['link_anchor'];
+
     // Prepare variables for Link hooks.
     $vars = array(
-      'target' => $this->getTarget(),
-      'attributes' => $this->attributes,
       'qtag' => &$this,
+      'node' => $node,
       );
     $this->env->hook('link_alter', $vars);
+
+    if (isset($this->attributes['title'])) {
+      $this->html_body = $this->attributes['title'];
+    }
 
     // Add custom classes to the link.
     if (isset($this->attributes['link_class'])) {
@@ -136,39 +163,64 @@ class Link extends Qtag {
       $this->link_class[] = $this->attributes['link_class'];
     }
 
-    // Check if there is a target language.
-    if (!empty($this->language)) {
-      $this->querystring['lang'] = $this->language;
+    // Check if there is a link target (_blank, ...).
+    if (!empty($this->attributes['link_target'])) {
+      $this->link_target = $this->attributes['link_target'];
+    }
+
+    if (!empty($this->getAttribute('querystring'))) {
+      $this->querystring = explode('&', $this->getAttribute('querystring'));
     }
     // Sets a query string.
-    $query = (!empty($querystring)) ? ('?' . implode('&', $this->querystring)) : '';
+    $query = (!empty($this->querystring)) ? ('?' . implode('&', $this->querystring)) : '';
+    $anchor = (!empty($this->link_anchor)) ? ('#' . $this->link_anchor) : '';
 
     // TODO: make just a big variable "data".
     // Check Quanta data types.
     $data_types = array('rel', 'language', 'type', 'widget', 'components', 'tooltip', 'redirect');
     foreach ($data_types as $data_type) {
       if (!empty($this->attributes[$data_type])) {
-        $this->link_params['data-' . $data_type] =  $this->attributes[$data_type];
+        if ($data_type == 'tooltip') {
+          $this->attributes[$data_type] = htmlspecialchars($this->attributes[$data_type]);
+        }
+        $this->html_params['data-' . $data_type] =  $this->attributes[$data_type];
       }
     }
 
-    $this->link_params['class'] = implode(' ', $this->link_class);
-    $this->link_params['title'] = $this->link_title;
-    $this->link_params['href'] = $this->destination . $query;
-    $this->link_params['target'] = $this->link_target;
+    $this->html_params['class'] .= ' ' . implode(' ', $this->link_class);
+    $this->html_params['title'] = $this->link_title;
+    $destination = $this->destination;
+    // If anchor is on the same page, omit the URL.
+    if ($is_current && !empty($anchor)) {
+      $destination = '';
+    }
+    $this->html_params['href'] = $destination . $anchor . $query;
+    $this->html_params['target'] = $this->link_target;
     if (!empty($this->link_id)) {
-      $this->link_params['id'] = $this->link_id;
+      $this->html_params['id'] = $this->link_id;
     }
 
-    // Construct the link HTML.
-    $link = '<a';
-    foreach ($this->link_params as $link_param => $link_param_val) {
-      $link .= ' ' . $link_param . '="' . $link_param_val . '"';
-    }
-    $link .= '>';
-    $link .= $this->link_body;
-    $link .= '</a>';
-    return $link;
+    return parent::render();
 
+  }
+
+  /**
+   * Gets the link type (external, anchor or internal).
+   *
+   * @return string
+   *   The link's type.
+   */
+  public function getType() {
+    return $this->type;
+  }
+
+  /**
+   * Sets the link type (external, anchor or internal).
+   *
+   * @param string $type
+   *   The link's type.
+   */
+  public function setType($type) {
+    $this->type = $type;
   }
 }

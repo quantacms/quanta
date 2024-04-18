@@ -14,9 +14,15 @@ class Thumbnail extends ImgThumb {
    */
   public function render() {
     $node = NodeFactory::loadOrCurrent($this->env, $this->getTarget());
+    $this->setAttribute('node', $node->getName());
     $this->setTarget($node->getThumbnail());
-    $this->attributes['link'] = $node->getName();
-    $this->attributes['node'] = $node->getName();
-    return parent::render();
+    $html = parent::render();
+    if (empty($this->getAttribute('link')) || $this->getAttribute('link') != 'false') {
+      $link = new Link($this->env, $this->getAttributes(), $node->getName());
+      $link->destination = '/' . (!empty($this->getAttribute('href')) ? $this->getAttribute('href') :  $node->getName());
+      $link->setHtmlBody($html);
+      $html = $link->render();
+    }
+    return $html;
   }
 }

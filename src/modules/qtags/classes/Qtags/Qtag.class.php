@@ -72,10 +72,10 @@ class Qtag {
    * @param Environment $env
    *   The Environment.
    *
-   * @param string $attributes
+   * @param array $attributes
    *   The Qtag's attributes
    *
-   * @param array $target
+   * @param string $target
    *   The Qtag's target.
    */
   public function __construct(&$env, $attributes, $target, $tag = NULL) {
@@ -96,12 +96,11 @@ class Qtag {
     // change access rules or perform other interactions.
     $this->env->hook('qtag_preload', $vars);
 
-    // Check that current user has access to the qtag. Empty the qtag if it's not.
-    if (!$this->getAccess()) {
-      $this->html = '';
-    }
-    elseif (!$this->rendered) {
+    // Default empty string value for the Qtag.
+    $this->html = '';
 
+    // Check that current user has access to the qtag. Empty the qtag if it's not.
+    if ($this->getAccess() && !$this->rendered) {
       $this->html = $this->render();
       $this->rendered = TRUE;
       // Let other modules hook into the rendered qtag.
@@ -112,6 +111,12 @@ class Qtag {
       }
       if (!empty($this->attributes['prefix']) && !empty($this->html)) {
         $this->html = $this->attributes['prefix'] . $this->html;
+      }
+      if (!empty($this->attributes['trim']) && is_numeric($this->attributes['trim']) && !empty($this->html)) {
+        $this->html = substr($this->html, 0, $this->attributes['trim']);
+        if (!empty($this->attributes['trim_text'])) {
+          $this->html .= $this->attributes['trim_text'];
+        }
       }
       // Prevent replacement where no_qtags attribute present. Used for input forms etc.
       if (isset($this->attributes['no_qtags'])) {
@@ -128,21 +133,25 @@ class Qtag {
    *   The highlighted Qtag string.
    */
   public function highlight() {
+
+    // TODO: those characters seem ignored by htmlentities(). Converting manually for now, check out why.
+    $open_tag = \Quanta\Common\Api::string_normalize($this->delimiters[0]);
+    $close_tag = \Quanta\Common\Api::string_normalize($this->delimiters[1]);
     $highlighted = '<span class="qtag">';
-    $highlighted .= '<span class="qtag-open-close">' . $this->delimiters[0] . '</span><span class="qtag-name">' . $this->tag . '</span>';
+    $highlighted .= '<span class="qtag-open-close">' . $open_tag . '</span><span class="qtag-name">' . $this->tag . '</span>';
     foreach ($this->attributes as $attribute_name => $attribute_value) {
       if (($attribute_value != "showtag") && ($attribute_value != "highlight")) {
         $attribute_full = $attribute_name . (empty($attribute_value) ? '' : ('=' . $attribute_value));
-        $highlighted .= '<span class="qtag-attribute-separator">|</span>';
+        $highlighted .= '<span class="qtag-attribute-separator">&#124;</span>';
         $highlighted .= '<span class="qtag-attribute">' . $attribute_full . '</span>';
       }
     }
     if (!empty($this->getTarget())) {
-      $highlighted .= '<span class="qtag-target-separator">:</span>';
+      $highlighted .= '<span class="qtag-target-separator">&colon;</span>';
       $highlighted .= '<span class="qtag-target">' . $this->getTarget() . '</span>';
     }
 
-    $highlighted .= '<span class="qtag-open-close">' . $this->delimiters[1] . '</span>';
+    $highlighted .= '<span class="qtag-open-close">' . $close_tag . '</span>';
 
     $highlighted .= '</span>';
     return $highlighted;
@@ -212,8 +221,19 @@ class Qtag {
    * @return mixed
    *   The Qtag's attribute value.
    */
-  public function getAttribute($attr_name) {
-    return !empty($this->attributes[$attr_name]) ? $this->attributes[$attr_name] : NULL;
+  public function getAttribute($attr_name, $empty_value = NULL) {
+
+    return !empty($this->attributes[$attr_name]) ? $this->attributes[$attr_name] : $empty_value;
+  }
+
+  /**
+   * Checks if a Qtag has a specific attribute.
+   *
+   * @return bool
+   *   True if the attribute is set on the Qtag.
+   */
+  public function hasAttribute($attr_name) {
+    return isset($this->attributes[$attr_name]);
   }
 
   /**

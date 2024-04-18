@@ -103,7 +103,7 @@ var EasyAutocomplete = (function(scope){
 
 			requestDelay: 0,
 
-			adjustWidth: true,
+			adjustWidth: false,
 
 			ajaxSettings: {},
 

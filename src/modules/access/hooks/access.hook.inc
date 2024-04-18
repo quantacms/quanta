@@ -9,11 +9,11 @@ namespace Quanta\Common;
  * @param $vars
  *   An array of variables.
  */
-function access_shadow_node_form(Environment $env, array $vars){
+function access_shadow_node_permissions(Environment $env, array $vars){
   /** @var Shadow $shadow */
   $shadow = &$vars['shadow'];
   $module_path = $env->getModulePath('access');
-  $tab_contents =  file_get_contents($module_path . '/tpl/permissions_form.html');
+  $tab_contents =  file_get_contents($module_path . '/tpl/node_permissions.html');
   $shadow->addTab('manage permissions',$tab_contents, 5);
 }
 
@@ -36,7 +36,7 @@ function access_node_presave(Environment $env, array $vars){
   $node = &$vars['node'];
   // TODO: review this process.
   if (!isset($node->json->permissions)) {
-    $node->json->permissions = new stdClass();
+    $node->json->permissions = new \stdClass();
   }
   // Set all the node's permissions.
   foreach ($node_permissions as $permission) {
@@ -77,16 +77,18 @@ function access_node_open(Environment $env, array $vars) {
  * @param $vars
  *   An array of variables.
  */
-function access_qtag_preload(Environment $env, array $vars){
+function access_qtag_preload(Environment $env, array $vars) {
   $node = NodeFactory::current($env);
   $user = UserFactory::current($env);
+  /** @var Qtag $qtag */
+  $qtag = &$vars['qtag'];
 
   // The user has selected to show the tag only if a certain criteria is matched.
-  if (!empty($vars['attributes']['filter'])) {
-  $filter_match = _access_filter($env, $vars['attributes']['filter'], $node, $user);
+  if (!empty($qtag->getAttribute('filter'))) {
+    $filter_match = _access_filter($env, $qtag->getAttribute('filter'), $node, $user);
     // If there is an active tag filter, and it doesn't match, empty the tag.
     if (!$filter_match) {
-      $vars['access'] = FALSE;
+      $qtag->setAccess(FALSE);
     }
   }
 }
@@ -106,7 +108,6 @@ function access_qtag_preload(Environment $env, array $vars){
  *   Returns true if the access check was positive.
  */
 function _access_filter($env, $criteria, $node, $user = NULL) {
-
 
   // Explode the criteria values.
   $filter = explode(',', $criteria);
@@ -143,8 +144,16 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
         $filter_check = $explode;
         break;
       // Filter by current node path.
+      case 'author':
+        $filter_check = array($node->getAuthor());
+        break;
+      // Filter by current node path.
       case 'path':
         $filter_check = array($node->getName());
+        break;
+      // Filter by current node path.
+      case 'language':
+        $filter_check = array(Localization::getLanguage($env));
         break;
       // Filter by current node's father node.
       case 'father':
@@ -155,7 +164,10 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
         $filter_check = array($user->getName());
         break;
       // Filter by current user's role.
-      case 'user_role':
+			case 'status':
+        $filter_check = array($node->getStatus());
+				break;
+			case 'user_role':
         $filter_check = $user->getRoles();
         break;
       // Filter by node's lineage (father, grandfather, and all ancestors!).
@@ -163,10 +175,13 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
         $one_match = TRUE;
         $filter_check = array();
         $lineage = $node->getLineage();
+
         foreach ($lineage as $lineage_node) {
           /** @var Node $lineage_node */
           $filter_check[] = $lineage_node->getName();
         }
+        $filter_check[] = $node->getName();
+
         break;
 
       case 'context':
@@ -182,17 +197,14 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
         }
         break;
 
-      case 'status':
-        $filter_check = array($node->getStatus());
-        break;
-
       default:
-
+        if (!empty($filter_type) && !empty($node->getAttributeJSON($filter_type))) {
+		$filter_check[] = $node->getAttributeJSON($filter_type);
+        }
         break;
     }
 
     if (!empty($filter_check)) {
-
       // Check if the filtered item corresponds to the user input.
       foreach ($filter_check as $check) {
 
@@ -203,8 +215,13 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
             $filter_value = str_replace('!', '', $filter_value);
           }
 
-          $filter_match = ($check == $filter_value);
-
+	  // If comparing with an array of values, check if the value is in the array.
+	  if (is_array($check)) {
+		  $filter_match = in_array($filter_value, $check);
+	  }
+	  else {
+		  $filter_match = ($check == $filter_value);
+	  }
           if ($filter_match && !isset($negate)) {
             unset($one_match);
             $break = TRUE;
@@ -238,7 +255,7 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
       }
     }
     else {
-      $filter_match = TRUE;
+      $filter_match = FALSE;
     }
 
   }

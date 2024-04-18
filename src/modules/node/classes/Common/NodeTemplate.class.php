@@ -78,42 +78,77 @@ class NodeTemplate extends DataContainer {
    */
   public function buildTemplate() {
     $tpl = array();
-    $tpl_level = 0;
-    // TODO: current node taken out of lineage. Correct to add like this?
-    $lineages = array($this->node) + $this->node->getLineage();
+    $tpl_sublevel = 0;
+    $lineages = $this->node->getLineage() + array($this->node->name => $this->node);
+    // Invert lineage: from specific to generic.
+    $lineages = array_reverse($lineages);
+
+    // Priority 1: tpl without levels.
+    // If the current node has a TPL set use that directly and don't look for others.
     if (is_file($this->node->path . '/tpl.html')) {
       $this->setData('tpl_file', $this->node->path . '/tpl.html');
     }
+    elseif (is_file($this->env->dir['tpl'] . '/' . $this->node->name . '_tpl.html')) {
+    	$this->setData('tpl_file', $this->env->dir['tpl'] . '/' . $this->node->name . '_tpl.html');
+    }
     else {
+      // Navigate the node's lineage looking for a suitable template.
       foreach ($lineages as $lineage) {
-        $tpl_level++;
-        // If tpl^.html exists - template applies to all sublevels of the node.
-        if (is_file($lineage->path . '/tpl^.html')) {
-          $this->setData('tpl_file', $lineage->path . '/tpl^.html');
-          break;
-        }
-        else {
+
+        // Priority 2: tpl with levels (sub-level).
+        // Check it only if the folder is an anchestor of current node folder.
+        if ($tpl_sublevel > 0) {
           $min = '';
           // We support 5 levels of sub-level templates for now.
-          // level 0 = tpl.html
-          // level 1 = tpl-.html
+          // level 1 = tpl^.html
           // level 2 = tpl--.html
           // etc...
-          for ($i = 1; $i <= 6; $i++) {
+          // "node/subnode/tpl-" has priority over "node/tpl--"
+          for ($i = 1; $i <= 5; $i++) {
             $min .= '-';
-            $file = $lineage->path . '/tpl' . $min . '.html';
-            if (file_exists($file)) {
-              $tpl[$tpl_level + $i] = $file;
+	    $file = $lineage->path . '/tpl' . $min . '.html';
+	    $file_tpl = $this->env->dir['tpl'] . '/' . $lineage->name . '_tpl' . $min . '.html';
+	    if ($tpl_sublevel == $i) {
+		if (file_exists($file)) {
+              // tpl matches sublevel and distance form current node position: add it!
+		  $tpl[$tpl_sublevel] = $file;
+		}
+		elseif (file_exists($file_tpl)) {
+		  $tpl[$tpl_sublevel] = $file_tpl;
+		}
+		else {
+		}
             }
           }
         }
+
+        // Priority 3: tpl "catch all".
+        // If tpl^.html exists - template applies to all sublevels of the node.
+        if (!isset($tpl_catch_all) && is_file($lineage->path . '/tpl^.html')) {
+          $tpl_catch_all = $lineage->path . '/tpl^.html';
+	}
+	elseif (!isset($tpl_catch_all) && is_file($this->env->dir['tpl'] . '/' . $lineage->name . '_tpl^.html')) {
+          $tpl_catch_all = $this->env->dir['tpl'] . '/' . $lineage->name . '_tpl^.html';
+	}
+
+        $tpl_sublevel++;
+      }
+
+      // Check if there is a sub-level template.
+      if (!empty($tpl)) {
+        // Get the closest sub-level tpl to the node (tpl- is better than tpl--).
+        $closest_tpl_key = min(array_keys($tpl));
+        $closest_tpl = $tpl[$closest_tpl_key];
+        $this->setData('tpl_file', $closest_tpl);
+      }
+      // If no sub-level template find (it has priority) check if there is a catchall template.
+      elseif (isset($tpl_catch_all)) {
+        $this->setData('tpl_file', $tpl_catch_all);
+      }
+      else {
+      	// TODO: what to do if No template?
       }
     }
-    // Check if there is a sub-level template.
-    if (isset($tpl[$tpl_level])) {
-      $this->setData('tpl_file', $tpl[$tpl_level]);
-    }
-
 
     // Set the template. By default, if no template file is found, a node renders its body.
     $this->html = (!empty($this->getData('tpl_file'))) ? file_get_contents($this->getData('tpl_file')) : $this->node->getBody();

@@ -16,20 +16,26 @@ class Shadow extends Content {
       case 'tab-titles':
         $string = $shadow->getData('tab_titles');
         break;
+
       case 'tab-contents':
         $string = $shadow->getData('tab_contents');
         break;
+
       case 'context':
         $string = $this->env->getContext();
         break;
+
       case 'node':
         $string = $shadow->getNode()->getName();
         break;
+
       case 'buttons':
+        // TODO: move to qtag.
         $buttons = '<div id="shadow-buttons">';
         foreach ($shadow->getData('buttons') as $action => $button) {
           $buttons .= '<a class="shadow-submit" id="' . $action . '">' . $button . '</a>';
         }
+        $buttons .= '<a class="shadow-cancel" id="cancel">Cancel</a>';
         $buttons .= '</div>';
         $string = $buttons;
         break;
@@ -40,10 +46,14 @@ class Shadow extends Content {
 
       // Extra HTML that can be attached.
       case 'extra':
-        $html = '';
-        $vars = array('html' => &$html);
-        $this->env->hook('shadow_' . $this->env->getContext() . '_extra', $vars);
-        $string = $html;
+        $extra_arr = $shadow->getExtra();
+        $extra_items = array();
+        if (!empty($extra_arr)) {
+          foreach ($extra_arr as $extra) {
+            $extra_items[$extra['weight']] = $extra['content'];
+          }
+        }
+        return implode('', $extra_items);
         break;
     }
     return $string;

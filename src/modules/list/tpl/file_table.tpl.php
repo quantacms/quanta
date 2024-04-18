@@ -1,1 +1,1 @@
-<li class="list-item list-item-file list-item-file-admin file-[EXT]"> xyz <a class="file-link" href="[URL]">[TITLE]</a></li>
+<a class="file-link file-[FILE_ATTRIBUTE|name=type:{LISTITEM}]" href="{LISTITEM}">{LISTITEM}</a>

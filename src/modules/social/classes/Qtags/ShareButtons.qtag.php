@@ -5,7 +5,8 @@ use Quanta\Common\NodeFactory;
 /**
  * Create social sharing buttons for a node.
  */
-class ShareButtons extends Qtag {
+class ShareButtons extends HtmlTag {
+  protected $share_text = NULL;
   /**
    * @return string
    *   The rendered Qtag.
@@ -13,8 +14,11 @@ class ShareButtons extends Qtag {
   public function render() {
 // Which folder to use.
     $node = NodeFactory::loadOrCurrent($this->env, $this->getTarget());
-    
-    $share_buttons = '';
+
+    if (!empty($this->getAttribute('share_text'))) {
+      $this->share_text = $this->getAttribute('share_text');
+    }
+
     $link_attr = array('protocol' => 'https');
 
     // Pick a set of icons.
@@ -46,13 +50,22 @@ class ShareButtons extends Qtag {
 
     // Render the social share buttons.
     foreach ($socials as $social_item => $social_item_data) {
-      $img =  '<img src="src/modules/core/social/assets/set/' . $set . '/' . $social_item . '.png" />';
-      $link_attr['title'] = $img;
+      // Create the link to the image of the social network
+      $social_img = $this->env->getModulePath('social') . '/assets/set/' . $set . '/' . $social_item . '.png';
+      $img_attributes = array();
+      $img = new \Quanta\Qtags\Img($this->env, $img_attributes, $social_img);
+      $img->addClass('share-img');
+      $img->setAttribute('alt', $social_item_data['title']);
+      $link_attr['title'] = $img->render();
       $link_attr['tooltip'] = $social_item_data['title'];
-      $link = new Link($this->env, $social_item_data['url'], $link_attr);
-      $share_buttons .= $link->render();
+      $link = new Link($this->env, $link_attr, $social_item_data['url']);
+      $this->html_body .= $link->render();
+    }
+    // Optional "share" text.
+    if (!empty($this->share_text)) {
+      $this->html_body = '<h3>' . t($this->share_text) . '</h3>' . $this->html_body;
     }
 
-    return $share_buttons;
+    return parent::render();
   }
 }

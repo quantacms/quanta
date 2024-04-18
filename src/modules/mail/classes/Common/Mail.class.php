@@ -1,4 +1,6 @@
 <?php
+namespace Quanta\Common;
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 /**
@@ -8,7 +10,7 @@ use PHPMailer\PHPMailer\Exception;
  * Time: 16:45
  */
 
-class Mail extends Quanta\Common\Node {
+class Mail extends Node {
   /**
    * Send an email using phpmailer.
    */
@@ -30,7 +32,13 @@ class Mail extends Quanta\Common\Node {
     $mail->SMTPAuth = !empty($this->getData('SMTPAuth')) ? $this->getData('SMTPAuth') : true;
     $mail->SMTPSecure = !empty($this->getData('SMTPSecure')) ? $this->getData('SMTPSecure') : 'tls';
     $mail->SMTPDebug = !empty($this->getData('SMTPDebug')) ? $this->getData('SMTPDebug') : 0;
-		$mail->Username = $this->getData('username');
+    $mail->CharSet = !empty($this->getData('CharSet')) ? $this->getData('CharSet') : "UTF-8";
+    if (!empty($this->getData('attachments'))) {
+      foreach ($this->getData('attachments') as $attachment) {
+        $mail->addAttachment($attachment);
+      }
+    }
+    $mail->Username = $this->getData('username');
     $mail->Password = $this->getData('password');
     $mail->Port = $this->getData('port');
     $mail->setFrom($this->getData('from'), $this->getData('from_name'));
@@ -51,7 +59,7 @@ class Mail extends Quanta\Common\Node {
 		}
 		catch(Exception $ex) {
       // Catch any errors.
-      new Message($this->env, t('Mailer Error: %error', array('%error' => $mail->ErrorInfo)), MESSAGE_ERROR);
+      new Message($this->env, t('Mailer Error: %error', array('%error' => $mail->ErrorInfo)), Message::MESSAGE_ERROR);
 		}
   }
 } 

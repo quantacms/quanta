@@ -1,8 +1,5 @@
 <?php
 namespace Quanta\Common;
-
-
-
 date_default_timezone_set('UTC');
 
 /**
@@ -10,6 +7,7 @@ date_default_timezone_set('UTC');
  * This class represents a Node (corrisponding to a folder in the file system).
  * This is the core of the engine.
  */
+#[\AllowDynamicProperties]
 class Node extends JSONDataContainer {
   const NODE_ACTION_ADD = 'node_add';
   const NODE_ACTION_VIEW = 'node_view';
@@ -20,6 +18,8 @@ class Node extends JSONDataContainer {
   const NODE_STATUS_PUBLISHED = 'node-status-published';
   const NODE_STATUS_UNPUBLISHED = 'node-status-unpublished';
   const NODE_PERMISSION_INHERIT = 'inherit';
+  const NODE_PERMISSION_SELF = 'self';
+
   const NODE_NEW = '__NEW__';
   
   public $title;
@@ -30,12 +30,12 @@ class Node extends JSONDataContainer {
   public $exists;
   public $permissions;
   public $status;
-  public $keywords;
   public $timestamp;
   public $father = NULL;
   public $thumbnail = NULL;
   protected $lineage = array();
   public $tpl = NULL;
+  public $weight = 0;
   public $forbidden = FALSE;
 
   /**
@@ -54,7 +54,7 @@ class Node extends JSONDataContainer {
 
     $this->env = $env;
     $this->json = new \stdClass();
-
+ 
     // Load node's language.
     $this->setLanguage(!empty($language) ? $language : Localization::getLanguage($this->env));
 
@@ -66,12 +66,12 @@ class Node extends JSONDataContainer {
     // TODO: move to nodefactory.
     // Checking if this is not a new node.
     if ($name != self::NODE_NEW) {
-
-      $this->setName(strtolower($name));
-
+	    $this->setName($name);
+	    //strtolower($name));
       // TODO: language!
-      // Load node from cache (RAM) if it has been already loaded.
-      $cached = Cache::get($this->env, 'node', $this->name);
+	    // Load node from cache (RAM) if it has been already loaded.
+
+      $cached = Cache::get($this->env, 'node', $this->cacheTag());
       if ($cached) {
         foreach (get_object_vars($cached) as $key => $value) {
           $this->{$key} = $value;
@@ -88,12 +88,10 @@ class Node extends JSONDataContainer {
 
       // If node is not in cache, load it from file system.
       else {
-        $result = $this->env->nodePath($this->getName());
         // TODO: unify path and path.
-        $this->path = $result;
-        $this->exists = $result != NULL;
+        $this->path = $this->env->nodePath($this->getName());
+        $this->exists = $this->path != NULL;
       }
-
     } // ...Adding a new node. No values to load.
     else {
       $this->setName(self::NODE_NEW);
@@ -152,13 +150,13 @@ class Node extends JSONDataContainer {
     if (isset($this->json->timestamp)) {
       $this->setTimestamp($this->json->timestamp);
     }
+    // Load the weight of the node.
+    if (isset($this->json->weight)) {
+      $this->setWeight($this->json->weight);
+    }
     // Load the node Thumbnail from json.
     if (isset($this->json->thumbnail)) {
       $this->setThumbnail($this->json->thumbnail);
-    }
-    // Load the node Keywords from json.
-    if (isset($this->json->keywords)) {
-      $this->setKeywords($this->json->keywords);
     }
   }
 
@@ -173,6 +171,10 @@ class Node extends JSONDataContainer {
     return ($this->getStatus() == self::NODE_STATUS_PUBLISHED);
   }
 
+  public function cacheTag() {
+
+   return $this->name . '_' . $this->getLanguage(); 
+  }
   /**
    * Update node's json values.
    *
@@ -188,9 +190,8 @@ class Node extends JSONDataContainer {
     $this->json->title = $this->getTitle();
     $this->json->thumbnail = $this->getThumbnail();
     $this->json->timestamp = empty($this->getTimestamp()) ? time() : $this->getTimestamp();
+    $this->json->weight = empty($this->getWeight()) ? time() : $this->getWeight();
     $this->json->status = $this->getStatus();
-    $this->json->keywords = $this->getKeywords();
-
   }
 
   /**
@@ -204,7 +205,6 @@ class Node extends JSONDataContainer {
    *   The JSON attribute.
    */
   public function getAttributeJSON($attr_name, $normalize = TRUE) {
-
     if (!isset($this->json->{$attr_name})) {
       return NULL;
     }
@@ -237,18 +237,31 @@ class Node extends JSONDataContainer {
   }
 
   /**
-   * Load node with its variables internally.
+   * Load node with its internal variables.
    */
   public function load() {
-    $vars = array('node' => &$this);
-    // TODO: running a hook at each node load is too CPU intensive. Deprecate node load hooks.
-    $this->env->hook('node_load', $vars);
-    //TODO: find a better way to check node existence
+
+    // TODO: following code should not be here. Moved from former hook node load.
+    // When saving a node, select the pre-created temporary files dir.
+    if (!empty($_REQUEST['json']) && ($json = json_decode($_REQUEST['json'])) && isset($json->tmp_files_dir)) {
+      $this->setData('tmp_files_dir', array_pop($json->tmp_files_dir));
+    }
+    else {
+      $this->setData('tmp_files_dir', $this->getName() . '-' . $this->getData('timestamp'));
+    }
+
+    if (!empty($_REQUEST['json']) && ($json = json_decode($_REQUEST['json'])) && isset($json->files_count)) {
+      $this->setData('files_count', $json->files_count);
+    }
+   
+
+    //TODO: find a better way to check node existence.
     if (!isset($this->json->timestamp) && $this->exists) {
       $this->buildContent();
     }
-    if ($this->exists && ($this->getTimestamp() == NULL)) {
-      // TODO: what to do when no timestamp has been set?
+
+    // TODO: what to do when no timestamp has been set?
+    if (!$this->exists || ($this->getTimestamp() == NULL)) {
       $this->setTimestamp(time());
     }
   }
@@ -262,7 +275,7 @@ class Node extends JSONDataContainer {
     $vars = array('node' => &$this);
 
     $this->env->hook('node_build', $vars);
-    Cache::set($this->env, 'node', $this->name, $this);
+    Cache::set($this->env, 'node', $this->cacheTag(), $this);
   }
 
   /**
@@ -338,7 +351,7 @@ class Node extends JSONDataContainer {
     }
     if (!$author->exists && $author->getName() != \Quanta\Common\User::USER_ANONYMOUS) {
       new Message($this->env,
-        t('User %author' . $this->getAuthor() . ' is not a valid user!'),
+        t('User !author is not a valid user!', array('!author' => $this->getAuthor())),
         \Quanta\Common\Message::MESSAGE_WARNING
       );
       $valid = FALSE;
@@ -362,7 +375,7 @@ class Node extends JSONDataContainer {
     // Reload the node JSON.
     $this->updateJSON();
     // Save the node json (excluding some fields such as path.)
-    $this->saveJSON(array('name', 'path', 'exists', 'path', 'father', 'data'));
+    $this->saveJSON(array('name', 'path', 'exists', 'father', 'data'));
     $this->env->hook('node_after_save', $vars);
   }
 
@@ -406,26 +419,6 @@ class Node extends JSONDataContainer {
   }
 
   /**
-   * Gets the status of a node.
-   *
-   * @return string
-   *   The node status.
-   */
-  public function getKeywords() {
-    return $this->keywords;
-  }
-
-  /**
-   * Sets the status of a node.
-   *
-   * @param string $status
-   *   The node status.
-   */
-  public function setKeywords($status) {
-    $this->keywords = $status;
-  }
-
-  /**
    * Returns the teaser of the node. Normalized and with tags excluded.
    *
    * @return string
@@ -433,8 +426,13 @@ class Node extends JSONDataContainer {
    */
   public function getTeaser() {
     // TODO: why not using api::stringNormalize?
-    $teaser = (strlen(trim($this->teaser)) > 0) ? preg_replace('/\[[^>]*\]/', '', strip_tags($this->teaser)) : NULL;
-    return $teaser;
+   if ($this->teaser != NULL) {
+	  $teaser = preg_replace('/\[[^>]*\]/', '', strip_tags($this->teaser));
+   }
+   else {
+   	$teaser = '';
+   }
+   return $teaser;
   }
 
   /**
@@ -479,19 +477,61 @@ class Node extends JSONDataContainer {
    * Delete this node by adding a __ prefix to the folder.
    */
   public function delete() {
-    $np = explode('/', $this->path);
-    $rmname = '__' . $np[count($np) - 1] . '_' . time();
-    $np[count($np) - 1] = $rmname;
-    // Delete file is indeed not an immediate deletion: it adds __ to folder name.
-    // This is useful in order to recover a node that was accidentally deleted.
-    //unlink($this->path);
-    rename($this->path, implode('/', $np));
-    new Message($this->env,
-      t('User deleted this node: !node.', array('!node' => $this->getName())),
-      \Quanta\Common\Message::MESSAGE_GENERIC,
-      \Quanta\Common\Message::MESSAGE_TYPE_LOG,
-      'node'
+     // Define the destination folder path
+     $destinationFolder = $this->env->dir['trashbin'] . '/' . time();
+
+ 
+    // Create the destination folder if it doesn't exist
+    if (!is_dir($destinationFolder)) {
+          // Create the destination folder if it doesn't exist with full permissions (0777)
+        if (!mkdir($destinationFolder, 0777, true)) {
+          // If directory creation fails, show an error and exit
+          $errorMessage = t("Failed to create destination folder.");
+        }
+      }
+
+    // Check if the source file exists before moving
+    elseif(!file_exists($this->path)) {
+      // If the source file doesn't exist, show an error and exit
+      $errorMessage = t("Source file does not exist.");
+    }
+
+    // Move the node to the trashbin folder
+    $sourceFile = $this->path;
+    $destinationFile = $destinationFolder . '/' . basename($this->path);
+    
+
+    // Use exec to execute the shell command
+    $command = "mv \"$sourceFile\" \"$destinationFile\"";
+    exec($command, $output, $return);
+
+      // Check if the move was successful
+      if ($return === 0) {
+        // Node moved successfully
+        new Message($this->env,
+        t('User deleted this node: !node.', array('!node' => $this->getName())),
+        \Quanta\Common\Message::MESSAGE_GENERIC,
+        \Quanta\Common\Message::MESSAGE_TYPE_LOG,
+        'node'
+        );
+      }
+      else{
+        // Handle the case where the move operation failed
+        $errorMessage = t("Failed to move the file.");
+      }
+   
+    if (isset($errorMessage)) {
+      // Handle error message
+      // TODO: Show the error message
+      new Message($this->env,
+      $errorMessage,
+      \Quanta\Common\Message::MESSAGE_WARNING,
+      \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
     );
+  }
+ 
+    
+   
   }
 
   /**
@@ -532,11 +572,10 @@ class Node extends JSONDataContainer {
     // Explode the full directory of the node to retrieve the relative path.
     $explode_path = explode($this->env->dir['docroot'], $this->path);
 
-    // If <= 1 probably we are in homepage, no lineage available.
+    // If count of path elements is <= 1 probably we are in homepage, therefore no lineage available.
     if (count($explode_path) > 1) {
       $fullpath = $explode_path[1];
       $bca = explode('/', $fullpath);
-
       foreach ($bca as $bread_node) {
         // In the lineage don't include the current node, or empty nodes.
         if ($bread_node == '' || $bread_node == $this->getName()) {
@@ -544,10 +583,7 @@ class Node extends JSONDataContainer {
         }
         // TODO: use nodefactory without a loop.
         $node = \Quanta\Common\NodeFactory::load($this->env, $bread_node);
-        if (!$node->exists) {
-          continue;
-        }
-        $this->lineage[] = $node;
+        $this->lineage[$node->getName()] = $node;
       }
     }
   }
@@ -586,6 +622,26 @@ class Node extends JSONDataContainer {
     date_default_timezone_set('UTC');
 
     return date('d-m-Y', $this->getTimestamp());
+  }
+
+  /**
+   * Get the weight of the node.
+   *
+   * @return int
+   *   The weight of the Node.
+   */
+  public function getWeight() {
+    return $this->weight;
+  }
+
+  /**
+   * Set the weight of the node.
+   *
+   * @param $weight
+   *   The weight of the node.
+   */
+  public function setWeight($weight) {
+    $this->weight = $weight;
   }
 
   /**

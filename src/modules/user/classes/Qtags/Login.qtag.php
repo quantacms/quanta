@@ -1,25 +1,24 @@
 <?php
 namespace Quanta\Qtags;
-use Quanta\Common\UserFactory;
-
 /**
  * Renders an user sign up / registration link.
  */
 class Login extends Link {
-
   /**
    * @return string
    *   The rendered Qtag.
    */
   public function render() {
-    $user = UserFactory::current($this->env);
-    if ($user->exists) {
+
+    $user = \Quanta\Common\UserFactory::current($this->env);
+
+    if ($user->exists && $user->name != \Quanta\Common\User::USER_ANONYMOUS) {
       $this->link_class = array('logout-link');
-      $this->link_body = t('Logout');
+      $this->html_body = t('Logout');
     }
     else {
       $this->link_class = array('login-link');
-      $this->link_body = t('Login');
+      $this->html_body = t('Login');
     }
 
     return parent::render();

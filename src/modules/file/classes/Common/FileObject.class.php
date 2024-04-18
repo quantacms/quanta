@@ -1,15 +1,15 @@
 <?php
 namespace Quanta\Common;
 
-define('FILE_RENDER_NAME', 'file_render_text');
-define('FILE_RENDER_LINK', 'file_render_link');
-define('FILE_RENDER_PATH', 'file_render_path');
-
 /**
  * Class File
- * This class represents a Page (corrisponding to a rendered html page).
+ *
+ * This class represents a File (of any type).
  */
 class FileObject extends DataContainer {
+  const FILE_RENDER_NAME = 'file_render_text';
+  const FILE_RENDER_LINK = 'file_render_link';
+  const FILE_RENDER_PATH = 'file_render_path';
   /** @var string $name */
   public $name;
   /** @var string $filename */
@@ -26,8 +26,10 @@ class FileObject extends DataContainer {
   public $size;
   /** @var Node $node */
   public $node;
+  /** @var string $external */
+  public $external = FALSE;
 
-  // Construct the File object.
+
 
   /**
    * File object constructor.
@@ -46,23 +48,31 @@ class FileObject extends DataContainer {
    */
   public function __construct(&$env, $file_path, $node = NULL, $name = NULL) {
     $this->env = $env;
-    $split = explode('/', $file_path);
-    if ($node == NULL) {
-      $this->node = (count($split) > 1) ?  NodeFactory::load($env, $split[count($split) - 2]) : NodeFactory::current($env);
-    } else {
-      $this->node = $node;
+    // Check for external file.
+    if (($file_path != NULL) && (strpos($file_path, '/') !== FALSE)) {
+      $this->external = TRUE;
+      $this->setNode(NodeFactory::current($env));
+
     }
-    $this->setFileName($split[count($split) - 1]);
-
-    // TODO: set / get functions.
-    $this->path = $file_path;
-    $exp = explode('.', $file_path);
-    $this->extension = strtolower($exp[count($exp) - 1]);
-    $this->name = ($name == NULL) ? $file_path : $name;
-    $this->type = FileObject::getFileType($this->extension);
-    $this->exists = is_file($this->path);
+    elseif (empty($node)) {
+      $this->setNode(NodeFactory::current($env));
+    }
+    else {
+      $this->setNode($node);
+    }
+    $this->setFileName($name);
+    $this->setPath($file_path);
+    if ($file_path == NULL) {
+      $this->exists = FALSE;
+    }
+    else {
+      $exp = explode('.', $file_path);
+      $this->setExtension(strtolower($exp[count($exp) - 1]));
+      $this->setName (($name == NULL) ? $file_path : $name);
+      $this->setType(FileObject::getFileType($this->extension));
+      $this->exists = is_file($this->getRealPath());
+    }
   }
-
   /**
    * Check if the file is public (meaning it can be viewed / downloaded).
    *
@@ -102,6 +112,16 @@ class FileObject extends DataContainer {
   }
 
   /**
+   * Sets the file's type.
+   *
+   * @param string $file_type
+   *   The file's type.
+   */
+  public function setType($file_type) {
+    $this->type = $file_type;
+  }
+
+  /**
    * Gets the file's path.
    *
    * @return string
@@ -112,15 +132,23 @@ class FileObject extends DataContainer {
   }
 
   /**
+   * Sets the file's path.
+   *
+   * @param string $path
+   *   The file's path.
+   */
+  public function setPath($path) {
+    $this->path = $path;
+  }
+
+  /**
    * Get the file's "real" system path.
    *
    * @return string
    *   The file full system path.
    */
   public function getRealPath() {
-    $realpath_pre = empty($this->node) ? $this->env['dir']['docroot'] : $this->node->path;
-
-    return $realpath_pre . '/' . $this->getPath();
+    return ($this->external) ? $this->path : ($this->node->path . '/' . $this->getPath());
   }
 
   /**
@@ -129,8 +157,8 @@ class FileObject extends DataContainer {
    * @return string
    *   The full file's relative system path..
    */
-  public function getFullPath() {
-	  return '/' . $this->node->name . '/' . $this->getPath();
+  public function getRelativePath() {
+	  return str_replace($this->env->dir['src'], '', $this->getRealPath());
 	}
 
   /**
@@ -141,6 +169,16 @@ class FileObject extends DataContainer {
    */
   public function getExtension() {
     return $this->extension;
+  }
+
+  /**
+   * Sets the file's extension.
+   *
+   * @param string $extension
+   *   The file's extension.
+   */
+  public function setExtension($extension) {
+    $this->extension = $extension;
   }
 
   /**
@@ -156,6 +194,7 @@ class FileObject extends DataContainer {
     switch ($extension) {
       case 'jpg':
       case 'png':
+      case 'svg':
       case 'bmp':
       case 'gif':
       case 'jpeg':
@@ -231,18 +270,18 @@ class FileObject extends DataContainer {
    * @return string
    *   The rendered HTML version of the file.
    */
-  public function render($mode = FILE_RENDER_LINK) {
+  public function render($mode = self::FILE_RENDER_LINK) {
     switch ($mode) {
 
-      case FILE_RENDER_PATH:
+      case self::FILE_RENDER_PATH:
         $render = $this->getPath();
         break;
 
-      case FILE_RENDER_NAME:
+      case self::FILE_RENDER_NAME:
         $render = $this->getName();
       break;
 
-      case FILE_RENDER_LINK:
+      case self::FILE_RENDER_LINK:
       default:
         $render = '<a href="' . $this->path . '">' . $this->getName() . '</a>';
         break;
@@ -258,6 +297,16 @@ class FileObject extends DataContainer {
    */
   public function getName() {
     return $this->name;
+  }
+
+  /**
+   * Sets the file's name.
+   *
+   * @param string $name
+   *   The file's name.
+   */
+  public function setName($name) {
+    $this->name = $name;
   }
 
   /**
@@ -285,9 +334,13 @@ class FileObject extends DataContainer {
       'mp4',
       'mov',
       'm4a',
+      'm4u',
+      'wma',
       'txt',
       'xls',
-      'xlsx'
+      'xlsx',
+      'wav',
+      'svg',
     );
 
     // Create a temporary upload directory.
@@ -319,17 +372,43 @@ class FileObject extends DataContainer {
   }
 
   /**
+   * Gets the File name.
+   *
    * @return string
+   *   The file name.
    */
   public function getFileName() {
     return $this->filename;
   }
 
   /**
+   * Sets the File name.
+   *
    * @param $filename
+   *   The file name.
    */
   public function setFileName($filename) {
     $this->filename = $filename;
+  }
+
+  /**
+   * Gets the Node containing the file.
+   *
+   * @return Node
+   *   The node.
+   */
+  public function getNode() {
+    return $this->node;
+  }
+
+  /**
+   * Sets the Node containing the file.
+   *
+   * @param Node $node
+   *   The node.
+   */
+  public function setNode(Node $node) {
+    $this->node = $node;
   }
 
   /**
@@ -340,8 +419,8 @@ class FileObject extends DataContainer {
    * @param $file string
    */
   public static function deleteFile($node, $file) {
-    if (!NodeAccess::check($node->env, NODE_ACTION_EDIT, array('node' => $node))) {
-      new Message($node->env, 'Error: you have no permissions to delete files in this node', MESSAGE_ERROR);
+    if (!NodeAccess::check($node->env, Node::NODE_ACTION_EDIT, array('node' => $node))) {
+      new Message($node->env, t('Error: you have no permissions to delete files in this node'), Message::MESSAGE_ERROR);
     }
     unlink($node->path . '/' . $file);
   }

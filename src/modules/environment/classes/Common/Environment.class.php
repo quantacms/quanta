@@ -11,6 +11,7 @@ class Environment extends DataContainer {
   const DIR_DIRS = 'dirs';
   const DIR_FILES = 'files';
   const DIR_MODULES = 'modules';
+  const DIR_TPL = 'tpl';
   const QUANTA_ROOT = '__ROOT__';
   const GLOBAL_SEPARATOR = '@\@/@\@/@\@/@';
 
@@ -26,7 +27,6 @@ class Environment extends DataContainer {
   private $modules_loaded = array();
   private $includes = array();
   private $context;
-
   /**
    * Environment constructor.
    *
@@ -70,14 +70,18 @@ class Environment extends DataContainer {
     $this->dir['sites'] = $this->dir['quanta'] . '/sites';
     $this->dir['src'] = $this->dir['quanta'] . '/src';
     $this->dir['profiles'] = $this->dir['quanta'] . '/profiles';
+
     $this->dir['docroot'] = $this->dir['sites'] . '/' . $this->host;
     $this->dir['static'] = $this->dir['quanta'] . '/static';
     $this->dir['tmp_global'] = $this->dir['static'] . '/tmp';
     $this->dir['tmp'] = $this->dir['tmp_global'] . '/' . $this->host;
+    $this->dir['trashbin'] = $this->dir['tmp'] . '/trashbin';
     $this->dir['vendor'] = $this->dir['quanta'] . '/vendor';
     $this->dir['modules_core'] = $this->dir['src'] . '/modules';
     $this->dir['modules_custom'] = $this->dir['docroot'] . '/_modules';
-
+    $this->dir['users'] = $this->dir['docroot'] . '/_users';
+    $this->dir['tpl'] = $this->dir['docroot'] . '/_tpl';
+	
     // TODO: move to files module.
     $this->dir['tmp_files'] = $this->dir['tmp'] . '/files';
     $this->dir['log'] = $this->dir['tmp'] . '/log';
@@ -453,7 +457,7 @@ class Environment extends DataContainer {
   }
 
   /**
-   * Check if there are any queued actions in the requeqst.
+   * Check if there are any queued actions in the request.
    */
   public function checkActions() {
     if (isset($this->request_json->action)) {
@@ -463,6 +467,7 @@ class Environment extends DataContainer {
       }
       $vars = array('data' => (array) $this->request_json);
       $this->hook('action_' . $this->request_json->action, $vars);
+      exit;
     }
   }
 
@@ -472,7 +477,7 @@ class Environment extends DataContainer {
    * @return string
    */
   public function getCandidatePath($title) {
-    $candidate_path = normalizePath($title);
+    $candidate_path = \Quanta\Common\Api::normalizePath($title);
 
     $i = 0;
     while (TRUE) {
@@ -483,8 +488,7 @@ class Environment extends DataContainer {
         break;
       }
       else {
-        $i++;
-        $candidate_path = $candidate_path . '-' . $i;
+        $candidate_path = $candidate_path . '-' . time() . '-' . rand(1000,9999);
       }
     }
     return $candidate_path;
@@ -524,7 +528,8 @@ class Environment extends DataContainer {
    *   The result of the node search.
    */
   private function findNodePath($folder) {
-    $findcmd = 'find ' . $this->dir['docroot'] . '/ -name "' . $folder . '"';
+    // TODO: cleaner way to exclude folders in _modules.
+    $findcmd = 'find ' . $this->dir['docroot'] . '/ -type d -name "' . $folder . '" -not -path */_modules* -not -path *.git*';
     // TODO: sometimes getting empty folder. Why? Temporary fix.
     if (empty($folder)) {
       return NULL;
@@ -581,17 +586,19 @@ class Environment extends DataContainer {
       }
     }
     if (count($found_folders) > 1) {
-      new Message($this, 'Warning: there is more than one folder named ' . $folder . ': <br/>' . var_export($found_folders, 1) . '<br>Check integrity!');
-    }
-    elseif (empty($result)) {
-      new Message($this, 'Warning: there is no folder named ' . $folder . '<br>Check integrity!');
+      new Message($this,
+        t('Warning: there is more than one folder named !folder: <br/>!folds<br>Check integrity!',
+          array(
+            '!folder' => $folder,
+            '!folds' => var_export($found_folders, 1),
+          )
+        ));
     }
     else {
       Cache::storeNodePath($this, $result);
       return $result;
     }
 
-    // TODO: possible?
     return NULL;
   }
 
@@ -611,6 +618,4 @@ class Environment extends DataContainer {
     $node_name = array_slice(explode('/', $target), -1)[0];
     return $node_name;
   }
-
-
 }

@@ -1,4 +1,2 @@
-<div class="">
-  <div class="audio-title">[FILEATTRIBUTE|name=name:{LISTITEM}]</div>
-  <div class="audio-player">[AUDIO:{LISTITEM}]</div>
-</div>
+<div class="audio-title">[FILE_ATTRIBUTE|name=name:{LISTITEM}]</div>
+<div class="audio-player">[AUDIO:{LISTITEM}]</div>

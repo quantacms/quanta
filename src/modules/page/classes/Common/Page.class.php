@@ -30,7 +30,6 @@ class Page extends DataContainer {
    */
   public function loadIncludes() {
     // TODO: better way to skip load includes.
-    // TODO: using last run of doctor as token. Better solutions?
     $this->addCSS($this->env->dir['tmp_files'] . '/css.min.css');
     $this->addJS('/tmp/js.min.js');
   }
@@ -65,9 +64,11 @@ class Page extends DataContainer {
    */
   public function addJS($js, $mode = 'file') {
     if ($mode == 'inline') {
+      // Inline JS.
       $this->addData('js_inline', array($js));
     }
     else {
+      // JS files.
       $this->addData('js', array($js));
     }
   }
@@ -76,6 +77,11 @@ class Page extends DataContainer {
    * Build the HTML of the page.
    */
   public function buildHTML() {
+    $vars = array('page' => &$this);
+
+    // Trigger various page hooks.
+    // Page init.
+    $this->env->hook('page_preload', $vars);
 
     // This is an AJAX request. Skip loading index.html and just provide requested content.
     if (isset($_REQUEST['ajax'])) {
@@ -85,8 +91,7 @@ class Page extends DataContainer {
     elseif (!empty($this->getIndexFile())) {
       $this->html = file_get_contents($this->env->dir['docroot'] . '/' . $this->getIndexFile());
     }
-
-    // This is a special request, i.e. Shadow node edit.
+    // In case of a special pre-loaded page request, i.e. Shadow node edit.
     elseif (!empty($this->getData('content'))) {
       $this->html = $this->getData('content');
     }
@@ -94,13 +99,11 @@ class Page extends DataContainer {
       $this->html = t('Hello! Quanta seems not installed (yet) in your system. Please follow the <a href="https://www.quanta.org/installation-instructions">Installation Instructions</a><br /><br />Reason: file not found(' . $this->getIndexFile() . ')');
     }
 
-    $vars = array('page' => &$this);
-
     // Trigger various page hooks.
     // Page init.
     $this->env->hook('page_init', $vars);
 
-    // Page body classes (TODO: not that beautiful?).
+    // Page's body classes. // TODO: deprecate, include in page init.
     $this->env->hook('body_classes', $vars);
 
     // Page after build.
@@ -117,6 +120,9 @@ class Page extends DataContainer {
    * @return string
    */
   public function render() {
+    $vars = array('page' => &$this);
+    // Page complete.
+    $this->env->hook('page_render', $vars);
     return $this->html;
   }
 

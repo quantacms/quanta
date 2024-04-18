@@ -35,10 +35,6 @@ class DirList extends ListObject {
         continue;
       }
 
-      // Check if there is a filter set, and if it allows the item.
-      if (!empty($this->getData('list_filter')) && !_access_filter($this->env, $this->getData('list_filter'), $node)) {
-        continue;
-      }
       $i++;
 
       // If there is a limit set, break when passing it.
@@ -49,18 +45,22 @@ class DirList extends ListObject {
       $classes = array('dir-list-item', 'list-' . $this->getTpl() . '-item', 'list-item-' . $i, (($i % 2) == 0) ? 'list-item-even' : 'list-item-odd');
 
       // Check if the list item is the current / active one.
-      if ($node->isCurrent() || ($this->getAttribute('active_items') == $node->getName())) {
+      if ($node->isCurrent() || ($this->getData('active_items') == $node->getName())) {
         $classes[] = 'list-selected';
       }
       if (isset($node_father) && $node_father->exists && ($node_father->getName() == $node->getName())) {
         $classes[] = 'list-selected-father';
       }
+      /*
       foreach($this->replacements as $string => $replace) {
         $tpl = preg_replace("/" . str_replace('[', '\[', str_replace(']', '\]', $string)) . "/is", Api::string_normalize($replace), $tpl);
       }
+      */
       // TODO: not so beautiful to include a fake qTag. Can be done better.
-      $list_item = QtagFactory::transformCodeTags($this->env, preg_replace("/\[LISTITEM\]/is", Api::string_normalize($dir_url), $tpl));
-      $list_item = QtagFactory::transformCodeTags($this->env, preg_replace("/\[LISTNODE\]/is", Api::string_normalize($this->getNode()->getName()), $list_item));
+      $list_item = preg_replace("/\[LISTCOUNTER\]/is", $i, $tpl);
+      $list_item = preg_replace("/\[LISTITEM\]/is", Api::string_normalize($dir_url), $list_item);
+      $list_item = preg_replace("/\[LISTNODE\]/is", Api::string_normalize($this->getNode()->getName()), $list_item);
+      $list_item = QtagFactory::transformCodeTags($this->env, $list_item);
 
       $vars = array(
         'list' => &$this,
@@ -70,16 +70,17 @@ class DirList extends ListObject {
       );
       $this->env->hook('list_item', $vars);
 
-      $editable = $this->getAttribute('editable');
+      $editable = $this->getData('editable');
       // Wrap in the inline editor.
-      if (empty($editable) || $editable == 'true') {
+      if ($editable == 'true') {
         $list_item = NodeTemplate::wrap($this->env, $node, $list_item);
       }
 
+      // TODO: use the Qtag HTMLTAG approach.
       // If the "clean" attribute is not present, add some wrapping html.
       // Check if output should be list item or plain.
-      if (empty($this->getAttribute('clean'))) {
-        $list_item = '<' . $this->getData('list_item_html_tag') . ' class="' . implode(' ', $classes) . '">' . $list_item . '</' . $this->getData('list_item_html_tag') . '>';
+      if (empty($this->getData('clean'))) {
+        $list_item = '<' . $this->getData('list_item_html_tag') . ' class="' . implode(' ', $classes) . '" ' . ($this->sortable ? 'data-node="' . $node->getName() . '"' : '') . '>' . $list_item . '</' . $this->getData('list_item_html_tag') . '>';
       }
       $this->rendered_items[] = $list_item;
     }
@@ -114,7 +115,12 @@ class DirList extends ListObject {
           break;
 
         case 'title':
-          $check = strcasecmp($x->getTitle(), $y->getTitle()) > 0;
+          if (($x->getTitle() != NULL) && ($y->getTitle() != NULL)) {
+            $check = strcasecmp($x->getTitle(), $y->getTitle()) > 0;
+          }
+            else {
+            $check = -1;
+            }
           break;
 
         case 'time':

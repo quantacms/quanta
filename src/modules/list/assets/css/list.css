@@ -4,13 +4,6 @@
 }
 
 .list-dir {
-	padding: 0;
-}
-
-.dir-list-item {
-	margin:0;
-  padding: 0;
-	display: block;
 }
 
 .list-tree .dir-list-item {
@@ -28,6 +21,7 @@
 	justify-content: center;
 	height: 100%;
 }
+
 .list-item-image-cover img {
 	display: block;
 	height: 100%;
@@ -59,4 +53,7 @@
 .list-item-title-overlay:hover h1 {
 	transform: scale(1);
 	opacity: 1;
+}
+.list-sortable .dir-list-item {
+	position: relative;
 }

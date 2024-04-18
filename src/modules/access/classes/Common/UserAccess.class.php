@@ -22,6 +22,7 @@ class UserAccess extends Access {
    */
   public static function check(Environment $env, $action, array $vars = array()) {
     $access = new UserAccess($env, $action, $vars);
+
     return $access->checkAction();
   }
 
@@ -31,15 +32,24 @@ class UserAccess extends Access {
    * @return bool
    */
   public function checkAction() {
+    // TODO: add hooks.
+    $has_permission = FALSE;
+
+    // Check access for a specific action.
     switch ($this->getAction()) {
+      // By default an user can "register" a new account if he's anonymous / unlogged.
       case \Quanta\Common\User::USER_ACTION_REGISTER:
+        $has_permission = !$this->actor->exists;
+        break;
+        // To see if an user can edit another, use node permissions.
       case \Quanta\Common\User::USER_ACTION_EDIT:
+        $has_permission = NodeAccess::check($this->env, \Quanta\Common\Node::NODE_ACTION_EDIT, array('node' => $this->vars['edit_user']));
+        break;
+        // By default an user can edit his own profile.
       case \Quanta\Common\User::USER_ACTION_EDIT_OWN:
-        // TODO: rework.
-        return TRUE;
+        $has_permission = $this->actor->getName() == $this->vars['user']->getName();
         break;
     }
-    return FALSE;
+    return $has_permission;
   }
-
 }

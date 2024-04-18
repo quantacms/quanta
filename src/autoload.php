@@ -2,16 +2,19 @@
 /**
  * Quanta's autoloader.
  *
- * We are implementing a custom autoloader, as PSR-4 doesn't seem to fit our needs.
+ * Quanta is using a custom autoloader, as PSR-4 doesn't seem to fit our needs.
  *
  * Ideas and contributions welcome at https://www.github.com/quantacms/quanta
  */
 define("CLASS_MAP_FILE", $env->dir['tmp'] . '/class_map.dat');
 
 /**
- * Example 1: Using an anonymous function as the single parameter for `spl_autoload_register`
+ * Each class in Quanta has a file counterpart.
+ * The autoloader lets us include the class file only when the class is actually needed.
+ * Classes are mapped in the static/tmp/YOURSITE/class_map.dat file.
  *
- * @see http://php.net/manual/en/functions.anonymous.php
+ * @param $class_name
+ *   The class being loaded.
  */
 spl_autoload_register(function($class_name) {
     static $class_map;
@@ -29,18 +32,7 @@ spl_autoload_register(function($class_name) {
   }
 );
 
-/**
- * Renders a translatable string.
- * TODO: move elsewhere.
- *
- * @param $string
- *   The string.
- * @param array $replace
- *   Replacement tokens.
- *
- * @return string
- *   The translated string.
- */
-function t($string, $replace = array()) {
-  return \Quanta\Common\Localization::t($string, $replace);
-}
+  require_once $env->dir['quanta'] . '/vendor/autoload.php';
+  require_once $env->dir['quanta'] . '/secrets.php';
+  \Stripe\Stripe::setApiKey($stripeSecretKey);
+

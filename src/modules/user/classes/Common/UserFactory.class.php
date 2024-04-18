@@ -1,4 +1,5 @@
 <?php
+
 namespace Quanta\Common;
 /**
  * Class UserFactory
@@ -104,55 +105,65 @@ class UserFactory {
    *   The Environment.
    * @param $action
    *   The Action.
-   * @param $form_data
+   * @param FormState $form_state
+   *  The Form State.
    *
    * @return string
+   *  A Json representation of the user.
    */
-  public static function requestAction(Environment $env, $action, array $form_data) {
-    $user = new User($env, array_pop($form_data['name']), '_users');
-    $env->setContext($action);
-    // TODO: this shit is needed with new approach.
-    foreach ($form_data as $k => $v) {
+  public static function requestAction(Environment $env, $action, FormState $form_state) {
 
-      if (is_array($form_data[$k]) && (count($form_data[$k]) == 1)) {
-        $v = array_pop($v);
-      }
-      $user->setData($k, $v);
-    }
+    $response = new \stdClass();
 
-    // Check if the current user is allowed to perform the action.
-    $can_edit = UserAccess::check($env, $action);
+    $user = new User($env, $form_state->getData('username'), '_users');
 
-    // If user does not have the permission, show an error message.
-    if (!$can_edit) {
-      new Message($env,
-        t('Sorry, you don\'t have the permissions to perform this action: ' . $action),
-        \Quanta\Common\Message::MESSAGE_WARNING,
-        \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
-      );
-    }
-    // If user has the permission, perform the requested action.
-    else {
+    $vars = array('user' => $user);
+
+    // Check if the current user is allowed to perform the requested action.
+    $access_check = UserAccess::check($env, $action, $vars);
+    if ($access_check) {
       switch ($action) {
         case \Quanta\Common\User::USER_ACTION_REGISTER:
-          if ($user->validate()) {
-            $user->update();
+        case \Quanta\Common\User::USER_ACTION_EDIT:
+        case \Quanta\Common\User::USER_ACTION_EDIT_OWN:
+
+          if (!empty($form_state->getData('first_name'))) {
+            $user->setFirstName($form_state->getData('first_name'));
           }
-          break;
-        case USER_ACTION_EDIT:
-        case USER_ACTION_EDIT_OWN:
+          if (!empty($form_state->getData('last_name'))) {
+            $user->setLastName($form_state->getData('last_name'));
+          }
+          if (!empty($form_state->getData('email'))) {
+            $user->setEmail($form_state->getData('email'));
+          }
 
-        // If the newly built user object is valid, rebuild the session to keep it updated.
-        if ($user->update()) {
-          $user->rebuildSession();
-        }
-        break;
+          // Create a default title for the user node, if it's not set.
+          $user->setTitle($user->getFirstName() . ' ' . $user->getLastName());
 
-        default:
-          break;
+          // Hook user presave.
+          $env->hook('user_presave', $vars);
+
+          // Set user's password.
+          if (!empty($form_state->getData('password'))) {
+            $user->setPassword(UserFactory::passwordEncrypt($form_state->getData('password')));
+          }
+          // If the newly built user object is valid, rebuild the session to keep it updated.
+          if ($user->save()) {
+            $user->rebuildSession();
+          }
+          else {
+            die("ERROR");
+          }
       }
     }
-    return $user;
+    else {
+      // Access denied.
+      $response->redirect = '/403';
+    }
+
+    // Encode the response JSON code.
+    $response_json = json_encode($response);
+    return $response_json;
   }
 
   /**
@@ -182,10 +193,16 @@ class UserFactory {
     return $user;
   }
 
-
   /**
    * Renders an user edit form
-   * @param $context
+   *
+   * @deprecated from next Quanta version.
+   *
+   * @param Environment $env
+   *   The Environment.
+   * @param sring $context
+   *   The current context.
+   *
    * @return bool|string
    */
   public static function renderUserEditForm(Environment $env, $context) {
@@ -196,6 +213,7 @@ class UserFactory {
 
   /**
    * Renders a Login form.
+   * @deprecated from next Quanta version.
    * TODO: refactor and move elsewhere.
    *
    * @return string

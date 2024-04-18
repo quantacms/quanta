@@ -13,8 +13,10 @@ class Js extends Qtag {
   public function render() {
     $page = $this->env->getData('page');
 
+    $js = array();
+    $js_inline = array();
     $js_code = '';
-    $refresh =  isset($this->attributes['refresh']) ? ('?' . Doctor::timestamp($this->env)) : '';
+    $refresh =  isset($this->attributes['refresh']) ? ('?' . \Quanta\Common\Doctor::timestamp($this->env)) : '';
 
     // If target is specified, include the css file directly.
     if (!empty($this->getTarget())) {
@@ -26,12 +28,15 @@ class Js extends Qtag {
     else {
       // If no target specified, assume loading of all page includes.
       $js = $page->getData('js');
+      $js_inline = $page->getData('js_inline');
     }
-
-    // TODO: converting all inclusions into inline stylesheets. Faster, but is it good?
+    // Process Js files.
     foreach ($js as $js_file) {
       // TODO: support per file async.
       if (isset($this->attributes['inline'])) {
+        $js_code .= '<script>' . $js_file . '</script>';
+      }
+      elseif (isset($this->attributes['file_inline'])) {
         $js_code .= '<script>' . file_get_contents($js_file) . '</script>';
       }
       else {
@@ -39,6 +44,12 @@ class Js extends Qtag {
       }
     }
 
+    if (!empty($js_inline)) {
+      // Process Inline JS.
+      foreach ($js_inline as $js_inline_code) {
+          $js_code .= '<script>' . $js_inline_code . '</script>';
+      }
+    }
     return $js_code;
   }
 }

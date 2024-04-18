@@ -26,9 +26,24 @@ function localization_load_includes(Environment $env, array $vars) {
  *   An array of variables.
  */
 function localization_boot(Environment $env, array $vars) {
-  $env->sysdir('languages', Localization::$system_path);
-  if (isset($_GET['lang'])) {
-    Localization::switchLanguage($env, $_GET['lang']);
+  // This language negotiation happens first time a visitor 
+  // sees the site. It uses browser's language to select a 
+  // "desired" language.
+
+  if (!isset($_SESSION['language'])) {
+  	$acceptLang = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
+  	$prefLangs = explode(',', $acceptLang);
+  	$strings = explode('-', $prefLangs[0]);
+	$lang = $strings[0];
+  } else {
+      $lang = $env->request[1];
+  }
+
+  $env->sysdir('languages', Localization::$dir_languages);
+  $env->sysdir('translations', Localization::$dir_translations);
+
+  if (Localization::hasEnabledLanguage($env, $lang)) {
+    Localization::switchLanguage($env, $lang);
   }
 }
 
@@ -72,7 +87,7 @@ function localization_doctor_setup(Environment $env, array $vars) {
 }
 
 /**
- * Implements hook_shadow_extra().
+ * Implements hook_shadow_node_language().
  *
  * Add translation links to node edit shadow form.
  *
@@ -81,7 +96,22 @@ function localization_doctor_setup(Environment $env, array $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function localization_shadow_node_edit_extra(Environment $env, array $vars) {
+function localization_shadow_node_language(Environment $env, array $vars) {
+  /** @var Shadow $shadow */
+  $shadow = $vars['shadow'];
   $translate_links = new TranslateLinks($env, array(), NULL);
-  $vars['html'] .= $translate_links->getHtml();
+
+  $shadow->addExtra($translate_links->getHtml());
+}
+
+function localization_link_alter($env, $vars) {
+  /** @var \Quanta\Qtags\Link $link */
+  $link = $vars['qtag'];
+  $lang = !empty($link->getAttribute('language')) ? $link->getAttribute('language') : Localization::getLanguage($env);
+
+  // Check if a language prefix must be added to the destination URL.
+  // We don't add the prefix if we are using a "session" based language negotiation.
+  if (($link->getType() == 'internal') && (Localization::getLanguageNegotiation($env) == Localization::LANGUAGE_NEGOTIATION_PREFIX)) {
+    $link->destination = '/' . $lang . $link->destination;
+  }
 }

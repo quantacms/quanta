@@ -9,7 +9,7 @@ namespace Quanta\Common;
  * @param array $vars
  *   An array of variables.
  */
-function workflow_shadow_node_form($env, $vars) {
+function workflow_shadow_node_status($env, $vars) {
   $vars['shadow']->addTab('manage status', file_get_contents($env->getModulePath('workflow') . '/tpl/status_form.html'), 2);
 }
 

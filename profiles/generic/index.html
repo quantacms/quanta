@@ -1,37 +1,36 @@
 <!DOCTYPE html>
-    <!--
-    index.html
-    This file (index.html) serves as a main skeleton for all the site's pages.
-    Its structure is not pre-defined or bound to any special rule.
-    -->
+    <!-- Variables, that you can use throughout the site. -->
+    {VARIABLE|set=Quanta CMS example:site_name}
     <html lang="[LANGUAGE]">
     <!-- Headers -->
     <head>
-        <meta charset="utf-8"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
-        <!-- Add site "theme-color" for mobile browser tabs. -->
+        <!-- You can use Qtags or normal HTML tags, as you like. -->
         <meta name="theme-color" content="#ffffff">
-        <!-- Import CSS, JS files from the platform and its modules. -->
+        <!-- Meta tags. -->
         [META_DATA]
+        <!-- Aggregated CSS. -->
         [CSS|runlast]
+        <!-- External CSS. -->
         [CSS|runlast|refresh|external:/assets/css/style.css]
-        <title>[TITLE] - QuantaCMS example</title>
+        <title>[TITLE] - {VARIABLE:site_name}</title>
     </head>
 
     <!-- Body -->
-    <body class="grid three-rows [BODYCLASSES]">
+    <body class="grid three-rows [BODY_CLASSES]">
         <!-- Display messages (if any) -->
         [MESSAGES]
     
         <!-- Site's header -->
-        [HEADER|grid_id=header|grid=p-1:_header]
+        [HEADER|id=header:_header]
 
         <!-- Currently viewed node's content -->
-        [MAIN|grid_id=grid-main]
+        [MAIN|id=grid-main|class=grid]
     
         <!-- Site's footer -->
-        [FOOTER|grid_id=footer:_footer]
+        [FOOTER|id=footer:_footer]
 
+        <!-- Site's javascript -->
         [JS|runlast]
     </body>
 </html>
+
