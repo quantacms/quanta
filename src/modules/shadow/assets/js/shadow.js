@@ -101,7 +101,11 @@ var baseUrl = protocol + "//" + host;
       shadow.callback();
     }
 
-	
+    // Check if the element with ID "current_url" exists
+    if ($('#current_url').length) {
+      // If it exists, set its value
+      $('#current_url').val(window.location.href);
+    }
 
     $(document).trigger('refresh');
     // Include attached scripts if present.
