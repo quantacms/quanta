@@ -11,6 +11,9 @@ namespace Quanta\Common;
  * @see UserAccess
  */
 abstract class Access implements AccessChecker {
+
+  const EMPTY_FILTER = "__empty__";
+
   /**
    * @var Environment $env
    */

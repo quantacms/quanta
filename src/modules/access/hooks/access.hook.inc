@@ -197,6 +197,10 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
         }
         break;
 
+      case 'thumbnail':
+        $filter_check = array($node->getThumbnail());
+        break;
+
       default:
         if (!empty($filter_type) && !empty($node->getAttributeJSON($filter_type))) {
 		$filter_check[] = $node->getAttributeJSON($filter_type);
@@ -219,6 +223,9 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
 	  if (is_array($check)) {
 		  $filter_match = in_array($filter_value, $check);
 	  }
+    elseif($filter_value == \Quanta\Common\Access::EMPTY_FILTER){
+      $filter_match = !$check; 
+    }
 	  else {
 		  $filter_match = ($check == $filter_value);
 	  }
