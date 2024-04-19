@@ -123,12 +123,12 @@ function page_doctor_setup(Environment $env, $vars) {
     '403' => array(
       'title' => '403 - Forbidden',
       'father' => '_system',
-      'body' => '<p>Whoops. Apparently you don\'t have the permission to access the requested page.<\/p><p><a href=\"\/\">Back to Home<\/a><\/p>',
+      'body' => '<p>[TEXT|tag=forbidden-msg:Whoops. Apparently you don\'t have the permission to access the requested page.]<\/p><p><a href=\"\/\">[TET|tag=back-to-home:Back to Home]<\/a><\/p>',
     ),
     '404' => array(
       'title' => '404 - File not found',
       'father' => '_system',
-      'body' => '<p>Whoops. Apparently the content you were looking for, is not here!<\/p><p><a href=\"\/\">Back to Home<\/a><\/p>',
+      'body' => '<p>[TEXT|tag=file-not-found-msg:Whoops. Apparently the content you were looking for, is not here!]<\/p><p><a href=\"\/\">[TEXT|tag=back-to-home:Back to Home]<\/a><\/p>',
     ),
     'home' => array(
       'title' => 'Your Homepage',
