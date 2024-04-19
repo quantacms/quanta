@@ -88,9 +88,16 @@ class Attribute extends Qtag {
         $string = $node->getWeight();
         break;
 
-        case 'files_count':
-          $string = (string) count($node->getAttributeJSON("files")) ?? "0";
-          break;
+      case 'files_count':
+	$files_arr = $node->getAttributeJSON("files");
+	if (is_array($files_arr)) {
+          $count = count($node->getAttributeJSON("files"));
+	} 
+	else {
+	  $count = 0;
+	}
+	$string = (string) $count;
+	break;
 
       default:
         $string = '';
