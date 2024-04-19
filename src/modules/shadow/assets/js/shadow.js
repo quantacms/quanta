@@ -137,21 +137,54 @@ var baseUrl = protocol + "//" + host;
  */
 function submitShadow() {
   $(document).trigger('shadow_' + shadow.context + '_submit');
+  
   var form_items = {};
-  $('#shadow-outside').find('input, textarea, select').each(function () {
-
-    var item_name = $(this).attr('name');
-    if (form_items[item_name] == undefined) {
-      form_items[item_name] = [];
-    }
-    if ($(this).attr('type') == 'checkbox') {
-      form_items[item_name].push($(this).is(':checked') ? $(this).val() : '');
-    } else {
-      form_items[item_name].push($(this).val());
+  var hasEmptyRequiredFields = false; // Flag to track if there are empty required fields
+  
+  $('#shadow-outside').find('.form-item-wrapper').each(function () {
+    var fieldWrapper = $(this);
+    var inputField = fieldWrapper.find('input, textarea, select');
+    
+    // Check if input field exists
+    if (inputField.length > 0) {
+      var fieldName = inputField.attr('name');
+      var fieldValue = inputField.val().trim();
+      
+      // Check if the field is required, empty, and visible
+      if (inputField.prop('required') && fieldValue === '' && inputField.is(':visible')) {
+        hasEmptyRequiredFields = true; // Set flag if a required field is empty
+        
+        // Add error message to the field wrapper
+        fieldWrapper.addClass('has-validation-errors');
+        if (fieldWrapper.find('.validation-error').length === 0) {
+          fieldWrapper.prepend('<div class="validation-error">This field is required.</div>');
+        }
+      }
+      else{
+        // Remove error styling and message if field is not empty and visible
+        fieldWrapper.removeClass('has-validation-errors');
+        fieldWrapper.find('.validation-error').remove();
+      }
+      
+      if (form_items[fieldName] == undefined) {
+        form_items[fieldName] = [];
+      }
+      
+      if (inputField.attr('type') == 'checkbox') {
+        form_items[fieldName].push(inputField.is(':checked') ? inputField.val() : '');
+      } else {
+        form_items[fieldName].push(fieldValue); // Push trimmed field value
+      }
     }
   });
+  
+  if (hasEmptyRequiredFields) {
+    // Stop form submission if there are empty required fields
+    $('.shadow-submit').removeClass('shadow-submitted'); // Remove shadow-submitted class
+    return;
+  }
+  
   var formData = JSON.stringify(form_items);
   $(document).trigger('shadow_submit');
   action(formData);
-
-};
+}
