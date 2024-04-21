@@ -192,11 +192,13 @@ class Localization {
     if ($lang == NULL) {
     	$lang = $_SESSION['language'];
     }
+    $prefix = 'i18n';
     if ($tag != NULL) {
-      $node = NodeFactory::load($env, $tag);
+      $tagnode = $prefix . '-' . $tag;
+      $node = NodeFactory::load($env, $tagnode);
       if (!($node->exists)) {
 	$attributes = array('title' => $text);
-	$node = NodeFactory::buildNode($env, $tag, Localization::DIR_TRANSLATIONS, $attributes);
+	$node = NodeFactory::buildNode($env, $tagnode, Localization::DIR_TRANSLATIONS, $attributes);
       }
       elseif ($node->hasTranslation($lang) && ($node->title != NULL)){
 	return $node->title;
