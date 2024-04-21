@@ -9,7 +9,7 @@ function jquery_page_init(Environment $env, &$vars) {
 		$page->addJS('/modules/jquery/assets/js/jquery-ui.min.js');
 		$page->addJS('/modules/jquery/assets/js/jquery.ui.widget.js');
 		$page->addJS('/modules/jquery/assets/js/jquery.tablesorter.js');
-		$page->addCSS('/modules/jquery/assets/css/jquery-ui.min.css');
+		//$page->addCSS('/modules/jquery/assets/css/jquery-ui.min.css');
 	}
 }
 /**
