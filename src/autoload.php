@@ -33,6 +33,4 @@ spl_autoload_register(function($class_name) {
 );
 
   require_once $env->dir['quanta'] . '/vendor/autoload.php';
-  require_once $env->dir['quanta'] . '/secrets.php';
-  \Stripe\Stripe::setApiKey($stripeSecretKey);
 
