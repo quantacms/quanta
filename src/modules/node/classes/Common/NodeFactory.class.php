@@ -460,6 +460,10 @@ class NodeFactory {
             $node->setThumbnail(Api::normalizeFilePath($form_data['edit-thumbnail']));
           }
 
+          if(isset($form_data['author'])){
+            $node->setAuthor($form_data['author']);
+          }
+
           $vars = array(
             'node' => &$node,
             'data' => $form_data,
