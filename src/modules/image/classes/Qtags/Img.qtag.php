@@ -20,7 +20,7 @@ class Img extends HtmlTag {
    */
   public function render() {
     if (isset($this->attributes['node'])) {
-        $this->node = $this->attributes['node'];
+      $this->node = $this->attributes['node'];
     }
     $node = \Quanta\Common\NodeFactory::loadOrCurrent($this->env, $this->node);
     // Load the Image object.
@@ -32,71 +32,74 @@ class Img extends HtmlTag {
 
     // Setup alt for the image.
     if (isset($this->attributes['alt'])) {
-        $this->alt = $this->attributes['alt'];
-    } 
+      $this->alt = $this->attributes['alt'];
+    }
     elseif ($this->getTarget() != NULL) {
-        $split_target = explode('.', $this->getTarget());
-        $this->alt = str_replace('-', ' ', \Quanta\Common\Api::string_normalize($split_target[0]));
-    } 
+      $split_target = explode('.', $this->getTarget());
+      $this->alt = str_replace('-', ' ', \Quanta\Common\Api::string_normalize($split_target[0]));
+    }
     else {
-        $this->alt = '';
+      $this->alt = '';
     }
     // Load classes.
     if (!empty($this->attributes['img_class'])) {
-        $this->html_params['class'] .= ' ' . $this->attributes['img_class'];
+      $this->html_params['class'] .= ' ' . $this->attributes['img_class'];
     }
     // When there is a request for editing the Image "on the fly" (i.e. scale or resize)...
     // ...Proceed with creating and rendering the new manipulated image.
     if ($this->manipulate) {
-        // Setup compression level (JPEG / PNG).
-        $compression = isset($this->attributes['compression']) ? $this->attributes['compression'] : 60;
+      // Setup compression level (JPEG / PNG).
+      $compression = isset($this->attributes['compression']) ? $this->attributes['compression'] : 60;
 
-        // Setup operations to run on the image.
-        $op = isset($this->attributes['operation']) ? $this->attributes['operation'] : 'scale';
+      // Setup operations to run on the image.
+      $op = isset($this->attributes['operation']) ? $this->attributes['operation'] : 'scale';
 
-        // Build array of variables.
-        $vars = array(
-            'w_max' => $image->width,
-            'h_max' => $image->height,
-            'operation' => $op,
-            'compression' => $compression,
-            'fallback' => $fallback,
-        );
-        // Generate the thumbnail of the requested image.
-        $newthumbfile = $image->generateThumbnail($this->env, $vars);
+      // Build array of variables.
+      $vars = array(
+        'w_max' => $image->width,
+        'h_max' => $image->height,
+        'operation' => $op,
+        'compression' => $compression,
+        'fallback' => $fallback,
+      );
+      // Generate the thumbnail of the requested image.
+      $newthumbfile = $image->generateThumbnail($this->env, $vars);
 
-        // TODO: stupid way to get to the tmp thumbs folder...
-        $this->src = '/thumbs/' . $newthumbfile;
+      // TODO: stupid way to get to the tmp thumbs folder...
+      $this->src = '/thumbs/' . $newthumbfile;
 
-        // TODO: redundant with Image.class.php?.
-        if (!empty($this->getAttribute('autosize'))) {
-            $get_size = getimagesize($this->env->dir['thumbs'] . '/' . $newthumbfile);
-            $image->width = $get_size[0];
-            $image->height = $get_size[1];
-        }
+      // TODO: redundant with Image.class.php?.
+      if (!empty($this->getAttribute('autosize'))) {
+        $get_size = getimagesize($this->env->dir['thumbs'] . '/' . $newthumbfile);
+        $image->width = $get_size[0];
+        $image->height = $get_size[1];
+      }
 
-    } else {
-        $this->src = $image->external ? $image->getRelativePath() : ($node->name . '/' . $this->getTarget());
-
-        // Check if the image file exists before setting src
-        if (!file_exists( $image->getRelativePath()) || !getimagesize($image->getRelativePath())) {
-            return ''; // If image file doesn't exist, return an empty string
-        }
     }
+    else {
+      $this->src = $image->external ? $image->getRelativePath() : ($node->name . '/' . $this->getTarget());
+
+      if (!file_exists($image->getRelativePath()) || !getimagesize($image->getRelativePath())) {
+        // If image file doesn't exist or is not a valid image, return an empty string
+        return '';
+    }
+		  
+		}
     // Generate the image's url.
     if (isset($this->attributes['url'])) {
-        $rendered = $this->src;
-    } else {
+      $rendered = $this->src;
+    }
+    else {
 
-        // Generate the HTML of the image.
-        $this->html_params['alt'] = $this->alt;
-        $this->html_params['src'] = $this->src;
-        $this->html_params['width'] = $image->width;
-        $this->html_params['height'] = $image->height;
-        $this->html_self_close = TRUE;
-        $rendered = parent::render();
+      // Generate the HTML of the image.
+      $this->html_params['alt'] = $this->alt;
+      $this->html_params['src'] = $this->src;
+      $this->html_params['width'] = $image->width;
+      $this->html_params['height'] = $image->height;
+      $this->html_self_close = TRUE;
+      $rendered = parent::render();
     }
 
     return $rendered;
-}
+  }
 }
