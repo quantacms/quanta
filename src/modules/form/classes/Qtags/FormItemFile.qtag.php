@@ -20,6 +20,10 @@ class FormItemFile extends FormItemString {
       default:
         $rendered = '<input type="hidden" name="tmp_upload_dir" value="[ATTRIBUTE|name=tmp_files_dir]" />' . '<div class="upload-files"><div class="drop">Drop here files<a>or press here</a><input type="file" name="' . $this->getName() . '" id="' . $this->getId() . '" ' .$isMultiple .' /></div></div>';
         break;
+      case 'non-drop':
+        $rendered = '<input type="hidden" name="tmp_upload_dir" value="[ATTRIBUTE|name=tmp_files_dir]" />' . '<div class="upload-files"><div class="drop"><a>Press here</a><input type="file" name="' . $this->getName() . '" id="' . $this->getId() . '" ' .$isMultiple .' /></div></div>';
+        break;
+
     }
     return $rendered;
   }
