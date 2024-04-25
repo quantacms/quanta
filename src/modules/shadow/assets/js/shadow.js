@@ -104,7 +104,10 @@ var baseUrl = protocol + "//" + host;
     // Check if the element with ID "current_url" exists
     if ($('#current_url').length) {
       // If it exists, set its value
-      $('#current_url').val(window.location.href);
+      var currentURL = window.location.href;
+      //remove # from the url
+      var cleanURL = currentURL.replace(/#.*$/, '');
+      $('#current_url').val(cleanURL);
     }
 
     $(document).trigger('refresh');
