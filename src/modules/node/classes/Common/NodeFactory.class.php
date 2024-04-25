@@ -469,7 +469,7 @@ class NodeFactory {
             //check if repeated password no equal the real password
             if(isset($form_data['password_rp']) && $form_data['password'] != $form_data['password_rp']){
               new Message($env,
-              t('Node title can not be empty.'),
+              t('Password fields are not the same.'),
               \Quanta\Common\Message::MESSAGE_WARNING
               );
               $response->errors = Message::burnMessages();
