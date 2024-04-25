@@ -144,15 +144,15 @@ function submitShadow() {
   var form_items = {};
   var hasEmptyRequiredFields = false; // Flag to track if there are empty required fields
   
-  $('#shadow-outside').find('.form-item-wrapper').each(function () {
-    var fieldWrapper = $(this);
-    var inputField = fieldWrapper.find('input, textarea, select');
+  $('#shadow-outside').find('input, textarea, select').each(function () {
+    var inputField = $(this);
+    var fieldWrapper = $(this).closest('.form-item-wrapper');
     
     // Check if input field exists
-    if (inputField.length > 0) {
+    // if (inputField.length > 0) {
       var fieldName = inputField.attr('name');
       var fieldValue = inputField.val().trim();
-      
+            
       // Check if the field is required, empty, and visible
       if (inputField.prop('required') && fieldValue === '' && inputField.is(':visible')) {
         hasEmptyRequiredFields = true; // Set flag if a required field is empty
@@ -178,7 +178,7 @@ function submitShadow() {
       } else {
         form_items[fieldName].push(fieldValue); // Push trimmed field value
       }
-    }
+    // }
   });
   
   if (hasEmptyRequiredFields) {
