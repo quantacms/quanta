@@ -33,7 +33,9 @@ function environment_doctor(Environment $env, $vars) {
 }
 
 function environment_boot(Environment $env, $vars){
-  $envFilePath= $env->dir['env'];
+  $full_host = strtolower($_SERVER['HTTP_HOST']);
+  $host = explode(':', $full_host)[0];
+  $envFilePath= $_SERVER['DOCUMENT_ROOT']. '/sites/'.$host.'/.env';
   // Check if the .env file exists
     if (file_exists($envFilePath)) {
         // get env file contents
