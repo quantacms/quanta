@@ -56,7 +56,7 @@ class Node extends JSONDataContainer {
     $this->json = new \stdClass();
  
     // Load node's language.
-    $this->setLanguage(!empty($language) ? $language : Localization::getLanguage($this->env));
+    $this->setLanguage(!empty($language) ? $language : \Quanta\Common\Localization::LANGUAGE_NEUTRAL);
 
     // Load node's father (parent folder).
     if ($father != NULL) {
@@ -342,13 +342,13 @@ class Node extends JSONDataContainer {
     $valid = TRUE;
     $author = new User($this->env, $this->getAuthor());
 
-    if ($this->getTitle() == '') {
-      new Message($this->env,
-        t('Node title can not be empty.'),
-        \Quanta\Common\Message::MESSAGE_WARNING
-      );
-      $valid = FALSE;
-    }
+    // if ($this->getTitle() == '') {
+    //   new Message($this->env,
+    //     t('Node title can not be empty.'),
+    //     \Quanta\Common\Message::MESSAGE_WARNING
+    //   );
+    //   $valid = FALSE;
+    // }
     if (!$author->exists && $author->getName() != \Quanta\Common\User::USER_ANONYMOUS) {
       new Message($this->env,
         t('User !author is not a valid user!', array('!author' => $this->getAuthor())),

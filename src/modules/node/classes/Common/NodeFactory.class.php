@@ -375,7 +375,7 @@ class NodeFactory {
   public static function requestAction(Environment $env, $action, array $form_data) {
     // TODO language management needs many further check that language actually exists
     // As well as security checks.
-    $language = isset($form_data['language']) ? (array_pop($form_data['language'])) : $env->getData('language');
+    $language = isset($form_data['language']) ? (array_pop($form_data['language'])) : \Quanta\Common\Localization::LANGUAGE_NEUTRAL;
     // TODO: this is needed with new approach.
     foreach ($form_data as $k => $v) {
       if (is_array($form_data[$k]) && (count($form_data[$k]) == 1)) {
