@@ -341,7 +341,7 @@ class Node extends JSONDataContainer {
   public function validate() {
     $valid = TRUE;
     $author = new User($this->env, $this->getAuthor());
-
+    // I commented this so that we can save the notes in the description
     // if ($this->getTitle() == '') {
     //   new Message($this->env,
     //     t('Node title can not be empty.'),
