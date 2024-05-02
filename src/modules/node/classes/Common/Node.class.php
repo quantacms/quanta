@@ -898,8 +898,8 @@ class Node extends JSONDataContainer {
    *   True if the translation exists in that language.
    */
   public function hasTranslation($language) {
-    $lastPart = basename($this->path);
-    return is_file($this->path . '/data_' . $language . '.json') || is_file($this->path . '/'.$lastPart. '-description/data_' . $language . '.json');
+    $nodeName = basename($this->path);
+    return is_file($this->path . '/data_' . $language . '.json') || is_file($this->path . '/'.$nodeName. '-description/data_' . $language . '.json');
   }
 
 }
