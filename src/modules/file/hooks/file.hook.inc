@@ -72,7 +72,7 @@ function file_node_presave(Environment $env, array $vars) {
   $node = $vars['node'];
   $data = $vars['data'];
   $uploaded_files = [];
-  $isMultiple= !$node->getAttributeJSON("single_file"); //TODO: get the value form the attributes
+  $isMultiple= !$node->getAttributeJSON("single_file") && !$data['single_file']; //TODO: get the value form the attributes
   // Walk through uploaded files.
   foreach ($data as $label => $name) {
     $exp = explode('-', $label);

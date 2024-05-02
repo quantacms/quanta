@@ -152,6 +152,12 @@ function submitShadow() {
     // if (inputField.length > 0) {
       var fieldName = inputField.attr('name');
       var fieldValue = inputField.val().trim();
+
+      if(fieldName == "single_file"){
+        console.log("single file input --------->");
+      }
+
+     
             
       // Check if the field is required, empty, and visible
       if (inputField.prop('required') && fieldValue === '' && inputField.is(':visible')) {
@@ -178,6 +184,14 @@ function submitShadow() {
       } else {
         form_items[fieldName].push(fieldValue); // Push trimmed field value
       }
+       // Check if it's a file input with the specified id
+       if (inputField.attr('type') === 'file' && inputField.attr('id') === 'input-files') {
+      // Check if the input field has the multiple attribute
+      var hasMultiple = inputField.prop('multiple');
+      if (!hasMultiple) {
+        form_items['single_file']= true;
+      }
+    }
     // }
   });
   
@@ -188,6 +202,8 @@ function submitShadow() {
   }
   
   var formData = JSON.stringify(form_items);
+  console.log('form data:');
+  console.log(formData);
   $(document).trigger('shadow_submit');
   action(formData);
 }
