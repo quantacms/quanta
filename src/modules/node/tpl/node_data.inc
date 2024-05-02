@@ -7,4 +7,5 @@
 [INPUT|type=hidden|title=father|id=edit_father|required|name=edit-father|value={ATTRIBUTE|name=father}:node_data]
 [INPUT|type=hidden|id=language|required|name=language|value={LANGUAGE}:node_data]
 [INPUT|type=hidden|id=current_url|required|name=current_url:node_data]
+[INPUT|type=hidden|id=single_file|required|value=false|name=single_file:node_data]
 ]
