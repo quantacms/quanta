@@ -151,13 +151,7 @@ function submitShadow() {
     // Check if input field exists
     // if (inputField.length > 0) {
       var fieldName = inputField.attr('name');
-      var fieldValue = inputField.val().trim();
-
-      if(fieldName == "single_file"){
-        console.log("single file input --------->");
-      }
-
-     
+      var fieldValue = inputField.val().trim();    
             
       // Check if the field is required, empty, and visible
       if (inputField.prop('required') && fieldValue === '' && inputField.is(':visible')) {
@@ -202,8 +196,6 @@ function submitShadow() {
   }
   
   var formData = JSON.stringify(form_items);
-  console.log('form data:');
-  console.log(formData);
   $(document).trigger('shadow_submit');
   action(formData);
 }
