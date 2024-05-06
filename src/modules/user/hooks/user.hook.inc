@@ -179,6 +179,22 @@ function user_shadow_user_login_form(Environment $env, array $vars) {
 }
 
 /**
+ * Implements hook_shadow_user_login_form.
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param array $vars
+ *   An array of variables.
+ */
+function user_shadow_user_reset_password_form(Environment $env, array $vars) {
+  $tab = UserFactory::renderResetPasswordForm($env);
+  /** @var Shadow $shadow */
+  $shadow = $vars['shadow'];
+  $shadow->addTab(t('Reset password'), $tab, 1);
+  $shadow->addButton('edit-save', 'Login');
+}
+
+/**
  * Implements hook_action_user_edit.
  * There is an user edit request.
  *

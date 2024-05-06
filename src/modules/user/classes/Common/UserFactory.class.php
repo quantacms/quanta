@@ -223,6 +223,18 @@ class UserFactory {
     return $login_form;
   }
 
+   /**
+   * Renders a Login form.
+   * @deprecated from next Quanta version.
+   * TODO: refactor and move elsewhere.
+   *
+   * @return string
+   */
+  public static function renderResetPasswordForm(Environment $env) {
+    $reset_form = file_get_contents($env->getModulePath('user') . '/tpl/user_reset_password.inc');
+    return $reset_form;
+  }
+
   /**
    * Encrypts a text into a password.
    * TODO: create a hook to change the default algohoritm.
