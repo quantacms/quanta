@@ -140,6 +140,10 @@ class UserFactory {
           // Create a default title for the user node, if it's not set.
           $user->setTitle($user->getFirstName() . ' ' . $user->getLastName());
 
+          if (!empty($form_state->getData('edit_title'))) {
+            $user->setTitle($form_state->getData('edit_title'));
+          }
+
           // Hook user presave.
           $env->hook('user_presave', $vars);
 
