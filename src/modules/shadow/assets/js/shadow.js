@@ -185,6 +185,7 @@ function submitShadow() {
     } else {
       form_items[fieldName].push(fieldValue); // Push trimmed field value
     }
+
   });
   
   if (hasEmptyRequiredFields) {

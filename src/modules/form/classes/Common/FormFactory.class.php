@@ -87,6 +87,10 @@ class FormFactory {
       case 'checkbox':
         $formitem = new \Quanta\Qtags\FormItemCheckbox($env, $input, $form);
         break;
+      
+      case 'radio':
+        $formitem = new \Quanta\Qtags\FormItemRadio($env, $input, $form);
+        break;
 
       case 'date':
         $formitem = new \Quanta\Qtags\FormItemDate($env, $input, $form);
@@ -127,6 +131,7 @@ class FormFactory {
       break;
     }
 
+    
     // Add the form item to the form state.
     $form->addItem($formitem->getName(), $formitem);
 

@@ -26,17 +26,6 @@ body.grid.three-rows #grid-main {
   flex-wrap: wrap;
   justify-content: center;
 }
-.grid > *:not([class*='grid-span-']),
-.grid > *[class*='grid-span-md'],
-.grid > *[class*='grid-span-lg'],
-.grid > *[class*='grid-span-xl'],
-.grid > *[class*='grid-span-xxl'] {
-  width: 100%;
-}
-
-
-
-
 
 /* RESPONSIVE */
 
