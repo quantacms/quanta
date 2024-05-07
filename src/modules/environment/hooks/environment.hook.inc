@@ -33,7 +33,7 @@ function environment_doctor(Environment $env, $vars) {
 }
 
 function environment_boot(Environment $env, $vars){
-  $envFilePath= $env->dir['env'];
+  $envFilePath=  $env->dir['docroot'].'/.env';
   // Check if the .env file exists
     if (file_exists($envFilePath)) {
         // get env file contents
