@@ -140,6 +140,10 @@ class UserFactory {
           // Create a default title for the user node, if it's not set.
           $user->setTitle($user->getFirstName() . ' ' . $user->getLastName());
 
+          if (!empty($form_state->getData('edit_title'))) {
+            $user->setTitle($form_state->getData('edit_title'));
+          }
+
           // Hook user presave.
           $env->hook('user_presave', $vars);
 
@@ -221,6 +225,18 @@ class UserFactory {
   public static function renderLoginForm(Environment $env) {
     $login_form = file_get_contents($env->getModulePath('user') . '/tpl/user_login.inc');
     return $login_form;
+  }
+
+   /**
+   * Renders a Login form.
+   * @deprecated from next Quanta version.
+   * TODO: refactor and move elsewhere.
+   *
+   * @return string
+   */
+  public static function renderResetPasswordForm(Environment $env) {
+    $reset_form = file_get_contents($env->getModulePath('user') . '/tpl/user_reset_password.inc');
+    return $reset_form;
   }
 
   /**
