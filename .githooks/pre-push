@@ -1,0 +1,5 @@
+#!/bin/sh
+
+phpcs
+
+exit 0

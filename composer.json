@@ -4,5 +4,13 @@
         "phpmailer/phpmailer": "~6.0",
         "xdan/jodit": "3.1.92",
         "google/apiclient": "^2.15"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.0"
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "git config core.hooksPath .githooks"
+        ]
     }
 }
