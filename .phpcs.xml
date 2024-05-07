@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<ruleset name="quanta">
+    <description>quanta</description>
+
+    <!-- Files to include -->
+    <file>./src</file>
+
+    <!-- Exclude specific files/folders test -->
+    <exclude-pattern>*/tests/*</exclude-pattern>
+
+    <rule ref="PSR1"/>
+    <rule ref="PSR2"/>
+    <rule ref="PSR12"/>
+
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="120"/>
+            <property name="absoluteLineLimit" value="160"/>
+        </properties>
+    </rule>
+
+    <!-- Ignore warnings, show only errors -->
+    <arg value="n"/>
+
+    <!-- Show progress -->
+    <arg value="p"/>
+
+</ruleset>
