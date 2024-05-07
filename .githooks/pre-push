@@ -1,0 +1,5 @@
+#!/bin/sh
+
+./vendor/bin/phpcs
+
+exit 0
