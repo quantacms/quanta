@@ -1,5 +1,5 @@
 #!/bin/sh
 
-phpcs
+./vendor/bin/phpcs
 
 exit 0
