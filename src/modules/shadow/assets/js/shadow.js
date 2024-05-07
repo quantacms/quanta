@@ -101,6 +101,15 @@ var baseUrl = protocol + "//" + host;
       shadow.callback();
     }
 
+    if(shadowData?.language){
+      // Change the language value
+      $('#language').val(shadowData.language);
+      }
+    else{
+      console.log('without lang');
+      $('#language').val(null);
+    }
+
     // Check if the element with ID "current_url" exists
     if ($('#current_url').length) {
       // If it exists, set its value
@@ -148,45 +157,35 @@ function submitShadow() {
     var inputField = $(this);
     var fieldWrapper = $(this).closest('.form-item-wrapper');
     
-    // Check if input field exists
-    // if (inputField.length > 0) {
-      var fieldName = inputField.attr('name');
-      var fieldValue = inputField.val().trim();    
+    var fieldName = inputField.attr('name');
+    var fieldValue = inputField.val().trim();
             
-      // Check if the field is required, empty, and visible
-      if (inputField.prop('required') && fieldValue === '' && inputField.is(':visible')) {
-        hasEmptyRequiredFields = true; // Set flag if a required field is empty
-        
-        // Add error message to the field wrapper
-        fieldWrapper.addClass('has-validation-errors');
-        if (fieldWrapper.find('.validation-error').length === 0) {
-          fieldWrapper.prepend('<div class="validation-error">This field is required.</div>');
-        }
-      }
-      else{
-        // Remove error styling and message if field is not empty and visible
-        fieldWrapper.removeClass('has-validation-errors');
-        fieldWrapper.find('.validation-error').remove();
-      }
+    // Check if the field is required, empty, and visible
+    if (inputField.prop('required') && fieldValue === '' && inputField.is(':visible')) {
+      hasEmptyRequiredFields = true; // Set flag if a required field is empty
       
-      if (form_items[fieldName] == undefined) {
-        form_items[fieldName] = [];
-      }
-      
-      if (inputField.attr('type') == 'checkbox') {
-        form_items[fieldName].push(inputField.is(':checked') ? inputField.val() : '');
-      } else {
-        form_items[fieldName].push(fieldValue); // Push trimmed field value
-      }
-       // Check if it's a file input with the specified id
-       if (inputField.attr('type') === 'file' && inputField.attr('id') === 'input-files') {
-      // Check if the input field has the multiple attribute
-      var hasMultiple = inputField.prop('multiple');
-      if (!hasMultiple) {
-        form_items['single_file']= true;
+      // Add error message to the field wrapper
+      fieldWrapper.addClass('has-validation-errors');
+      if (fieldWrapper.find('.validation-error').length === 0) {
+        fieldWrapper.prepend('<div class="validation-error">This field is required.</div>');
       }
     }
-    // }
+    else{
+      // Remove error styling and message if field is not empty and visible
+      fieldWrapper.removeClass('has-validation-errors');
+      fieldWrapper.find('.validation-error').remove();
+    }
+    
+    if (form_items[fieldName] == undefined) {
+      form_items[fieldName] = [];
+    }
+    
+    if (inputField.attr('type') == 'checkbox') {
+      form_items[fieldName].push(inputField.is(':checked') ? inputField.val() : '');
+    } else {
+      form_items[fieldName].push(fieldValue); // Push trimmed field value
+    }
+
   });
   
   if (hasEmptyRequiredFields) {
