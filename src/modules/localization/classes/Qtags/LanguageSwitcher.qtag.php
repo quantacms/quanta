@@ -15,6 +15,7 @@ class LanguageSwitcher extends HtmlTag {
 
     $node = \Quanta\Common\NodeFactory::loadOrCurrent($this->env, $this->getTarget());
     $language_switcher_tpl = 'language_switcher';
+    $has_translation = $this->getAttribute('has_translation');
 
     // We don't want translate links to be considered as editable nodes.
     $this->attributes['editable'] = 'false';
@@ -27,11 +28,14 @@ class LanguageSwitcher extends HtmlTag {
     }
     $dirlist = new \Quanta\Common\DirList($this->env, \Quanta\Common\Localization::DIR_LANGUAGES, $language_switcher_tpl, $this->attributes, 'localization');
     // Don't show language switch link, if node is not available in that language.
-    foreach ($dirlist->getItems() as $langcode => $lang) {
-      if (!$node->hasTranslation($langcode)) {
-        $dirlist->removeDir($langcode);
+    if($has_translation){
+      foreach ($dirlist->getItems() as $langcode => $lang) {
+        if (!$node->hasTranslation($langcode)) {
+          $dirlist->removeDir($langcode);
+        }
       }
     }
+
 
     $this->html_body = $dirlist->render();
     return parent::render();
