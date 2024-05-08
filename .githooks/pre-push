@@ -1,5 +1,5 @@
 #!/bin/sh
 
-[ -f ./vendor/bin/phpcs ] && ./vendor/bin/phpcs . || [ -f ../../vendor/bin/phpcs ] && ../../vendor/bin/phpcs .
+[ -f ./vendor/bin/phpcs ] && ./vendor/bin/phpcs -d memory_limit=-1 . || [ -f ../../vendor/bin/phpcs ] && ../../vendor/bin/phpcs -d memory_limit=-1 .
 
 exit 0
