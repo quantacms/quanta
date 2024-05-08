@@ -1,5 +1,5 @@
 #!/bin/sh
 
-./vendor/bin/phpcs
+[ -f ./vendor/bin/phpcs ] && ./vendor/bin/phpcs . || [ -f ../../vendor/bin/phpcs ] && ../../vendor/bin/phpcs .
 
 exit 0

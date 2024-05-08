@@ -10,7 +10,9 @@
     },
     "scripts": {
         "post-install-cmd": [
-            "git config core.hooksPath .githooks"
+            "git config core.hooksPath .githooks",
+            "find ./sites -type d -name .git -exec dirname {} \\; | xargs -I {} rm -rf {}/.git/hooks",
+            "find ./sites -type d -name .git -exec dirname {} \\; | xargs -I {} ln -s ../../../.githooks {}/.git/hooks "
         ]
     }
 }
