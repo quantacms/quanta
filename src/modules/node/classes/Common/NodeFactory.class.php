@@ -119,8 +119,8 @@ class NodeFactory {
    * @return Node
    *   The node object.
    */
-  public static function buildEmptyNode($env, $father) {
-    $node = new Node($env, \Quanta\Common\Node::NODE_NEW, $father);
+  public static function buildEmptyNode($env, $father,$lang = null) {
+    $node = new Node($env, \Quanta\Common\Node::NODE_NEW, $father, $lang);
     return $node;
   }
 
@@ -281,8 +281,8 @@ class NodeFactory {
    * @return Node
    * @internal param $node
    */
-  public static function buildNode($env, $name, $father, $vars = array()) {
-    $node = NodeFactory::buildEmptyNode($env, $father);
+  public static function buildNode($env, $name, $father, $vars = array(),$lang = null) {
+    $node = NodeFactory::buildEmptyNode($env, $father, $lang);
 
     if (empty($vars['skip_normalize'])) {
       $name = \Quanta\Common\Api::normalizePath($name);
