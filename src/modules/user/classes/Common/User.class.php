@@ -20,6 +20,14 @@ class User extends Node {
   const USER_ACTION_REGISTER = "user_register";
   const USER_VALIDATE = "user_validate";
 
+  const USER_IGNORE_FIELDS = [
+    'form_submit',
+    'form',
+    'form_type',
+    'password_rp',
+    'after_validate'
+  ];
+
   /** @var array $roles */
   public $roles = array();
 
@@ -264,7 +272,7 @@ class User extends Node {
    * @return bool
    *   Returns true if the save action was completed without errors.
    */
-  public function save() {
+  public function save(array $ignore = array()) {
     if (empty($this->path)) {
       $this->path = $this->env->dir['users'] . '/' . $this->getName();
     }
@@ -275,7 +283,7 @@ class User extends Node {
     // Reload the node JSON.
     $this->updateJSON();
     // Save the node json (excluding some fields such as path.)
-    $this->saveJSON();
+    $this->saveJSON($ignore);
     $this->env->hook('user_after_save', $vars);
 
     // If the currently logged in user was modified, reload it in the session.
