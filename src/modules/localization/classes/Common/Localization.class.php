@@ -198,7 +198,7 @@ class Localization {
       $node = NodeFactory::load($env, $tagnode);
       if (!($node->exists)) {
 	$attributes = array('title' => $text);
-	$node = NodeFactory::buildNode($env, $tagnode, Localization::DIR_TRANSLATIONS, $attributes);
+	$node = NodeFactory::buildNode($env, $tagnode, Localization::DIR_TRANSLATIONS, $attributes, $lang);
       }
       elseif ($node->hasTranslation($lang) && ($node->title != NULL)){
 	return $node->title;

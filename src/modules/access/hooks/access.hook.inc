@@ -119,8 +119,11 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
     $user = UserFactory::load($env, $node->getName());
   }
 
+  $criteria_match = array();
+  $i = 0;
   // Check all filters.
   foreach ($filter as $filter_item) {
+
     $exp = explode('@', $filter_item);
     $filter_type = $exp[0];
     if (substr($filter_type, 0, 12) == 'current_user') {
@@ -262,9 +265,13 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
       }
     }
     else {
-      $filter_match = FALSE;
+	    $filter_match = FALSE;
+	    break;
     }
 
+    $criteria_match[$i] = $filter_match;
+    $i++;
   }
+
   return $filter_match;
 }
