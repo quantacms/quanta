@@ -535,6 +535,9 @@ abstract class FormItem extends HtmlTag {
     if (!empty($this->getAttribute('checked'))) {
       $this->html_params['checked'] = 'checked';
     }
+    if($this->getType()== 'radio' && isset($_POST[$this->getName()]) && $this->getId() == $this->getName() .'_'.array_pop($this->getValue()) ){
+      $this->html_params['checked'] = 'checked'; 
+    }
 
     // Return the full rendered form item.
     return parent::render();
