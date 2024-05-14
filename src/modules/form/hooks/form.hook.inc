@@ -34,8 +34,8 @@ function form_boot(Environment $env, array $vars) {
   if(isset($params['async_submission'])){
    
     $form_state = \Quanta\Common\FormFactory::getFormState($env, $_REQUEST['form']);
-    $check= $form_state->checkValidate();
-    $validation_errors= $form_state->getData('validation_errors');
+    $check= $form_state->checkValidate(true);
+    $validation_errors= $form_state->getData('validation_errors') ? $form_state->getData('validation_errors') : [];
     print json_encode($validation_errors);
     exit();
   }
