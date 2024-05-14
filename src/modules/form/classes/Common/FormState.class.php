@@ -60,7 +60,7 @@ class FormState extends DataContainer {
    * @return bool
    *   True if the form items in the form contain valid values.
    */
-  public function checkValidate() {
+  public function checkValidate($justValidate= false) {
     // FORM submission handler.
     if ($this->isSubmitted()) {
 
@@ -85,7 +85,7 @@ class FormState extends DataContainer {
       $this->env->hook($this->getId() . '_form_validate', $vars);
 
       // Check if any form item has thrown validation errors...
-      if (empty($this->getData('validation_errors'))) {
+      if (empty($this->getData('validation_errors')) && !$justValidate) {
         $this->validated = TRUE;
         $this->env->hook('form_submit', $vars);
         $this->env->hook('form_type_' . $this->getType() . '_submit', $vars);
