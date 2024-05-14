@@ -83,12 +83,9 @@ class Img extends HtmlTag {
       if (!is_file($image->getRelativePath()) || !file_exists($image->getRelativePath())) {
         // If image file doesn't exist
         $valid_img= false;
-      } else {
+      } elseif(!getimagesize($image->getRelativePath())) {
         // If the file exists, check if it's a valid image
-        if (!getimagesize($image->getRelativePath())) {
-            // If it's not a valid image
-            $valid_img= false;
-        }
+        $valid_img= false;
       }
       if(!$valid_img){
         return '';
