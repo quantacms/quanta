@@ -118,6 +118,8 @@ class UserFactory {
     $user = new User($env, $form_state->getData('username'), '_users');
 
     $vars = array('user' => $user);
+  
+    $form_items = $form_state->data;
 
     // Check if the current user is allowed to perform the requested action.
     $access_check = UserAccess::check($env, $action, $vars);
@@ -127,22 +129,41 @@ class UserFactory {
         case \Quanta\Common\User::USER_ACTION_EDIT:
         case \Quanta\Common\User::USER_ACTION_EDIT_OWN:
 
-          if (!empty($form_state->getData('first_name'))) {
-            $user->setFirstName($form_state->getData('first_name'));
-          }
-          if (!empty($form_state->getData('last_name'))) {
-            $user->setLastName($form_state->getData('last_name'));
-          }
-          if (!empty($form_state->getData('email'))) {
-            $user->setEmail($form_state->getData('email'));
-          }
-
           // Create a default title for the user node, if it's not set.
           $user->setTitle($user->getFirstName() . ' ' . $user->getLastName());
 
-          if (!empty($form_state->getData('edit_title'))) {
-            $user->setTitle($form_state->getData('edit_title'));
-          }
+          foreach ($form_items as $key => $value) {
+            switch ($key) {
+              case 'first_name':
+                if (!empty($value)) {
+                  $user->setFirstName($value);
+                }
+                break;
+              case 'last_name':
+                if (!empty($value)) {
+                  $user->setLastName($value);
+                }
+              break;
+
+              case 'email':
+                if (!empty($value)) {
+                  $user->setEmail($value);
+                }
+              break;
+
+              case 'edit_title':
+                if (!empty($value)) {
+                  $user->setTitle($value);
+                }
+              break;
+              
+              default:
+                if(!in_array($key,\Quanta\Common\User::USER_IGNORE_FIELDS)){
+                  $user->setAttributeJSON($key, $value);
+                }
+                break;
+            }
+          } 
 
           // Hook user presave.
           $env->hook('user_presave', $vars);
