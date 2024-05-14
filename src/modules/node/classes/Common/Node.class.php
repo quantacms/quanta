@@ -256,7 +256,7 @@ class Node extends JSONDataContainer {
    
 
     //TODO: find a better way to check node existence.
-    if (!isset($this->json->timestamp) && $this->exists) {
+    if ($this->exists) {
       $this->buildContent();
     }
 
