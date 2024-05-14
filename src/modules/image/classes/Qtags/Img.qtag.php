@@ -77,12 +77,23 @@ class Img extends HtmlTag {
 
     }
     else {
+      $valid_img= true;
       $this->src = $image->external ? $image->getRelativePath() : ($node->name . '/' . $this->getTarget());
 
-      if (!is_file($image->getRelativePath()) || !getimagesize($image->getRelativePath())) {
-        // If image file doesn't exist or is not a valid image, return an empty string
+      if (!is_file($image->getRelativePath()) || !file_exists($image->getRelativePath())) {
+        // If image file doesn't exist
+        $valid_img= false;
+      } else {
+        // If the file exists, check if it's a valid image
+        if (!getimagesize($image->getRelativePath())) {
+            // If it's not a valid image
+            $valid_img= false;
+        }
+      }
+      if(!$valid_img){
         return '';
-    }
+      }
+
 		  
 		}
     // Generate the image's url.
