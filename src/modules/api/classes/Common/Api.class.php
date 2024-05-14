@@ -67,7 +67,7 @@ class Api {
  */
   public static function valid_phone($phone) {
     // Define the regex pattern for valid phone numbers
-    $pattern = '/^(00|\+)[1-9]\d{1,14}$/'; // This pattern matches the two formats you provided
+    $pattern = '/^(00|\+)[1-9]\d{1,14}$/';
     // Check if the phone number matches the pattern
     return preg_match($pattern, $phone);
   }
