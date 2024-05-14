@@ -57,6 +57,22 @@ class Api {
   }
 
   /**
+ * Check if a string represents a valid phone number.
+ *
+ * @param $phone
+ *   The phone number to check.
+ *
+ * @return bool
+ *   TRUE if the argument is a valid phone number.
+ */
+  public static function valid_phone($phone) {
+    // Define the regex pattern for valid phone numbers
+    $pattern = '/^(00|\+)[1-9]\d{1,14}$/';
+    // Check if the phone number matches the pattern
+    return preg_match($pattern, $phone);
+  }
+
+  /**
    * Check if a string represents a valid URL.
    *
    * @param $url
