@@ -144,6 +144,20 @@ function user_shadow_user_register_form(Environment $env, array $vars) {
 }
 
 /**
+ * Implements hook_shadow_user_register_form().
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param array $vars
+ *   An array of variables.
+ */
+function user_shadow_roles_edit_form(Environment $env, array $vars) {
+  $vars['shadow']->addTab('User Roles', file_get_contents($env->getModulePath('user') . '/tpl/roles_edit.inc'), 2);
+
+}
+
+
+/**
  * Implements hook_shadow_user_edit_form().
  *
  * @param Environment $env
