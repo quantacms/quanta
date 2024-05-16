@@ -1,7 +1,7 @@
 <?php
 namespace Quanta\Qtags;
 /**
- * Renders an user reset password link.
+ * Renders an user reset password.
  */
 class ResetPassword extends Link {
   /**
@@ -9,10 +9,9 @@ class ResetPassword extends Link {
    *   The rendered Qtag.
    */
   public function render() {
-
     $this->link_class = array('reset-password-link');
-    $this->html_body = t('Reset password');
+    $title = $this->getAttribute('title') ? $this->getAttribute('title') : t('Reset password');
+    $this->html_body = $title;
     return parent::render();
-
   }
 }
