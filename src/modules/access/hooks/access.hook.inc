@@ -126,6 +126,10 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
 
     $exp = explode('@', $filter_item);
     $filter_type = $exp[0];
+    // This is needed because of bugs i.e. when user name has a @ into it.
+    unset($exp[0]);
+    $filter_string = implode('@', $exp);
+
     if (substr($filter_type, 0, 12) == 'current_user') {
       $filter_type = str_replace('current_user', 'user', $filter_type);
       $user = UserFactory::current($env);
@@ -134,7 +138,7 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
       $filter_type = str_replace('node_author', 'user', $filter_type);
       $user = new User($env, $node->getAuthor());
     }
-    $filter_values = explode(';', $exp[1]);
+    $filter_values = explode(';', $filter_string);
 
     $filter_match = FALSE;
     $break = FALSE;
