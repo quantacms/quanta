@@ -191,7 +191,7 @@ function user_shadow_user_reset_password_form(Environment $env, array $vars) {
   /** @var Shadow $shadow */
   $shadow = $vars['shadow'];
   $shadow->addTab(t('Reset password'), $tab, 1);
-  $shadow->addButton('edit-save', 'Login');
+  $shadow->addButton('edit-save', 'Submit');
 }
 
 /**
