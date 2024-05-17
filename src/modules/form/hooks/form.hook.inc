@@ -25,20 +25,23 @@ function form_load_includes(Environment $env, array $vars) {
  *   An array of variables.
  */
 function form_boot(Environment $env, array $vars) {
-  $url= $_SERVER['REQUEST_URI'];
-  // Parse the URL
-  $urlComponents = parse_url($url);
-
-  // Extract and parse the query string parameters
-  parse_str($urlComponents['query'], $params);
-  if(isset($params['async_submission'])){
-   
-    $form_state = \Quanta\Common\FormFactory::getFormState($env, $_REQUEST['form']);
-    $check= $form_state->checkValidate(true);
-    $validation_errors= $form_state->getData('validation_errors') ? $form_state->getData('validation_errors') : [];
-    print json_encode($validation_errors);
-    exit();
+  if(isset($_SERVER['REQUEST_URI'])){
+    $url= $_SERVER['REQUEST_URI'];
+    // Parse the URL
+    $urlComponents = parse_url($url);
+  
+    // Extract and parse the query string parameters
+    parse_str($urlComponents['query'], $params);
+    if(isset($params['async_submission'])){
+     
+      $form_state = \Quanta\Common\FormFactory::getFormState($env, $_REQUEST['form']);
+      $check= $form_state->checkValidate(true);
+      $validation_errors= $form_state->getData('validation_errors') ? $form_state->getData('validation_errors') : [];
+      print json_encode($validation_errors);
+      exit();
+    }
   }
+  
 
   // Check if there is a submitted form, and generated its state.
   if (isset($_REQUEST['form'])) {
