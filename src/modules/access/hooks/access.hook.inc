@@ -123,12 +123,20 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
   $i = 0;
   // Check all filters.
   foreach ($filter as $filter_item) {
-
-    $exp = explode('@', $filter_item);
-    $filter_type = $exp[0];
-    // This is needed because of bugs i.e. when user name has a @ into it.
-    unset($exp[0]);
-    $filter_string = implode('@', $exp);
+   
+    // Count the occurrences of '@'
+    $at_count = substr_count($filter_item, '@');
+    // If there's more than one '@', split at the first occurrence
+    if ($at_count > 1) {
+        $first_at_position = strpos($filter_item, '@');
+        $filter_type = substr($filter_item, 0, $first_at_position);
+        $filter_values = explode(';', substr($filter_item, $first_at_position + 1));
+      } else {
+        // Otherwise, split at the first ';' occurrence
+        $exp = explode('@', $filter_item);
+        $filter_type = $exp[0];
+        $filter_values = explode(';', $exp[1]);
+    }
 
     if (substr($filter_type, 0, 12) == 'current_user') {
       $filter_type = str_replace('current_user', 'user', $filter_type);
@@ -138,7 +146,6 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
       $filter_type = str_replace('node_author', 'user', $filter_type);
       $user = new User($env, $node->getAuthor());
     }
-    $filter_values = explode(';', $filter_string);
 
     $filter_match = FALSE;
     $break = FALSE;
@@ -215,25 +222,24 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
         break;
     }
 
-    if (!empty($filter_check)) {
+    if (!empty($filter_check)) {  
       // Check if the filtered item corresponds to the user input.
       foreach ($filter_check as $check) {
-
         foreach ($filter_values as $filter_value) {
-
+          
           if (substr($filter_value, 0, 1) == '!') {
             $negate = TRUE;
             $filter_value = str_replace('!', '', $filter_value);
           }
 
 	  // If comparing with an array of values, check if the value is in the array.
-	  if (is_array($check)) {
+	  if (is_array($check)) {    
 		  $filter_match = in_array($filter_value, $check);
 	  }
-    elseif($filter_value == \Quanta\Common\Access::EMPTY_FILTER){
+    elseif($filter_value == \Quanta\Common\Access::EMPTY_FILTER){   
       $filter_match = !$check; 
     }
-	  else {
+	  else {    
 		  $filter_match = ($check == $filter_value);
 	  }
           if ($filter_match && !isset($negate)) {
@@ -276,6 +282,6 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
     $criteria_match[$i] = $filter_match;
     $i++;
   }
-
+  
   return $filter_match;
 }
