@@ -137,6 +137,7 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
         $filter_type = $exp[0];
         $filter_values = explode(';', $exp[1]);
     }
+
     if (substr($filter_type, 0, 12) == 'current_user') {
       $filter_type = str_replace('current_user', 'user', $filter_type);
       $user = UserFactory::current($env);
@@ -145,7 +146,7 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
       $filter_type = str_replace('node_author', 'user', $filter_type);
       $user = new User($env, $node->getAuthor());
     }
-   
+
     $filter_match = FALSE;
     $break = FALSE;
     $one_match = FALSE;
