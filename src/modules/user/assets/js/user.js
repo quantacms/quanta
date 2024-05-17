@@ -31,6 +31,18 @@ function user_edit(user_action) {
 };
 
 /**
+ * Request to open a reset password form.
+ */
+function resetPassword() {
+  openShadow({
+    module: 'user',
+    context: 'user_reset_password',
+    widget: 'single',
+    components: ['user_reset_password_form']
+  });
+};
+
+/**
  * When opening user login, put the focus on username field.
  */
 $(document).bind('shadow_user_login', function () {
@@ -64,6 +76,11 @@ $(document).ready(function () {
   // Register.
   $('.register-link').click(function (e) {
     user_edit('user_register');
+    e.preventDefault();
+  });
+   // Reset Password.
+   $('.reset-password-link').click(function (e) {
+    resetPassword();
     e.preventDefault();
   });
 });
