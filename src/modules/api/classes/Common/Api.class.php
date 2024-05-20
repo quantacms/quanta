@@ -66,6 +66,9 @@ class Api {
  *   TRUE if the argument is a valid phone number.
  */
   public static function valid_phone($phone) {
+    if (empty($phone)) {
+      return;
+    }
     // Define the regex pattern for valid phone numbers
     $pattern = '/^(00|\+)[1-9]\d{1,14}$/';
     // Check if the phone number matches the pattern

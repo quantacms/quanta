@@ -89,6 +89,7 @@ class UserFactory {
     // This is the best we found so far from retrieving one user from one field...
     $command = 'grep -r -i -o --include \*.json "\"' . $field . '\"\:\"' . $value . '\"" ' . $env->dir['users'];
     exec($command, $results);
+    if (!empty($results)) {
     $explode = explode('/', array_pop($results));
     if (count($explode) > 2) {
       return $explode[count($explode) - 2];
@@ -96,6 +97,11 @@ class UserFactory {
     else {
       return NULL;
     }
+    }
+    else {
+      return NULL;
+    }
+    
   }
 
   /**
