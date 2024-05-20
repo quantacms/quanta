@@ -183,6 +183,9 @@ class Localization {
   public static function t($string, array $replace = array()) {
     // TODO: multilanguage strings implementation.
     foreach ($replace as $k => $replacement) {
+      if ($replacement == NULL) {
+        $replacement = '';
+      }
       $string = str_replace($k, $replacement, $string);
     }
     return $string;

@@ -104,3 +104,13 @@ margin-bottom: 10px;
 .ck-voice-label {
 display: none;
 }
+
+
+
+.toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    cursor: pointer;
+}

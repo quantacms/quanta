@@ -31,7 +31,8 @@ function form_boot(Environment $env, array $vars) {
     $urlComponents = parse_url($url);
   
     // Extract and parse the query string parameters
-    parse_str($urlComponents['query'], $params);
+    if (!empty($urlComponents['query'])) {
+      parse_str($urlComponents['query'], $params);
     if(isset($params['async_submission'])){
      
       $form_state = \Quanta\Common\FormFactory::getFormState($env, $_REQUEST['form']);
@@ -40,7 +41,7 @@ function form_boot(Environment $env, array $vars) {
       print json_encode($validation_errors);
       exit();
     }
-  
+    }
 
   // Check if there is a submitted form, and generated its state.
   if (isset($_REQUEST['form'])) {

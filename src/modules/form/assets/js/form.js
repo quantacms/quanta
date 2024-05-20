@@ -9,6 +9,28 @@ var refreshForms = function () {
         refreshMultiple(inputItem);
     });
     refreshAutocomplete();
+    refreshPasswordFields();
+};
+
+/**
+ * button to show password
+ */
+var refreshPasswordFields = function() {
+  // Aggiungi l'icona "occhio" accanto ai campi password
+  $('.form-item-password').each(function() {
+    const $this = $(this);
+    $this.after('<span class="toggle-password"><i class="fas fa-eye">“👁</i></span>');
+  });
+
+  // Gestisci il click sull'icona per mostrare/nascondere la password
+  $(".toggle-password").click(function() {
+    const $password = $(this).prev('.form-item-password');
+    const type = $password.attr('type') === 'password' ? 'text' : 'password';
+    $password.attr('type', type);
+
+    // Toggle the eye / eye slash icon
+    $(this).find('i').toggleClass('fa-eye fa-eye-slash');
+  });
 };
 
 /**
