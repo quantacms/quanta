@@ -40,7 +40,6 @@ function form_boot(Environment $env, array $vars) {
       print json_encode($validation_errors);
       exit();
     }
-  }
   
 
   // Check if there is a submitted form, and generated its state.
@@ -54,7 +53,7 @@ function form_boot(Environment $env, array $vars) {
     print _form_json_autocomplete_results($env, $vars);
     exit();
   }
-
+  }
 }
 
 /**
