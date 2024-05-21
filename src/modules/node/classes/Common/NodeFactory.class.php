@@ -41,11 +41,10 @@ class NodeFactory {
 
     $cached = Cache::get($env, 'node', $node->cacheTag());
     if ($cached) {
-      foreach (get_object_vars($cached) as $key => $value) {
-        $node->{$key} = $value;
-      }
+      $node = $cached;
       $vars = array('node' => &$node);
-      $env->hook('node_load_cache', $vars);
+      $env->setData(STATS_NODE_LOADED_CACHE, ($env->getData(STATS_NODE_LOADED_CACHE, 0) + 1));
+
       $node->built = TRUE;
       $node->exists = TRUE;
     }

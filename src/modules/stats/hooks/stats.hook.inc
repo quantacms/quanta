@@ -71,19 +71,6 @@ function stats_node_load(Environment $env, array $vars) {
 }
 
 /**
- * Implements hook_node_load_cache().
- *
- * @param Environment $env
- *   The Environment.
- * @param array $vars
- *   An array of variables.
- */
-function stats_node_load_cache(Environment $env, array $vars) {
-  // Count nodes loaded from cache.
-  $env->setData(STATS_NODE_LOADED_CACHE, ($env->getData(STATS_NODE_LOADED_CACHE, 0) + 1));
-}
-
-/**
  * Implements hook_qtag().
  *
  * @param Environment $env
