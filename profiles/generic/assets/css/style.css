@@ -106,3 +106,7 @@ body.page-animals .content-blog {
 #footer-3 {
     background: #6f6f6f;
 }
+
+.hidden{
+    display: none;
+}
