@@ -74,23 +74,17 @@ class Img extends HtmlTag {
         $image->width = $get_size[0];
         $image->height = $get_size[1];
       }
-
+      $valid_img = $this->checkImage($image);
+      if(!$valid_img){
+        return;
+      }
     }
     else {
-      $valid_img= true;
       $this->src = $image->external ? $image->getRelativePath() : ($node->name . '/' . $this->getTarget());
-
-      if (!is_file($image->getRelativePath()) || !file_exists($image->getRelativePath())) {
-        // If image file doesn't exist
-        $valid_img= false;
-      } elseif(!getimagesize($image->getRelativePath())) {
-        // If the file exists, check if it's a valid image
-        $valid_img= false;
-      }
+      $valid_img = $this->checkImage($image);
       if(!$valid_img){
-        return '';
+        return;
       }
-
 		  
 		}
     // Generate the image's url.
@@ -109,5 +103,24 @@ class Img extends HtmlTag {
     }
 
     return $rendered;
+  }
+
+  /**
+   * Chek Image.
+   * @param Image $image
+   * 
+   * @return boolean
+   *   Check if the image exists and valid.
+   */
+  private function checkImage($image) {
+    $valid_img= true;
+    if (!is_file($image->getRelativePath()) || !file_exists($image->getRelativePath())) {
+      // If image file doesn't exist
+      $valid_img= false;
+    } elseif(!getimagesize($image->getRelativePath())) {
+      // If the file exists, check if it's a valid image
+      $valid_img= false;
+    }
+    return $valid_img;
   }
 }
