@@ -34,7 +34,7 @@ function stats_boot(Environment $env, array $vars) {
  * @param array $vars
  *   An array of variables.
  */
-function stats_page_init(Environment $env, array $vars) {
+function stats_complete(Environment $env, array $vars) {
   // Mark page end loading time.
   $env->setData(STATS_PAGE_COMPLETE_TIME, microtime(TRUE) * 1000);
 }
