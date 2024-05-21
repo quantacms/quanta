@@ -230,11 +230,7 @@ class QtagFactory {
     // TODO: support a reload attribute like in node caching to force reload in some cases.
     $cached = \Quanta\Common\Cache::get($env, 'qtag', $qtag->cacheTag());
     if ($cached) {
-      foreach (get_object_vars($cached) as $key => $value) {
-        $qtag->{$key} = $value;
-      }
-      $vars = array('qtag' => $qtag);
-      $env->hook('qtag_load_cache', $vars);
+      $qtag = $cached;
       $env->setData(STATS_QTAG_LOADED_CACHE, ($env->getData(STATS_QTAG_LOADED_CACHE, 0) + 1));
     }
     else {
