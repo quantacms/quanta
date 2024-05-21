@@ -828,7 +828,7 @@ function detect_old_ie() {
         //imgObj.attr('src',_xorig);
         mObj.attr('xoriginal',_xorig);
         mObj.removeAttr('style');
-        mObj.attr('src', _prev);
+        mObj.attr('src', _xorig);
         if (current.options.adaptive) {
           osw = mObj.width();
           osh = mObj.height();
@@ -927,7 +927,7 @@ function detect_old_ie() {
     loadingClass: 'xzoom-loading',
     lensClass: 'xzoom-lens',
     zoomClass: 'xzoom-preview',
-    activeClass: 'xactive',
+    activeClass: 'hidden',
     hover: false,
     adaptive: true,
     adaptiveReverse: false,
