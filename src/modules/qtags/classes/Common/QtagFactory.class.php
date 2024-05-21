@@ -204,6 +204,8 @@ class QtagFactory {
     // This code is needed to support Qtags in different versions.
     // MY_QTAG or My_Qtag or MyQtag should all be valid ways to use a Qtag
     // and should all point to the MyQtag class.
+
+
     $tag_explode = explode('_', $tag);
     $qtag_class = '';
     foreach ($tag_explode as $tag_part) {
@@ -220,6 +222,24 @@ class QtagFactory {
       // @deprecated standard Qtag class will become abstract.
       // For now we keep it for backward compatibility with old function approach.
       $qtag = new \Quanta\Qtags\Qtag($env, $attributes, $target, $tag);
+    }
+
+    // Quanta implements a caching mechanism for Qtags
+    // so that when a Qtag has the very same type, attributes, target
+    // it's not loaded two times.
+    // TODO: support a reload attribute like in node caching to force reload in some cases.
+    $cached = \Quanta\Common\Cache::get($env, 'qtag', $qtag->cacheTag());
+    if ($cached) {
+      foreach (get_object_vars($cached) as $key => $value) {
+        $qtag->{$key} = $value;
+      }
+      $vars = array('qtag' => $qtag);
+      $env->hook('qtag_load_cache', $vars);
+      $env->setData(STATS_QTAG_LOADED_CACHE, ($env->getData(STATS_QTAG_LOADED_CACHE, 0) + 1));
+    }
+    else {
+      $qtag->load();
+      $env->setData(STATS_QTAG_LOADED, ($env->getData(STATS_QTAG_LOADED, 0) + 1));
     }
     $qtag->delimiters = $delimiters;
 
