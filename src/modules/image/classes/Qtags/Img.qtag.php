@@ -74,16 +74,15 @@ class Img extends HtmlTag {
         $image->width = $get_size[0];
         $image->height = $get_size[1];
       }
-      $valid_img = $this->checkImage($image);
-      if(!$valid_img){
+
+      if(!$image->isValid()){
         return;
       }
     }
     else {
       $this->src = $image->external ? $image->getRelativePath() : ($node->name . '/' . $this->getTarget());
-      $valid_img = $this->checkImage($image);
 
-      if(!$valid_img){
+      if(!$image->isValid()){
         return;
       }
 		  
@@ -104,24 +103,5 @@ class Img extends HtmlTag {
     }
 
     return $rendered;
-  }
-
-  /**
-   * Chek Image.
-   * @param Image $image
-   * 
-   * @return boolean
-   *   Check if the image exists and valid.
-   */
-  private function checkImage($image) {
-    $valid_img= true;
-    if (!$image->exists) {
-      // If image file doesn't exist
-      $valid_img= false;
-    } elseif(!getimagesize($image->getRelativePath())) {
-      // If the file exists, check if it's a valid image
-      $valid_img= false;
-    }
-    return $valid_img;
   }
 }
