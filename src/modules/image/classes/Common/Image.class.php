@@ -425,4 +425,22 @@ class Image extends FileObject {
     }
     return $thumbfile;
   }
+
+   /**
+   * Chek if the Image is valid.
+   * 
+   * @return boolean
+   *   Check if the image exists and valid.
+   */
+  public function isValid() {
+    $valid_img= true;
+    if (!$this->exists) {
+      // If image file doesn't exist
+      $valid_img= false;
+    } elseif(!getimagesize($this->getRelativePath())) {
+      // If the file exists, check if it's a valid image
+      $valid_img= false;
+    }
+    return $valid_img;
+  }
 } 
