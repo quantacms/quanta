@@ -208,7 +208,7 @@ class Localization {
         $output_text = $node->title;
       }	
     }
-    $output_text = $this->t($output_text,$replace);
+    $output_text = t($output_text,$replace);
     return $output_text; 
   }
 }
