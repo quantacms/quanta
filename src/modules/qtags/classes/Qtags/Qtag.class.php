@@ -17,7 +17,7 @@ use Quanta\Common\Environment;
  * passing the related variables.
  *
  */
-class Qtag {
+class Qtag implements \Quanta\Common\Cacheable {
   /**
    * @var Environment $env
    *   The Environment.
@@ -78,13 +78,23 @@ class Qtag {
    * @param string $target
    *   The Qtag's target.
    */
-  public function __construct(&$env, $attributes, $target, $tag = NULL) {
+  public function __construct(&$env, $attributes, $target, $tag = NULL)
+  {
     // Sets basic Qtag's fields.
     $this->env = $env;
     $this->attributes = $attributes;
     $this->target = $target;
     $this->tag = $tag;
+    $this->build();
+  }
 
+  /**
+   * Build function that can be extended to implement
+   * the qtag at runtime.
+   */
+  public function build() {}
+
+  public function load() {
     // A Qtag is accessible by default.
     $this->setAccess(TRUE);
 
@@ -122,6 +132,9 @@ class Qtag {
       if (isset($this->attributes['no_qtags'])) {
         $this->html = Api::string_normalize($this->html);
       }
+
+      \Quanta\Common\Cache::set($this->env, 'qtag', $this->cacheTag(), $this);
+
     }
   }
 
@@ -263,6 +276,31 @@ class Qtag {
    * Make a Qtag printable (print its rendered html).
    */
   public function __toString() {
+    if (empty($this->html)) {
+      $this->html = '';
+    }
     return $this->html;
+  }
+
+  /**
+   * Cache Tag for this Qtag used for qtag caching.
+   */
+  public function cacheTag() {
+    static $hashed = array();
+
+    $tagSerialized = json_encode($this->tag);
+    $attributesSerialized = json_encode($this->attributes);
+    $targetSerialized = json_encode($this->target);
+    $combinedString = $tagSerialized . '_' . $attributesSerialized . '_' . $targetSerialized;
+
+    if (!isset($hashed[$combinedString])) {
+      // Using crc32 for fast hashing
+      $hash = hash('crc32', $combinedString);
+      $hashed[$combinedString] = $hash;
+    } else {
+      $hash = $hashed[$combinedString];
+    }
+
+    return $hash;
   }
 }

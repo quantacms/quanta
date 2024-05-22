@@ -38,6 +38,20 @@ class NodeFactory {
     }
 
     $node = new Node($env, $node_name, NULL, $language);
+
+    $cached = Cache::get($env, 'node', $node->cacheTag());
+    if ($cached) {
+      $node = $cached;
+      $vars = array('node' => &$node);
+      $env->setData(STATS_NODE_LOADED_CACHE, ($env->getData(STATS_NODE_LOADED_CACHE, 0) + 1));
+
+      $node->built = TRUE;
+      $node->exists = TRUE;
+    }
+
+    $node->load();
+
+
     if (!($node->hasTranslation($language))) {
       $fallback = Localization::getFallbackLanguage($env);
       $node = new Node($env, $node_name, NULL, 'it');
