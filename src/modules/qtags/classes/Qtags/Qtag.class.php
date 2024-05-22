@@ -85,7 +85,15 @@ class Qtag implements \Quanta\Common\Cacheable {
     $this->attributes = $attributes;
     $this->target = $target;
     $this->tag = $tag;
+    $this->build();
   }
+
+  /**
+   * Build function that can be extended to implement
+   * the qtag at runtime.
+   */
+  public function build() {}
+
   public function load() {
     // A Qtag is accessible by default.
     $this->setAccess(TRUE);
