@@ -191,26 +191,24 @@ class Localization {
     return $string;
   }
 
-  public static function translatableText(Environment $env, $text, $tag = NULL, $lang = NULL) {
+  public static function translatableText(Environment $env, $text, $tag = NULL, $lang = NULL, $replace = []) {
     if ($lang == NULL) {
     	$lang = $_SESSION['language'];
     }
     $prefix = 'i18n';
+    $output_text = $text;
     if ($tag != NULL) {
       $tagnode = $prefix . '-' . $tag;
       $node = NodeFactory::load($env, $tagnode);
       if (!($node->exists)) {
-	$attributes = array('title' => $text);
-	$node = NodeFactory::buildNode($env, $tagnode, Localization::DIR_TRANSLATIONS, $attributes, $lang);
+        $attributes = array('title' => $text);
+        $node = NodeFactory::buildNode($env, $tagnode, Localization::DIR_TRANSLATIONS, $attributes, $lang);
       }
       elseif ($node->hasTranslation($lang) && ($node->title != NULL)){
-	return $node->title;
-	}	
-
-      else {
-	return $text;
-      }
+        $output_text = $node->title;
+      }	
     }
-    return $text; 
+    $output_text = $this->t($output_text,$replace);
+    return $output_text; 
   }
 }
