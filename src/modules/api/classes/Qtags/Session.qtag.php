@@ -6,7 +6,7 @@ use Quanta\Common\Message;
 /**
  * Allow the setting and retrieving of variables via QTags only.
  */
-class Variable extends Qtag {
+class Session extends Qtag {
   protected $variable_name;
   protected $value;
   /**
@@ -21,23 +21,14 @@ class Variable extends Qtag {
       return '';
     }
 
-    $this->variable_name = 'variable_' . $this->getTarget();
-    $this->value = $this->env->getData($this->variable_name);
+    $this->variable_name = $this->getTarget();
+    $this->value = $_SESSION[$this->getTarget()];
 
     if (!empty($this->getAttribute('set'))) {
-      if (!empty($this->value) && ($this->value != $this->getAttribute('set')) && empty($this->getAttribute('override'))) {
-        new Message($this->env, t(
-          'Warning: the variable !name has been set already. Possible solution: use the override attribute.',
-          array('!name' => $this->variable_name)
-        ), \Quanta\Common\Message::MESSAGE_WARNING);
-      }
-      else {
-        $this->env->setData($this->variable_name, $this->getAttribute('set'));
-      }
+        $_SESSION[$this->variable_name] = $this->getAttribute('set');
     }
-
     else {
-      return $this->env->getData($this->variable_name);
+      return $_SESSION[$this->getTarget()];
     }
   }
 }
