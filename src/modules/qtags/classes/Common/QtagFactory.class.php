@@ -233,9 +233,28 @@ class QtagFactory {
       $qtag = $cached;
       $env->setData(STATS_QTAG_LOADED_CACHE, ($env->getData(STATS_QTAG_LOADED_CACHE, 0) + 1));
     }
+
     else {
-      $qtag->load();
-      $env->setData(STATS_QTAG_LOADED, ($env->getData(STATS_QTAG_LOADED, 0) + 1));
+      if (isset($qtag->attributes['cache'])) {
+        $qtag_cache_dir = $env->dir['cache'] . '/' . $qtag->cacheTag();
+        $qtag_cache_file = $env->dir['cache'] . '/' . $qtag->cacheTag() . '/data.json';
+
+        if (is_file($qtag_cache_file)) {
+          $json = json_decode(file_get_contents($qtag_cache_file));
+          $qtag->html = $json->html;
+        }
+        else {
+          mkdir($qtag_cache_dir);
+          $qtag->load();
+          $fop = fopen($qtag_cache_file, "w+");
+          fwrite($fop, json_encode(array('html' => $qtag->html)));
+          fclose($fop);
+        }
+      }
+      else {
+        $qtag->load();
+        $env->setData(STATS_QTAG_LOADED, ($env->getData(STATS_QTAG_LOADED, 0) + 1));
+      }
     }
     $qtag->delimiters = $delimiters;
 
