@@ -204,6 +204,8 @@ class QtagFactory {
     // This code is needed to support Qtags in different versions.
     // MY_QTAG or My_Qtag or MyQtag should all be valid ways to use a Qtag
     // and should all point to the MyQtag class.
+
+
     $tag_explode = explode('_', $tag);
     $qtag_class = '';
     foreach ($tag_explode as $tag_part) {
@@ -220,6 +222,39 @@ class QtagFactory {
       // @deprecated standard Qtag class will become abstract.
       // For now we keep it for backward compatibility with old function approach.
       $qtag = new \Quanta\Qtags\Qtag($env, $attributes, $target, $tag);
+    }
+
+    // Quanta implements a caching mechanism for Qtags
+    // so that when a Qtag has the very same type, attributes, target
+    // it's not loaded two times.
+    // TODO: support a reload attribute like in node caching to force reload in some cases.
+    $cached = \Quanta\Common\Cache::get($env, 'qtag', $qtag->cacheTag());
+    if ($cached) {
+      $qtag = $cached;
+      $env->setData(STATS_QTAG_LOADED_CACHE, ($env->getData(STATS_QTAG_LOADED_CACHE, 0) + 1));
+    }
+
+    else {
+      if (isset($qtag->attributes['cache'])) {
+        $qtag_cache_dir = $env->dir['cache'] . '/' . $qtag->cacheTag();
+        $qtag_cache_file = $env->dir['cache'] . '/' . $qtag->cacheTag() . '/data.json';
+
+        if (is_file($qtag_cache_file)) {
+          $json = json_decode(file_get_contents($qtag_cache_file));
+          $qtag->html = $json->html;
+        }
+        else {
+          mkdir($qtag_cache_dir);
+          $qtag->load();
+          $fop = fopen($qtag_cache_file, "w+");
+          fwrite($fop, json_encode(array('html' => $qtag->html)));
+          fclose($fop);
+        }
+      }
+      else {
+        $qtag->load();
+        $env->setData(STATS_QTAG_LOADED, ($env->getData(STATS_QTAG_LOADED, 0) + 1));
+      }
     }
     $qtag->delimiters = $delimiters;
 

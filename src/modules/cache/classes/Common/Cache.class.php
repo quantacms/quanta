@@ -136,3 +136,7 @@ class Cache extends DataContainer {
     }
   }
 }
+
+interface Cacheable {
+  public function cacheTag();
+}

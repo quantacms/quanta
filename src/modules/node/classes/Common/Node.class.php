@@ -8,7 +8,7 @@ date_default_timezone_set('UTC');
  * This is the core of the engine.
  */
 #[\AllowDynamicProperties]
-class Node extends JSONDataContainer {
+class Node extends JSONDataContainer implements Cacheable {
   const NODE_ACTION_ADD = 'node_add';
   const NODE_ACTION_VIEW = 'node_view';
   const NODE_ACTION_EDIT = 'node_edit';
@@ -28,6 +28,7 @@ class Node extends JSONDataContainer {
   public $teaser = NULL;
   public $content = NULL;
   public $exists;
+  public $built = FALSE;
   public $permissions;
   public $status;
   public $timestamp;
@@ -71,17 +72,7 @@ class Node extends JSONDataContainer {
       // TODO: language!
 	    // Load node from cache (RAM) if it has been already loaded.
 
-      $cached = Cache::get($this->env, 'node', $this->cacheTag());
-      if ($cached) {
-        foreach (get_object_vars($cached) as $key => $value) {
-          $this->{$key} = $value;
-        }
-
-        $vars = array('node' => &$this);
-        $this->env->hook('node_load_cache', $vars);
-        $this->exists = TRUE;
-      }
-      elseif (isset($path)) {
+      if (isset($path)) {
         $this->path = $path;
         $this->exists = file_exists($path);
       }
@@ -98,9 +89,8 @@ class Node extends JSONDataContainer {
       $this->exists = FALSE;
     }
 
-    if ($this->exists || $father != NULL) {
-      $this->load();
-    }
+  $this->load();
+
   }
 
   /**
@@ -173,7 +163,7 @@ class Node extends JSONDataContainer {
 
   public function cacheTag() {
 
-   return $this->name . '_' . $this->getLanguage(); 
+   return 'node_' . $this->name . '_' . $this->getLanguage();
   }
   /**
    * Update node's json values.
@@ -240,7 +230,6 @@ class Node extends JSONDataContainer {
    * Load node with its internal variables.
    */
   public function load() {
-
     // TODO: following code should not be here. Moved from former hook node load.
     // When saving a node, select the pre-created temporary files dir.
     if (!empty($_REQUEST['json']) && ($json = json_decode($_REQUEST['json'])) && isset($json->tmp_files_dir)) {
@@ -275,6 +264,7 @@ class Node extends JSONDataContainer {
     $vars = array('node' => &$this);
 
     $this->env->hook('node_build', $vars);
+    $this->built = TRUE;
     Cache::set($this->env, 'node', $this->cacheTag(), $this);
   }
 
@@ -308,7 +298,13 @@ class Node extends JSONDataContainer {
     }
     return FALSE;
   }
-
+  /**
+   * Check if the node has been built.
+   * @return bool
+   */
+  public function isBuilt() {
+    return $this->built;
+  }
   /**
    * Check if the node's folder has a subfolder (subnode).
    *
