@@ -1,10 +1,18 @@
 <?php
+  if (class_exists('Tideways\Profiler')) {
+    \Tideways\Profiler::start();
+  }
+  if (class_exists('Tideways\Profiler')) {
+    \Tideways\Profiler::setTransactionName(
+      'Prova::prova'
+    );
+  }
 // The DataContainer and Environment class are required by default. Other classes are ran by the autoloader.
   require_once('modules/environment/classes/Common/DataContainer.class.php');
   require_once('modules/environment/classes/Common/Environment.class.php');
   require_once('modules/user/classes/Common/UserFactory.class.php');
 // Create a new Environment.
-  
+
   $env = new \Quanta\Common\Environment(
     empty($host) ? NULL : $host,
     empty($request_uri) ? NULL : $request_uri,

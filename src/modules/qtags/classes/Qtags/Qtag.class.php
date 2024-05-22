@@ -276,6 +276,7 @@ class Qtag implements \Quanta\Common\Cacheable {
    * Make a Qtag printable (print its rendered html).
    */
   public function __toString() {
+    $this->load();
     if (empty($this->html)) {
       $this->html = '';
     }
