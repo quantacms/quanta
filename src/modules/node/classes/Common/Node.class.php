@@ -16,6 +16,7 @@ class Node extends JSONDataContainer implements Cacheable {
   const NODE_ACTION_DELETE_FILE = 'file_delete';
   const NODE_STATUS_DRAFT = 'node-status-draft';
   const NODE_STATUS_PUBLISHED = 'node-status-published';
+  const NODE_STATUS_FORBIDDEN = 'node-status-forbidden';
   const NODE_STATUS_UNPUBLISHED = 'node-status-unpublished';
   const NODE_PERMISSION_INHERIT = 'inherit';
   const NODE_PERMISSION_SELF = 'self';
@@ -740,11 +741,17 @@ class Node extends JSONDataContainer implements Cacheable {
    */
   private function loadPermissionFromLineage($permission) {
     $this->buildLineage();
+
     // TODO: default permissions when no permission can be found even in lineage.
     $grant = ($permission == self::NODE_ACTION_VIEW) ? \Quanta\Common\User::ROLE_ANONYMOUS : \Quanta\Common\User::ROLE_ADMIN;
     // Navigate the whole tree gathering real permissions on the node.
     $lineage = array_reverse($this->getLineage());
     foreach ($lineage as $lineage_node) {
+
+      if ($lineage_node->name == Node::NODE_STATUS_FORBIDDEN) {
+        $grant = array('admin');
+        break;
+      }
       // Stop when a suitable parent node with permissions is found.
       if (!empty($lineage_node->json->permissions->{$permission}) && $lineage_node->json->permissions->{$permission} != self::NODE_PERMISSION_INHERIT) {
         $grant = $lineage_node->json->permissions->{$permission};
@@ -752,6 +759,9 @@ class Node extends JSONDataContainer implements Cacheable {
       }
     }
 
+    if (empty($grant)) {
+      $grant = array('anonymous');
+    }
     return $grant;
   }
 

@@ -93,6 +93,7 @@ class NodeFactory {
     $node = new Node($env, NULL);
     $node->forbidden = TRUE;
     $node->exists = TRUE;
+    $node->setName(Node::NODE_STATUS_FORBIDDEN);
     $node->setBody(t('Forbidden'));
     return $node;
   }
