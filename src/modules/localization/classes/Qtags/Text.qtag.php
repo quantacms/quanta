@@ -17,7 +17,18 @@ class Text extends Qtag {
    */
   public function render() {
     $tag = !isset($this->attributes['tag']) ? NULL : $this->attributes['tag'];
-    $replace_string = $this->getAttribute('replace') ? $this->getAttribute('replace') : null;
+    $replace_arr = $this->replace($this->getAttribute('replace'));
+    return \Quanta\Common\Localization::translatableText($this->env, $this->getTarget(), $tag, null, $replace_arr);
+  }
+
+   /**
+   * Replace custom charcters in the text.
+   *
+   * @return Array $replace_arr
+   *   What should be replaced.
+   */
+  private function replace($replace_item){
+    $replace_string = $replace_item ? $replace_item : null;
     $replace_arr = [];
     if($replace_string){
       // Explode the replace string by semicolon
@@ -30,6 +41,6 @@ class Text extends Qtag {
         }
       }
     }
-    return \Quanta\Common\Localization::translatableText($this->env, $this->getTarget(), $tag, null, $replace_arr);
+    return $replace_arr;
   }
 }
