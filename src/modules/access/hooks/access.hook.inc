@@ -107,7 +107,7 @@ function access_qtag_preload(Environment $env, array $vars) {
  * @return bool
  *   Returns true if the access check was positive.
  */
-function _access_filter($env, $criteria, $node, $user = NULL) {
+function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = null) {
 
   // Explode the criteria values.
   $filter = explode(',', $criteria);
@@ -213,6 +213,10 @@ function _access_filter($env, $criteria, $node, $user = NULL) {
 
       case 'thumbnail':
         $filter_check = array($node->getThumbnail());
+        break;
+
+      case 'file_name':
+        $filter_check = array($custom_value);
         break;
 
       default:

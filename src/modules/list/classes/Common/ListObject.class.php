@@ -251,7 +251,7 @@ abstract class ListObject extends DataContainer {
       }
       elseif (($this->scantype == \Quanta\Common\Environment::DIR_FILES) && $this->node != NULL) {
 				$file = new FileObject($this->env, $item_name, $this->node);
-        if ($file->isPublic()) {
+        if ($file->isPublic() && $this->validateFileItem($this->node,$item_name)) {
           $this->addItem($file);
         }
       }
@@ -289,6 +289,26 @@ abstract class ListObject extends DataContainer {
   public function validateListItem($node) {
     // Check if there is a filter set, and if it allows the item.
     if (!empty($this->getData('list_filter')) && !_access_filter($this->env, $this->getData('list_filter'), $node)) {
+      return FALSE;
+    }
+    return TRUE;
+  }
+
+   /**
+   * Check if a file has a status that can be displayed in the list.
+   *
+   * @param Node $node
+   *   The node for which to validate the status.
+   * @param String $item_name
+   *  The name of the file item
+   *
+   * @return bool
+   *   Returns true if the node status is the one for which the list is filtered.
+   *
+   */
+  public function validateFileItem($node,$item_name) {
+    // Check if there is a filter set, and if it allows the item.
+    if (!empty($this->getData('list_filter')) && !_access_filter($this->env, $this->getData('list_filter'), $node, null, $item_name)) {
       return FALSE;
     }
     return TRUE;
