@@ -115,7 +115,13 @@ function node_shadow_node_form(Environment $env, array $vars){
   $shadow = $vars['shadow'];
 
   $shadow->addTab(NULL, file_get_contents($env->getModulePath('node') . '/tpl/node_data.inc'), 1);
-  $shadow->addButton('edit-save', $env->getContext() == \Quanta\Common\Node::NODE_ACTION_DELETE ? t('Delete') : t('Save'));
+  if($env->getContext() == \Quanta\Common\Node::NODE_ACTION_DELETE){
+    $shadow->setData('delet_form',true);
+    $shadow->addButton('edit-save', t('Yes'));
+  }
+  else{
+    $shadow->addButton('edit-save',t('Save'));
+  }
 }
 
 /**
