@@ -35,6 +35,11 @@ function integrity_doctor_integrity_check(Environment $env, array $vars) {
         'description',
         'welcome',
       );
+      $nodes_have_childrens = array(
+        'rooms',
+        'shifts',
+        'closures'
+      );
       //get the language
       $language= \Quanta\Common\Localization::getLanguage($env);
         foreach ($nodes as $node) {
@@ -88,6 +93,61 @@ function integrity_doctor_integrity_check(Environment $env, array $vars) {
               }
               
 
+            }elseif(!in_array($subnode_type,$translated_nodes) && count($subnode_language_files)){
+              //check if the node is non-translated but contain data<language>.json file
+            
+              foreach ($subnode_language_files as $language_file){
+                if(file_exists($subnode->path.'/data.json')){
+                  // If data.json exists, delete data_<language>.json
+                  unlink($language_file);
+                }
+                else{
+                  // If data.json not exist, rename data_<language>.json to data.json
+                  rename($language_file, $subnode->path.'/data.json');
+                }
+              }
+             
+            }
+
+            //check if the sub-node has childrens
+            if(in_array($subnode_type,$nodes_have_childrens)){
+              $childs_dirlist = new \Quanta\Common\DirList($env,  $subnode_name, 'list', $attributes, 'integrity');
+              $childs = $childs_dirlist->getItems();
+              foreach ($childs as $child) {
+              //get the language files inside subnode
+              $child_language_files = glob($child->path . '/data_*.json'); 
+              //TODO: make this conditions in sepreate function
+              if(in_array($subnode_type,$translated_nodes) && file_exists($child->path.'/data.json')){
+                //check if the node is translated but contain data.json file
+  
+                if(count($child_language_files)){
+                  // If data_<language>.json exists, delete data.json
+                  unlink($child->path.'/data.json');
+                }
+                else{
+                  // If data_<language>.json does not exist, rename data.json to data_<language>.json
+                  $translated_file = $child->path.'/data_'.$language.'.json';
+                  rename($child->path.'/data.json', $translated_file);
+                }
+                
+  
+              }elseif(!in_array($subnode_type,$translated_nodes) && count($child_language_files)){
+                //check if the node is non-translated but contain data<language>.json file
+              
+                foreach ($child_language_files as $language_file){
+                  if(file_exists($child->path.'/data.json')){
+                    // If data.json exists, delete data_<language>.json
+                    unlink($language_file);
+                  }
+                  else{
+                    // If data.json not exist, rename data_<language>.json to data.json
+                    rename($language_file, $child->path.'/data.json');
+                  }
+                }
+               
+              }
+              }
+              
             }
           }
           		
