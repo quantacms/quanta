@@ -186,6 +186,19 @@ function submitShadow() {
       form_items[fieldName].push(fieldValue); // Push trimmed field value
     }
 
+    // Check if it's a file input with the specified id
+    if (inputField.attr('type') === 'file') {
+      // Check if the input field has the multiple attribute
+      var hasMultiple = inputField.prop('multiple');
+      var setAsThumbnail = inputField.attr('thumbnail');
+      if (!hasMultiple) {
+        form_items['single_file']= true;
+      }
+      if(String(setAsThumbnail).toLowerCase() === 'false'){
+        form_items['set_as_thumbnail']= false;
+      }
+    }
+
   });
   
   if (hasEmptyRequiredFields) {
