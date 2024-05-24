@@ -40,9 +40,10 @@ var refreshAutocomplete = function() {
 
   $("input.autocomplete").each(function() {
     var node = $(this).data('node');
+    var listFilter = $(this).data('list-filter');
     var options = {
       url: function(phrase) {
-        var autocomplete_path = "/autocomplete?search_string=" + phrase + "&search_node=" + node;
+        var autocomplete_path = "/autocomplete?search_string=" + phrase + "&search_node=" + node + "&list_filter=" + listFilter;
         return autocomplete_path;
       },
       getValue: "name",
