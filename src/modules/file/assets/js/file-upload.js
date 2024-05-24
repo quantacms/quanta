@@ -34,7 +34,6 @@ $(function () {
         '<a class="file-link" target="_blank" data-filenew="true" data-filename="' + (data.files[0].name) + '" href="/tmp/' + tmp_files_dir + '/' + (data.files[0].name) + '">' + (data.files[0].name) + "</a>" +
         '</span>' +
         '<span class="progress-wrapper">' +
-        '<span class="progress"></span>' +
         '<input type="text" value="0" data-width="20" data-height="20" />' +
         '</span>' +
         '<span class="file-qtag"></span>' +
@@ -71,11 +70,9 @@ $(function () {
       var jqXHR = data.submit();
     },
 
-    progress: function (e, data) {
-
-      // Calculate the completion percentage of the upload
+    progress: function (e, data) {// Calculate the completion percentage of the upload
       var progress = parseInt(data.loaded / data.total * 100, 10);
-
+     
       // Update the hidden input field and trigger a change
       // so that the jQuery knob plugin knows to update the dial
       var red = 200 - (progress * 2);
@@ -84,6 +81,7 @@ $(function () {
 
       if (progress == 100) {
         data.context.removeClass('working');
+        data.context.find('.progress-wrapper').hide();
         //data.context.find('input').fadeOut('slow');
         $(document).trigger('refresh');
       }
@@ -235,13 +233,15 @@ $(document).bind('refresh', function () {
     $(this).load(qtag);
   });
 
-  $('.file-qtag').each(function () {
-    var filelink = $(this).parent().find('.file-link');
-    var filename = filelink.data('filename');
-    var tag_attr = (filelink.data('filenew') != undefined) ? ('tmp_path=' + tmp_files_dir) : ('node=' + node_name);
-    var qtag_suggestion = '/qtag/[FILE_QTAG_SUGGESTION|' + tag_attr + ':' + encodeURIComponent(filename) + ']';
-    $(this).load(qtag_suggestion);
-  });
+  //TODO: I don't know what the purpose of [FILE_QTAG_SUGGESTION|] is It only displays incorrect data, but the name is displayed correctly elsewhere
+  //TODO: remove this 
+  // $('.file-qtag').each(function () {
+  //   var filelink = $(this).parent().find('.file-link');
+  //   var filename = filelink.data('filename');
+  //   var tag_attr = (filelink.data('filenew') != undefined) ? ('tmp_path=' + tmp_files_dir) : ('node=' + node_name);
+  //   var qtag_suggestion = '/qtag/[FILE_QTAG_SUGGESTION|' + tag_attr + ':' + encodeURIComponent(filename) + ']';
+  //   $(this).load(qtag_suggestion);
+  // });
 });
 
 $(document).bind('shadow_save', function () {
