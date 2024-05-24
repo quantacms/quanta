@@ -94,6 +94,42 @@ class Qtag implements \Quanta\Common\Cacheable {
    */
   public function build() {}
 
+
+  public function preload() {
+    // Quanta implements a caching mechanism for Qtags
+    // so that when a Qtag has the very same type, attributes, target
+    // it's not loaded two times.
+    // TODO: support a reload attribute like in node caching to force reload in some cases.
+    $cached = \Quanta\Common\Cache::get($this->env, 'qtag', $this->cacheTag());
+    if ($cached) {
+      $this->html = $cached->html;
+      $this->env->setData(STATS_QTAG_LOADED_CACHE, ($this->env->getData(STATS_QTAG_LOADED_CACHE, 0) + 1));
+    }
+
+    else {
+      if (isset($qtag->attributes['cache'])) {
+        $qtag_cache_dir = $this->env->dir['cache'] . '/' . $this->cacheTag();
+        $qtag_cache_file = $this->env->dir['cache'] . '/' . $this->cacheTag() . '/data.json';
+
+        if (is_file($qtag_cache_file)) {
+          $json = json_decode(file_get_contents($qtag_cache_file));
+          $this->html = $json->html;
+        }
+        else {
+          mkdir($qtag_cache_dir);
+          $this->load();
+          $fop = fopen($qtag_cache_file, "w+");
+          fwrite($fop, json_encode(array('html' => $this->html)));
+          fclose($fop);
+        }
+      }
+      else {
+        $this->load();
+        $this->env->setData(STATS_QTAG_LOADED, ($this->env->getData(STATS_QTAG_LOADED, 0) + 1));
+      }
+    }
+  }
+  
   public function load() {
     // A Qtag is accessible by default.
     $this->setAccess(TRUE);
