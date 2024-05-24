@@ -79,10 +79,10 @@ class NodeTemplate extends DataContainer {
   public function buildTemplate() {
     $tpl = array();
     $tpl_sublevel = 0;
+    $this->node->buildLineage();
     $lineages = $this->node->getLineage() + array($this->node->name => $this->node);
     // Invert lineage: from specific to generic.
     $lineages = array_reverse($lineages);
-
     // Priority 1: tpl without levels.
     // If the current node has a TPL set use that directly and don't look for others.
     if (is_file($this->node->path . '/tpl.html')) {
