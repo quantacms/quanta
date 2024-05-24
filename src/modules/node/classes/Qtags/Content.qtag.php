@@ -17,10 +17,6 @@ class Content extends HtmlTag {
 
     $content = \Quanta\Common\NodeFactory::render($this->env, $node->getName());
 
-    // Inline editing link.
-    if (isset($this->attributes['editable'])) {
-      $content = \Quanta\Common\NodeTemplate::wrap($this->env, $node, $content);
-    }
     $this->html_body = $content;
     return parent::render();
   }
