@@ -73,6 +73,7 @@ function file_node_presave(Environment $env, array $vars) {
   $data = $vars['data'];
   $uploaded_files = [];
   $isMultiple= !$data['single_file'];
+  $setAsThumbnail = !$isMultiple && $data['set_as_thumbnail'];
   // Walk through uploaded files.
   foreach ($data as $label => $name) {
     $exp = explode('-', $label);
@@ -83,15 +84,12 @@ function file_node_presave(Environment $env, array $vars) {
     }
   }
 
-
   //
   foreach ($uploaded_files as $form_name => $uploaded_file_list) {
     // Save list of uploaded files for this file field in json.
-    $node->json->{$form_name} = $isMultiple ? $uploaded_file_list : [$uploaded_file_list[count($uploaded_file_list) - 1]];
-    if(!$isMultiple){
+    $node->json->{$form_name} = $isMultiple ? $uploaded_file_list : $uploaded_file_list[count($uploaded_file_list) - 1];
+    if($setAsThumbnail){
       $node->setThumbnail($uploaded_file_list[count($uploaded_file_list) - 1]);
-      if(count($uploaded_file_list) > 1)
-      FileObject::deleteFile($node, $uploaded_file_list[0]);
     }
   }
 }
