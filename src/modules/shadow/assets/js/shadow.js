@@ -151,29 +151,61 @@ function submitShadow() {
   $(document).trigger('shadow_' + shadow.context + '_submit');
   
   var form_items = {};
-  var hasEmptyRequiredFields = false; // Flag to track if there are empty required fields
+  var hasErrors = false; // Flag to track if there are validation errors
   
   $('#shadow-outside').find('input, textarea, select').each(function () {
     var inputField = $(this);
     var fieldWrapper = $(this).closest('.form-item-wrapper');
+
     
     var fieldName = inputField.attr('name');
     var fieldValue = inputField.val().trim();
-            
     // Check if the field is required, empty, and visible
     if (inputField.prop('required') && fieldValue === '' && inputField.is(':visible')) {
-      hasEmptyRequiredFields = true; // Set flag if a required field is empty
-      
+      hasErrors = true; // Set flag if a required field is empty
       // Add error message to the field wrapper
-      fieldWrapper.addClass('has-validation-errors');
-      if (fieldWrapper.find('.validation-error').length === 0) {
-        fieldWrapper.prepend('<div class="validation-error">This field is required.</div>');
-      }
+      showValidationError(fieldWrapper,'This field is required.');
     }
-    else{
+
+    var inputLength = inputField.data('length');
+    if(fieldValue?.length > inputField.data('length')){
+        hasErrors = true;
+        showValidationError(fieldWrapper,'This field must be less than or equal to '+ inputLength + ' characters.');
+    }
+    console.log(fieldName +" "+ inputField.prop('type'));
+    switch (inputField.prop('type')) {
+      case 'email':
+        console.log('email');
+        var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if(!emailPattern.test(fieldValue)){
+          hasErrors = true;
+          showValidationError(fieldWrapper,'This field must be a valid email.');
+        }
+        break;
+
+      case 'tel':
+        var phonePattern = /^\+?[0-9\s\-()]{7,15}$/;
+        if(!phonePattern.test(fieldValue)){
+          hasErrors = true;
+          showValidationError(fieldWrapper,'This field must be a valid phone number.');
+        }
+        break;
+
+      case 'url':
+        var urlPattern = /^(https?:\/\/)?([\w\-]+\.)+[\w\-]+(\/[\w\-]*)*$/;
+        if(!urlPattern.test(fieldValue)){
+          hasErrors = true;
+          showValidationError(fieldWrapper,'This field must be a valid url.');
+        }
+        break;
+    
+      default:
+        break;
+    }
+    
+    if(!hasErrors){
       // Remove error styling and message if field is not empty and visible
-      fieldWrapper.removeClass('has-validation-errors');
-      fieldWrapper.find('.validation-error').remove();
+      hideValidationErrors(fieldWrapper);
     }
     
     if (form_items[fieldName] == undefined) {
@@ -201,7 +233,7 @@ function submitShadow() {
 
   });
   
-  if (hasEmptyRequiredFields) {
+  if (hasErrors) {
     // Stop form submission if there are empty required fields
     $('.shadow-submit').removeClass('shadow-submitted'); // Remove shadow-submitted class
     return;
@@ -210,4 +242,16 @@ function submitShadow() {
   var formData = JSON.stringify(form_items);
   $(document).trigger('shadow_submit');
   action(formData);
+}
+
+function showValidationError(fieldWrapper,errorMessage){
+fieldWrapper.addClass('has-validation-errors');
+if (fieldWrapper.find('.validation-error').length === 0) {
+  fieldWrapper.prepend('<div class="validation-error">'+ errorMessage +'</div>');
+}
+}
+
+function hideValidationErrors(fieldWrapper){
+  fieldWrapper.removeClass('has-validation-errors');
+  fieldWrapper.find('.validation-error').remove();
 }
