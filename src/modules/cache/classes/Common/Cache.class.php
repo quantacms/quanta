@@ -77,6 +77,8 @@ class Cache extends DataContainer {
     }
 
     symlink($nodepath, $cache_folder . '/' . $node_name);
+
+    return $cache_folder . '/' . $node_name;
   }
 
   /**
@@ -92,7 +94,14 @@ class Cache extends DataContainer {
    */
   public static function getStoredNodePath($env, $node_name) {
     $cache_folder = Cache::nodePathFolder($env, $node_name, $build = FALSE);
-    return (is_link($cache_folder . '/' . $node_name)) ? ($cache_folder . '/' . $node_name) : FALSE;
+
+    $node_link = $cache_folder . '/' . $node_name;
+
+    if (!file_exists($node_link)) {
+      return false;
+    }
+
+    return  ($node_link);
   }
 
   /**
@@ -112,6 +121,7 @@ class Cache extends DataContainer {
    */
   public static function nodePathFolder($env, $node_name, $build = TRUE) {
     $cache_folder = $env->dir['tmp'] . '/cache';
+
     for ($i = 0; $i < 3; $i++) {
       $char = substr($node_name, $i, 1);
       $cache_folder = $cache_folder . '/' . $char;

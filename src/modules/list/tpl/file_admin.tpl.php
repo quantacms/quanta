@@ -5,7 +5,8 @@
     [FILE_ATTRIBUTE|name=name|node={LISTNODE}:{LISTITEM}]
   </a>
 </span>
-<span class="file-qtag">[FILE_QTAG_SUGGESTION:{LISTITEM}]</span>
+<!-- TODO: I don't know what the purpose of [FILE_QTAG_SUGGESTION|] is It only displays incorrect data, but the name is displayed correctly elsewhere -->
+<!-- <span class="file-qtag">[FILE_QTAG_SUGGESTION:{LISTITEM}]</span> -->
 
 <!-- TODO: add up and down sorting
 <button class="sort-up">up</button>
