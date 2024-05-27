@@ -38,6 +38,8 @@ abstract class FormItem extends HtmlTag {
   protected $default_value;
   /** @var mixed $input_arr */
   protected $input_arr;
+  /** @var int $length */
+  protected $length;
 
 
   /**
@@ -69,6 +71,7 @@ abstract class FormItem extends HtmlTag {
     $this->checkDisabled();
     $this->checkMultiple();
     $this->checkLimit();
+    $this->checkLength();
     $this->checkDistinct();
     $this->loadValue();
     $this->loadDefault();
@@ -136,6 +139,14 @@ abstract class FormItem extends HtmlTag {
   public function checkLimit() {
     $this->setLimit($this->getAttribute('limit'));
     $this->addClass($this->limit ? 'form-item-limited' : 'form-item-unlimited');
+  }
+
+    /**
+   * Checks if the form item has a length. Add a custom class, to indicate if
+   * it's limited or unlimited.
+   */
+  public function checkLength() {
+    $this->setLength($this->getAttribute('length'));
   }
 
   /**
@@ -377,6 +388,22 @@ abstract class FormItem extends HtmlTag {
     return $this->limit;
   }
 
+    /**
+   * Set the length of values for the form item.
+   * @param $length
+   */
+  public function setLength($length) {
+    $this->length = $length;
+  }
+
+  /**
+   * Get the length of values for the form item.
+   * @return mixed|null
+   */
+  public function getLength() {
+    return $this->length;
+  }
+
   /**
    * Set the distinct attribute for the form item.
    *
@@ -516,6 +543,9 @@ abstract class FormItem extends HtmlTag {
     }
     if ($this->getLimit()) {
       $this->html_params['data-limit'] = $this->getLimit();
+    }
+    if ($this->getLength()) {
+      $this->html_params['data-length'] = $this->getLength();
     }
     if (!empty($this->getAttribute('node'))) {
       $this->html_params['data-node'] = $this->getAttribute('node');
