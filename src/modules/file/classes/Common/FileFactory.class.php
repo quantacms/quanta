@@ -21,7 +21,9 @@ class FileFactory {
     // TODO: redo the whole shit.
     if (strpos($env->request[count($env->request) - 1], '.') > 0) {
       $filename = $env->request[count($env->request) - 1];
-      $nodepath = Cache::getStoredNodePath($env, $env->request[count($env->request) - 2]);
+
+      $dir = $env->request[count($env->request) - 2];
+      $nodepath = Cache::getStoredNodePath($env, $dir);
       $file = $nodepath . '/' . urldecode($filename);
       if (is_file($file)) {
         // Request for a file download.
