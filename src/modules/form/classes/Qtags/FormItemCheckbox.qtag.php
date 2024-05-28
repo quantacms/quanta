@@ -16,7 +16,7 @@ class FormItemCheckbox extends FormItemString {
    *   The rendered form item.
    */
   public function render() {
-    $checked = $this->getCheckedValue() ? $this->getAttribute('value') ==  $this->getDefaultValue() : $this->getDefaultValue() == true;
+    $checked = !empty($this->getAttribute('deafult-value')) ? $this->getAttribute('deafult-value') ==  $this->getDefaultValue() : $this->getDefaultValue() == true;
     if($checked){
       $this->html_params['checked'] = 'checked';
     }
