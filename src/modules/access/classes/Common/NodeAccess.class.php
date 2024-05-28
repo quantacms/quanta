@@ -104,6 +104,10 @@ class NodeAccess extends Access implements \Quanta\Common\Cacheable  {
                     ($this->node->hasParent($this->actor->getName()))
                   );
                 }
+
+                if($can_access){
+                  break;
+                }
               }
             }
           }
