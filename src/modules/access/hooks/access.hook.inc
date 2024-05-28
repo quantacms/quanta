@@ -54,7 +54,7 @@ function access_node_presave(Environment $env, array $vars){
  * @param $vars
  *   An array of variables.
  */
-function access_node_open(Environment $env, array $vars) {
+function access_node_open(Environment $env, array &$vars) {
   /** @var Node $node */
   $node = &$vars['node'];
 
@@ -62,7 +62,7 @@ function access_node_open(Environment $env, array $vars) {
   if (!empty($node) && $node->exists) {
     $has_access = NodeAccess::check($env, \Quanta\Common\Node::NODE_ACTION_VIEW, array('node' => $node));
     if (!$has_access) {
-      $node = NodeFactory::buildForbiddenNode($env);
+      $vars['node']->forbidden = TRUE;
     }
   }
 }
