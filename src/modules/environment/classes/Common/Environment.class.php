@@ -539,6 +539,21 @@ class Environment extends DataContainer {
     return $results;
   }
 
+  function getLastPathSegment($path) {
+    // Regular expression to match the last valid part of a URL path excluding files
+    $pattern = '/([^\/\?#]*[^\/\?#\.][^\/\?#]*|[^\/\?#]+)(?:[\?#]|$)/';
+
+    if ($path == NULL) {
+      return NULL;
+    }
+    // Perform the regex match
+    if (preg_match($pattern, $path, $matches)) {
+      return $matches[1];
+    } else {
+      return null;
+    }
+  }
+
   /**
    * Returns the system path of a node (folder).
    *
@@ -554,13 +569,13 @@ class Environment extends DataContainer {
     static $node_paths = array();
     // Regular expression to match the last valid part of a URL path
     $pattern = '/(?:.*\/)?([^\/\?#\.]+)(?:\/[^\/\?#]*)?(?:[\?#]|$)/';
+    //$pattern = '/(?:\/([^\/\?#]*[^\/\?#\.][^\/\?#]*))(?:[\?#]|$)/';
     $cache_exists = FALSE;
     // Perform the regex match
-    if (preg_match($pattern, $folder, $matches)) {
-      $folder = $matches[1];
-    } else {
-      // TODO: maybe throw an error if an empty folder is searched for.
-      return null;
+    $folder = $this->getLastPathSegment($folder);
+
+    if ($folder == NULL) {
+      return NULL;
     }
     // We use a static variable to lookup nodes paths only once.
     if (isset($node_paths[$folder])) {
