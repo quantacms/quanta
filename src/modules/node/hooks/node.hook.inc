@@ -209,10 +209,6 @@ function node_metadata(Environment $env, array $vars){
     'content' => Api::filter_xss($author->getTitle()),
   );
 
-  $vars['metadata']['application-name'] = array(
-    'content' => t('Quanta CMS'),
-  );
-
   // OG metadata.
   $vars['metadata']['og:title'] = array(
     'content' => Api::filter_xss($node->getTitle()),
