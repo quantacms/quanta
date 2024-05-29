@@ -399,7 +399,6 @@ class NodeFactory {
     // Prepare the response object.
     $response = new \stdClass();
     $user = UserFactory::current($env);
-    $saveUser = false;
 
     // When user didn't enter a path for a new node, create a candidate
     // path based on title.
@@ -490,11 +489,7 @@ class NodeFactory {
             }
             else{
               $pass = UserFactory::passwordEncrypt($form_data['password']);
-              //get user from load function because there is an error when save user when get it from current function
-              //TODO: fix the error
-              $user = UserFactory::load($env,$user->getName());
-              $user->setPassword($pass);
-              $saveUser = true;
+              $node->json->password = $pass;
             }  
           }
 
@@ -515,10 +510,6 @@ class NodeFactory {
             $env->hook($action . '_complete', $vars);
             // Check if 'current_url' is set in the form data, if not, default to the father node's name.
             $redirect_url= isset($form_data['current_url']) ? $form_data['current_url'] : '/' . $node->getFather()->getName() . '/';
-            // if the password changed save the user info
-            if($saveUser){
-              $user->save();
-            }
             // Set the redirect URL in the response. If 'redirect' is not empty in the form data, use it, otherwise, use the calculated $redirect_url.
             $response->redirect = !empty($form_data['redirect']) ? $form_data['redirect'] : $redirect_url;
           }
