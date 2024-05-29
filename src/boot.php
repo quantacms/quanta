@@ -1,46 +1,4 @@
-<?php 
-/*if (extension_loaded('xhprof')) {
-    xhprof_enable(XHPROF_FLAGS_CPU + XHPROF_FLAGS_MEMORY);
-
-    register_shutdown_function(function() {
-        $xhprof_data = xhprof_disable();
-
-	$xhprof_root = "/Users/aldotripiciano/xhprof";
-        include_once $xhprof_root . "/xhprof_lib/utils/xhprof_lib.php";
-        include_once $xhprof_root . "/xhprof_lib/utils/xhprof_runs.php";
-
-        $xhprof_runs = new XHProfRuns_Default();
-        $run_id = $xhprof_runs->save_run($xhprof_data, "xhprof");
-
-        // Invia i dati a XHGui
-    // Salva il file in formato cachegrind
-
-        // Save the file in Cachegrind format
-        $filename = "/private/tmp/cachegrind.out." . uniqid();
-        $file = fopen($filename, 'w');
-        fwrite($file, "version: 1\ncmd:1\npart:1\nevents: Instructions\n");
-        foreach ($xhprof_data as $func => $metrics) {
-            fwrite($file, "fl=$func\n");
-            fwrite($file, "fn=$func\n");
-            foreach ($metrics as $metric => $value) {
-                fwrite($file, "$metric $value\n");
-            }
-        }
-        fclose($file);
-    });
-    
-}*/
-
-
-  if (class_exists('Tideways\Profiler')) {
-    \Tideways\Profiler::start();
-  }
-  if (class_exists('Tideways\Profiler')) {
-    \Tideways\Profiler::setTransactionName(
-      'Prova::prova'
-    );
-  }
-
+<?php
 // The DataContainer and Environment class are required by default. Other classes are ran by the autoloader.
   require_once('modules/environment/classes/Common/DataContainer.class.php');
   require_once('modules/environment/classes/Common/Environment.class.php');
@@ -86,7 +44,12 @@
     exit;
   }
 
-  // Check if there is any requested action.
+  if (isset($_GET['password'])) {
+    print \Quanta\Common\UserFactory::passwordEncrypt($_GET['password']);
+    die();
+  }
+
+    // Check if there is any requested action.
   $env->checkActions();
 
   // Run the init hook.
