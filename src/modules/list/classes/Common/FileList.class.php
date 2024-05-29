@@ -138,7 +138,18 @@ class FileList extends ListObject {
    *   The file to be added.
    */
   public function addItem($file) {
-    $node_files = empty($this->getNode()->getAttributeJSON($this->filefield)) ? array() : array_flip($this->getNode()->getAttributeJSON($this->filefield));
+   if (($this->getNode()->getAttributeJSON($this->filefield)==NULL) || empty($this->getNode()->getAttributeJSON($this->filefield))) {
+	   $node_files = array();
+   }	  
+   elseif (!is_array($this->getNode()->getAttributeJSON($this->filefield))) {
+   	$node_files = array($this->getNode()->getAttributeJSON($this->filefield));
+   }
+
+   if ($node_files == NULL) {
+   	$node_files = array();
+   }
+   $node_files = array_flip($node_files);
+
     // The "files" filefield is used in the standard Quanta files, containing all uploaded files in the folder.
     // For other file inputs, filter files by those that have been uploaded through that specific input.
     if (($this->filefield == self::DEFAULT_FILE_FIELD) || isset($node_files[$file->getPath()])) {
