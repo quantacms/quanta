@@ -58,4 +58,25 @@ class FileFactory {
     }
   }
 
+  /**
+   * Check if the current request is for download pdf.
+   */
+  public static function downloadPdf(Environment $env){
+    if (!empty($env->request_path) && $env->request_path == 'download-pdf') {
+      // Extract query parameters
+      $file_path = $env->query_params['file-name'];
+      $target = $env->query_params['target'];
+      // Load the target node
+      $node = \Quanta\Common\NodeFactory::load($env, $target);
+      if($node->exists){
+        // Create a file object and download the file
+        $file = new  \Quanta\Common\FileObject($env,$file_path,$node);
+        if($file->exists){
+          $file->download();
+        }
+      }
+      
+    } 
+  }
+
 }
