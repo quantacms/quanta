@@ -70,7 +70,6 @@ function node_load_includes(Environment $env, array $vars){
  */
 function node_page_init(Environment $env, array $vars) {
   $node = NodeFactory::current($env);
-  
   // If the node does not exist, redirect to 404.
   if (!$node->exists && !isset($_REQUEST['shadow']) && $node->name != '404') {
 	  // SSH challenge
@@ -115,7 +114,13 @@ function node_shadow_node_form(Environment $env, array $vars){
   $shadow = $vars['shadow'];
 
   $shadow->addTab(NULL, file_get_contents($env->getModulePath('node') . '/tpl/node_data.inc'), 1);
-  $shadow->addButton('edit-save', $env->getContext() == \Quanta\Common\Node::NODE_ACTION_DELETE ? t('Delete') : t('Save'));
+  if($env->getContext() == \Quanta\Common\Node::NODE_ACTION_DELETE){
+    $shadow->setData('delete_form',true);
+    $shadow->addButton('edit-save', t('Yes'));
+  }
+  else{
+    $shadow->addButton('edit-save',t('Save'));
+  }
 }
 
 /**

@@ -19,7 +19,7 @@ var refreshPasswordFields = function() {
   // Aggiungi l'icona "occhio" accanto ai campi password
   $('.form-item-password').each(function() {
     const $this = $(this);
-    $this.after('<span class="toggle-password"><i class="fas fa-eye">“👁</i></span>');
+    $this.after('<span class="toggle-password"><i class="icon-eye_outline"></i></span>');
   });
 
   // Gestisci il click sull'icona per mostrare/nascondere la password
@@ -29,7 +29,7 @@ var refreshPasswordFields = function() {
     $password.attr('type', type);
 
     // Toggle the eye / eye slash icon
-    $(this).find('i').toggleClass('fa-eye fa-eye-slash');
+    $(this).find('i').toggleClass('icon-eye-slash_outline');
   });
 };
 
