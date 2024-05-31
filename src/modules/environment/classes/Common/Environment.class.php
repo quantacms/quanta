@@ -289,6 +289,7 @@ class Environment extends DataContainer {
     $includes = array('hook');
     foreach ($includes as $include_type) {
       $include_path = $module['path'] . '/hooks/' . $module['name'] . '.' . $include_type . '.inc';
+
       if (is_file($include_path)) {
         require_once($include_path);
       }
@@ -538,6 +539,21 @@ class Environment extends DataContainer {
     return $results;
   }
 
+  function getLastPathSegment($path) {
+    // Regular expression to match the last valid part of a URL path excluding files
+    $pattern = '/([^\/\?#]*[^\/\?#\.][^\/\?#]*|[^\/\?#]+)(?:[\?#]|$)/';
+
+    if ($path == NULL) {
+      return NULL;
+    }
+    // Perform the regex match
+    if (preg_match($pattern, $path, $matches)) {
+      return $matches[1];
+    } else {
+      return null;
+    }
+  }
+
   /**
    * Returns the system path of a node (folder).
    *
@@ -550,57 +566,63 @@ class Environment extends DataContainer {
    *   The path of the node.
    */
   public function nodePath($folder, $link = FALSE) {
-    static $node_paths;
-    // We use a static variable to lookup nodes paths only once.
-    if (empty($node_paths)) {
-      $node_paths = array();
-    }
-    if (isset($node_paths[$folder])) {
-      return $node_paths[$folder];
-    }
+    static $node_paths = array();
+    // Regular expression to match the last valid part of a URL path
+    $pattern = '/(?:.*\/)?([^\/\?#\.]+)(?:\/[^\/\?#]*)?(?:[\?#]|$)/';
+    //$pattern = '/(?:\/([^\/\?#]*[^\/\?#\.][^\/\?#]*))(?:[\?#]|$)/';
+    $cache_exists = FALSE;
+    // Perform the regex match
+    $folder = $this->getLastPathSegment($folder);
 
-    // TODO: maybe throw an error if an empty folder is searched for.
-    if (empty($folder)) {
+    if ($folder == NULL) {
       return NULL;
     }
-    $nodepath = Cache::getStoredNodePath($this, $folder);
-    if (!empty($nodepath)) {
-      return readlink($nodepath);
-    }
-    // Use find to locate the node's directory in the file system.
-    // TODO: run a sanity check that there is only one folder or throw error instead?
-    $results = $this->findNodePath($folder);
-    $found_folders = array();
-
-    if (empty($results)) {
-      return FALSE;
-    }
-    // Check that there are not duplicate folders. Don't count symlinks.
-    foreach ($results as $i => $res) {
-      if (is_dir($results[$i]) && ($link ? true : !is_link($results[$i]))) {
-        $found_folders[] = $results[$i];
-        $result = $results[$i];
-      }
-      else {
-        unset($results[$i]);
-      }
-    }
-    if (count($found_folders) > 1) {
-      new Message($this,
-        t('Warning: there is more than one folder named !folder: <br/>!folds<br>Check integrity!',
-          array(
-            '!folder' => $folder,
-            '!folds' => var_export($found_folders, 1),
-          )
-        ));
-    }
-    else {
-      Cache::storeNodePath($this, $result);
-      return $result;
+    // We use a static variable to lookup nodes paths only once.
+    if (isset($node_paths[$folder])) {
+      $node_path_link = $node_paths[$folder];
+      $cache_exists = TRUE;
+      //return $node_paths[$folder];
+    } else {
+      $node_path_link = Cache::getStoredNodePath($this, $folder);
     }
 
-    return NULL;
-  }
+    $node_path = @readlink($node_path_link);
+    if ($node_path == false) {
+      // Use find to locate the node's directory in the file system.
+      // TODO: run a sanity check that there is only one folder or throw error instead?
+      $results = $this->findNodePath($folder);
+      $found_folders = array();
+
+      if (empty($results)) {
+        return FALSE;
+      }
+      // Check that there are not duplicate folders. Don't count symlinks.
+      foreach ($results as $i => $res) {
+        if (is_dir($results[$i]) && ($link ? true : !is_link($results[$i]))) {
+          $found_folders[] = $results[$i];
+          $node_path = $results[$i];
+        } else {
+          unset($results[$i]);
+        }
+      }
+
+      if (count($found_folders) > 1) {
+        new Message($this,
+          t('Warning: there is more than one folder named !folder: <br/>!folds<br>Check integrity!',
+            array(
+              '!folder' => $folder,
+              '!folds' => var_export($found_folders, 1),
+            )
+          ));
+      }
+    }
+
+    if (!$cache_exists) {
+      $node_paths[$folder] = Cache::storeNodePath($this, $node_path);
+    }
+    return $node_path;
+
+    }
 
   /**
    * Given a link, returns the system path of the related node (folder).

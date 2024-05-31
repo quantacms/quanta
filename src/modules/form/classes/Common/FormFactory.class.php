@@ -79,11 +79,12 @@ class FormFactory {
       case 'hidden':
         $formitem = new \Quanta\Qtags\FormItemHidden($env, $input, $form);
         break;
-
       case 'select':
         $formitem = new \Quanta\Qtags\FormItemSelect($env, $input, $form);
         break;
-
+      case 'checkboxes':
+        $formitem = new \Quanta\Qtags\FormItemCheckboxes($env, $input, $form);
+        break;
       case 'checkbox':
         $formitem = new \Quanta\Qtags\FormItemCheckbox($env, $input, $form);
         break;
