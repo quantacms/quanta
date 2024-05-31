@@ -43,6 +43,10 @@ class Input extends HtmlTag {
       }
       // Render the form item using its custom render function.
       $html = $this->form_item->render();
+      // If item is password add div around input
+      if ($this->form_item->getType() == 'password') {
+        $html = '<div class="password-input-wrapper">' .$html . '</div>';
+      }
       // If the item is multiple, add a wrapper for this instance.
       $this->html_body .= ($this->form_item->isMultiple()) ? ('<div class="form-item-multiple-wrapper">' . $html . '</div>') :  $html;
       $i++;
