@@ -70,6 +70,9 @@
   // Check if the current request is a file rendering request.
   \Quanta\Common\FileFactory::checkFile($env);
 
+  // Check if the current request is a download pdf.
+  \Quanta\Common\FileFactory::downloadPdf($env);
+
   // Run the boot hook.
   $env->hook('boot');
 
