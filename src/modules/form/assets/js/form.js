@@ -47,7 +47,7 @@ var refreshAutocomplete = function() {
         return autocomplete_path;
       },
       getValue: "name",
-      placeholder: "write your tag here",
+      placeholder: "",
       template: {
         type: "description",
         fields: {
@@ -59,7 +59,7 @@ var refreshAutocomplete = function() {
         match: {
           enabled: true
         },
-        maxNumberOfElements: 5,
+        maxNumberOfElements: 15,
         showAnimation: {
           type: "slide",
           time: 50
