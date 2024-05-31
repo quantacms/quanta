@@ -20,9 +20,6 @@ class Delete extends Link {
     $this->setTarget($nodeobj->getName());
 
     if (NodeAccess::check($this->env, \Quanta\Common\Node::NODE_ACTION_DELETE, array('node' => $nodeobj))) {
-      if (!isset($this->attributes['tooltip'])) {
-        $this->attributes['tooltip'] = t('Delete !title...', array('!title' => Api::filter_xss($nodeobj->getTitle())));
-      }
 
       $this->attributes['redirect'] = isset($this->attributes['redirect']) ? $this->attributes['redirect'] : '';
       return parent::render();
