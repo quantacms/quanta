@@ -18,6 +18,7 @@ class Environment extends DataContainer {
   public $host = array();
   public $dir = array();
   public $request_uri;
+  public $query_params;
   public $request_path;
   public $request_json;
   public $request = array();
@@ -49,6 +50,15 @@ class Environment extends DataContainer {
       // Remove querystring to obtain request uri...
       $exp = explode('?', $_SERVER['REQUEST_URI']);
       $this->request_uri = (str_replace('/', '', $exp[0]) == '') ? '/home/' : $exp[0];
+       // Check if there is a query string
+      if (isset($exp[1])) {
+        // Parse the query string into an associative array
+        // Now query_params is an array with key => value pairs from the query string
+        parse_str($exp[1], $this->query_params);
+      } else {
+        // No query string present
+        $this->query_params = [];
+      }
     }
     else {
       $this->request_uri = $request_uri;

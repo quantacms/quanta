@@ -36,7 +36,7 @@ class FileList extends ListObject {
     $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
 
     foreach ($this->items as $file) {
-
+      
       /** @var FileObject $file */
       $i++;
 
@@ -53,8 +53,8 @@ class FileList extends ListObject {
         break;
       }
       $classes = array('file-list-item', 'list-item-' . $this->getTpl(), 'list-item-' . $i, (($i % 2) == 0) ? 'list-item-even' : 'list-item-odd');
-
-      if ((($file_types == FALSE) || $file_types == $file->getType()) && $file->isPublic()) {
+     
+      if ((($file_types == FALSE) || (is_array($file_types) && in_array($file->getType(),$file_types)) || (!is_array($file_types) && $file_types == $file->getType())) && $file->isPublic()) {
 
         // TODO: not a beautiful approach. Invent something better.
         $list_item = preg_replace("/\{LISTITEM\}/is", Api::string_normalize($file->getPath()), $tpl);
