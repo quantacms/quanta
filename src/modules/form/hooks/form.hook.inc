@@ -71,7 +71,11 @@ function form_boot(Environment $env, array $vars) {
  */
 function _form_json_autocomplete_results($env, $vars) {
   header("Content-type: application/json");
-  $items = new \Quanta\Common\DirList($env, $_REQUEST['search_node'], NULL);
+  $attributes = array();
+  if(isset($_REQUEST['list_filter'])){
+    $attributes['list_filter'] = $_REQUEST['list_filter'];
+  }
+  $items = new \Quanta\Common\DirList($env, $_REQUEST['search_node'], NULL, $attributes);
   $results = array();
   $autocomplete_results = $items->getItems();
   foreach ($autocomplete_results as $node) {
