@@ -33,7 +33,7 @@ class GoogleDocs extends \Quanta\Common\GoogleClient{
 
     public function __construct(&$env){
        // Call the parent class constructor at the end
-       parent::__construct();
+       parent::__construct($env);
        $this->service = new Google_Service_Docs($this->client);
 
     }
@@ -59,72 +59,77 @@ class GoogleDocs extends \Quanta\Common\GoogleClient{
             'author' => $user->getName()
         ));
         $this->updateDocument($env,$content,$doc);
+        //just for testing
+        // $google_drive_service = new \Quanta\Common\GoogleDrive($env);
+        // $role = 'reader'; //Can be 'reader', 'commenter', or 'writer'
+        // $emails = array("mohamedtahastorex@gmail.com");
+        // $google_drive_service->changePermissions($doc->getDocumentId(),$role,$emails);
 
         return $doc;
        
     }
 
-    /**
- * Update a document.
- * @param Environment $env
- * @param Array $content
- * @param Object $document
- */
-public function updateDocument(Environment $env, $content, $document) {
-    $content = $this->test_text; //TODO: remove this after end testing
-    // Initialize the start index
-    $current_index = 1;
+     /**
+     * Update a document.
+     * @param Environment $env
+     * @param Array $content
+     * @param Object $document
+     */
+    public function updateDocument(Environment $env, $content, $document) {
+        $content = $this->test_text; //TODO: remove this after end testing
+        // Initialize the start index
+        $current_index = 1;
 
-    $requests = [];
-    foreach ($content as $type => $text_value) {
-        $requests[] = new Google_Service_Docs_Request([
-            'insertText' => [
-                'location' => ['index' => $current_index],
-                'text' => $text_value . "\n"
-            ]
-        ]);
+        $requests = [];
+        foreach ($content as $type => $text_value) {
+            $requests[] = new Google_Service_Docs_Request([
+                'insertText' => [
+                    'location' => ['index' => $current_index],
+                    'text' => $text_value . "\n"
+                ]
+            ]);
 
-        $start_index = $current_index;
-        $current_index += strlen($text_value . "\n");
+            $start_index = $current_index;
+            $current_index += strlen($text_value . "\n");
 
 
-        switch ($type) {
-            case self::GOOGLE_DOC_TITLE_STYLE:
-            case self::GOOGLE_DOC_HEADING_1_STYLE:
-                $requests[] = new Google_Service_Docs_Request([
-                    'updateParagraphStyle' => [
-                        'range' => [
-                            'startIndex' => $start_index,
-                            'endIndex' => $current_index
-                        ],
-                        'paragraphStyle' => [
-                            'namedStyleType' => $type
-                        ],
-                        'fields' => 'namedStyleType'
-                    ]
-                ]);
-                break;
+            switch ($type) {
+                case self::GOOGLE_DOC_TITLE_STYLE:
+                case self::GOOGLE_DOC_HEADING_1_STYLE:
+                    $requests[] = new Google_Service_Docs_Request([
+                        'updateParagraphStyle' => [
+                            'range' => [
+                                'startIndex' => $start_index,
+                                'endIndex' => $current_index
+                            ],
+                            'paragraphStyle' => [
+                                'namedStyleType' => $type
+                            ],
+                            'fields' => 'namedStyleType'
+                        ]
+                    ]);
+                    break;
 
-            case self::GOOGLE_DOC_BULLET_DISC_CIRCLE_SQUARE_STYLE:
-                $requests[] = new Google_Service_Docs_Request([
-                    'createParagraphBullets' => [
-                        'range' => [
-                            'startIndex' => $start_index,
-                            'endIndex' => $current_index
-                        ],
-                        'bulletPreset' => $type
-                    ]
-                ]);
-                break;
+                case self::GOOGLE_DOC_BULLET_DISC_CIRCLE_SQUARE_STYLE:
+                    $requests[] = new Google_Service_Docs_Request([
+                        'createParagraphBullets' => [
+                            'range' => [
+                                'startIndex' => $start_index,
+                                'endIndex' => $current_index
+                            ],
+                            'bulletPreset' => $type
+                        ]
+                    ]);
+                    break;
+            }
         }
-    }
 
-    // Execute the batch update
-    $batchUpdateRequest = new Google_Service_Docs_BatchUpdateDocumentRequest([
-        'requests' => $requests
-    ]);
-    $this->service->documents->batchUpdate($document->getDocumentId(), $batchUpdateRequest);
-}
+        // Execute the batch update
+        $batchUpdateRequest = new Google_Service_Docs_BatchUpdateDocumentRequest([
+            'requests' => $requests
+        ]);
+        $this->service->documents->batchUpdate($document->getDocumentId(), $batchUpdateRequest);
+    }
 
 
 }
