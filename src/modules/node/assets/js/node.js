@@ -39,13 +39,12 @@ $(document).bind('refresh', function() {
           redirect: $(this).data('redirect')
         };
 
-        if ($(this).data('language') != undefined) {
-          shadow.language = $(this).attr('data-language');
-        }
-
-        if ($(this).data('manager') != undefined) {
-          shadow.manager = $(this).attr('data-manager');
-        }
+        // Use jQuery's data() method to get all data attributes
+        $.each($(this).data(), function(key, value) {
+            if (shadow[key] == undefined) {
+                shadow[key] = value;
+            }
+        });
 
         openShadow(shadow);
 
