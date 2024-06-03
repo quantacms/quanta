@@ -105,6 +105,9 @@ margin-bottom: 10px;
 display: none;
 }
 
+.password-input-wrapper {
+    position: relative;
+}
 
 .toggle-password {
     position: absolute;
