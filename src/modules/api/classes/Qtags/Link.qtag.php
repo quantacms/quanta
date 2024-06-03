@@ -178,14 +178,7 @@ class Link extends HtmlTag {
     // TODO: make just a big variable "data".
     // Check Quanta data types.
     $data_types = array('rel', 'language', 'type', 'widget', 'components', 'tooltip', 'redirect');
-    foreach ($data_types as $data_type) {
-      if (!empty($this->attributes[$data_type])) {
-        if ($data_type == 'tooltip') {
-          $this->attributes[$data_type] = htmlspecialchars($this->attributes[$data_type]);
-        }
-        $this->html_params['data-' . $data_type] =  $this->attributes[$data_type];
-      }
-    }
+
 
     $this->html_params['class'] .= ' ' . implode(' ', $this->link_class);
     $this->html_params['title'] = $this->link_title;
@@ -198,6 +191,12 @@ class Link extends HtmlTag {
     $this->html_params['target'] = $this->link_target;
     if (!empty($this->link_id)) {
       $this->html_params['id'] = $this->link_id;
+    }
+
+    foreach ($this->attributes as $data_type => $data_value) {
+      if (empty($this->html_params[$data_type])) {
+        $this->html_params['data-' . $data_type] = $data_value;
+      }
     }
 
     return parent::render();

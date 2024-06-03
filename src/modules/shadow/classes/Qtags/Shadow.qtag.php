@@ -56,6 +56,9 @@ class Shadow extends Content {
         }
         return implode('', $extra_items);
         break;
+      default:
+
+        $string = $shadow->getData($this->getTarget());
     }
     return $string;
   }

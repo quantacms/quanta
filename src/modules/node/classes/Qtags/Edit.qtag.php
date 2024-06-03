@@ -22,10 +22,6 @@ class Edit extends Link {
     $this->setTarget($nodeobj->getName());
 
     if (\Quanta\Common\NodeAccess::check($this->env, \Quanta\Common\Node::NODE_ACTION_EDIT, array('node' => $nodeobj))) {
-      $title = \Quanta\Common\Api::filter_xss(empty($nodeobj->getTitle()) ? $nodeobj->getName() : $nodeobj->getTitle());
-      if (!isset($this->attributes['tooltip'])) {
-        $this->attributes['tooltip'] = t('Edit !title...', array('!title' => $title));
-      }
       $this->attributes['redirect'] = isset($this->attributes['redirect']) ? $this->attributes['redirect'] : '';
       return parent::render();
     }
