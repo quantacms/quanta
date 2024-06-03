@@ -3,7 +3,6 @@ namespace Quanta\Common;
 
 use Google_Client; // Import the Google_Client class
 use Google_Service_Oauth2; // Import the Google_Service_Oauth2 class
-use Google_Service_Docs;
 
 /**
  * Class GoogleClient
@@ -15,12 +14,14 @@ class GoogleClient{
     public $service = NULL;
 
 
-    public function __construct($env){
+    public function __construct($env,$scopes){
         // Set the Google API credentials
         $this->client = new Google_Client();
         $this->client->setClientId($env->getData('GOOGLE_CLIENT_ID'));
         $this->client->setClientSecret($env->getData('GOOGLE_CLIENT_SECRET'));
-        $this->client->addScope(Google_Service_Docs::DOCUMENTS);
+        foreach ($scopes as $scope) {
+            $this->client->addScope($scope);
+        }
         $this->client->setRedirectUri($env->getData('GOOGLE_CLIENT_REDIRECT_URL'));
         $this->client->setAccessType('offline');
         $this->client->setPrompt('select_account consent');

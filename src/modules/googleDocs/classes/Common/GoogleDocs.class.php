@@ -6,6 +6,7 @@ namespace Quanta\Common;
 use Google_Client;
 use Google_Service_Oauth2;
 use Google_Service_Docs;
+use Google_Service_Drive;
 use Google_Service_Docs_Document;
 use Google_Service_Docs_Request;
 use Google_Service_Docs_BatchUpdateDocumentRequest;
@@ -33,7 +34,7 @@ class GoogleDocs extends \Quanta\Common\GoogleClient{
 
     public function __construct(&$env){
        // Call the parent class constructor at the end
-       parent::__construct($env);
+       parent::__construct($env,array(Google_Service_Docs::DOCUMENTS,Google_Service_Drive::DRIVE));
        $this->service = new Google_Service_Docs($this->client);
 
     }
@@ -59,14 +60,7 @@ class GoogleDocs extends \Quanta\Common\GoogleClient{
             'author' => $user->getName()
         ));
         $this->updateDocument($env,$content,$doc);
-        //just for testing
-        // $google_drive_service = new \Quanta\Common\GoogleDrive($env);
-        // $role = 'reader'; //Can be 'reader', 'commenter', or 'writer'
-        // $emails = array("mohamedtahastorex@gmail.com");
-        // $google_drive_service->changePermissions($doc->getDocumentId(),$role,$emails);
-
         return $doc;
-       
     }
 
      /**
