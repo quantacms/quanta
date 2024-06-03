@@ -19,10 +19,10 @@ class GoogleClient{
     public function __construct(){
         // Set the Google API credentials
         $this->client = new Google_Client();
-        $this->client->setClientId('552368569718-f8po1fm2hgcjpkdcoub2atjfe6d6bu7u.apps.googleusercontent.com');
-        $this->client->setClientSecret('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');
+        $this->client->setClientId($env->getData('GOOGLE_CLIENT_ID'));
+        $this->client->setClientSecret($env->getData('GOOGLE_CLIENT_SECRET'));
         $this->client->addScope(Google_Service_Docs::DOCUMENTS);
-        $this->client->setRedirectUri('http://localhost/google-auth-callback');
+        $this->client->setRedirectUri($env->getData('GOOGLE_CLIENT_REDIRECT_URL'));
         $this->client->setAccessType('offline');
         $this->client->setPrompt('select_account consent');
         if(isset($_SESSION['google_access_token'])){
