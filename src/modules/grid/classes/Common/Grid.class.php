@@ -19,7 +19,7 @@ class Grid extends DataContainer {
     // EDGE: Google Chrome version 58 and up -> OK grid.
     // Android base browser: Google Chrome 4.0 -> NO grid.
     return empty($ua) ? NULL : !( $ua['name'] == "Internet Explorer"
-      || ( $ua['name'] == "Google Chrome" && $ua['version'] < 58 )
-      || ( $ua['name'] == "Apple Safari" && $ua['version'] < 10.3 ) );
+    || ( $ua['name'] == "Google Chrome" && explode('.',$ua['version'])[0] < 58 )
+    || ( $ua['name'] == "Apple Safari" && $ua['version'] < 10.3 ) );
   }
 }
