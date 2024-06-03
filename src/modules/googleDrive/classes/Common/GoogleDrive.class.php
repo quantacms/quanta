@@ -33,21 +33,15 @@ class GoogleDrive extends \Quanta\Common\GoogleClient{
      * @param String $role
      */
     public function changePermissions($fileId, $emails, $role) {
-      try {
-        foreach ($emails as $email) {
-            $permissions = new Google_Service_Drive_Permission(array(
-                'type' => 'user',
-                'role' => $role,
-                'emailAddress' => $email
-            ));
-          
-            $this->service->permissions->create($fileId, $permissions);
-        }
-      } catch (\Throwable $th) {
-        print_r($th);
-        die();
-      }
-       
+      foreach ($emails as $email) {
+          $permissions = new Google_Service_Drive_Permission(array(
+              'type' => 'user',
+              'role' => $role,
+              'emailAddress' => $email
+          ));
+        
+          $this->service->permissions->create($fileId, $permissions);
+      }   
     }
 
  
