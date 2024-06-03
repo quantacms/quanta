@@ -10,13 +10,12 @@ use Google_Service_Docs;
  */
 class GoogleClient{
 
-    const GENERATE_GOOGLE_DOC_PATH = "generate-google-doc";
 
     public $client = NULL;
     public $service = NULL;
 
 
-    public function __construct(){
+    public function __construct($env){
         // Set the Google API credentials
         $this->client = new Google_Client();
         $this->client->setClientId($env->getData('GOOGLE_CLIENT_ID'));
@@ -40,7 +39,7 @@ class GoogleClient{
 
         if (!isset($_SESSION['google_access_token']) || $_SESSION['google_access_token'] === null) {
             $authUrl = $this->client->createAuthUrl();
-            \Quanta\Common\API::redirect(filter_var($authUrl, FILTER_SANITIZE_URL));
+            \Quanta\Common\Api::redirect(filter_var($authUrl, FILTER_SANITIZE_URL));
         }
     }
 
