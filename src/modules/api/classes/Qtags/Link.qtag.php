@@ -70,7 +70,7 @@ class Link extends HtmlTag {
    */
   protected $html_tag = 'a';
 
-  public $hide_form_html_attribute = array('title','teaser','body');
+  public $default_node_attributes = array('title','teaser','body');
 
   /**
    * @return string
@@ -196,7 +196,7 @@ class Link extends HtmlTag {
     }
 
     foreach ($this->attributes as $data_type => $data_value) {
-      if (empty($this->html_params[$data_type]) && !in_array($data_type,$this->hide_form_html_attribute)) {
+      if (empty($this->html_params[$data_type]) && !in_array($data_type, $this->default_node_attributes)) {
         $this->html_params['data-' . $data_type] = $data_value;
       }
     }
