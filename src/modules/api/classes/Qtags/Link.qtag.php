@@ -70,6 +70,8 @@ class Link extends HtmlTag {
    */
   protected $html_tag = 'a';
 
+  public $hide_form_html_attribute = array('title','teaser','body');
+
   /**
    * @return string
    *   The rendered Qtag.
@@ -194,7 +196,7 @@ class Link extends HtmlTag {
     }
 
     foreach ($this->attributes as $data_type => $data_value) {
-      if (empty($this->html_params[$data_type])) {
+      if (empty($this->html_params[$data_type]) && !in_array($data_type,$this->hide_form_html_attribute)) {
         $this->html_params['data-' . $data_type] = $data_value;
       }
     }
