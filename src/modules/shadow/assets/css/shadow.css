@@ -21,6 +21,7 @@
     padding: 20px;
     max-height: 90%;
     overflow: auto;
+    border-radius: 10px;
 }
 .shadow-inside .inner, #shadow-contents {
     padding: 10px;
@@ -130,19 +131,29 @@
     display: inline-block;
     font-size: 17px;
     text-decoration: none;
-    border-radius: 8px;
-    padding: 8px;
+    border-radius: 10px;
+    padding: 8px 70px;
     cursor: pointer;
     text-transform: uppercase;
     font-family: Arial;
     background: #f3f3f4;
-    border: 1px solid #aaa
-}
+    }
 #shadow-buttons a + a {
     margin-left: 15px;
 }
 #shadow-buttons a:hover {
     background: #ddd;
+}
+
+#shadow-buttons #edit-save{
+    color: #fff;
+    background-color: #1465e4;
+}
+
+#shadow-buttons #cancel{
+    background-color: #fff;
+    color: #000;
+    border: 1px solid #ddd !important;
 }
 
 .shadow-grouped-contents #shadow-buttons {
@@ -167,6 +178,16 @@
     opacity: 0.4 !important;
     cursor: none !important;
     pointer-events: none !important;
+}
+
+.close-shadow-container{
+    display: flex;
+    justify-content: end;
+    padding: 5px 0px;
+}
+
+.close-shadow-container svg{
+    cursor: pointer;
 }
 
 @media (min-width: 768px) {
