@@ -25,16 +25,27 @@ class Jumper extends Qtag {
     if (!empty($this->attributes['default'])) {
       $default_path = $this->attributes['default'];
       $default_title = '[TITLE:' . $this->attributes['default'] . ']';
+
     } else {
-      $default_path = JUMPER_EMPTY;
+      $default_path = (isset($this->attributes['empty_path'])) ? $this->attributes['empty_path'] : '';
       $default_title = (isset($this->attributes['empty'])) ? $this->attributes['empty'] : '----------';
     }
+
+    if (!empty($this->attributes['empty_show']) && ($this->attributes['empty_show'] == 'always')) {
+      $empty_path = (isset($this->attributes['empty_path'])) ? $this->attributes['empty_path'] : '';
+      $empty_title = (isset($this->attributes['empty'])) ? $this->attributes['empty'] : '----------';
+
+    }
+
 
     $dirlist = new DirList($this->env, $this->getTarget(), 'jumper', array('sort' => 'title','list_filter' => 'path@!' . $default_path) + $this->attributes, 'jumper');
     $tpl = 'jumper';
     // Render the jumper.
     // TODO: use FORM Qtags.
-    $jumper = '<select class="jumper" data-field="' . $field . '" data-jumper-method="' . $method. '" rel="' . $ajax . '" ' . $tpl . '><option value="' . $default_path . '">' . $default_title . '</option>' . $dirlist->render() . '</select>';
+    $jumper = '<select class="jumper" data-field="' . $field . '" data-jumper-method="' . $method. '" rel="' . $ajax . '" ' . $tpl . '>'.
+      (($empty_path != $default_path) ? ('<option value="' . $default_path . '">' . $default_title . '</option>') : '') .
+      '<option value="' . $empty_path . '">' . $empty_title . '</option>' .
+      $dirlist->render() . '</select>';
 
     return $jumper;
   }
