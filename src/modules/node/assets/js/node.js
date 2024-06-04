@@ -13,11 +13,12 @@ $(document).bind('refresh', function() {
 
   // Delete Node link behavior.
   $('.delete-link').off('click').on('click', function(e) {
+    var component = $('.delete-link').attr('data-component') ? $('.delete-link').attr('data-component') : 'node_delete';
         openShadow({
             module: 'node',
             context: 'node_delete',
             widget: 'single',
-            components: ['node_delete','node_form'],
+            components: [component,'node_form'],
             node: $(this).attr('data-rel'),
             redirect: $(this).data('redirect')
         });

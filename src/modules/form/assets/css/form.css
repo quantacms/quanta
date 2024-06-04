@@ -48,11 +48,11 @@ div.has-validation-errors {
 
 .form-item {
   width: 100%;
-  padding: 5px;
+  padding: 10px;
   box-sizing: border-box;
   border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #f8f8f8;
+  border-radius: 7px;
+  background-color: #fff;
   font-size: 14px;
   color: #333;
 }
