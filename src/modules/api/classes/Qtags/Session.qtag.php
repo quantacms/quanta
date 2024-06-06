@@ -21,8 +21,9 @@ class Session extends Qtag {
       return '';
     }
 
-    $this->variable_name = $this->getTarget();
-    $this->value = $_SESSION[$this->getTarget()];
+    if (empty($_SESSION[$this->getTarget()])) {
+      return '';
+    }
 
     if (!empty($this->getAttribute('set'))) {
         $_SESSION[$this->variable_name] = $this->getAttribute('set');

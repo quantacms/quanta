@@ -36,7 +36,7 @@ class FileList extends ListObject {
     $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
 
     foreach ($this->items as $file) {
-
+      
       /** @var FileObject $file */
       $i++;
 
@@ -53,8 +53,8 @@ class FileList extends ListObject {
         break;
       }
       $classes = array('file-list-item', 'list-item-' . $this->getTpl(), 'list-item-' . $i, (($i % 2) == 0) ? 'list-item-even' : 'list-item-odd');
-
-      if ((($file_types == FALSE) || $file_types == $file->getType()) && $file->isPublic()) {
+     
+      if ((($file_types == FALSE) || (is_array($file_types) && in_array($file->getType(),$file_types)) || (!is_array($file_types) && $file_types == $file->getType())) && $file->isPublic()) {
 
         // TODO: not a beautiful approach. Invent something better.
         $list_item = preg_replace("/\{LISTITEM\}/is", Api::string_normalize($file->getPath()), $tpl);
@@ -138,7 +138,18 @@ class FileList extends ListObject {
    *   The file to be added.
    */
   public function addItem($file) {
-    $node_files = empty($this->getNode()->getAttributeJSON($this->filefield)) ? array() : array_flip($this->getNode()->getAttributeJSON($this->filefield));
+   if (($this->getNode()->getAttributeJSON($this->filefield)==NULL) || empty($this->getNode()->getAttributeJSON($this->filefield))) {
+	   $node_files = array();
+   }	  
+   elseif (!is_array($this->getNode()->getAttributeJSON($this->filefield))) {
+   	$node_files = array($this->getNode()->getAttributeJSON($this->filefield));
+   }
+
+   if ($node_files == NULL) {
+   	$node_files = array();
+   }
+   $node_files = array_flip($node_files);
+
     // The "files" filefield is used in the standard Quanta files, containing all uploaded files in the folder.
     // For other file inputs, filter files by those that have been uploaded through that specific input.
     if (($this->filefield == self::DEFAULT_FILE_FIELD) || isset($node_files[$file->getPath()])) {

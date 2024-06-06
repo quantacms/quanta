@@ -425,4 +425,22 @@ class FileObject extends DataContainer {
     unlink($node->path . '/' . $file);
   }
 
+   /**
+   * Download the file.
+   *
+   */
+  public function download(){
+    $file = $this->getNode()->getPath() . '/' . $this->getPath();
+    header('Pragma: public');
+    header('Expires: 0');
+    header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+    header('Content-Type: ' . mime_content_type($file));
+    header('Cache-Control: private', false); // required for certain browsers
+    header('Content-Disposition: attachment; filename="'. basename($file) . '";');
+    header('Content-Transfer-Encoding: binary');
+    header('Content-Length: ' . filesize($file));
+    readfile($file);
+    exit();
+  }
+
 }

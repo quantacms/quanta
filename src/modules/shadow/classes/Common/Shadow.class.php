@@ -26,31 +26,27 @@ class Shadow extends Page {
    */
   public function __construct($env, $data = NULL) {
     $this->env = $env;
-    $this->widget = $data->widget;
-    $this->setLanguage(isset($data->language) ? $data->language : Localization::getLanguage($env));
+    $this->widget = $data['widget'];
+    $this->setLanguage(isset($data['language']) ? $data['language'] : Localization::getLanguage($env));
 
-/*
-    if (is_array($data)) {
-      foreach ($data as $key => $value) {
-        $this->setData($key, $value);
-      }
-    }
-*/
-    if (isset($data->components)) {
-      $this->components = $data->components;
+    if (isset($data['components'])) {
+      $this->components = $data['components'];
     }
 
-    if (isset($data->redirect)) {
-      $this->setData('redirect', $data->redirect);
-    }
-
-    // TODO: urgently refactor.
-    if (isset($data->manager)) {
-      $this->setData('manager', $data->manager);
+    if (isset($data['redirect'])) {
+      $this->setData('redirect', $data['redirect']);
     }
 
     // TODO: default to home is not making sense.
-    $this->node = (isset($data->node)) ? NodeFactory::load($env, $data->node, $this->getLanguage()) : new Node($env, NULL);
+    $this->node = (isset($data['node'])) ? NodeFactory::load($env, $data['node'], $this->getLanguage()) : new Node($env, NULL);
+
+
+      foreach ($data as $key => $value) {
+        if (empty($this->getData($key))) {
+          $this->setData($key, $value);
+        }
+      }
+
 
   }
 
