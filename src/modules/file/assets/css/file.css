@@ -218,6 +218,10 @@ ul.file_admin  li {
     background-image: url('/modules/file/assets/img/icons/xls.png')
 }
 
+.file-csv {
+    background-image: url('/modules/file/assets/img/icons/csv.png')
+}
+
 .selected-thumbnail {
     display: inline-block;
     color: #0a0;

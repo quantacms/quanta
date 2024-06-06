@@ -38,6 +38,7 @@ class ImportFileFactory {
             fclose($handle);
             $vars['imported_data'] = $imported_data;
             $env->hook('file_imported',$vars);
+            unlink($filename);
         }
     }
     return $imported_data;
