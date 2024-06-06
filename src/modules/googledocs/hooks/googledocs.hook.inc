@@ -6,7 +6,7 @@ namespace Quanta\Common;
  * @param Environment $env
  * @param $vars
  */
-function googleDocs_boot($env, $vars) {
+function googledocs_boot($env, $vars) {
     try {
       $google_doc_object = new \Quanta\Common\GoogleDocs($env);
 
