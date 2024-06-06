@@ -13,7 +13,7 @@ class ImportFileFactory {
     $file = array_pop($vars['uploaded_files']);
     $fileobj = new FileObject($env, $file, $node);
     $imported_data = [];
-    if($fileobj && $fileobj->exists){
+    if($fileobj && $fileobj->exists && $fileobj->extension == 'csv'){
         $filename = $fileobj->getNode()->getPath() . '/' . $fileobj->getPath();
         // Open the CSV file
         if (!file_exists($filename) || !is_readable($filename)) {
