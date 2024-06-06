@@ -254,6 +254,10 @@ class FileObject extends DataContainer {
         $type = 'swap';
         break;
 
+      case 'csv':
+        $type = 'csv';
+        break;
+
       default:
         $type = 'data';
         break;
