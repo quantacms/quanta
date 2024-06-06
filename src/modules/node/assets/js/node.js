@@ -13,11 +13,12 @@ $(document).bind('refresh', function() {
 
   // Delete Node link behavior.
   $('.delete-link').off('click').on('click', function(e) {
+    var component = $('.delete-link').attr('data-component') ? $('.delete-link').attr('data-component') : 'node_delete';
         openShadow({
             module: 'node',
             context: 'node_delete',
             widget: 'single',
-            components: ['node_delete','node_form'],
+            components: [component,'node_form'],
             node: $(this).attr('data-rel'),
             redirect: $(this).data('redirect')
         });
@@ -39,13 +40,12 @@ $(document).bind('refresh', function() {
           redirect: $(this).data('redirect')
         };
 
-        if ($(this).data('language') != undefined) {
-          shadow.language = $(this).attr('data-language');
-        }
-
-        if ($(this).data('manager') != undefined) {
-          shadow.manager = $(this).attr('data-manager');
-        }
+        // Use jQuery's data() method to get all data attributes
+        $.each($(this).data(), function(key, value) {
+            if (shadow[key] == undefined) {
+                shadow[key] = value;
+            }
+        });
 
         openShadow(shadow);
 
