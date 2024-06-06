@@ -339,6 +339,7 @@ class FileObject extends DataContainer {
       'txt',
       'xls',
       'xlsx',
+      'csv',
       'wav',
       'svg',
     );
