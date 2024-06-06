@@ -7,11 +7,6 @@ namespace Quanta\Common;
  */
 class ImportFile{
 
-
-    public $client = NULL;
-    public $service = NULL;
-
-
     public function __construct($env,$scopes){
         
     }
