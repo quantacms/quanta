@@ -40,7 +40,8 @@ class Js extends Qtag {
         $js_code .= '<script>' . file_get_contents($js_file) . '</script>';
       }
       else {
-        $js_code .= '<script src="' . $js_file . $refresh . '"></script>';
+        $type = (isset($this->attributes['type'])) ? 'type=' . $this->attributes['type'] : '';
+        $js_code .= '<script ' . $type . ' src="' . $js_file . $refresh . '"></script>';
       }
     }
 
