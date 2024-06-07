@@ -75,6 +75,27 @@ class Api {
     return preg_match($pattern, $phone);
   }
 
+   /**
+   * Check if a captcha response is valid.
+   *
+   * @param $captcha_response
+   * 
+   *
+   * @return bool
+   *   TRUE if the argument is a valid captcha response.
+   */
+  public static function valid_captcha($env,$captcha_response) {
+    $recaptchaSecret = $env->getData('CAPTCHA_SECRET_KEY');
+    $response = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=$recaptchaSecret&response=$captcha_response");
+    $responseKeys = json_decode($response, true);
+
+    if (empty($responseKeys["success"])|| intval($responseKeys["success"]) !== 1) {
+      return false;
+    } 
+
+    return true;
+  }
+
   /**
    * Check if a string represents a valid URL.
    *
