@@ -510,26 +510,23 @@ class NodeFactory {
           );
           // Run the node presave hook.
           $env->hook('node_presave', $vars);
-          try {
-             //general form validation
-          $errors = self::validateFormData($env,$full_form_data);
+
+          //general form validation
+          $validation_status = self::validateFormData($env,$full_form_data);
+
           //custom form validation
+          //to use it you should add hidden input with name "form_validate" and value it is the name of of the form
+          //For example: form_validate => profile_form So the hook : <hook_name>_shadow_profile_form_pre_validate
+          //and then you can perfom a custom validation also you can use $vars['full_form_data'] to get full form data (name,type,required,length)
           if(!is_array($form_data['form_validate'])){ $form_data['form_validate'] = array($form_data['form_validate']);}
           foreach ($form_data['form_validate'] as $form) {
             if(!empty($form)){
-              // Hook <form_name>_pre_validate
-              $env->hook('shadow_' . $form . '_pre_validate', $vars);
-              
+              $env->hook('shadow_' . $form . '_pre_validate', $vars);              
             }
           }
-          } catch (\Throwable $th) {
-            print_r($th);
-            die();
-          }
-         
-         
+        
           // If the node is validated, proceed with saving it.
-          if ($node->validate() && !count($errors) && $vars['form_validated']) {
+          if ($node->validate() && $validation_status && $vars['form_validated']) {
             $node->save();
             // Hook node_add_complete, node_edit_complete, etc.
             $env->hook('node_after_save', $vars);
@@ -542,12 +539,14 @@ class NodeFactory {
           }
           else {
             // TODO: make this good.
-            $response->errors = Message::burnMessages();
+            $response->shadowErrors = Message::burnMessages(Message::MESSAGE_TYPE_SCREEN,true);
+            http_response_code(400);
           }
         }
         else {
           // Access denied.
           $response->redirect = '/403';
+          
         }
 
         break;
@@ -610,7 +609,7 @@ class NodeFactory {
    * 
    */
   public static function validateFormData(Environment $env, $full_form_data) {
-    $errors = [];
+    $validation_status = true;
     foreach ($full_form_data as $form_item => $form_item_data) {
       $value = $form_item_data->value;
       if(is_array($value) && count($value) == 1){
@@ -618,41 +617,57 @@ class NodeFactory {
       }
       //validate required data
       if($form_item_data->required && empty($value) && $form_item_data->type != "hidden"){
-          $errors [$form_item]=  t('This filed is required');
-          new Message($env,
-              t('This filed is required'),
-            \Quanta\Common\Message::MESSAGE_WARNING
-          );
+          $validation_status = false;
+          self::shadowMessage($env,t('This filed is required'),$form_item);
       }
       else{
         //validate email input
-        if($form_item_data->type == 'email' && !\Quanta\Common\Api::valid_email($form_item_data->value)){
-          $errors [$form_item]=  t('Please enter a valid email!');
-          new Message($env,
-            t('Please enter a valid email!'),
-          \Quanta\Common\Message::MESSAGE_WARNING
-          );
+        if($form_item_data->type == 'email' && !\Quanta\Common\Api::valid_email($value)){
+          $validation_status = false;
+          $translated_text = \Quanta\Common\Localization::translatableText($env,'Inserisci una email valida!','enter-valid-email-message');
+          self::shadowMessage($env,$translated_text,$form_item);
         }
         //validate phone input
-        else if($form_item_data->type == 'tel' && !\Quanta\Common\Api::valid_phone($form_item_data->value)){
-          $errors [$form_item]=  t('Please enter a valid phone number!');
-          new Message($env,
-            t('Please enter a valid phone number!'),
-          \Quanta\Common\Message::MESSAGE_WARNING
-          );
+        elseif($form_item_data->type == 'tel' && !\Quanta\Common\Api::valid_phone($value)){
+          $validation_status = false;
+          $translated_text = \Quanta\Common\Localization::translatableText($env,'Si prega di inserire un numero di telefono valido!','enter-valid-phone-message');
+          self::shadowMessage($env,t('Si prega di inserire un numero di telefono valido!'),$form_item);
         }
-        //validate the length of the input
-        else if($form_item_data->length && strlen($full_form_data->value) > $form_item_data->length && $form_item_data->type != "hidden"){
-          $errors [$form_item]=  t('Please enter a value with length') . ' ' .$form_item_data->length ;
-          new Message($env,
-            t('Please enter a value with length') . ' ' .$form_item_data->length,
-          \Quanta\Common\Message::MESSAGE_WARNING
-          );
+        //validate the length of the input  
+        elseif($form_item_data->length && strlen($value) > $form_item_data->length && $form_item_data->type != "hidden"){
+          $validation_status = false;
+          $translated_text = \Quanta\Common\Localization::translatableText($env,'Inserisci un valore con la lunghezza','enter-valid-length-message');
+          self::shadowMessage($env,$translated_text . ' ' .$form_item_data->length,$form_item);
         }
-        //validate url input
+        elseif($form_item_data->type == 'url' && !\Quanta\Common\Api::valid_url($value)){
+          $validation_status = false;
+          $translated_text = \Quanta\Common\Localization::translatableText($env,'Per favore, inserisci un URL valido!','enter-valid-url-message');
+          self::shadowMessage($env,$translated_text,$form_item);
+        }
+        elseif($form_item == 'password'  && !\Quanta\Common\Api::valid_password($value)){
+          $validation_status = false;
+          $translated_text = \Quanta\Common\Localization::translatableText($env,'La password deve contenere almeno 1 lettera maiuscola, 1 carattere speciale, 1 numero ed essere lunga almeno 8 caratteri.','enter-valid-password-message');
+          self::shadowMessage($env,$translated_text,$form_item);
+        }
+        elseif($form_item == 'password' && isset($full_form_data['password_rp'])  && $value != $full_form_data['password_rp']->value[0]){
+          $validation_status = false;
+          $translated_text = \Quanta\Common\Localization::translatableText($env,'I campi della password non sono gli stessi.','password-and-repeat-password-error-message');
+          self::shadowMessage($env,$translated_text,$form_item);
+          self::shadowMessage($env,$translated_text,'password_rp');
+        }
       }
      
     }
-    return $errors;
+    return $validation_status;
+  }
+
+  public static function shadowMessage($env,$message,$form_item_name){
+    return  new Message($env,
+            $message,
+            \Quanta\Common\Message::MESSAGE_WARNING,
+            \Quanta\Common\Message::MESSAGE_TYPE_SCREEN,
+            \Quanta\Common\Message::MESSAGE_NOMODULE,
+            $form_item_name
+            );
   }
 }
