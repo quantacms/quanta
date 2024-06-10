@@ -135,6 +135,7 @@ function file_node_after_save(Environment $env, array &$vars) {
     }
     $vars['uploaded_files'] = $uploaded_files;
     rmdir($tmp_dir);
+    \Quanta\Common\FileFactory::importFileData($env,$vars);   
   }
   }
 }
@@ -159,4 +160,8 @@ function file_page_init(Environment $env, array $vars) {
     print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/jquery.fileupload.js');
     print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/file-upload.js');
   }
+}
+
+function file_shadow_import_file_form($env, $vars) {
+  $vars['shadow']->addTab('Import file', file_get_contents($env->getModulePath('file') . '/tpl/import_file_form.inc'), 2);
 }
