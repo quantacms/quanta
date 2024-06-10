@@ -215,11 +215,11 @@ function submitShadow() {
   action(formData);
 }
 
-function perpearFormItem(inputField,newValue){
+function perpearFormItem(inputField,value){
   return {
     "type" : inputField.prop('type'),
     "required": inputField.prop('required'),
     "length": inputField.data('length'),
-    "value" : newValue
+    "value" : value
   };
 }
