@@ -386,16 +386,24 @@ class NodeFactory {
    * @param $form_data
    * @return string
    */
-  public static function requestAction(Environment $env, $action, array $form_data) {
+  public static function requestAction(Environment $env, $action, $form_data) {
     // TODO language management needs many further check that language actually exists
     // As well as security checks.
-    $language = isset($form_data['language']) ? (array_pop($form_data['language'])) : \Quanta\Common\Localization::LANGUAGE_NEUTRAL;
+    $language = isset($form_data['language']->value) ? (array_pop($form_data['language']->value)) : \Quanta\Common\Localization::LANGUAGE_NEUTRAL;
+    //this array contains full form data (type,required,value)
+    $full_form_data = [];
     // TODO: this is needed with new approach.
     foreach ($form_data as $k => $v) {
-      if (is_array($form_data[$k]) && (count($form_data[$k]) == 1)) {
-        $form_data[$k] = array_pop($v);
+     
+      if (is_array($v->value) && (count($v->value) == 1)) {
+        $form_data[$k] = $v->value[0];
       }
+      else{
+         $form_data[$k] = $v->value;
+      }
+      $full_form_data[$k] = $v;
     }
+   
     // Prepare the response object.
     $response = new \stdClass();
     $user = UserFactory::current($env);
@@ -492,17 +500,36 @@ class NodeFactory {
               $node->json->password = $pass;
             }  
           }
-
+          
           $vars = array(
             'node' => &$node,
             'data' => $form_data,
+            'full_form_data' => $full_form_data,
             'action' => $action,
+            'form_validated' => true,
           );
           // Run the node presave hook.
           $env->hook('node_presave', $vars);
-
+          try {
+             //general form validation
+          $errors = self::validateFormData($env,$full_form_data);
+          //custom form validation
+          if(!is_array($form_data['form_validate'])){ $form_data['form_validate'] = array($form_data['form_validate']);}
+          foreach ($form_data['form_validate'] as $form) {
+            if(!empty($form)){
+              // Hook <form_name>_pre_validate
+              $env->hook('shadow_' . $form . '_pre_validate', $vars);
+              
+            }
+          }
+          } catch (\Throwable $th) {
+            print_r($th);
+            die();
+          }
+         
+         
           // If the node is validated, proceed with saving it.
-          if ($node->validate()) {
+          if ($node->validate() && !count($errors) && $vars['form_validated']) {
             $node->save();
             // Hook node_add_complete, node_edit_complete, etc.
             $env->hook('node_after_save', $vars);
@@ -567,5 +594,64 @@ class NodeFactory {
     $node = empty($node_name) ? NodeFactory::current($env) : NodeFactory::load($env, $node_name);
     $tpl = new NodeTemplate($env, $node);
     return $tpl->getHtml();
+  }
+
+   /**
+   * Validate form data
+   *
+   * @param Environment $env
+   *   The Environment.
+   *
+   * @param $full_form_data
+   *   The array of full form data
+   *
+   * @return boolean
+   * 
+   */
+  public static function validateFormData(Environment $env, $full_form_data) {
+    $errors = [];
+    foreach ($full_form_data as $form_item => $form_item_data) {
+      $value = $form_item_data->value;
+      if(is_array($value) && count($value) == 1){
+        $value = $value[0];
+      }
+      //validate required data
+      if($form_item_data->required && empty($value) && $form_item_data->type != "hidden"){
+          $errors [$form_item]=  t('This filed is required');
+          new Message($env,
+              t('This filed is required'),
+            \Quanta\Common\Message::MESSAGE_WARNING
+          );
+      }
+      else{
+        //validate email input
+        if($form_item_data->type == 'email' && !\Quanta\Common\Api::valid_email($form_item_data->value)){
+          $errors [$form_item]=  t('Please enter a valid email!');
+          new Message($env,
+            t('Please enter a valid email!'),
+          \Quanta\Common\Message::MESSAGE_WARNING
+          );
+        }
+        //validate phone input
+        else if($form_item_data->type == 'tel' && !\Quanta\Common\Api::valid_phone($form_item_data->value)){
+          $errors [$form_item]=  t('Please enter a valid phone number!');
+          new Message($env,
+            t('Please enter a valid phone number!'),
+          \Quanta\Common\Message::MESSAGE_WARNING
+          );
+        }
+        //validate the length of the input
+        else if($form_item_data->length && strlen($full_form_data->value) > $form_item_data->length && $form_item_data->type != "hidden"){
+          $errors [$form_item]=  t('Please enter a value with length') . ' ' .$form_item_data->length ;
+          new Message($env,
+            t('Please enter a value with length') . ' ' .$form_item_data->length,
+          \Quanta\Common\Message::MESSAGE_WARNING
+          );
+        }
+        //validate url input
+      }
+     
+    }
+    return $errors;
   }
 }
