@@ -178,34 +178,16 @@ function submitShadow() {
     }
     
     if (form_items[fieldName] == undefined) {
-      // form_items[fieldName] = [];
-      form_items[fieldName] = {
-        "type" : inputField.prop('type'),
-        "required": inputField.prop('required'),
-        "length": inputField.prop('data-length'),
-        "value" : []
-      };
+      form_items[fieldName] = perpearFormItem(inputField,[]);
     }
     
     if (inputField.attr('type') == 'checkbox') {
-      // form_items[fieldName].push(inputField.is(':checked') ? inputField.val() : '');
       var checkboxValue = inputField.is(':checked') ? inputField.val() : '';
       var newValue = !form_items[fieldName] ? [checkboxValue] :  (form_items[fieldName].value.push(checkboxValue), form_items[fieldName].value);
-      form_items[fieldName] = {
-        "type" : inputField.prop('type'),
-        "required": inputField.prop('required'),
-        "length": inputField.prop('data-length'),
-        "value" : newValue
-      };
+      form_items[fieldName] = perpearFormItem(inputField,newValue);
     } else {
-      // form_items[fieldName].push(fieldValue); // Push trimmed field value
       var newValue = !form_items[fieldName] ? [fieldValue] :  (form_items[fieldName].value.push(fieldValue), form_items[fieldName].value);
-      form_items[fieldName] = {
-        "type" : inputField.prop('type'),
-        "required": inputField.prop('required'),
-        "length": inputField.prop('data-length'),
-        "value" : newValue
-      };
+      form_items[fieldName] = perpearFormItem(inputField,newValue);
     }
 
     // Check if it's a file input with the specified id
@@ -229,7 +211,15 @@ function submitShadow() {
     return;
   }
   var formData = JSON.stringify(form_items);
-  // console.log(formData);
   $(document).trigger('shadow_submit');
   action(formData);
+}
+
+function perpearFormItem(inputField,newValue){
+  return {
+    "type" : inputField.prop('type'),
+    "required": inputField.prop('required'),
+    "length": inputField.data('length'),
+    "value" : newValue
+  };
 }

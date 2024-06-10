@@ -75,6 +75,26 @@ class Api {
     return preg_match($pattern, $phone);
   }
 
+  /**
+ * Check if a string represents a strong password.
+ *
+ * @param $password
+ *   The password.
+ *
+ * @return bool
+ *   TRUE if the argument is a strong password.
+ */
+  public static function valid_password($password) {
+    if (empty($password)) {
+      return false;
+    }
+    // Define the regex pattern for a strong password
+    //Password must contain at least 1 uppercase letter, 1 special character, 1 number, and be at least 8 characters long.
+    $pattern = '/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()-_+=])[A-Za-z\d!@#$%^&*()-_+=]{8,}$/';
+    // Check if the password matches the pattern
+    return preg_match($pattern, $password);
+  }
+
    /**
    * Check if a captcha response is valid.
    *
