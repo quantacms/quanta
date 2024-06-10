@@ -619,7 +619,8 @@ class NodeFactory {
       //validate required data
       if($form_item_data->required && empty($value) && $form_item_data->type != "hidden"){
           $validation_status = false;
-          self::shadowMessage($env,t('This filed is required'),$form_item);
+          $translated_text = \Quanta\Common\Localization::translatableText($env,'Questo campo è obbligatorio','required-error-message');
+          self::shadowMessage($env,$translated_text,$form_item);
       }
       else{
         //validate email input
