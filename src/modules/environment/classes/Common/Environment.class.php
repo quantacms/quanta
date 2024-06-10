@@ -477,7 +477,6 @@ class Environment extends DataContainer {
         $this->request_json->action = array_pop($this->request_json->action);
       }
       $vars = array('data' => (array) $this->request_json);
-    
       $this->hook('action_' . $this->request_json->action, $vars);
       exit;
     }
