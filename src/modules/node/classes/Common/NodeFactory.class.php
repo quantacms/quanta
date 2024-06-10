@@ -518,6 +518,7 @@ class NodeFactory {
           //to use it you should add hidden input with name "form_validate" and value it is the name of of the form
           //For example: form_validate => profile_form So the hook : <hook_name>_shadow_profile_form_pre_validate
           //and then you can perfom a custom validation also you can use $vars['full_form_data'] to get full form data (name,type,required,length)
+          //then change $vars['form_validated'] to false and the errors will be returned (see validateFormData function)
           if(!is_array($form_data['form_validate'])){ $form_data['form_validate'] = array($form_data['form_validate']);}
           foreach ($form_data['form_validate'] as $form) {
             if(!empty($form)){
