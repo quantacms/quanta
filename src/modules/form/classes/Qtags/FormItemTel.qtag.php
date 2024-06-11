@@ -20,10 +20,15 @@ class FormItemTel extends FormItemString {
    *
    */
   public function validate() {
-    $tel = $this->getSubmittedValue();
-
-    if (!empty($value) && !\Quanta\Common\Api::valid_phone($tel)) {
-       $this->getFormState()->validationError($this->getName(), t('Insert a valid phone'));
-    };
+    $phone = $this->getSubmittedValue() ? $this->getSubmittedValue() : $this->getValue(true);
+    if (!empty($phone) && !\Quanta\Common\Api::valid_phone($phone)) {
+      $this->setValidationStatus(false);
+      $translated_text = \Quanta\Common\Localization::translatableText($this->env,'Si prega di inserire un numero di telefono valido!','enter-valid-phone-message');
+      $this->setValidationMessage($translated_text);
+      if($this->getFormState()){ 
+          $this->getFormState()->validationError($this->getName(), $translated_text);
+      }
+    }
+    parent::validate();
   }
 }

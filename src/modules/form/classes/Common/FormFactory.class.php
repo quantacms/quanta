@@ -136,9 +136,10 @@ class FormFactory {
       break;
     }
 
-    
-    // Add the form item to the form state.
-    $form->addItem($formitem->getName(), $formitem);
+    if($form){
+      // Add the form item to the form state.
+      $form->addItem($formitem->getName(), $formitem);
+    }
 
     return $formitem;
 
