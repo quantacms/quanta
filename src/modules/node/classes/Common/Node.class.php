@@ -233,14 +233,14 @@ class Node extends JSONDataContainer implements Cacheable {
     // TODO: following code should not be here. Moved from former hook node load.
     // When saving a node, select the pre-created temporary files dir.
     if (!empty($_REQUEST['json']) && ($json = json_decode($_REQUEST['json'])) && isset($json->tmp_files_dir)) {
-      $this->setData('tmp_files_dir', array_pop($json->tmp_files_dir));
+      $this->setData('tmp_files_dir', array_pop($json->tmp_files_dir->value));
     }
     else {
       $this->setData('tmp_files_dir', $this->getName() . '-' . $this->getData('timestamp'));
     }
 
     if (!empty($_REQUEST['json']) && ($json = json_decode($_REQUEST['json'])) && isset($json->files_count)) {
-      $this->setData('files_count', $json->files_count);
+      $this->setData('files_count', $json->files_count->value);
     }
    
 
