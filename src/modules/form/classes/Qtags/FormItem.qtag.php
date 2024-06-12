@@ -38,6 +38,12 @@ abstract class FormItem extends HtmlTag {
   protected $default_value;
   /** @var mixed $input_arr */
   protected $input_arr;
+  /** @var int $length */
+  protected $length;
+  /** @var boolean $validated */
+  protected $validated = true;
+  /** @var string $validation_message */
+  protected $validation_message;
 
 
   /**
@@ -70,6 +76,7 @@ abstract class FormItem extends HtmlTag {
     $this->checkMultiple();
     $this->checkLimit();
     $this->checkDistinct();
+    $this->checkLength();
     $this->loadValue();
     $this->loadDefault();
     $this->loadAllowableValues();
@@ -136,6 +143,14 @@ abstract class FormItem extends HtmlTag {
   public function checkLimit() {
     $this->setLimit($this->getAttribute('limit'));
     $this->addClass($this->limit ? 'form-item-limited' : 'form-item-unlimited');
+  }
+
+  /**
+   * Checks if the form item has a length. Add a custom class, to indicate if
+   * it's limited or unlimited.
+   */
+  public function checkLength() {
+    $this->setLength($this->getAttribute('length'));
   }
 
   /**
@@ -378,6 +393,22 @@ abstract class FormItem extends HtmlTag {
   }
 
   /**
+   * Set the length of values for the form item.
+   * @param $length
+   */
+  public function setLength($length) {
+    $this->length = $length;
+  }
+
+  /**
+   * Get the length of values for the form item.
+   * @return mixed|null
+   */
+  public function getLength() {
+    return $this->length;
+  }
+
+  /**
    * Set the distinct attribute for the form item.
    *
    * @param boolean $distinct
@@ -517,6 +548,9 @@ abstract class FormItem extends HtmlTag {
     if ($this->getLimit()) {
       $this->html_params['data-limit'] = $this->getLimit();
     }
+    if ($this->getLength()) {
+      $this->html_params['data-length'] = $this->getLength();
+    }
     if (!empty($this->getAttribute('node'))) {
       $this->html_params['data-node'] = $this->getAttribute('node');
     }
@@ -546,10 +580,24 @@ abstract class FormItem extends HtmlTag {
   /**
    * Validate form item at a general level.
    * I.e. check if the item is required.
+   * I.e. check the length of the value.
    */
-  public function validate() {
-    if ($this->isRequired() && (empty($this->getValue()))) {
-      $this->getFormState()->validationError($this->getName(), \Quanta\Common\Localization::t('This item is required!'));
+  public function validate() {   
+    if ($this->isRequired() && (empty($this->getValue(true)))) {
+      $this->setValidationStatus(false);
+      $translated_text = \Quanta\Common\Localization::translatableText($this->env,'Questo campo è obbligatorio','required-error-message');
+      $this->setValidationMessage($translated_text);
+      if($this->getFormState()){
+        $this->getFormState()->validationError($this->getName(), $translated_text);
+      }
+    }
+    elseif($this->getLength() && strlen($this->getValue(true)) > $this->getLength() ){
+      $this->setValidationStatus(false);
+      $translated_text = \Quanta\Common\Localization::translatableText($this->env,'Inserisci un valore con la lunghezza','enter-valid-length-message');
+      $this->setValidationMessage($translated_text . ' ' . $this->getLength());
+      if($this->getFormState()){
+        $this->getFormState()->validationError($this->getName(), $translated_text);
+      }
     }
   }
 
@@ -561,5 +609,41 @@ abstract class FormItem extends HtmlTag {
    */
   public function getLabelPosition() {
     return $this->label_position;
+  }
+
+   /**
+   * Set the validation message of a form item.
+   *
+   * @param string $validation_message
+   */
+  public function setValidationMessage($validation_message) {
+    $this->validation_message = $validation_message;
+  }
+
+  /**
+   * Get the validation message of a form item.
+   *
+   * @return string mixed
+   */
+  public function getValidationMessage() {
+    return $this->validation_message;
+  }
+
+    /**
+   * Set the validation status of a form item.
+   *
+   * @param string $validation_message
+   */
+  public function setValidationStatus($validated) {
+    $this->validated = $validated;
+  }
+
+  /**
+   * Get the validation status of a form item.
+   *
+   * @return string mixed
+   */
+  public function getValidationStatus() {
+    return $this->validated;
   }
 }

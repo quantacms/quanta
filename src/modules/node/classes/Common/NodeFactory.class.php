@@ -386,16 +386,24 @@ class NodeFactory {
    * @param $form_data
    * @return string
    */
-  public static function requestAction(Environment $env, $action, array $form_data) {
+  public static function requestAction(Environment $env, $action,array $form_data) {
     // TODO language management needs many further check that language actually exists
     // As well as security checks.
-    $language = isset($form_data['language']) ? (array_pop($form_data['language'])) : \Quanta\Common\Localization::LANGUAGE_NEUTRAL;
+    $language = isset($form_data['language']->value) ? (array_pop($form_data['language']->value)) : \Quanta\Common\Localization::LANGUAGE_NEUTRAL;
+    //this array contains full form data (type,required,value)
+    $full_form_data = [];
     // TODO: this is needed with new approach.
     foreach ($form_data as $k => $v) {
-      if (is_array($form_data[$k]) && (count($form_data[$k]) == 1)) {
-        $form_data[$k] = array_pop($v);
+     
+      if (is_array($v->value) && (count($v->value) == 1)) {
+        $form_data[$k] = $v->value[0];
       }
+      else{
+         $form_data[$k] = $v->value;
+      }
+      $full_form_data[$k] = $v;
     }
+   
     // Prepare the response object.
     $response = new \stdClass();
     $user = UserFactory::current($env);
@@ -492,17 +500,34 @@ class NodeFactory {
               $node->json->password = $pass;
             }  
           }
-
+          
           $vars = array(
             'node' => &$node,
             'data' => $form_data,
+            'full_form_data' => $full_form_data,
             'action' => $action,
+            'form_validated' => true,
           );
           // Run the node presave hook.
           $env->hook('node_presave', $vars);
 
+          //general form validation
+          $validation_status = self::validateFormData($env,$full_form_data);
+
+          //custom form validation
+          //to use it you should add hidden input with name "form_validate" and value it is the name of of the form
+          //For example: form_validate => profile_form So the hook : <hook_name>_shadow_profile_form_pre_validate
+          //and then you can perfom a custom validation also you can use $vars['full_form_data'] to get full form data (name,type,required,length)
+          //then change $vars['form_validated'] to false and the errors will be returned (see validateFormData function)
+          if(isset($form_data['form_validate']) && !is_array($form_data['form_validate'])){ $form_data['form_validate'] = array($form_data['form_validate']);}
+          foreach ($form_data['form_validate'] as $form) {
+            if(!empty($form)){
+              $env->hook('shadow_' . $form . '_pre_validate', $vars);              
+            }
+          }
+        
           // If the node is validated, proceed with saving it.
-          if ($node->validate()) {
+          if ($node->validate() && $validation_status && $vars['form_validated']) {
             $node->save();
             // Hook node_add_complete, node_edit_complete, etc.
             $env->hook('node_after_save', $vars);
@@ -515,12 +540,14 @@ class NodeFactory {
           }
           else {
             // TODO: make this good.
-            $response->errors = Message::burnMessages();
+            $response->shadowErrors = Message::burnMessages(Message::MESSAGE_TYPE_SCREEN,true);
+            http_response_code(400);
           }
         }
         else {
           // Access denied.
           $response->redirect = '/403';
+          
         }
 
         break;
@@ -551,6 +578,7 @@ class NodeFactory {
     return $response_json;
   }
 
+
   /**
    * Render a node, by building its template.
    *
@@ -567,5 +595,46 @@ class NodeFactory {
     $node = empty($node_name) ? NodeFactory::current($env) : NodeFactory::load($env, $node_name);
     $tpl = new NodeTemplate($env, $node);
     return $tpl->getHtml();
+  }
+
+  /**
+   * Validate form data
+   *
+   * @param Environment $env
+   *   The Environment.
+   *
+   * @param $full_form_data
+   *   The array of full form data
+   *
+   * @return boolean
+   * 
+   */
+  public static function validateFormData(Environment $env, $full_form_data) {
+    $validation_status = true;
+    foreach ($full_form_data as $form_item => $form_item_data) {
+      $value = $form_item_data->value;
+      if(is_array($value) && count($value) == 1){
+        $value = $value[0];
+      }
+      $attributes = array('length' => 50, 'type' => $form_item_data->type, 'required' => $form_item_data->required, 'name' => $form_item, 'value' => $value , 'length' => $form_item_data->length ); 
+      $form_state = null;
+      $input_item = \Quanta\Common\FormFactory::createInputItem($env, $attributes, $form_state);
+      $input_item->validate();
+      if(!$input_item->getValidationStatus()){
+        $validation_status = false;
+        self::shadowMessage($env,$input_item->getValidationMessage(),$form_item);
+      }
+    }
+    return $validation_status;
+  }
+
+  public static function shadowMessage($env,$message,$form_item_name){
+    return  new Message($env,
+            $message,
+            \Quanta\Common\Message::MESSAGE_WARNING,
+            \Quanta\Common\Message::MESSAGE_TYPE_SCREEN,
+            \Quanta\Common\Message::MESSAGE_NOMODULE,
+            $form_item_name
+            );
   }
 }
