@@ -1,10 +1,10 @@
 <?php
 namespace Quanta\Qtags;
 /**
- * Returns a parameter from the Query String.
+ * Returns a sepreated text.
  */
 
-class GlobalSeparator extends Qtag {
+class Separate extends Qtag {
   /**
    * Render the Qtag.
    *
@@ -13,7 +13,8 @@ class GlobalSeparator extends Qtag {
    */
   public function render() {
     $html = '';
-    $exploded_array = explode(\Quanta\Common\Environment::GLOBAL_SEPARATOR, $this->getTarget());
+    $separator = $this->getAttribute('separator');
+    $exploded_array = explode($separator, $this->getTarget());
     $count = count($exploded_array);
     foreach ($exploded_array as $index => $item) {
       $title = ucfirst($item);
