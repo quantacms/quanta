@@ -25,6 +25,7 @@ function form_load_includes(Environment $env, array $vars) {
  *   An array of variables.
  */
 function form_boot(Environment $env, array $vars) {
+
   if(isset($_SERVER['REQUEST_URI'])){
     $url= $_SERVER['REQUEST_URI'];
     // Parse the URL
@@ -42,7 +43,7 @@ function form_boot(Environment $env, array $vars) {
       exit();
     }
     }
-
+  }
   // Check if there is a submitted form, and generated its state.
   if (isset($_REQUEST['form'])) {
     $form_state = \Quanta\Common\FormFactory::getFormState($env, $_REQUEST['form']);
@@ -54,7 +55,7 @@ function form_boot(Environment $env, array $vars) {
     print _form_json_autocomplete_results($env, $vars);
     exit();
   }
-  }
+  
 }
 
 /**

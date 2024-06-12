@@ -104,11 +104,11 @@ function file_node_presave(Environment $env, array $vars) {
  * @param $vars
  *   An array of variables.
  */
-function file_node_after_save(Environment $env, array $vars) {
-
+function file_node_after_save(Environment $env, array &$vars) {
   // TODO: move in File or create FileFactory module.
   /** @var Node $node */
   $node = $vars['node'];
+  $uploaded_files = array();
 	if (!empty($node->getData('tmp_files_dir'))) {
   $tmp_dir = $env->dir['tmp_files'] . '/' . $node->getData('tmp_files_dir');
   if (is_dir($tmp_dir)) {
@@ -123,13 +123,17 @@ function file_node_after_save(Environment $env, array $vars) {
         new Message($env, t('The file <b>!file</b> has an invalid name and could not be uploaded. Please use a different name.', array('!file' => $file)), \Quanta\Common\Message::MESSAGE_WARNING);
       }
       elseif (is_file($tmp_file_path)) {
-        copy($tmp_file_path, $node->path . '/' . Api::normalizeFilePath($file));
+        $normalize_file_path = Api::normalizeFilePath($file);
+        copy($tmp_file_path, $node->path . '/' . $normalize_file_path);
+        $uploaded_files []= $normalize_file_path;
         unlink($tmp_file_path);
+        
       }
       else {
         new Message($env, t('The file <b>!file</b> is invalid and could not be uploaded.', array('!file' => $file)), \Quanta\Common\Message::MESSAGE_WARNING);
       }
     }
+    $vars['uploaded_files'] = $uploaded_files;
     rmdir($tmp_dir);
   }
   }
