@@ -26,9 +26,4 @@ class FormItemText extends FormItem {
     $this->html_body = $this->getDefaultValue();
     return parent::render();
   }
-
-  // TODO.
-  public function validate() {
-    return TRUE;
-  }
 }
