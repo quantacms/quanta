@@ -182,9 +182,11 @@ function submitShadow() {
     }
     
     if (inputField.attr('type') == 'checkbox') {
-      var checkboxValue = inputField.is(':checked') ? inputField.val() : '';
-      var newValue = !form_items[fieldName] ? [checkboxValue] :  (form_items[fieldName].value.push(checkboxValue), form_items[fieldName].value);
-      form_items[fieldName] = getJSONFormItem(inputField,newValue);
+      if(inputField.is(':checked')){
+        var checkboxValue = inputField.is(':checked') ? inputField.val() : '';
+        var newValue = !form_items[fieldName] ? [checkboxValue] :  (form_items[fieldName].value.push(checkboxValue), form_items[fieldName].value);
+        form_items[fieldName] = getJSONFormItem(inputField,newValue);
+      }
     } else {
       var newValue = !form_items[fieldName] ? [fieldValue] :  (form_items[fieldName].value.push(fieldValue), form_items[fieldName].value);
       form_items[fieldName] = getJSONFormItem(inputField,newValue);

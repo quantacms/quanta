@@ -118,3 +118,7 @@ display: none;
     padding-right: 6px;
     display: flex;
 }
+.form-item-checkbox{
+    display: flex;
+    gap: 75px;
+}
