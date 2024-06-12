@@ -178,17 +178,18 @@ function submitShadow() {
     }
     
     if (form_items[fieldName] == undefined) {
-      form_items[fieldName] = perpearFormItem(inputField,[]);
+      form_items[fieldName] = getJSONFormItem(inputField,[]);
     }
     
     if (inputField.attr('type') == 'checkbox') {
       if(inputField.is(':checked')){
-        var newValue = !form_items[fieldName] ? [fieldValue] :  (form_items[fieldName].value.push(fieldValue), form_items[fieldName].value);
-        form_items[fieldName] = perpearFormItem(inputField,newValue);
+        var checkboxValue = inputField.is(':checked') ? inputField.val() : '';
+        var newValue = !form_items[fieldName] ? [checkboxValue] :  (form_items[fieldName].value.push(checkboxValue), form_items[fieldName].value);
+        form_items[fieldName] = getJSONFormItem(inputField,newValue);
       }
     } else {
       var newValue = !form_items[fieldName] ? [fieldValue] :  (form_items[fieldName].value.push(fieldValue), form_items[fieldName].value);
-      form_items[fieldName] = perpearFormItem(inputField,newValue);
+      form_items[fieldName] = getJSONFormItem(inputField,newValue);
     }
 
     // Check if it's a file input with the specified id
@@ -216,7 +217,7 @@ function submitShadow() {
   action(formData);
 }
 
-function perpearFormItem(inputField,value){
+function getJSONFormItem(inputField,value){
   return {
     "type" : inputField.prop('type'),
     "required": inputField.prop('required'),
