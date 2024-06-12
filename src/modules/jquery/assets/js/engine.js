@@ -77,8 +77,37 @@ var actionSuccess = function(data) {
  * @param exception
  */
 var actionError = function(err, exception) {
-    console.log(err.responseText);
+  if(err?.responseJSON?.shadowErrors){
+    var errors = JSON.parse(err.responseJSON.shadowErrors);
+    $('.shadow-submitted').removeClass('shadow-submitted');
+    $('#shadow-outside').find('input, textarea, select').each(function () {
+      var inputField = $(this);
+      var fieldWrapper = $(this).closest('.form-item-wrapper');
+      
+      var fieldName = inputField.attr('name');
+              
+      // Check if the field is required, empty, and visible
+      if (errors[fieldName]) {
+        
+        // Add error message to the field wrapper
+        fieldWrapper.addClass('has-validation-errors');
+        if (fieldWrapper.find('.validation-error').length === 0) {
+          fieldWrapper.prepend(`<div class="validation-error">${errors[fieldName]}</div>`);
+        }
+      }
+      else{
+        // Remove error styling and message if field is not empty and visible
+        fieldWrapper.removeClass('has-validation-errors');
+        fieldWrapper.find('.validation-error').remove();
+      }
+  
+    });  
+  }
+  else{
     alert(exception);
+  }
+  // Stop form submission if there are empty required fields
+  $('.shadow-submit').removeClass('shadow-submitted'); // Remove shadow-submitted class
 };
 
 var quanta_html_escape = function(str) {

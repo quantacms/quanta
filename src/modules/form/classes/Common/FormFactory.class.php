@@ -125,6 +125,10 @@ class FormFactory {
         $formitem = new \Quanta\Qtags\FormItemAutocomplete($env, $input, $form);
         break;
 
+      case 'tel':
+        $formitem = new \Quanta\Qtags\FormItemTel($env, $input, $form);
+        break;
+
       case 'string':
       default:
         // TODO: use a hook to eventually get custom formitem items from other modules.
@@ -132,9 +136,10 @@ class FormFactory {
       break;
     }
 
-    
-    // Add the form item to the form state.
-    $form->addItem($formitem->getName(), $formitem);
+    if($form){
+      // Add the form item to the form state.
+      $form->addItem($formitem->getName(), $formitem);
+    }
 
     return $formitem;
 

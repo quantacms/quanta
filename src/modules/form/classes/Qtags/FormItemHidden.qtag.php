@@ -9,4 +9,8 @@ class FormItemHidden extends FormItemString {
   public $type = 'hidden';
   protected $label_position = Label::LABEL_HIDDEN;
 
+  public function validate() {
+    $this->setValidationStatus(true);
+  }
+
 }

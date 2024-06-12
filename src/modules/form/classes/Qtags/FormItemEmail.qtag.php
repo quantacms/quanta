@@ -20,10 +20,15 @@ class FormItemEmail extends FormItemString {
    *
    */
   public function validate() {
-    $email = $this->getSubmittedValue();
-
-    if (!empty($value) && !\Quanta\Common\Api::valid_email($email)) {
-       $this->getFormState()->validationError($this->getName(), t('Insert a valid email'));
-    };
+    $email = $this->getSubmittedValue() ? $this->getSubmittedValue() : $this->getValue(true);
+    if (!empty($email) && !\Quanta\Common\Api::valid_email($email)) {
+      $this->setValidationStatus(false);
+      $translated_text = \Quanta\Common\Localization::translatableText($this->env,'Inserisci una email valida!','enter-valid-email-message');
+      $this->setValidationMessage($translated_text);
+      if($this->getFormState()){ 
+          $this->getFormState()->validationError($this->getName(), $translated_text);
+      }
+    }
+    parent::validate();
   }
 }
