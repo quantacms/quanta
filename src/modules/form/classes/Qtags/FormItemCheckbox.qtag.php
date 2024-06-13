@@ -9,6 +9,20 @@ class FormItemCheckbox extends FormItemString {
   public $type = 'checkbox';
   public $label_position = Label::LABEL_ASIDE;
 
+    /**
+   * Renders a form item as HTML.
+   *
+   * @return string
+   *   The rendered form item.
+   */
+  public function render() {
+    $checked = $this->getCheckedValue() ? $this->getAttribute('value') ==  $this->getAttribute('selected-value') : false;
+    if($checked){
+      $this->html_params['checked'] = 'checked';
+    }
+    // Return the full rendered form item.
+    return parent::render();
+  }
 
   /**
    * @return mixed|null
