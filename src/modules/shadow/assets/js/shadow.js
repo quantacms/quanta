@@ -201,7 +201,7 @@ function submitShadow() {
         form_items['single_file']= getJSONFormItem(inputField,true);
       }
       if(String(setAsThumbnail).toLowerCase() === 'false'){
-        form_items['set_as_thumbnail']= getJSONFormItem(inputField,true);
+        form_items['set_as_thumbnail']= getJSONFormItem(inputField,false);
       }
     }
 
