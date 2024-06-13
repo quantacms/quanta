@@ -198,7 +198,7 @@ function submitShadow() {
       var hasMultiple = inputField.prop('multiple');
       var setAsThumbnail = inputField.attr('thumbnail');
       if (!hasMultiple) {
-        form_items['single_file']= true;
+        form_items['single_file']= getJSONFormItem(inputField,true);
       }
       if(String(setAsThumbnail).toLowerCase() === 'false'){
         form_items['set_as_thumbnail']= false;
