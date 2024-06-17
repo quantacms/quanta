@@ -38,13 +38,13 @@ class FormItemFile extends FormItemString {
         break;
 
     }
+   
     return $rendered;
   }
 
   function loadAttributes() {
     $this->setData('plugin', !empty($this->getAttribute('plugin') ? $this->getAttribute('plugin') : 'drop'));
   }
-   // TODO fix this
   public function validate() {
     return TRUE;
   }
