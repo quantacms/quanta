@@ -32,6 +32,7 @@ var openAjax = function(name, destination, afterExec, tpl) {
 };
 
 var action = function(dataJson) {
+    console.log(dataJson);
     $.ajax({
         type: "POST",
         dataType: 'json',
@@ -49,6 +50,7 @@ var action = function(dataJson) {
  * @param data
  */
 var actionSuccess = function(data) {
+    console.log('success');
   if (typeof data !== 'object') {
     alert("There was an error with your submission.");
     console.log(data);
@@ -77,7 +79,9 @@ var actionSuccess = function(data) {
  * @param exception
  */
 var actionError = function(err, exception) {
-  if(err?.responseJSON?.shadowErrors){
+    console.log('error');
+
+    if(err?.responseJSON?.shadowErrors){
     var errors = JSON.parse(err.responseJSON.shadowErrors);
     $('.shadow-submitted').removeClass('shadow-submitted');
     $('#shadow-outside').find('input, textarea, select').each(function () {
