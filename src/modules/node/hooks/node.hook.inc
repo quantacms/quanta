@@ -11,7 +11,8 @@ namespace Quanta\Common;
  *   An array of variables.
  */
 function node_action_node_add(Environment $env, array $vars){
-  $response_json = NodeFactory::requestAction($env, $vars['data']['action'], $vars['data']);
+
+  $response_json = NodeFactory::requestAction($env, $vars['action'], $vars['data']);
   exit($response_json);
 }
 
@@ -25,7 +26,7 @@ function node_action_node_add(Environment $env, array $vars){
  *   An array of variables.
  */
 function node_action_node_edit(Environment $env, array $vars){
-  $response_json = NodeFactory::requestAction($env, $vars['data']['action'], $vars['data']);
+  $response_json = NodeFactory::requestAction($env, $vars['action'], $vars['data']);
   exit($response_json);
 }
 
@@ -40,7 +41,7 @@ function node_action_node_edit(Environment $env, array $vars){
  *   An array of variables.
  */
 function node_action_node_delete(Environment $env, array $vars){
-	$response_json = NodeFactory::requestAction($env, $vars['data']['action'], $vars['data']);
+	$response_json = NodeFactory::requestAction($env, $vars['action'], $vars['data']);
 	exit($response_json);
 }
 
