@@ -44,4 +44,8 @@ class FormItemFile extends FormItemString {
   function loadAttributes() {
     $this->setData('plugin', !empty($this->getAttribute('plugin') ? $this->getAttribute('plugin') : 'drop'));
   }
+   // TODO fix this
+  public function validate() {
+    return TRUE;
+  }
 }
