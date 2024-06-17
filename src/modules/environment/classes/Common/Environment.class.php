@@ -471,10 +471,11 @@ class Environment extends DataContainer {
    * Check if there are any queued actions in the request.
    */
   public function checkActions() {
-    if (isset($this->request_json->action->value)) {
+    $action_value = isset($this->request_json->action->value) ? $this->request_json->action->value :  $this->request_json->action;
+    if (isset($action_value)) {
 
-      if (is_array($this->request_json->action->value)) {
-        $this->request_json->action = array_pop($this->request_json->action->value);
+      if (is_array($action_value)) {
+        $this->request_json->action = array_pop($action_value);
       }
       $vars = array('data' => (array) $this->request_json);
     
