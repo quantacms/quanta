@@ -272,8 +272,10 @@ function user_user_form_form_submit(Environment $env, array &$vars) {
  *   An array of variables.
  */
 function user_action_logout(Environment $env, array $vars) {
+
   $user = UserFactory::current($env, TRUE);
   $logout = $user->logOut();
+
   exit($logout);
 }
 
