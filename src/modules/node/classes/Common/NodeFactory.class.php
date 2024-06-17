@@ -403,8 +403,7 @@ class NodeFactory {
          $form_data[$k] = $v->value;
       }
       else {
-        print "ERROR WITH FIELD";
-        print_r($v);
+
       }
       $full_form_data[$k] = $v;
     }
