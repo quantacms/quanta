@@ -72,7 +72,7 @@ function file_node_presave(Environment $env, array $vars) {
   $node = $vars['node'];
   $data = $vars['data'];
   $uploaded_files = [];
-  $isMultiple= !isset($data['single_file']) || ((isset($data['single_file']) && (strtolower(strval($data['single_file']->value))  === 'false')));
+  $isMultiple= !isset($data['single_file']) || ($data['single_file'] == 'false') || ((isset($data['single_file']) && (strtolower(strval($data['single_file']->value))  === 'false')));
   $setAsThumbnail = !$isMultiple && $data['set_as_thumbnail'];
   // Walk through uploaded files.
   foreach ($data as $label => $name) {

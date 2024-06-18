@@ -326,7 +326,7 @@ abstract class FormItem extends HtmlTag {
    * @param boolean $required
    */
   public function setRequired($required) {
-    $this->required = !empty($required);
+    $this->required = !empty($required) && ($required != self::INPUT_EMPTY_VALUE);
   }
 
   /**
@@ -587,11 +587,11 @@ abstract class FormItem extends HtmlTag {
       $this->setValidationStatus(false);
       $translated_text = \Quanta\Common\Localization::translatableText($this->env,'Questo campo è obbligatorio','required-error-message');
       $this->setValidationMessage($translated_text);
-      if($this->getFormState()){
+      if ($this->getFormState()){
         $this->getFormState()->validationError($this->getName(), $translated_text);
       }
     }
-    elseif($this->getLength() && strlen($this->getValue(true)) > $this->getLength() ){
+    elseif ($this->getLength() && strlen($this->getValue(true)) > $this->getLength() ){
       $this->setValidationStatus(false);
       $translated_text = \Quanta\Common\Localization::translatableText($this->env,'Inserisci un valore con la lunghezza','enter-valid-length-message');
       $this->setValidationMessage($translated_text . ' ' . $this->getLength());
