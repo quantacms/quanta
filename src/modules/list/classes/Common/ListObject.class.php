@@ -71,8 +71,9 @@ abstract class ListObject extends DataContainer {
    */
   public function __construct(&$env, $path, $tpl, $attr_arr = array(), $module = NULL) {
     $this->env = $env;
-    $this->tpl = strtolower($tpl);
-
+    if (!empty($tpl)) {
+      $this->tpl = strtolower($tpl);
+    }
     // Check if there are tree items that should not be expanded.
     if (isset($attr_arr['exclude_tree'])) {
       $this->exclude_tree = array_flip(explode(',', $attr_arr['exclude_tree']));

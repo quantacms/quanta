@@ -33,7 +33,13 @@ class FileList extends ListObject {
     $file_types = $this->getData('file_types');
 
     $i = 0;
-    $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
+    if (!empty($this->getTpl())) {
+      // Error, no TPL set.
+      $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
+    }
+    else {
+      $tpl = '';
+    }
 
     foreach ($this->items as $file) {
       
