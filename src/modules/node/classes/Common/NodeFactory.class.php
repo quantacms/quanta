@@ -386,7 +386,8 @@ class NodeFactory {
    * @param $form_data
    * @return string
    */
-  public static function requestAction(Environment $env, $action,array $form_data) {
+  public static function requestAction(Environment $env, $action, array $form_data) {
+
     // TODO language management needs many further check that language actually exists
     // As well as security checks.
     $language = isset($form_data['language']->value) ? (array_pop($form_data['language']->value)) : \Quanta\Common\Localization::LANGUAGE_NEUTRAL;
@@ -394,16 +395,19 @@ class NodeFactory {
     $full_form_data = [];
     // TODO: this is needed with new approach.
     foreach ($form_data as $k => $v) {
-     
+
       if (is_array($v->value) && (count($v->value) == 1)) {
         $form_data[$k] = $v->value[0];
       }
-      else{
+      elseif (is_array($v->value)) {
          $form_data[$k] = $v->value;
+      }
+      else {
+
       }
       $full_form_data[$k] = $v;
     }
-   
+
     // Prepare the response object.
     $response = new \stdClass();
     $user = UserFactory::current($env);
@@ -411,6 +415,7 @@ class NodeFactory {
     // When user didn't enter a path for a new node, create a candidate
     // path based on title.
     if (($action == \Quanta\Common\Node::NODE_ACTION_ADD)) {
+
       if (trim($form_data['edit-path']) == '') {
         $node_name = $env->getCandidatePath($form_data['edit-title']);
         $father = $form_data['edit-father'];
@@ -519,13 +524,17 @@ class NodeFactory {
           //For example: form_validate => profile_form So the hook : <hook_name>_shadow_profile_form_pre_validate
           //and then you can perfom a custom validation also you can use $vars['full_form_data'] to get full form data (name,type,required,length)
           //then change $vars['form_validated'] to false and the errors will be returned (see validateFormData function)
-          if(isset($form_data['form_validate']) && !is_array($form_data['form_validate'])){ $form_data['form_validate'] = array($form_data['form_validate']);}
-          foreach ($form_data['form_validate'] as $form) {
-            if(!empty($form)){
-              $env->hook('shadow_' . $form . '_pre_validate', $vars);              
+          if (isset($form_data['form_validate']) && !is_array($form_data['form_validate'])) {
+            $form_data['form_validate'] = array($form_data['form_validate']);
+          }
+
+          if (isset($form_data['form_validate'])) {
+            foreach ($form_data['form_validate'] as $form) {
+              if (!empty($form)) {
+                $env->hook('shadow_' . $form . '_pre_validate', $vars);
+              }
             }
           }
-        
           // If the node is validated, proceed with saving it.
           if ($node->validate() && $validation_status && $vars['form_validated']) {
             $node->save();
@@ -616,7 +625,8 @@ class NodeFactory {
       if(is_array($value) && count($value) == 1){
         $value = $value[0];
       }
-      $attributes = array('length' => 50, 'type' => $form_item_data->type, 'required' => $form_item_data->required, 'name' => $form_item, 'value' => $value , 'length' => $form_item_data->length ); 
+      $length = (!empty($form_item_data->length) ? $form_item_data->length : 50);
+      $attributes = array('length' => $length, 'type' => $form_item_data->type, 'required' => $form_item_data->required, 'name' => $form_item, 'value' => $value );
       $form_state = null;
       $input_item = \Quanta\Common\FormFactory::createInputItem($env, $attributes, $form_state);
       $input_item->validate();

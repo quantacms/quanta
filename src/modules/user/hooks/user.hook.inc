@@ -218,7 +218,7 @@ function user_shadow_user_reset_password_form(Environment $env, array $vars) {
  *   An array of variables.
  */
 function user_action_user_edit(Environment $env, array $vars) {
-  $response_json = UserFactory::requestAction($env, $vars['data']['action'], $vars['data']);
+  $response_json = UserFactory::requestAction($env, $vars['action'], $vars['data']);
   exit($response_json);
 }
 
@@ -272,8 +272,10 @@ function user_user_form_form_submit(Environment $env, array &$vars) {
  *   An array of variables.
  */
 function user_action_logout(Environment $env, array $vars) {
+
   $user = UserFactory::current($env, TRUE);
   $logout = $user->logOut();
+
   exit($logout);
 }
 

@@ -33,7 +33,13 @@ class FileList extends ListObject {
     $file_types = $this->getData('file_types');
 
     $i = 0;
-    $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
+    if (!empty($this->getTpl())) {
+      // Error, no TPL set.
+      $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
+    }
+    else {
+      $tpl = '';
+    }
 
     foreach ($this->items as $file) {
       
@@ -103,9 +109,14 @@ class FileList extends ListObject {
       // Order files by weight (as they are sorted using the UI).
       case 'weight':
         if (!empty($this->getNode()->json->{$this->filefield})) {
-          // Rearrange Files according with what was set in the node json.
-          $files_json = array_flip($this->getNode()->json->{$this->filefield});
+            $filefield = $this->getNode()->json->{$this->filefield};
+            if (!is_array($filefield)) {
+              $filefield = array($filefield);
+            }
 
+
+          // Rearrange Files according with what was set in the node json.
+          $files_json = array_flip($filefield);
           if (isset($files_json[$x->getName()]) && isset($files_json[$y->getName()])) {
             $check = ($files_json[$x->getName()] > $files_json[$y->getName()]);
           }
@@ -138,17 +149,15 @@ class FileList extends ListObject {
    *   The file to be added.
    */
   public function addItem($file) {
-   if (($this->getNode()->getAttributeJSON($this->filefield)==NULL) || empty($this->getNode()->getAttributeJSON($this->filefield))) {
-	   $node_files = array();
-   }	  
-   elseif (!is_array($this->getNode()->getAttributeJSON($this->filefield))) {
-   	$node_files = array($this->getNode()->getAttributeJSON($this->filefield));
-   }
+    $node_files = array();
 
-   if ($node_files == NULL) {
-   	$node_files = array();
-   }
-   $node_files = array_flip($node_files);
+    if (($this->getNode()->getAttributeJSON($this->filefield)==NULL) || empty($this->getNode()->getAttributeJSON($this->filefield))) {
+	    $node_files = array();
+    }
+    elseif (!is_array($this->getNode()->getAttributeJSON($this->filefield))) {
+      $node_files = array($this->getNode()->getAttributeJSON($this->filefield));
+      $node_files = array_flip($node_files);
+    }
 
     // The "files" filefield is used in the standard Quanta files, containing all uploaded files in the folder.
     // For other file inputs, filter files by those that have been uploaded through that specific input.

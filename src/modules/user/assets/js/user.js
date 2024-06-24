@@ -14,7 +14,7 @@ function logIn() {
  * Request to open a logout form.
  */
 function logOut() {
-  action('{"action": "logout"}');
+  action('{"action": {"value":"logout"}}');
 };
 
 

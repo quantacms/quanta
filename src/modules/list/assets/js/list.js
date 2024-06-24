@@ -26,7 +26,7 @@ var refreshLists = function () {
     $(this).sortable({
       update: function(e) {
         var nodes = $(this).sortable('toArray', { key: "data-node", attribute: "data-node"});
-        action('{"action": "node_weight_update", "nodes": ' + JSON.stringify(nodes)+ '}');
+        action('{"action": {"value":"node_weight_update"}, "nodes": ' + JSON.stringify(nodes)+ '}');
 
       },
       start: function(e) {
