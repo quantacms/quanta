@@ -31,8 +31,8 @@ function sync_doctor_rsync(Environment $env, array $vars) {
    $command = escapeshellcmd($script_path) .
                ' --env ' . escapeshellarg($enviroment) .
                ' --user ' . escapeshellarg($user) .
-               ' --ssh-key ' . escapeshellarg($ssh_key);
-
+               ' --ssh-key ' . escapeshellarg($ssh_key) .
+               ' --domain ' . escapeshellarg($env->host);
       if (!empty($override)) {
          $command .= " --override";
       }
