@@ -3,7 +3,7 @@
 set -e
 
 # NOTE: This requires GNU getopt. On Mac OS X and FreeBSD, you have to install this separately.
-OPTIONS=$(getopt -o e:u: -o n:hgor: --long env:,user:,ssh-key:,override,override-recent:,help -n 'sync.sh' -- "$@")
+OPTIONS=$(getopt -o e:u: -o n:hgor: --long env:,user:,ssh-key:,override,override-recent:,domain:,help -n 'sync.sh' -- "$@")
 eval set -- "$OPTIONS"
 
 USER="root"  # Default user
@@ -15,6 +15,7 @@ while true; do
     --ssh-key ) SSH_KEY="$2"; shift 2 ;;
     --override ) OVERRIDE=true; shift ;;
     --override-recent ) OVERRIDE_RECENT="$2"; shift 2 ;;
+    --domain ) DOMAIN="$2"; shift 2 ;;
     -h | --help )
       printf "Usage: %s [options]\n" $0
       printf "Options:\n"
@@ -45,7 +46,7 @@ fi
 case "$ENV" in
   dev)
     SERVER="212.71.254.132"
-    SOURCE_DIRS=("$USER@$SERVER:/var/www/quanta/sites/walltips-dev/db/" "$USER@$SERVER:/var/www/quanta/sites/walltips-dev/_users/" "$USER@$SERVER:/var/www/quanta/sites/walltips-dev/_translations/")
+    SOURCE_DIRS=("$USER@$SERVER:/var/www/quanta/sites/dev.walltips.it/db/" "$USER@$SERVER:/var/www/quanta/sites/dev.walltips.it/_users/" "$USER@$SERVER:/var/www/quanta/sites/dev.walltips.it/_translations/")
     ;;
   stage)
     SERVER="212.71.254.132"
@@ -53,7 +54,7 @@ case "$ENV" in
     ;;
   prod)
     SERVER="172.232.218.137"
-    SOURCE_DIRS=("$USER@$SERVER:/var/www/quanta/sites/walltips-prod/db/" "$USER@$SERVER:/var/www/quanta/sites/walltips-prod/_users/" "$USER@$SERVER:/var/www/quanta/sites/walltips-prod/_translations/")
+    SOURCE_DIRS=("$USER@$SERVER:/var/www/quanta/sites/walltips.it/db/" "$USER@$SERVER:/var/www/quanta/sites/walltips.it/_users/" "$USER@$SERVER:/var/www/quanta/sites/walltips.it/_translations/")
     ;;
   *)
     echo "Invalid environment specified. Use dev, stage, or prod."
@@ -61,8 +62,9 @@ case "$ENV" in
     ;;
 esac
 
-# Go to git root directory
-cd "$(git rev-parse --show-toplevel)" || exit 1
+# Go to git root directory and then to the desired working directory
+GIT_ROOT_DIR=$(git rev-parse --show-toplevel)
+cd "$GIT_ROOT_DIR/sites/$DOMAIN" || exit 1
 
 # Define the destination base directory on the local machine
 DEST_BASE_DIR="$(pwd)"
