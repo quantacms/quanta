@@ -38,6 +38,7 @@ function integrity_doctor_integrity_check(Environment $env, array $vars) {
         'host-manual-rules-media',
         'host-manual-contacts-media',
         'host-manual-other-media',
+        'feedbacks'
       ),
       'experiences' => array(
         'description',
