@@ -140,3 +140,43 @@ $(document).bind('shadow_open', function() {
   });
 });
 
+$(document).ready(function() {
+  // Attach the submit handler to the form
+  $('.ajxa-form').on('submit', function(event) {
+      submitFormViaAjax(event, this);
+  });
+ });
+function submitFormViaAjax(e,form) {
+  e.preventDefault(); // Prevent the default form submission
+  formId = `#${$(form).attr('id')}`;
+  // Serialize form data
+  var formData = $(formId).serialize();
+  $(formId).css('opacity', '0.5');
+  var submitButton = $(formId).find('input[type="submit"]');
+
+  // Add the 'shadow-submitted' class to the submit button
+  submitButton.addClass('shadow-submitted');
+  // Send AJAX request
+  $.ajax({
+      url: '/',
+      type: 'POST',
+      data: formData,
+      
+      success: function(response) {
+          $(formId+'_confirm_message').show(); 
+          $(formId).find('.submit-error-message').hide();
+          $(formId).hide();
+      },
+      error: function(xhr, status, error) {
+          submitButton.removeClass('shadow-submitted');
+          $(formId).css('opacity', '1');
+          // Parse the response JSON
+          var errorResponse = JSON.parse(xhr.responseText);
+          // Extract the error message
+          var errorMessage = errorResponse.errors.message[0];
+          $(formId).find('.submit-error-message').text(errorMessage).show();
+          grecaptcha.reset();
+      }
+  });
+}
+
