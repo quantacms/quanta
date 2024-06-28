@@ -21,7 +21,7 @@ class FormItemRating extends FormItemString {
     $plugin =  $this->getAttribute('plugin');
     $form_item_name =  $this->getName();
     $value = $this->getValue(true);
-    $html_body = '<div class="star-rating">';
+    $html_body = "<div class=\"$plugin-rating\">";
     switch ($plugin) {
         case 'stars': 
         default:
