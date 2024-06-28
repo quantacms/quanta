@@ -127,6 +127,7 @@ display: none;
 
 .form-item-rating{
     border: unset;
+    background-color: unset;
 }
 
 .stars-rating {
