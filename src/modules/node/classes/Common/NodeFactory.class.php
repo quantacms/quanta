@@ -625,7 +625,7 @@ class NodeFactory {
       if(is_array($value) && count($value) == 1){
         $value = $value[0];
       }
-      $length = (!empty($form_item_data->length) ? $form_item_data->length : 50);
+      $length = (!empty($form_item_data->length) ? $form_item_data->length : 50000);
       $attributes = array('length' => $length, 'type' => $form_item_data->type, 'required' => $form_item_data->required, 'name' => $form_item, 'value' => $value );
       $form_state = null;
       $input_item = \Quanta\Common\FormFactory::createInputItem($env, $attributes, $form_state);

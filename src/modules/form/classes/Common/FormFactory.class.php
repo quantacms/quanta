@@ -130,6 +130,10 @@ class FormFactory {
         $formitem = new \Quanta\Qtags\FormItemTel($env, $input, $form);
         break;
 
+      case 'rating':
+        $formitem = new \Quanta\Qtags\FormItemRating($env, $input, $form);
+        break;
+
       case 'string':
       default:
         // TODO: use a hook to eventually get custom formitem items from other modules.
