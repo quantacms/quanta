@@ -91,6 +91,7 @@ function integrity_check_parent_nodes($env,$path,$subnodes_types){
       );
       //get the language
       $language= \Quanta\Common\Localization::getLanguage($env);
+      integrity_check_node($parent_node);
         foreach ($nodes as $node) {
           integrity_check_node($node);
           foreach ($subnodes_types as $subnode_type) {
@@ -121,7 +122,6 @@ function integrity_check_parent_nodes($env,$path,$subnodes_types){
 function integrity_check_node($node){
   //check if parent node has translation files
   $language_files = glob($node->path . '/data_*.json');
-         
   if(count($language_files)){
     foreach ($language_files as $language_file){
       if(file_exists($node->path.'/data.json')){
