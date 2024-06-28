@@ -129,7 +129,7 @@ display: none;
     border: unset;
 }
 
-.star-rating {
+.stars-rating {
     direction: rtl;
     display: inline-block;
     font-size: 2em;
@@ -139,11 +139,11 @@ display: none;
     gap: 5px;
   }
   
-  .star-rating input {
+  .stars-rating input {
     display: none;
   }
   
-  .star-rating label {
+  .stars-rating label {
     cursor: pointer;
     color: #ccc;
     transition: color 0.2s;
@@ -151,18 +151,18 @@ display: none;
   }
   
   /* Fill the stars on hover */
-  .star-rating label:hover,
-  .star-rating label:hover ~ label {
+  .stars-rating label:hover,
+  .stars-rating label:hover ~ label {
     color: #f5b301;
   }
   
   /* Fill the stars on selection */
-  .star-rating input:checked ~ label {
+  .stars-rating input:checked ~ label {
     color: #f5b301;
   }
   
   /* Ensure all previous stars are filled when a star is selected */
-  .star-rating input:checked ~ label,
-  .star-rating input:checked ~ label ~ label {
+  .stars-rating input:checked ~ label,
+  .stars-rating input:checked ~ label ~ label {
     color: #f5b301;
   }
