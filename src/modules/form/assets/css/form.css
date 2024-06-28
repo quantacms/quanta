@@ -122,3 +122,47 @@ display: none;
     display: flex;
     gap: 75px;
 }
+
+/* Star Rating */
+
+.form-item-rating{
+    border: unset;
+}
+
+.stars-rating {
+    direction: rtl;
+    display: inline-block;
+    font-size: 2em;
+    color: #ccc;
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+  }
+  
+  .stars-rating input {
+    display: none;
+  }
+  
+  .stars-rating label {
+    cursor: pointer;
+    color: #ccc;
+    transition: color 0.2s;
+    font-size: 30px;
+  }
+  
+  /* Fill the stars on hover */
+  .stars-rating label:hover,
+  .stars-rating label:hover ~ label {
+    color: #f5b301;
+  }
+  
+  /* Fill the stars on selection */
+  .stars-rating input:checked ~ label {
+    color: #f5b301;
+  }
+  
+  /* Ensure all previous stars are filled when a star is selected */
+  .stars-rating input:checked ~ label,
+  .stars-rating input:checked ~ label ~ label {
+    color: #f5b301;
+  }
