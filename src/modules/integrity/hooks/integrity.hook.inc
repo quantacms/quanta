@@ -52,8 +52,16 @@ function integrity_doctor_integrity_check(Environment $env, array $vars) {
     'businesses' => array(
       'shifts',
       'closures',
-      'bookings',
+      'bookings' => array(
+        'canceled',
+        'confirmed',
+        'expired',
+        'paid',
+        'refunded',
+        'unpaid',
+      ),
       'description',
+   
     ),
     'zones' => array(
       'description',
@@ -94,23 +102,40 @@ function integrity_check_parent_nodes($env,$path,$subnodes_types){
       integrity_check_node($parent_node);
         foreach ($nodes as $node) {
           integrity_check_node($node);
-          foreach ($subnodes_types as $subnode_type) {
-            //subnode name example : node-name-description
-            $subnode_name = $node->name . '-' . $subnode_type;
-            //load the subnode
-            $subnode = \Quanta\Common\NodeFactory::load($env, $subnode_name);
-            integrity_check_sub_nodes($env,$node,$subnode,$subnode_type,$translated_nodes);
-            
-            //check if the sub-node has childrens
-            if(in_array($subnode_type,$nodes_have_childrens)){
-              $childs_dirlist = new \Quanta\Common\DirList($env,  $subnode_name, 'list', $attributes, 'integrity');
-              $childs = $childs_dirlist->getItems();
-              foreach ($childs as $child) {
-              //get the language files inside subnode
-              $child_language_files = glob($child->path . '/data_*.json'); 
-              integrity_check_sub_nodes($env,$subnode,$child,$subnode_type,$translated_nodes);
+          foreach ($subnodes_types as $key => $subnode_type) {
+            if(is_array($subnode_type)){
+              //subnode name example : node-name-description
+              $subnode_name = $node->name . '-' . $key;
+              //load the subnode
+              $subnode = \Quanta\Common\NodeFactory::load($env, $subnode_name);
+              integrity_check_sub_nodes($env,$node,$subnode,$key,$translated_nodes);
+
+              foreach ($subnode_type as $child) {
+                //subnode name example : node-name-description
+                $subnode_name = $node->name . '-' . $key . '-' .$child ;
+                //load the subnode
+                $subnode = \Quanta\Common\NodeFactory::load($env, $subnode_name);
+                $parent_node = \Quanta\Common\NodeFactory::load($env, $node->name . '-' . $key);
+                integrity_check_sub_nodes($env,$parent_node,$subnode,$child,$translated_nodes);
               }
+            }else{
+              //subnode name example : node-name-description
+              $subnode_name = $node->name . '-' . $subnode_type;
+              //load the subnode
+              $subnode = \Quanta\Common\NodeFactory::load($env, $subnode_name);
+              integrity_check_sub_nodes($env,$node,$subnode,$subnode_type,$translated_nodes);
               
+              //check if the sub-node has childrens
+              if(in_array($subnode_type,$nodes_have_childrens)){
+                $childs_dirlist = new \Quanta\Common\DirList($env,  $subnode_name, 'list', $attributes, 'integrity');
+                $childs = $childs_dirlist->getItems();
+                foreach ($childs as $child) {
+                //get the language files inside subnode
+                $child_language_files = glob($child->path . '/data_*.json'); 
+                integrity_check_sub_nodes($env,$subnode,$child,$subnode_type,$translated_nodes);
+                }
+                
+              }
             }
           }
           		
