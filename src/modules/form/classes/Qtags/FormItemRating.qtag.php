@@ -27,7 +27,7 @@ class FormItemRating extends FormItemString {
         default:
         for ($i=$max; $i >=1 ; $i--) { 
             $checked = ($value == $i) ? 'checked' : '';
-            $html_body .= "<input type=\"radio\" id=\"star$i\" name=\"$form_item_name\" value=\"$i\" $checked><label for=\"star$i\" title=\"$i stars\">★</label>";        }
+            $html_body .= "<input type=\"radio\" id=\"$form_item_name-star$i\" name=\"$form_item_name\" value=\"$i\" $checked><label for=\"star$i\" title=\"$i stars\">★</label>";        }
             break;
     }
     $html_body .= '</div>';
