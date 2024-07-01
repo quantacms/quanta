@@ -191,7 +191,6 @@ $(document).ready(function() {
       id: 'full' + input.attr('id'),
       required : input.attr('required')
     });
-    hiddenInput.css('display','none');
     input.after(hiddenInput);
 
     // Update the hidden input on input change and country change
