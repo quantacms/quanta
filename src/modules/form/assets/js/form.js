@@ -145,7 +145,53 @@ $(document).ready(function() {
   $('.ajxa-form').on('submit', function(event) {
       submitFormViaAjax(event, this);
   });
+
+  InitializeTelInputs();
+
  });
+
+ function InitializeTelInputs(appendCss= false){
+  console.log('InitializeTelInputs');
+
+  if(appendCss){
+    // Dynamically add the intl-tel-input CSS file
+    $('<link>', {
+      rel: 'stylesheet',
+      type: 'text/css',
+      href: 'https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.13/css/intlTelInput.css'
+    }).appendTo('head');
+  }
+
+  // Initialize intl-tel-input for all input[type="tel"]
+  $('input[type="tel"]').each(function() {
+    const input = $(this);
+    const iti = window.intlTelInput(this, {
+      initialCountry: "it",
+      utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.13/js/utils.js"
+    });
+
+    // Create a hidden input to store the full phone number
+    const hiddenInput = $('<input>', {
+      type: 'hidden',
+      name: 'full' + input.attr('name'),
+      id: 'full' + input.attr('id'),
+      required : input.attr('required')
+    });
+    hiddenInput.css('display','none');
+    input.after(hiddenInput);
+
+    // Update the hidden input on input change and country change
+    const updateHiddenInput = function() {
+      hiddenInput.val(iti.getNumber());
+    };
+    input.on('input', updateHiddenInput);
+    input.on('countrychange', updateHiddenInput);
+
+    // Set the initial value of the hidden input
+    updateHiddenInput();
+  });
+ }
+
 function submitFormViaAjax(e,form) {
   e.preventDefault(); // Prevent the default form submission
   formId = `#${$(form).attr('id')}`;
