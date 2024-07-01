@@ -32,9 +32,9 @@ class Form extends HtmlTag {
   public function render() {
 
     $this->form_state = \Quanta\Common\FormFactory::getFormState($this->env, $this->getAttribute('name'));
-
     if (!empty($this->getAttribute('name'))) {
       $this->setId($this->getAttribute('name'));
+
     }
     if (!empty($this->getAttribute('ajax'))) {
       $this->html_params['class'] .= ' ' . 'ajxa-form';
@@ -59,10 +59,13 @@ class Form extends HtmlTag {
     else {
       $inner_attr = array('name' => 'form_submit');
       $this->html_body = (new \Quanta\Qtags\FormItemHidden($this->env, $inner_attr))->render();
-      $inner_attr = array('name' => 'form', 'value' => $this->getAttribute('name'));
+
+      $inner_attr = array('name' => 'form', 'default_value' => $this->getId(), 'value' => $this->getId());
       $this->html_body .= (new \Quanta\Qtags\FormItemHidden($this->env, $inner_attr))->render();
+
       $inner_attr = array('name' => 'form_type', 'value' => $this->getAttribute('type'));
       $this->html_body .= (new \Quanta\Qtags\FormItemHidden($this->env, $inner_attr))->render();
+
       $this->html_body .= $this->getTarget();
     }
 
