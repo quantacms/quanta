@@ -196,7 +196,7 @@ function submitShadow() {
      
     } 
     else if(inputField.attr('type') == 'tel'){
-      
+      //currently do not do any thing with tel inputs because we got it from int tel plugin above
     }
     else {
       var newValue = !form_items[fieldName] ? [fieldValue] :  (form_items[fieldName].value.push(fieldValue), form_items[fieldName].value);
