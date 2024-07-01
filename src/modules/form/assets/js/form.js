@@ -141,11 +141,46 @@ $(document).bind('shadow_open', function() {
 });
 
 $(document).ready(function() {
+
   // Attach the submit handler to the form
   $('.ajxa-form').on('submit', function(event) {
       submitFormViaAjax(event, this);
   });
+
+// Handle change event for radio buttons
+$('.stars-rating input').on('change', function() {
+    fillStars($(this));
+});
+    // Handle click event for labels
+    $('.stars-rating label').on('click', function() {
+      var $input = $(this).prev('input');
+      $input.prop('checked', true).trigger('change');
+  });
+
+// Initialize star ratings based on checked input
+$('.stars-rating input:checked').each(function() {
+    fillStars($(this));
+});
+
  });
+
+ // Function to handle star filling
+ function fillStars($element) {
+  var $parent = $element.closest('.stars-rating');
+  var selectedValue = $element.val();
+
+  $parent.find('label').each(function() {
+      var $label = $(this);
+      var labelValue = $label.prev('input').val();
+
+      if (labelValue <= selectedValue) {
+          $label.css('color', '#f5b301');
+      } else {
+          $label.css('color', '#ccc');
+      }
+  });
+}
+
 function submitFormViaAjax(e,form) {
   e.preventDefault(); // Prevent the default form submission
   formId = `#${$(form).attr('id')}`;
