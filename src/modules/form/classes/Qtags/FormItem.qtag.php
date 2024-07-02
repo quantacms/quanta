@@ -248,12 +248,9 @@ abstract class FormItem extends HtmlTag {
    */
   public function loadDefault() {
     $value = $this->getValue();
-    // TODO: PROBABLY WRONG. 
-    if (is_array($value)) {
-    	$single_value = array_pop($value);
-    }
+    
     // If there is already a value set for the input item, ignore the default.
-    $this->default_value = $this->getAttribute('default');
+    $this->default_value = $this->getAttribute('default_value');
   }
 
   /**
@@ -497,7 +494,8 @@ abstract class FormItem extends HtmlTag {
    *   The default value of the form item.
    */
   public function getDefaultValue() {
-    return $this->default_value == self::INPUT_EMPTY_VALUE ? '' : $this->default_value;
+
+    return ($this->default_value == self::INPUT_EMPTY_VALUE) ? '' : $this->default_value;
   }
 
   /**
