@@ -166,7 +166,7 @@ $(document).ready(function() {
 
  });
 
- function InitializeTelInputs(appendCss= false){
+ function InitializeTelInputs(appendCss= true){
   if(appendCss){
     // Dynamically add the intl-tel-input CSS file
     $('<link>', {
