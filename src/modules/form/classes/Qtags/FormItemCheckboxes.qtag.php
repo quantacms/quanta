@@ -22,6 +22,7 @@ class FormItemCheckboxes extends FormItem {
    * Load Options for select inputs.
    */
   public function loadOptions() {
+
     foreach ($this->getAllowableValues() as $k => $option) {
       // TODO: when it's single, it becomes a simple string...
       if (is_array($option)) {
@@ -33,7 +34,16 @@ class FormItemCheckboxes extends FormItem {
         $option_value = $option;
       }
       $option_attributes = array();
-      $option = new FormItemCheckbox($this->env, array('name' => $this->name));
+      $option = new FormItemCheckbox($this->env, array('name' => $this->name, 'value'=>$option_key));
+
+      $option->setDefaultValue($option_key);
+
+      if (!empty($this->getAttribute('selected-values'))) {
+        $selected_values = explode(\Quanta\Common\Environment::GLOBAL_SEPARATOR, $this->getAttribute('selected-values'));
+      }
+      else {
+        $selected_values = array();
+      }
 
       if ($this->getCurrentValue() == $option_key) {
         $option->html_params['selected'] = 'selected';
@@ -41,8 +51,12 @@ class FormItemCheckboxes extends FormItem {
       elseif ($this->getDefaultValue() == $option_key) {
         $option->html_params['selected'] = 'selected';
       }
+      elseif (!empty($selected_values) && in_array($option_key,$selected_values)){
+        $option->html_params['checked'] = 'checked';
+      }
+      $option_value = "<span>{$option_value}</span>";
       $option->setHtmlBody($option_value);
-      $this->html_body .= $option->render();
+      $this->html_body .= "<div class=\"checkbox-container\">{$option->render()}</div>"; ;
     }
   }
 

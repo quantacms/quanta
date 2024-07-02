@@ -27,6 +27,8 @@ class Message {
   public $type;
   /** @var string $severity */
   public $severity;
+  /** @var string $key */
+  public $key;
 
   /**
    * Construct the message item.
@@ -42,12 +44,13 @@ class Message {
    * @param string $module
    *   The module generating the message.
    */
-  public function __construct($env, $body, $severity = self::MESSAGE_GENERIC, $type = self::MESSAGE_TYPE_SCREEN, $module = self::MESSAGE_NOMODULE) {
+  public function __construct($env, $body, $severity = self::MESSAGE_GENERIC, $type = self::MESSAGE_TYPE_SCREEN, $module = self::MESSAGE_NOMODULE, $key = null) {
     $this->env = $env;
     $this->body = $body;
     $this->type = $type;
     $this->module = $module;
     $this->severity = $severity;
+    $this->key = $key;
     $doctor = $env->getData('doctor');
 
     // If the Doctor is curing the environment, show messages in the blackboard.
@@ -79,17 +82,24 @@ class Message {
    * @return string
    *   The messages.
    */
-  public static function burnMessages($type = self::MESSAGE_TYPE_SCREEN) {
-    $output = '';
+  public static function burnMessages($type = self::MESSAGE_TYPE_SCREEN, $for_shadow = false) {
+   
+    $output = $for_shadow ? [] : '';
     if (isset($_SESSION['messages'])) {
       foreach ($_SESSION['messages'] as $k => $mess) {
         $message = unserialize($mess);
         if ($message->type == $type) {
-          $output .= '<div class="message message-severity-' . $message->severity . '">' . $message->body . '</div>';
+          if($for_shadow){
+            
+            $output[$message->key] = $message->body;
+          }
+          else{
+            $output .= '<div class="message message-severity-' . $message->severity . '">' . $message->body . '</div>';
+          }
           unset($_SESSION['messages'][$k]);
         }
       }
     }
-    return $output;
+    return $for_shadow ? json_encode($output) : $output;
   }
 }

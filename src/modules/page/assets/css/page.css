@@ -9,3 +9,9 @@ ul.breadcrumb li {
   padding: 0;
   margin: 0;
 }
+* {
+  --scrollbar-track-color:#D0D5DD;
+  --scrollbar-thumb-color:#EBEEF3;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-track-color) var(--scrollbar-thumb-color);
+}
