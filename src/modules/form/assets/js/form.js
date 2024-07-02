@@ -140,3 +140,119 @@ $(document).bind('shadow_open', function() {
   });
 });
 
+$(document).ready(function() {
+
+  // Attach the submit handler to the form
+  $('.ajxa-form').on('submit', function(event) {
+      submitFormViaAjax(event, this);
+  });
+
+  // Handle change event for radio buttons
+  $('.stars-rating input').on('change', function() {
+    fillStars($(this));
+  });
+    // Handle click event for labels
+    $('.stars-rating label').on('click', function() {
+      var $input = $(this).prev('input');
+      $input.prop('checked', true).trigger('change');
+  });
+
+  // Initialize star ratings based on checked input
+  $('.stars-rating input:checked').each(function() {
+    fillStars($(this));
+  });
+
+  InitializeTelInputs();
+
+ });
+
+ function InitializeTelInputs(appendCss= true){
+  if(appendCss){
+    // Dynamically add the intl-tel-input CSS file
+    $('<link>', {
+      rel: 'stylesheet',
+      type: 'text/css',
+      href: 'https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.13/css/intlTelInput.css'
+    }).appendTo('head');
+  }
+
+  // Initialize intl-tel-input for all input[type="tel"]
+  $('input[type="tel"]').each(function() {
+    const input = $(this);
+    const iti = window.intlTelInput(this, {
+      initialCountry: "it",
+      utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.13/js/utils.js"
+    });
+
+    // Create a hidden input to store the full phone number
+    const hiddenInput = $('<input>', {
+      type: 'hidden',
+      name: 'full' + input.attr('name'),
+      id: 'full' + input.attr('id'),
+      required : input.attr('required')
+    });
+    input.after(hiddenInput);
+
+    // Update the hidden input on input change and country change
+    const updateHiddenInput = function() {
+      hiddenInput.val(iti.getNumber());
+    };
+    input.on('input', updateHiddenInput);
+    input.on('countrychange', updateHiddenInput);
+
+    // Set the initial value of the hidden input
+    updateHiddenInput();
+  });
+ }
+
+ // Function to handle star filling
+ function fillStars($element) {
+  var $parent = $element.closest('.stars-rating');
+  var selectedValue = $element.val();
+
+  $parent.find('label').each(function() {
+      var $label = $(this);
+      var labelValue = $label.prev('input').val();
+
+      if (labelValue <= selectedValue) {
+          $label.css('color', '#f5b301');
+      } else {
+          $label.css('color', '#ccc');
+      }
+  });
+}
+
+function submitFormViaAjax(e,form) {
+  e.preventDefault(); // Prevent the default form submission
+  formId = `#${$(form).attr('id')}`;
+  // Serialize form data
+  var formData = $(formId).serialize();
+  $(formId).css('opacity', '0.5');
+  var submitButton = $(formId).find('input[type="submit"]');
+
+  // Add the 'shadow-submitted' class to the submit button
+  submitButton.addClass('shadow-submitted');
+  // Send AJAX request
+  $.ajax({
+      url: '/',
+      type: 'POST',
+      data: formData,
+      
+      success: function(response) {
+          $(formId+'_confirm_message').show(); 
+          $(formId).find('.submit-error-message').hide();
+          $(formId).hide();
+      },
+      error: function(xhr, status, error) {
+          submitButton.removeClass('shadow-submitted');
+          $(formId).css('opacity', '1');
+          // Parse the response JSON
+          var errorResponse = JSON.parse(xhr.responseText);
+          // Extract the error message
+          var errorMessage = errorResponse.errors.message[0];
+          $(formId).find('.submit-error-message').text(errorMessage).show();
+          grecaptcha.reset();
+      }
+  });
+}
+

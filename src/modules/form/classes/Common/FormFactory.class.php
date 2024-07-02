@@ -80,6 +80,7 @@ class FormFactory {
         $formitem = new \Quanta\Qtags\FormItemHidden($env, $input, $form);
         break;
       case 'select':
+      case 'select-one':
         $formitem = new \Quanta\Qtags\FormItemSelect($env, $input, $form);
         break;
       case 'checkboxes':
@@ -125,6 +126,14 @@ class FormFactory {
         $formitem = new \Quanta\Qtags\FormItemAutocomplete($env, $input, $form);
         break;
 
+      case 'tel':
+        $formitem = new \Quanta\Qtags\FormItemTel($env, $input, $form);
+        break;
+
+      case 'rating':
+        $formitem = new \Quanta\Qtags\FormItemRating($env, $input, $form);
+        break;
+
       case 'string':
       default:
         // TODO: use a hook to eventually get custom formitem items from other modules.
@@ -132,9 +141,10 @@ class FormFactory {
       break;
     }
 
-    
-    // Add the form item to the form state.
-    $form->addItem($formitem->getName(), $formitem);
+    if($form){
+      // Add the form item to the form state.
+      $form->addItem($formitem->getName(), $formitem);
+    }
 
     return $formitem;
 

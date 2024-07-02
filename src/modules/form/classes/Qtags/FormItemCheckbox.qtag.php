@@ -16,7 +16,7 @@ class FormItemCheckbox extends FormItemString {
    *   The rendered form item.
    */
   public function render() {
-    $checked = $this->getCheckedValue() ? $this->getAttribute('value') ==  $this->getDefaultValue() : $this->getDefaultValue() == true;
+    $checked = $this->getCheckedValue() ? $this->getAttribute('value') ==  $this->getAttribute('selected-value') : false;
     if($checked){
       $this->html_params['checked'] = 'checked';
     }
@@ -47,5 +47,10 @@ class FormItemCheckbox extends FormItemString {
    */
   public function getCheckedValue() {
     return $this->getAttribute('checked_value');
+  }
+
+  // TODO. Check that the value is in the list.
+  public function validate() {
+    return TRUE;
   }
 }

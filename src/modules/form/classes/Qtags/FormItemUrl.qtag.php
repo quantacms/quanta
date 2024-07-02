@@ -23,9 +23,15 @@ class FormItemUrl extends FormItemString {
    *
    */
   public function validate() {
-    $value = $this->getValue();
-    if (!valid_url(array_pop($value))) {
-       $this->getForm()->validationError($this, t('Insert a valid URL'));
-    };
+    $url = $this->getSubmittedValue() ? $this->getSubmittedValue() : $this->getValue(true);
+    if (!empty($url) && !\Quanta\Common\Api::valid_url($url)) {
+      $this->setValidationStatus(false);
+      $translated_text = \Quanta\Common\Localization::translatableText($this->env,'Per favore, inserisci un URL valido!','enter-valid-url-message');
+      $this->setValidationMessage($translated_text);
+      if($this->getFormState()){ 
+          $this->getFormState()->validationError($this->getName(), $translated_text);
+      }
+    }
+    parent::validate();
   }
 }

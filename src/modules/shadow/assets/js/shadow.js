@@ -76,7 +76,7 @@ function openShadow(shadowData) {
 
   // Define what to edit with shadow (URL).
   var shadowPath = '/' + ((shadow.node != undefined) ? (shadow.node) : '');
-  shadowPath += '/?shadow=' + JSON.stringify(shadow);
+  shadowPath += '/?shadow=' + encodeURIComponent(JSON.stringify(shadow));
 
   console.log(shadowPath);
   // Add Language prefix for multilingual opening.
@@ -96,7 +96,6 @@ var host = window.location.host;
 // Construct the base URL (protocol + "//" + host)
 var baseUrl = protocol + "//" + host;
 	shadowPath = baseUrl + shadowPath;
-	console.log(shadowPath);
   $('#shadow-outside').html('').attr('data-rel', shadow.context).load(shadowPath, function () {
     if (shadow.callback != undefined) {
       shadow.callback();
@@ -139,6 +138,7 @@ var baseUrl = protocol + "//" + host;
 
     $(document).trigger('shadow_open');
     $(document).trigger('shadow_' + shadow.context);
+    InitializeTelInputs(true);
   });
   $('#shadow-outside').fadeIn('medium');
 };
@@ -178,13 +178,29 @@ function submitShadow() {
     }
     
     if (form_items[fieldName] == undefined) {
-      form_items[fieldName] = [];
+      form_items[fieldName] = getJSONFormItem(inputField,[]);
     }
     
     if (inputField.attr('type') == 'checkbox') {
-      form_items[fieldName].push(inputField.is(':checked') ? inputField.val() : '');
-    } else {
-      form_items[fieldName].push(fieldValue); // Push trimmed field value
+      if(inputField.is(':checked')){
+        var checkboxValue = inputField.is(':checked') ? inputField.val() : '';
+        var newValue = !form_items[fieldName] ? [checkboxValue] :  (form_items[fieldName].value.push(checkboxValue), form_items[fieldName].value);
+        form_items[fieldName] = getJSONFormItem(inputField,newValue);
+      }
+    }
+    else if(inputField.attr('type') == 'hidden' && fieldName.startsWith("full")){
+      fieldName= fieldName.substring(4);
+      var newValue = !form_items[fieldName] ? [fieldValue] :  (form_items[fieldName].value.push(fieldValue), form_items[fieldName].value);
+      form_items[fieldName] = getJSONFormItem(inputField,newValue);
+      form_items[fieldName].type= 'tel';
+     
+    } 
+    else if(inputField.attr('type') == 'tel'){
+      //currently do not do any thing with tel inputs because we got it from int tel plugin above
+    }
+    else {
+      var newValue = !form_items[fieldName] ? [fieldValue] :  (form_items[fieldName].value.push(fieldValue), form_items[fieldName].value);
+      form_items[fieldName] = getJSONFormItem(inputField,newValue);
     }
 
     // Check if it's a file input with the specified id
@@ -193,10 +209,10 @@ function submitShadow() {
       var hasMultiple = inputField.prop('multiple');
       var setAsThumbnail = inputField.attr('thumbnail');
       if (!hasMultiple) {
-        form_items['single_file']= true;
+        form_items['single_file']= getJSONFormItem(inputField,true);
       }
       if(String(setAsThumbnail).toLowerCase() === 'false'){
-        form_items['set_as_thumbnail']= false;
+        form_items['set_as_thumbnail']= getJSONFormItem(inputField,false);
       }
     }
 
@@ -207,8 +223,16 @@ function submitShadow() {
     $('.shadow-submit').removeClass('shadow-submitted'); // Remove shadow-submitted class
     return;
   }
-  
   var formData = JSON.stringify(form_items);
   $(document).trigger('shadow_submit');
   action(formData);
+}
+
+function getJSONFormItem(inputField,value){
+  return {
+    "type" : inputField.prop('type'),
+    "required": inputField.prop('required'),
+    "length": inputField.data('length'),
+    "value" : value
+  };
 }

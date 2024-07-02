@@ -31,16 +31,6 @@
     
 }*/
 
-
-  if (class_exists('Tideways\Profiler')) {
-    \Tideways\Profiler::start();
-  }
-  if (class_exists('Tideways\Profiler')) {
-    \Tideways\Profiler::setTransactionName(
-      'Prova::prova'
-    );
-  }
-
 // The DataContainer and Environment class are required by default. Other classes are ran by the autoloader.
   require_once('modules/environment/classes/Common/DataContainer.class.php');
   require_once('modules/environment/classes/Common/Environment.class.php');
@@ -101,14 +91,6 @@
   // Run the complete hook.
   $env->hook('complete');
 
-  if (isset($_GET['print_stats'])) {
-    print \Quanta\Qtags\Stats::printStats($env);
-
-  }
-// Alla fine del tuo script, prima che l'esecuzione termini
-if (class_exists('Tideways\Profiler')) {
-    \Tideways\Profiler::stop();
-}
   // Complete the boot process.
   exit();
 
