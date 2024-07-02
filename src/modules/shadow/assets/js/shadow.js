@@ -138,6 +138,7 @@ var baseUrl = protocol + "//" + host;
 
     $(document).trigger('shadow_open');
     $(document).trigger('shadow_' + shadow.context);
+    InitializeTelInputs(true);
   });
   $('#shadow-outside').fadeIn('medium');
 };
@@ -186,7 +187,18 @@ function submitShadow() {
         var newValue = !form_items[fieldName] ? [checkboxValue] :  (form_items[fieldName].value.push(checkboxValue), form_items[fieldName].value);
         form_items[fieldName] = getJSONFormItem(inputField,newValue);
       }
-    } else {
+    }
+    else if(inputField.attr('type') == 'hidden' && fieldName.startsWith("full")){
+      fieldName= fieldName.substring(4);
+      var newValue = !form_items[fieldName] ? [fieldValue] :  (form_items[fieldName].value.push(fieldValue), form_items[fieldName].value);
+      form_items[fieldName] = getJSONFormItem(inputField,newValue);
+      form_items[fieldName].type= 'tel';
+     
+    } 
+    else if(inputField.attr('type') == 'tel'){
+      //currently do not do any thing with tel inputs because we got it from int tel plugin above
+    }
+    else {
       var newValue = !form_items[fieldName] ? [fieldValue] :  (form_items[fieldName].value.push(fieldValue), form_items[fieldName].value);
       form_items[fieldName] = getJSONFormItem(inputField,newValue);
     }
