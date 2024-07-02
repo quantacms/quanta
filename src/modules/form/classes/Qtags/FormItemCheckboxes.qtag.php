@@ -36,9 +36,15 @@ class FormItemCheckboxes extends FormItem {
       $option_attributes = array();
       $option = new FormItemCheckbox($this->env, array('name' => $this->name, 'value'=>$option_key));
 
-      $option->setDefaultValue($option_key);     
-      $selected_values = explode(\Quanta\Common\Environment::GLOBAL_SEPARATOR, $this->getAttribute('selected-values'));
-    
+      $option->setDefaultValue($option_key);
+
+      if (!empty($this->getAttribute('selected-values'))) {
+        $selected_values = explode(\Quanta\Common\Environment::GLOBAL_SEPARATOR, $this->getAttribute('selected-values'));
+      }
+      else {
+        $selected_values = array();
+      }
+
       if ($this->getCurrentValue() == $option_key) {
         $option->html_params['selected'] = 'selected';
       }
