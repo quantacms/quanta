@@ -147,22 +147,63 @@ $(document).ready(function() {
       submitFormViaAjax(event, this);
   });
 
-// Handle change event for radio buttons
-$('.stars-rating input').on('change', function() {
+  // Handle change event for radio buttons
+  $('.stars-rating input').on('change', function() {
     fillStars($(this));
-});
+  });
     // Handle click event for labels
     $('.stars-rating label').on('click', function() {
       var $input = $(this).prev('input');
       $input.prop('checked', true).trigger('change');
   });
 
-// Initialize star ratings based on checked input
-$('.stars-rating input:checked').each(function() {
+  // Initialize star ratings based on checked input
+  $('.stars-rating input:checked').each(function() {
     fillStars($(this));
-});
+  });
+
+  InitializeTelInputs();
 
  });
+
+ function InitializeTelInputs(appendCss= false){
+  if(appendCss){
+    // Dynamically add the intl-tel-input CSS file
+    $('<link>', {
+      rel: 'stylesheet',
+      type: 'text/css',
+      href: 'https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.13/css/intlTelInput.css'
+    }).appendTo('head');
+  }
+
+  // Initialize intl-tel-input for all input[type="tel"]
+  $('input[type="tel"]').each(function() {
+    const input = $(this);
+    const iti = window.intlTelInput(this, {
+      initialCountry: "it",
+      utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.13/js/utils.js"
+    });
+
+    // Create a hidden input to store the full phone number
+    const hiddenInput = $('<input>', {
+      type: 'hidden',
+      name: 'full' + input.attr('name'),
+      id: 'full' + input.attr('id'),
+      required : input.attr('required')
+    });
+    input.after(hiddenInput);
+
+    // Update the hidden input on input change and country change
+    const updateHiddenInput = function() {
+      hiddenInput.val(iti.getNumber());
+    };
+    input.on('input', updateHiddenInput);
+    input.on('countrychange', updateHiddenInput);
+
+    // Set the initial value of the hidden input
+    updateHiddenInput();
+  });
+ }
 
  // Function to handle star filling
  function fillStars($element) {

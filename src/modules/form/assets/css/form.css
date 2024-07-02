@@ -162,4 +162,8 @@ display: none;
 .stars-rating input:checked ~ label,
 .stars-rating input:checked ~ label ~ label {
     color: #f5b301;
+  }
+
+.iti--allow-dropdown{
+  width: 100%;
 }

@@ -8,6 +8,14 @@ namespace Quanta\Qtags;
 class FormItemTel extends FormItemString {
   public $type = 'tel';
 
+  public function render(){
+    $page = $this->env->getData('page');
+    $page->addJS('https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.13/js/intlTelInput.min.js', 'file');
+    $page->addJS('https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.13/js/utils.js', 'file');
+    $page->addCSS('https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.13/css/intlTelInput.css');
+
+    return parent::render();
+  }
 
   /**
    * @return string
