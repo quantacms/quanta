@@ -37,7 +37,7 @@ class Form extends HtmlTag {
 
     }
     if (!empty($this->getAttribute('ajax'))) {
-      $this->html_params['class'] .= ' ' . 'ajxa-form';
+      $this->html_params['class'] .= ' ' . 'ajax-form';
     }
     $this->form_state->setType($this->getAttribute('type'));
     $this->html_params['action'] = !empty($this->getAttribute('action')) ? $this->getAttribute('action') : '?';
