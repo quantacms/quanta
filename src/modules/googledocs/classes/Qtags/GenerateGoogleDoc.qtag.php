@@ -2,10 +2,9 @@
 namespace Quanta\Qtags;
 
 /**
- * Class FormItemFile
- * This class represents a Form Item of type File upload
+ * 
  */
-class GenerateGoogleDoc extends Qtag {
+class GenerateGoogleDoc extends Link {
 
   /**
    * Renders.
@@ -13,8 +12,10 @@ class GenerateGoogleDoc extends Qtag {
    */
   function render() {
     $generate_path = \Quanta\Common\GoogleDocs::GENERATE_GOOGLE_DOC_PATH;
-    //TODO: I will fix this
-    return "[LINK|title=Generate Doc:{$generate_path}]";
+    $text = $this->getTarget();
+    $query = $this->getAttribute('query');
+    $this->setTarget("{$generate_path}?text={$text}&{$query}");
+    return parent::render();
 }
 
 }
