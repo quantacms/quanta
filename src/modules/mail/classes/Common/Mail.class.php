@@ -42,7 +42,17 @@ class Mail extends Node {
     $mail->Password = $this->getData('password');
     $mail->Port = $this->getData('port');
     $mail->setFrom($this->getData('from'), $this->getData('from_name'));
-    $mail->addAddress($this->getData('to'), $this->getData('to_name'));
+
+    if(is_array($this->getData('to'))){
+      foreach ($this->getData('to') as $recipient) {
+        if(!empty($recipient)){
+          $mail->addAddress($recipient);
+        }
+      }
+    }
+    else{
+      $mail->addAddress($this->getData('to'), $this->getData('to_name'));
+    }
     $mail->isHTML(true);
     // $mail->Subject = $this->getTitle();
     $mail->Subject = $this->getData('subject');
