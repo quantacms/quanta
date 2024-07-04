@@ -49,14 +49,14 @@ class GoogleDocs extends \Quanta\Common\GoogleClient{
      * @param Environment $env
      */
     public function createDocument(Environment $env, $content){
-        // Create a new document
+            // Create a new document
         $document = new Google_Service_Docs_Document(array(
             'title' => 'Complex Formatted Document-2'
         ));
         $doc = $this->service->documents->create($document);
         $documentId = $doc->getDocumentId();
         $this->updateDocument($documentId,$content);
-        return $doc; 
+        return $doc;    
     }
 
      /**
@@ -73,11 +73,10 @@ class GoogleDocs extends \Quanta\Common\GoogleClient{
      
         // Ensure UTF-8 encoding
         header('Content-Type: text/html; charset=utf-8');
-
+       
         // Decode HTML content
         $content = htmlspecialchars_decode($content, ENT_QUOTES);
         $content = str_replace('<\/', '</', $content);
-      
       
         // Parse HTML content and convert to Google Docs requests
         $dom = new DOMDocument();
@@ -95,15 +94,12 @@ class GoogleDocs extends \Quanta\Common\GoogleClient{
     }
     
     private function addTextNode($text,$current_index){
-         // Convert Unicode escape sequences to UTF-8 characters
-        $text = preg_replace_callback('/\\\\u([0-9a-fA-F]{4})/', function($match) {
-            return mb_convert_encoding(pack('H*', $match[1]), 'UTF-8', 'UTF-16BE');
-        }, $text);
+        $text = $this->convertToUnicode($text);
 
         // Encode text properly
         $text = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
-        // Encode text properly
-        $text = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+       
+       
         $request = new Google_Service_Docs_Request([
             'insertText' => [
                 'location' => ['index' => $current_index],
@@ -116,6 +112,21 @@ class GoogleDocs extends \Quanta\Common\GoogleClient{
             'current_index' => $current_index
         ];
     }
+
+    private function convertToUnicode($text) {
+        $unicodeString = '';
+        for ($i = 0; $i < mb_strlen($text, 'UTF-8'); $i++) {
+            $char = mb_substr($text, $i, 1, 'UTF-8');
+            $code = mb_ord($char, 'UTF-8');
+            if ($code > 127) {
+                $unicodeString .= sprintf('\\u%04x', $code);
+            } else {
+                $unicodeString .= $char;
+            }
+        }
+        return $unicodeString;
+    }
+
     
 
     private function parseHtmlNode($node, &$requests, &$current_index) {
@@ -193,18 +204,16 @@ class GoogleDocs extends \Quanta\Common\GoogleClient{
         $style = $paragraph->getParagraphStyle()->getNamedStyleType();
 
         switch ($style) {
-            case 'TITLE':
+            case 'HEADING_1':
                 $html .= '<h1>';
                 break;
-            case 'HEADING_1':
+            case 'HEADING_2':
                 $html .= '<h2>';
                 break;
-            case 'HEADING_2':
+            case 'HEADING_3':
                 $html .= '<h3>';
                 break;
             case 'NORMAL_TEXT':
-                $html .= '<p>';
-                break;
             default:
                 $html .= '<p>';
                 break;
