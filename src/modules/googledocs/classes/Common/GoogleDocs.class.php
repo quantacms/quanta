@@ -49,14 +49,14 @@ class GoogleDocs extends \Quanta\Common\GoogleClient{
      * @param Environment $env
      */
     public function createDocument(Environment $env, $content){
-            // Create a new document
+        // Create a new document
         $document = new Google_Service_Docs_Document(array(
             'title' => 'Complex Formatted Document-2'
         ));
         $doc = $this->service->documents->create($document);
         $documentId = $doc->getDocumentId();
         $this->updateDocument($documentId,$content);
-        return $doc;    
+        return $doc;   
     }
 
      /**
@@ -80,7 +80,7 @@ class GoogleDocs extends \Quanta\Common\GoogleClient{
       
         // Parse HTML content and convert to Google Docs requests
         $dom = new DOMDocument();
-        @$dom->loadHTML($content);
+        @$dom->loadHTML('<?xml encoding="utf-8">' . $content);
         $body = $dom->getElementsByTagName('body')->item(0);
         $counter =0;
 
@@ -94,8 +94,6 @@ class GoogleDocs extends \Quanta\Common\GoogleClient{
     }
     
     private function addTextNode($text,$current_index){
-        $text = $this->convertToUnicode($text);
-
         // Encode text properly
         $text = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
        
@@ -106,25 +104,11 @@ class GoogleDocs extends \Quanta\Common\GoogleClient{
                 'text' => $text . "\n"
             ]
         ]);
-        $current_index += strlen($text . "\n");
+        $current_index += mb_strlen($text . "\n", 'UTF-8');
         return [
             'request' => $request,
             'current_index' => $current_index
         ];
-    }
-
-    private function convertToUnicode($text) {
-        $unicodeString = '';
-        for ($i = 0; $i < mb_strlen($text, 'UTF-8'); $i++) {
-            $char = mb_substr($text, $i, 1, 'UTF-8');
-            $code = mb_ord($char, 'UTF-8');
-            if ($code > 127) {
-                $unicodeString .= sprintf('\\u%04x', $code);
-            } else {
-                $unicodeString .= $char;
-            }
-        }
-        return $unicodeString;
     }
 
     
@@ -197,59 +181,53 @@ class GoogleDocs extends \Quanta\Common\GoogleClient{
     }
 
     private function elementToHtml($element){
-    $html = '';
+        $html = '';
 
-    if ($element->getParagraph()) {
-        $paragraph = $element->getParagraph();
-        $style = $paragraph->getParagraphStyle()->getNamedStyleType();
+        if ($element->getParagraph()) {
+            $paragraph = $element->getParagraph();
+            $style = $paragraph->getParagraphStyle()->getNamedStyleType();
 
-        switch ($style) {
-            case 'HEADING_1':
-                $html .= '<h1>';
-                break;
-            case 'HEADING_2':
-                $html .= '<h2>';
-                break;
-            case 'HEADING_3':
-                $html .= '<h3>';
-                break;
-            case 'NORMAL_TEXT':
-            default:
-                $html .= '<p>';
-                break;
-        }
-
-        foreach ($paragraph->getElements() as $element) {
-            if ($element->getTextRun()) {
-                $html .= htmlspecialchars($element->getTextRun()->getContent());
+            switch ($style) {
+                case 'HEADING_1':
+                    $html .= '<h1>';
+                    break;
+                case 'HEADING_2':
+                    $html .= '<h2>';
+                    break;
+                case 'HEADING_3':
+                    $html .= '<h3>';
+                    break;
+                case 'NORMAL_TEXT':
+                default:
+                    $html .= '<p>';
+                    break;
             }
-        }
 
-        switch ($style) {
-            case 'TITLE':
-                $html .= '</h1>';
-                break;
-            case 'HEADING_1':
-                $html .= '</h2>';
-                break;
-            case 'HEADING_2':
-                $html .= '</h3>';
-                break;
-            case 'NORMAL_TEXT':
-                $html .= '</p>';
-                break;
-            default:
-                $html .= '</p>';
-                break;
-        }
+            foreach ($paragraph->getElements() as $element) {
+                if ($element->getTextRun()) {
+                    $html .= htmlspecialchars($element->getTextRun()->getContent());
+                }
+            }
+
+            switch ($style) {
+                case 'HEADING_1':
+                    $html .= '</h1>';
+                    break;
+                case 'HEADING_2':
+                    $html .= '</h2>';
+                    break;
+                case 'HEADING_3':
+                    $html .= '</h3>';
+                    break;
+                case 'NORMAL_TEXT':
+                    $html .= '</p>';
+                    break;
+                default:
+                    $html .= '</p>';
+                    break;
+            }
         }
 
         return $html;
     }
-    
-    
-    
-    
-
-
 }
