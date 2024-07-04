@@ -37,11 +37,15 @@ class GoogleClient{
      * Check if the google access token stored in the session
      */
     public function checkSession(){
+        return isset($_SESSION['google_access_token']) && $_SESSION['google_access_token'] !== null;
+    }
 
-        if (!isset($_SESSION['google_access_token']) || $_SESSION['google_access_token'] === null) {
-            $authUrl = $this->client->createAuthUrl();
-            \Quanta\Common\Api::redirect(filter_var($authUrl, FILTER_SANITIZE_URL));
-        }
+      /**
+     * Create google auth url
+     */
+    public function createAuthUrl(){
+        $authUrl = $this->client->createAuthUrl();
+        \Quanta\Common\Api::redirect(filter_var($authUrl, FILTER_SANITIZE_URL));
     }
 
 

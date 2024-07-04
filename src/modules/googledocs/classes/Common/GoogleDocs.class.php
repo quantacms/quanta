@@ -10,6 +10,10 @@ use Google_Service_Drive;
 use Google_Service_Docs_Document;
 use Google_Service_Docs_Request;
 use Google_Service_Docs_BatchUpdateDocumentRequest;
+use Google_Service_Docs_InsertTextRequest;
+use Google_Service_Docs_UpdateParagraphStyleRequest;
+use Google_Service_Docs_ParagraphStyle;
+use DOMDocument;
 
 /**
  * Class GoogleDocs
@@ -17,6 +21,7 @@ use Google_Service_Docs_BatchUpdateDocumentRequest;
 class GoogleDocs extends \Quanta\Common\GoogleClient{
 
     const GENERATE_GOOGLE_DOC_PATH = "generate-google-doc";
+    const READ_GOOGLE_DOC_PATH = "read-google-doc";
     const GOOGLE_AUTH_CALLBACK_PATH = "google-auth-callback";
 
     //style types
@@ -44,23 +49,14 @@ class GoogleDocs extends \Quanta\Common\GoogleClient{
      * @param Environment $env
      */
     public function createDocument(Environment $env, $content){
-        // Create a new document
+            // Create a new document
         $document = new Google_Service_Docs_Document(array(
             'title' => 'Complex Formatted Document-2'
         ));
-
         $doc = $this->service->documents->create($document);
         $documentId = $doc->getDocumentId();
-        
-        $user = \Quanta\Common\UserFactory::current($env);
-        //build a node in the DB with google-doc id
-        \Quanta\Common\NodeFactory::buildNode($env, $doc->getDocumentId(), 'google-docs',array(
-            'title' => $doc->getTitle(),
-            'doc_id' => $doc->getDocumentId(),
-            'author' => $user->getName()
-        ));
-        $this->updateDocument($env,$content,$doc);
-        return $doc;
+        $this->updateDocument($documentId,$content);
+        return $doc;    
     }
 
      /**
@@ -69,61 +65,191 @@ class GoogleDocs extends \Quanta\Common\GoogleClient{
      * @param Array $content
      * @param Object $document
      */
-    public function updateDocument(Environment $env, $content, $document) {
-        $content = $this->test_text; //TODO: remove this after end testing
-        // Initialize the start index
+   
+     public function updateDocument($documentId, $content) {
         $current_index = 1;
-
         $requests = [];
-        foreach ($content as $type => $text_value) {
-            $requests[] = new Google_Service_Docs_Request([
-                'insertText' => [
-                    'location' => ['index' => $current_index],
-                    'text' => $text_value . "\n"
-                ]
-            ]);
+       
+     
+        // Ensure UTF-8 encoding
+        header('Content-Type: text/html; charset=utf-8');
+       
+        // Decode HTML content
+        $content = htmlspecialchars_decode($content, ENT_QUOTES);
+        $content = str_replace('<\/', '</', $content);
+      
+        // Parse HTML content and convert to Google Docs requests
+        $dom = new DOMDocument();
+        @$dom->loadHTML($content);
+        $body = $dom->getElementsByTagName('body')->item(0);
+        $counter =0;
 
-            $start_index = $current_index;
-            $current_index += strlen($text_value . "\n");
-
-
-            switch ($type) {
-                case self::GOOGLE_DOC_TITLE_STYLE:
-                case self::GOOGLE_DOC_HEADING_1_STYLE:
-                    $requests[] = new Google_Service_Docs_Request([
-                        'updateParagraphStyle' => [
-                            'range' => [
-                                'startIndex' => $start_index,
-                                'endIndex' => $current_index
-                            ],
-                            'paragraphStyle' => [
-                                'namedStyleType' => $type
-                            ],
-                            'fields' => 'namedStyleType'
-                        ]
-                    ]);
-                    break;
-
-                case self::GOOGLE_DOC_BULLET_DISC_CIRCLE_SQUARE_STYLE:
-                    $requests[] = new Google_Service_Docs_Request([
-                        'createParagraphBullets' => [
-                            'range' => [
-                                'startIndex' => $start_index,
-                                'endIndex' => $current_index
-                            ],
-                            'bulletPreset' => $type
-                        ]
-                    ]);
-                    break;
-            }
-        }
+        $this->parseHtmlNode($body, $requests, $current_index);
 
         // Execute the batch update
         $batchUpdateRequest = new Google_Service_Docs_BatchUpdateDocumentRequest([
             'requests' => $requests
         ]);
-        $this->service->documents->batchUpdate($document->getDocumentId(), $batchUpdateRequest);
+        $this->service->documents->batchUpdate($documentId, $batchUpdateRequest);
     }
+    
+    private function addTextNode($text,$current_index){
+        $text = $this->convertToUnicode($text);
+
+        // Encode text properly
+        $text = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+       
+       
+        $request = new Google_Service_Docs_Request([
+            'insertText' => [
+                'location' => ['index' => $current_index],
+                'text' => $text . "\n"
+            ]
+        ]);
+        $current_index += strlen($text . "\n");
+        return [
+            'request' => $request,
+            'current_index' => $current_index
+        ];
+    }
+
+    private function convertToUnicode($text) {
+        $unicodeString = '';
+        for ($i = 0; $i < mb_strlen($text, 'UTF-8'); $i++) {
+            $char = mb_substr($text, $i, 1, 'UTF-8');
+            $code = mb_ord($char, 'UTF-8');
+            if ($code > 127) {
+                $unicodeString .= sprintf('\\u%04x', $code);
+            } else {
+                $unicodeString .= $char;
+            }
+        }
+        return $unicodeString;
+    }
+
+    
+
+    private function parseHtmlNode($node, &$requests, &$current_index) {
+        foreach ($node->childNodes as $child) {
+            if ($child->nodeType == XML_TEXT_NODE) {
+                $data = $this->addTextNode($child->textContent,$current_index);
+                $requests[] = $data['request'];
+                $current_index = $data['current_index'];
+
+            } elseif ($child->nodeType == XML_ELEMENT_NODE) {
+               
+                $start_index = $current_index;
+                switch ($child->nodeName) {
+                    case 'h1':
+                    case 'h2':
+                    case 'h3':
+                        $heading_level = substr($child->nodeName, 1); // Extract the number from the tag name (e.g., 'h1' -> '1')
+                        $data = $this->addTextNode($child->textContent,$current_index);
+                        $requests[] = $data['request'];
+                        $current_index = $data['current_index'];
+                        $requests[] = new Google_Service_Docs_Request([
+                            'updateParagraphStyle' => [
+                                'range' => [
+                                    'startIndex' => $start_index,
+                                    'endIndex' => $current_index
+                                ],
+                                'paragraphStyle' => [
+                                    'namedStyleType' => 'HEADING_' . $heading_level
+                                ],
+                                'fields' => 'namedStyleType'
+                            ]
+                        ]);
+                        break;
+                    case 'p':
+                    default:
+                        $data = $this->addTextNode($child->textContent,$current_index);
+                        $requests[] = $data['request'];
+                        $current_index = $data['current_index'];
+                        $requests[] = new Google_Service_Docs_Request([
+                            'updateParagraphStyle' => [
+                                'range' => [
+                                    'startIndex' => $start_index,
+                                    'endIndex' => $current_index
+                                ],
+                                'paragraphStyle' => [
+                                    'namedStyleType' => 'NORMAL_TEXT'
+                                ],
+                                'fields' => 'namedStyleType'
+                            ]
+                        ]);
+                        break;
+                }
+            }
+          
+        }
+    }
+
+    public function readDocument($documentId){
+        $doc = $this->service->documents->get($documentId); 
+        $body = $doc->getBody()->getContent();
+        $content = '';
+
+        foreach ($body as $element) {
+            $content .= $this->elementToHtml($element);
+        }
+
+        return $content;
+    }
+
+    private function elementToHtml($element){
+    $html = '';
+
+    if ($element->getParagraph()) {
+        $paragraph = $element->getParagraph();
+        $style = $paragraph->getParagraphStyle()->getNamedStyleType();
+
+        switch ($style) {
+            case 'HEADING_1':
+                $html .= '<h1>';
+                break;
+            case 'HEADING_2':
+                $html .= '<h2>';
+                break;
+            case 'HEADING_3':
+                $html .= '<h3>';
+                break;
+            case 'NORMAL_TEXT':
+            default:
+                $html .= '<p>';
+                break;
+        }
+
+        foreach ($paragraph->getElements() as $element) {
+            if ($element->getTextRun()) {
+                $html .= htmlspecialchars($element->getTextRun()->getContent());
+            }
+        }
+
+        switch ($style) {
+            case 'TITLE':
+                $html .= '</h1>';
+                break;
+            case 'HEADING_1':
+                $html .= '</h2>';
+                break;
+            case 'HEADING_2':
+                $html .= '</h3>';
+                break;
+            case 'NORMAL_TEXT':
+                $html .= '</p>';
+                break;
+            default:
+                $html .= '</p>';
+                break;
+        }
+        }
+
+        return $html;
+    }
+    
+    
+    
+    
 
 
 }
