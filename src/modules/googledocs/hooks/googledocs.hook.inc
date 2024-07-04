@@ -25,6 +25,8 @@ function googledocs_boot($env, $vars) {
       }
       else if($env->request_path == \Quanta\Common\GoogleDocs::GOOGLE_AUTH_CALLBACK_PATH){
         $google_doc_object->setAccessToken($_GET['code']);
+        // print_r('aa');
+        // die();
         \Quanta\Common\Api::redirect('/');
       }
       else if($env->request_path == \Quanta\Common\GoogleDocs::READ_GOOGLE_DOC_PATH){
