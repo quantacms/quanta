@@ -14,7 +14,8 @@ class GenerateGoogleDoc extends Link {
     $generate_path = \Quanta\Common\GoogleDocs::GENERATE_GOOGLE_DOC_PATH;
     $text = $this->getTarget();
     $query = $this->getAttribute('query');
-    $this->setTarget("{$generate_path}?text={$text}&{$query}");
+    $file_title = $this->getAttribute('file-title');
+    $this->setTarget("{$generate_path}?text={$text}&{$query}&file-title={$file_title}");
     return parent::render();
 }
 
