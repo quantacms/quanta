@@ -143,7 +143,7 @@ $(document).bind('shadow_open', function() {
 $(document).ready(function() {
 
   // Attach the submit handler to the form
-  $('.ajxa-form').on('submit', function(event) {
+  $('.ajax-form').on('submit', function(event) {
       submitFormViaAjax(event, this);
   });
 
