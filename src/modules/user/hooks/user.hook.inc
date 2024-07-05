@@ -116,7 +116,8 @@ function user_body_classes(Environment $env, array $vars) {
  *   An array of variables.
  */
 function user_action_login(Environment $env, array $vars) {
-  $username = array_pop($vars['data']['username']);
+  $username = array_pop($vars['data']['username']->value);
+  
   // We allow also using email for logging in.
   if (\Quanta\Common\Api::valid_email($username)) {
     $username = UserFactory::getUserFromField($env, 'email', $username);
@@ -125,7 +126,7 @@ function user_action_login(Environment $env, array $vars) {
   // Initialize an user object.
   $tmp_user = new User($env, $username);
   // Attempt to log in the user.
-  $login = $tmp_user->logIn(array_pop($vars['data']['password']));
+  $login = $tmp_user->logIn(array_pop($vars['data']['password']->value));
   exit($login);
 }
 
