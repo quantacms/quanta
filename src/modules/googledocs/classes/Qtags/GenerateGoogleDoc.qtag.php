@@ -15,7 +15,8 @@ class GenerateGoogleDoc extends Link {
     $text = $this->getTarget();
     $query = $this->getAttribute('query');
     $file_title = $this->getAttribute('file-title');
-    $this->setTarget("{$generate_path}?text={$text}&{$query}&file-title={$file_title}");
+    $path = $this->env->request_path;
+    $this->setTarget("{$generate_path}?{$query}&path={$path}&file-title={$file_title}&text={$text}");
     return parent::render();
 }
 
