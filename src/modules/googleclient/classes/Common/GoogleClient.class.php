@@ -43,7 +43,12 @@ class GoogleClient{
       /**
      * Create google auth url
      */
-    public function createAuthUrl(){
+    public function createAuthUrl($env){
+        $redirect= $env->request_uri . '?';
+        foreach ($env->query_params as $k => $v) {
+          $redirect .= $k . '=' . $v . '&';
+        }
+        $_SESSION['redirect_afte_auth'] = $redirect;
         $authUrl = $this->client->createAuthUrl();
         \Quanta\Common\Api::redirect(filter_var($authUrl, FILTER_SANITIZE_URL));
     }
