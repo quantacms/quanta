@@ -82,7 +82,9 @@ function access_qtag_preload(Environment $env, array $vars) {
   $user = UserFactory::current($env);
   /** @var Qtag $qtag */
   $qtag = &$vars['qtag'];
-
+  if(!empty($qtag->getAttribute('node'))){
+    $node = NodeFactory::load($env,$qtag->getAttribute('node'));
+  }
   // The user has selected to show the tag only if a certain criteria is matched.
   if (!empty($qtag->getAttribute('filter'))) {
     $filter_match = _access_filter($env, $qtag->getAttribute('filter'), $node, $user);
@@ -123,7 +125,7 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
   $i = 0;
   // Check all filters.
   foreach ($filter as $filter_item) {
-   
+
     // Count the occurrences of '@'
     $at_count = substr_count($filter_item, '@');
     // If there's more than one '@', split at the first occurrence
@@ -150,7 +152,7 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
     $filter_match = FALSE;
     $break = FALSE;
     $one_match = FALSE;
-
+   
     switch ($filter_type) {
       // Filter by HTTP referer.
       case 'referer':
@@ -225,7 +227,7 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
         }
         break;
     }
-
+   
     if (!empty($filter_check)) {  
       // Check if the filtered item corresponds to the user input.
       foreach ($filter_check as $check) {
