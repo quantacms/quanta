@@ -48,10 +48,10 @@ class GoogleDocs extends \Quanta\Common\GoogleClient{
      * Create new document.
      * @param Environment $env
      */
-    public function createDocument(Environment $env, $content){
+    public function createDocument(Environment $env, $content, $file_title = null){
         // Create a new document
         $document = new Google_Service_Docs_Document(array(
-            'title' => 'Complex Formatted Document-2'
+            'title' => $file_title ? $file_title : 'Generated Document'
         ));
         $doc = $this->service->documents->create($document);
         $documentId = $doc->getDocumentId();
