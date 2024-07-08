@@ -82,8 +82,8 @@ function access_qtag_preload(Environment $env, array $vars) {
   $user = UserFactory::current($env);
   /** @var Qtag $qtag */
   $qtag = &$vars['qtag'];
-  if(!empty($qtag->getAttribute('node'))){
-    $node = NodeFactory::load($env,$qtag->getAttribute('node'));
+  if(!empty($qtag->getAttribute('filter_node'))){
+    $node = NodeFactory::load($env,$qtag->getAttribute('filter_node'));
   }
   // The user has selected to show the tag only if a certain criteria is matched.
   if (!empty($qtag->getAttribute('filter'))) {
