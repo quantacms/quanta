@@ -323,7 +323,7 @@ abstract class FormItem extends HtmlTag {
    * @param boolean $required
    */
   public function setRequired($required) {
-    $this->required = !empty($required) && ($required != self::INPUT_EMPTY_VALUE);
+    $this->required = !empty($required) &&  $this->value != self::INPUT_EMPTY_VALUE;
   }
 
   /**
