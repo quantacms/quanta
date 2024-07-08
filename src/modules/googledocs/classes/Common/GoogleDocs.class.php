@@ -69,7 +69,7 @@ class GoogleDocs extends \Quanta\Common\GoogleClient{
      public function updateDocument($documentId, $content) {
         $current_index = 1;
         $requests = [];
-       
+        
      
         // Ensure UTF-8 encoding
         header('Content-Type: text/html; charset=utf-8');
@@ -94,9 +94,11 @@ class GoogleDocs extends \Quanta\Common\GoogleClient{
     }
     
     private function addTextNode($text,$current_index){
-        // Encode text properly
-        $text = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
-       
+         // Decode HTML entities
+        $text = html_entity_decode($text, ENT_QUOTES, 'UTF-8');
+
+         // Ensure the text is UTF-8 encoded
+        $text = mb_convert_encoding($text, 'UTF-8');
        
         $request = new Google_Service_Docs_Request([
             'insertText' => [
