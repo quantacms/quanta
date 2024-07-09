@@ -192,7 +192,7 @@ $(document).ready(function() {
       required : input.attr('required')
     });
     input.after(hiddenInput);
-
+  
     // Update the hidden input on input change and country change
     const updateHiddenInput = function() {
       hiddenInput.val(iti.getNumber());
@@ -202,6 +202,11 @@ $(document).ready(function() {
 
     // Set the initial value of the hidden input
     updateHiddenInput();
+
+    if(input.val() && !iti.getNumber()){
+      // Set the value of the hidden input
+      hiddenInput.val(input.val()); 
+    }
   });
  }
 
