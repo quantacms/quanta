@@ -244,6 +244,7 @@ function integrity_doctor_fix_businesses_desc(Environment $env, array $vars){
     }
     if($value_changed){
       $desc_node->save();
+      $node->setLanguage(\Quanta\Common\Localization::LANGUAGE_NEUTRAL);
       $node->save();
     }
 
