@@ -213,4 +213,41 @@ function integrity_check_sub_nodes($env,$node,$subnode,$subnode_type,$translated
    
   }
 }
+
+function integrity_doctor_fix_businesses_desc(Environment $env, array $vars){
+  /** @var Doctor $doctor */
+  $doctor = $vars['doctor'];
+  $doctor->op(t('Running fix businesses hooks...'));
+  //get businesses nodes
+  $dirlist = new \Quanta\Common\DirList($env,  'businesses', 'list', [], 'integrity');
+  foreach ($dirlist->getItems() as $node) {
+    $value_changed = false;
+    //get description node
+    $desc_node =  \Quanta\Common\NodeFactory::load($env, $node->getName() . '-description');
+    //check values
+    if(!empty($desc_node->getAttributeJSON('ribbon'))){
+      $node->setAttributeJSON('ribbon',$desc_node->getAttributeJSON('ribbon'));
+      $desc_node->removeAttributeJSON('ribbon');
+      $value_changed = true;
+    }
+
+    if(!empty($desc_node->getAttributeJSON('accessible'))){
+      $node->setAttributeJSON('accessible',$desc_node->getAttributeJSON('accessible'));
+      $desc_node->removeAttributeJSON('accessible');
+      $value_changed = true;
+    }
+
+    if(!empty($desc_node->getAttributeJSON('pet_friendly'))){
+      $node->setAttributeJSON('pet_friendly',$desc_node->getAttributeJSON('pet_friendly'));
+      $desc_node->removeAttributeJSON('pet_friendly');
+      $value_changed = true;
+    }
+    if($value_changed){
+      $desc_node->save();
+      $node->save();
+    }
+
+  }
+  $doctor->ok(t('Done!'));
+}
   
