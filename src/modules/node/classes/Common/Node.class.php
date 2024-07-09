@@ -226,6 +226,16 @@ class Node extends JSONDataContainer implements Cacheable {
     $this->json->{$attr_name} = $attr_value;
   }
 
+    /**
+   * Remove a node's JSON attribute.
+   *
+   * @param string $attr_name
+   *   The JSON attribute name.
+   */
+  public function removeAttributeJSON($attr_name) {
+    unset($this->json->{$attr_name});
+  }
+
   /**
    * Load node with its internal variables.
    */
