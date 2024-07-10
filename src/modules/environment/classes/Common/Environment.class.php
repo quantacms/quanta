@@ -89,14 +89,14 @@ class Environment extends DataContainer {
     $this->dir['vendor'] = $this->dir['quanta'] . '/vendor';
     $this->dir['modules_core'] = $this->dir['src'] . '/modules';
     $this->dir['modules_custom'] = $this->dir['docroot'] . '/_modules';
-    $this->dir['users'] = $this->dir['docroot'] . '/_users';
+    $this->dir['users'] = $this->dir['docroot'] . '/db/_users';
     $this->dir['tpl'] = $this->dir['docroot'] . '/_tpl';
 	
     // TODO: move to files module.
     $this->dir['tmp_files'] = $this->dir['tmp'] . '/files';
     $this->dir['log'] = $this->dir['tmp'] . '/log';
     // TODO: generation to be done in user and node modules.
-    $this->dir['statuses'] = $this->dir['docroot'] . '/_statuses';
+    $this->dir['statuses'] = $this->dir['docroot'] . '/db/_statuses';
 
     if (isset($_REQUEST['json'])) {
       $this->request_json = json_decode($_REQUEST['json']);

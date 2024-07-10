@@ -73,6 +73,8 @@ function integrity_doctor_integrity_check(Environment $env, array $vars) {
     }
     $doctor->ok(t('Done!'));
   }
+  //check .gitkeep file
+  integrity_doctor_setup($env,$vars);
 }
 
 function integrity_check_parent_nodes($env,$path,$subnodes_types){
@@ -214,3 +216,25 @@ function integrity_check_sub_nodes($env,$node,$subnode,$subnode_type,$translated
   }
 }
   
+/**
+ * Implements hook_doctor_setup().
+ * Main setup of users.
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param array $vars
+ *   Miscellaneous environment / page variables.
+ */
+function integrity_doctor_setup(Environment $env, array $vars) {
+  /** @var Doctor $doctor */
+  $doctor = $vars['doctor'];
+  // Get the application root directory from the environment
+  $app_root = $env->dir['docroot'];
+  // Path to the .gitkeep file in the directory
+  $gitkeep_file = $app_root . '/.gitkeep';
+  // Create an empty .gitkeep file if it doesn't already exist
+  if (!file_exists($gitkeep_file)) {
+    file_put_contents($gitkeep_file, '');
+  }
+  $doctor->ok(t('.gitkeep file was added successfully'));
+}

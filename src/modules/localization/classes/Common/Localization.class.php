@@ -10,8 +10,8 @@ class Localization {
   const LANGUAGE_NEUTRAL = "language-neutral";
   const LANGUAGE_NEGOTIATION_SESSION = "session";
   const LANGUAGE_NEGOTIATION_PREFIX = "path";
-  const DIR_LANGUAGES = "_languages";
-  const DIR_TRANSLATIONS = "_translations";
+  const DIR_LANGUAGES = "db/_languages";
+  const DIR_TRANSLATIONS = "db/_translations";
   public static $dir_languages = self::DIR_LANGUAGES;
   public static $dir_translations = self::DIR_TRANSLATIONS;
 

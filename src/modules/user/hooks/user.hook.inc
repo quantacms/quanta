@@ -11,8 +11,8 @@ namespace Quanta\Common;
  */
 function user_boot(Environment $env, array $vars) {
   // Create system directories for users and roles.
-  $env->sysdir('users', '_users');
-  $env->sysdir('roles', '_roles');
+  $env->sysdir('users', 'db/_users');
+  $env->sysdir('roles', 'db/_roles');
 }
 
 /**
