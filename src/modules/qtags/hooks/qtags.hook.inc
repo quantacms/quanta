@@ -9,6 +9,26 @@ namespace Quanta\Common;
  * @param array $vars
  *   An array of variables.
  */
+function qtags_qtag_preload(Environment $env, array $vars) {
+  if (isset($vars['qtag']->attributes['attributes'])) {
+    $attributes_node = \Quanta\Common\NodeFactory::load($env, $vars['qtag']->attributes['attributes']);
+    if ($attributes_node->exists) {
+      foreach ($attributes_node->json as $key => $value) {
+        $vars['qtag']->attributes[$key] = $value;
+      }
+
+    }
+  }
+}
+
+/**
+ * Implements hook_page_complete()
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param array $vars
+ *   An array of variables.
+ */
 function qtags_page_complete(Environment $env, array $vars) {
   $html = str_replace("\n", "", $vars['page']->html);
   $html = QtagFactory::transformCodeTags($env, $html);
