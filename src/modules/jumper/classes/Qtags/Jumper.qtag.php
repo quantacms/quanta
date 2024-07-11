@@ -16,11 +16,11 @@ class Jumper extends Qtag {
    */
   public function render() {
     // Which folder to use.
-
     $ajax = (isset($this->attributes['ajax'])) ? $this->attributes['ajax'] : '_self';
     $default = (isset($this->attributes['empty'])) ? $this->attributes['empty'] : '----------';
     $field = isset($this->attributes['field']) ? $this->attributes['field'] : NULL;
     $method = isset($this->attributes['method']) ? $this->attributes['method'] : 'redirect';
+    $default_path = null;
 
     if (!empty($this->attributes['default'])) {
       $default_path = $this->attributes['default'];
@@ -37,8 +37,13 @@ class Jumper extends Qtag {
 
     }
 
+    $list_filters = (isset($this->attributes['list_filter'])) ? $this->attributes['list_filter'] : '';
+    if($default_path){
+      $list_filters .= 'path@!'. $default_path;
+    }
+  
 
-    $dirlist = new DirList($this->env, $this->getTarget(), 'jumper', array('sort' => 'title','list_filter' => 'path@!' . $default_path) + $this->attributes, 'jumper');
+    $dirlist = new DirList($this->env, $this->getTarget(), 'jumper', array('sort' => 'title','list_filter' => $list_filters) + $this->attributes, 'jumper');
     $tpl = 'jumper';
     // Render the jumper.
     // TODO: use FORM Qtags.
@@ -48,5 +53,6 @@ class Jumper extends Qtag {
       $dirlist->render() . '</select>';
 
     return $jumper;
+ 
   }
 }
