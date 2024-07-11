@@ -374,7 +374,8 @@ class Node extends JSONDataContainer implements Cacheable {
     if (empty($this->path)) {
       $this->path = $this->getFather()->path . '/' . $this->getName();
     }
-    $vars = array('node' => &$this);
+
+    $vars = array('node' => &$this, 'action' => $this->env->getData('action'));
 
     // Run node save hooks.
     $this->env->hook('node_save', $vars);
