@@ -66,6 +66,9 @@ function integrity_doctor_integrity_check(Environment $env, array $vars) {
     'zones' => array(
       'description',
       ),
+    '_users' => array(
+      'notifications'
+    )
     );
     foreach ($subnodes_targets as $db_node_name => $db_subnodes_types) {
       integrity_check_parent_nodes($env,$db_node_name,$db_subnodes_types);
