@@ -247,6 +247,14 @@ function submitFormViaAjax(e,form) {
           $(formId+'_confirm_message').show(); 
           $(formId).find('.submit-error-message').hide();
           $(formId).hide();
+           // Dispatch a custom event on success
+           var event = new CustomEvent('formSubmissionSuccess', {
+            detail: {
+                formId: formId,
+                response: response
+            }
+          });
+          document.dispatchEvent(event);
       },
       error: function(xhr, status, error) {
           submitButton.removeClass('shadow-submitted');
