@@ -2,6 +2,31 @@
 namespace Quanta\Common;
 
 /**
+ * Implements hook_qtag_preload()
+ * Allows for setting up dynamically attributes to a qtag
+ * by loading their key values pair from the json of a given
+ * node.
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param array $vars
+ *   An array of variables.
+ */
+function qtags_qtag_preload(Environment $env, array $vars) {
+  if (isset($vars['qtag']->attributes['attributes'])) {
+    // Try loading the node that will contain the attributes to embed in the qtag.
+    $attributes_node = \Quanta\Common\NodeFactory::load($env, $vars['qtag']->attributes['attributes']);
+    if ($attributes_node->exists) {
+      // Assign the attributes to the Qtag.
+      foreach ($attributes_node->json as $key => $value) {
+        $vars['qtag']->attributes[$key] = $value;
+      }
+
+    }
+  }
+}
+
+/**
  * Implements hook_page_complete()
  *
  * @param Environment $env

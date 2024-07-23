@@ -428,7 +428,7 @@ class NodeFactory {
     else {
       $node_name = $form_data['edit-path'];
     }
-
+    $env->setData('action',$action);
     // Check the father of the node.
     $father = ($action == \Quanta\Common\Node::NODE_ACTION_ADD) ? $form_data['edit-father'] : NULL;
     $node = new Node($env, $node_name, $father, $language);
