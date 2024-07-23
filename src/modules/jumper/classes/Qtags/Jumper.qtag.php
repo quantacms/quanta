@@ -39,7 +39,7 @@ class Jumper extends Qtag {
 
     $list_filters = (isset($this->attributes['list_filter'])) ? $this->attributes['list_filter'] : '';
     if($default_path){
-      $list_filters .= 'path@!'. $default_path;
+      $list_filters .= ',path@!'. $default_path;
     }
   
 
