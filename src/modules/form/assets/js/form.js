@@ -237,6 +237,15 @@ function submitFormViaAjax(e,form) {
 
   // Add the 'shadow-submitted' class to the submit button
   submitButton.addClass('shadow-submitted');
+
+  // Dispatch a custom event before ajax request called
+  var event = new CustomEvent('formSubmission', {
+    detail: {
+        formId: formId
+    }
+  });
+  document.dispatchEvent(event);
+
   // Send AJAX request
   $.ajax({
       url: '/',
