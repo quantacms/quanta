@@ -24,55 +24,6 @@ function integrity_doctor_integrity_check(Environment $env, array $vars) {
     integrity_check_parent_nodes($env,$path,$subnodes_types);
     $doctor->ok(t('Done!'));
   }
-  else{
-    $subnodes_targets = array(
-      'hosts' => array(
-        'description',
-        'welcome',
-        'rooms',
-        'host-manual-about-media',
-        'host-manual-wifi-media',
-        'host-manual-checkin-media',
-        'host-manual-waste-media',
-        'host-manual-services-media',
-        'host-manual-rules-media',
-        'host-manual-contacts-media',
-        'host-manual-other-media',
-        'feedbacks'
-      ),
-      'experiences' => array(
-        'description',
-      ),
-      'service-types' => array(
-        'description',
-      ),
-      'services' => array(
-        'description',
-      ),
-    'businesses' => array(
-      'shifts',
-      'closures',
-      'bookings' => array(
-        'canceled',
-        'confirmed',
-        'expired',
-        'paid',
-        'refunded',
-        'unpaid',
-      ),
-      'description',
-   
-    ),
-    'zones' => array(
-      'description',
-      ),
-    );
-    foreach ($subnodes_targets as $db_node_name => $db_subnodes_types) {
-      integrity_check_parent_nodes($env,$db_node_name,$db_subnodes_types);
-      $doctor->ok('node: '.$db_node_name . ' done!');
-    }
-    $doctor->ok(t('Done!'));
-  }
   //check .gitkeep file
   integrity_doctor_setup($env,$vars);
 }
@@ -112,13 +63,13 @@ function integrity_check_parent_nodes($env,$path,$subnodes_types){
               $subnode = \Quanta\Common\NodeFactory::load($env, $subnode_name);
               integrity_check_sub_nodes($env,$node,$subnode,$key,$translated_nodes);
 
-              foreach ($subnode_type as $child) {
+              foreach ($subnode_type as $child => $child_data) {
                 //subnode name example : node-name-description
                 $subnode_name = $node->name . '-' . $key . '-' .$child ;
                 //load the subnode
                 $subnode = \Quanta\Common\NodeFactory::load($env, $subnode_name);
                 $parent_node = \Quanta\Common\NodeFactory::load($env, $node->name . '-' . $key);
-                integrity_check_sub_nodes($env,$parent_node,$subnode,$child,$translated_nodes);
+                integrity_check_sub_nodes($env,$parent_node,$subnode,$child,$translated_nodes,$child_data);
               }
             }else{
               //subnode name example : node-name-description
@@ -164,7 +115,7 @@ function integrity_check_node($node){
   }
 }
 
-function integrity_check_sub_nodes($env,$node,$subnode,$subnode_type,$translated_nodes){
+function integrity_check_sub_nodes($env,$node,$subnode,$subnode_type,$translated_nodes,$payload_data = []){
   //get the language files inside subnode
   $subnode_language_files = glob($subnode->path . '/data_*.json'); 
   $language= \Quanta\Common\Localization::getLanguage($env); 
@@ -178,6 +129,11 @@ function integrity_check_sub_nodes($env,$node,$subnode,$subnode_type,$translated
       $data_array['body']= $node->getBody();
       $data_array['teaser']= $node->getTeaser();
     }
+    if(is_array($payload_data) && count($payload_data)){
+			$data_array['title']= isset($payload_data['title']) ? $payload_data['title'] : null;
+			$data_array['body']= isset($payload_data['body']) ? $payload_data['body'] : null;
+			$data_array['teaser']= isset($payload_data['teaser']) ? $payload_data['teaser'] : null;
+		}
     //build the node
     $subnode_name = $node->name . '-' . $subnode_type;
     \Quanta\Common\NodeFactory::buildNode($env, $subnode_name, $node->name,$data_array);
