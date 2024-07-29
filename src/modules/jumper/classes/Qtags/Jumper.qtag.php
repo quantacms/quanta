@@ -39,9 +39,10 @@ class Jumper extends Qtag {
 
     $list_filters = (isset($this->attributes['list_filter'])) ? $this->attributes['list_filter'] : '';
     if($default_path){
-      $list_filters .= ',path@!'. $default_path;
+      $filter_prefix = !empty($list_filters) ? ',' : '';
+      $list_filters .= $filter_prefix . 'path@!'. $default_path;
     }
-  
+ 
 
     $dirlist = new DirList($this->env, $this->getTarget(), 'jumper', array('sort' => 'title','list_filter' => $list_filters) + $this->attributes, 'jumper');
     $tpl = 'jumper';
