@@ -36,12 +36,12 @@ class FormItemDate extends FormItemString {
     if (empty($format)) {
       $format = $this->getDateFormat();
     }
-    if ($date == self::INPUT_DATE_NOW) {
+    if ($date == self::INPUT_DATE_NOW || empty($date)) {
       $time = time();
     }
     else {
       $time = strtotime($date);
-    }
+    } 
     return date($format, $time);
   }
 
