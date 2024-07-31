@@ -48,14 +48,19 @@ class GoogleDocs extends \Quanta\Common\GoogleClient{
      * Create new document.
      * @param Environment $env
      */
-    public function createDocument(Environment $env, $content, $file_title = null){
+    public function createDocument(Environment $env, $node_name, $key, $file_title = null){
         // Create a new document
         $document = new Google_Service_Docs_Document(array(
             'title' => $file_title ? $file_title : 'Generated Document'
         ));
         $doc = $this->service->documents->create($document);
         $documentId = $doc->getDocumentId();
-        $this->updateDocument($documentId,$content);
+        $node = \Quanta\Common\NodeFactory::load($env,$node_name);
+        if($node->exists){
+            $content = $node->getAttributeJSON($key);
+            $this->updateDocument($documentId,$content);
+        }
+        
         return $doc;   
     }
 
