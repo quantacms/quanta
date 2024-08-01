@@ -152,7 +152,7 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
     $filter_match = FALSE;
     $break = FALSE;
     $one_match = FALSE;
-   
+ 
     switch ($filter_type) {
       // Filter by HTTP referer.
       case 'referer':
@@ -232,22 +232,20 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
       // Check if the filtered item corresponds to the user input.
       foreach ($filter_check as $check) {
         foreach ($filter_values as $filter_value) {
-          
           if (substr($filter_value, 0, 1) == '!') {
             $negate = TRUE;
             $filter_value = str_replace('!', '', $filter_value);
           }
-
-	  // If comparing with an array of values, check if the value is in the array.
-	  if (is_array($check)) {    
-		  $filter_match = in_array($filter_value, $check);
-	  }
-    elseif($filter_value == \Quanta\Common\Access::EMPTY_FILTER){   
-      $filter_match = !$check; 
-    }
-	  else {    
-		  $filter_match = ($check == $filter_value);
-	  }
+          // If comparing with an array of values, check if the value is in the array.
+          if (is_array($check)) {   
+            $filter_match = in_array($filter_value, $check);
+          }
+          elseif($filter_value == \Quanta\Common\Access::EMPTY_FILTER){   
+            $filter_match = !$check; 
+          }
+          else {     
+            $filter_match = trim($check) == trim($filter_value) ? true : false;
+          }
           if ($filter_match && !isset($negate)) {
             unset($one_match);
             $break = TRUE;
@@ -266,13 +264,12 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
             break;
           }
         }
-
         // For multiple fields such as lineage one match is enough to validate.
         if ($break) {
           break;
         }
       }
-
+    
       //TODO: handle invalid / unknown filters.
       //TODO: use hook for custom filters.
 
@@ -288,6 +285,6 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
     $criteria_match[$i] = $filter_match;
     $i++;
   }
-  
+
   return $filter_match;
 }
