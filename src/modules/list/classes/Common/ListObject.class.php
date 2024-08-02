@@ -462,11 +462,11 @@ abstract class ListObject extends DataContainer {
    * 
    * @param callable
    */
-  public function sortByFun(callable $fun) {
+  public function sortByFunction(callable $function) {
     try {
-      uasort($this->items,$fun);
+      uasort($this->items,$function);
     } catch (\Throwable $th) {
-      new Message($this->env, t('Error while sorting the list! check the callable fun'),Message::MESSAGE_ERROR);
+      new Message($this->env, t('Error while sorting the list! check the callable function'),Message::MESSAGE_ERROR);
     }
   }
 
