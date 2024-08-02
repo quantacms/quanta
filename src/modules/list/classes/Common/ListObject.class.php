@@ -458,6 +458,19 @@ abstract class ListObject extends DataContainer {
   }
 
   /**
+   * Sort the list items by external function.
+   * 
+   * @param callable
+   */
+  public function sortByFunction(callable $function) {
+    try {
+      uasort($this->items,$function);
+    } catch (\Throwable $th) {
+      new Message($this->env, t('Error while sorting the list! check the callable function'),Message::MESSAGE_ERROR);
+    }
+  }
+
+  /**
    * Gets the rendered list items.
    *
    * @return array
