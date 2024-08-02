@@ -114,8 +114,6 @@ function file_node_after_save(Environment $env, array &$vars) {
   if (is_dir($tmp_dir)) {
     $tmp_files = $env->scanDirectory($tmp_dir);
     foreach ($tmp_files as $file) {
-      print_r($file);
-      die();
       $tmp_file_path = $tmp_dir . '/' . $file;
 
       $fileobj = new FileObject($env, $tmp_file_path, $node);
