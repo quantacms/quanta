@@ -211,8 +211,14 @@ function submitShadow() {
       if (!hasMultiple) {
         form_items['single_file']= getJSONFormItem(inputField,true);
       }
+      else{
+        form_items['single_file']= getJSONFormItem(inputField,false);
+      }
       if(String(setAsThumbnail).toLowerCase() === 'false'){
         form_items['set_as_thumbnail']= getJSONFormItem(inputField,false);
+      }
+      else{
+        form_items['set_as_thumbnail']= getJSONFormItem(inputField,true);
       }
     }
 
