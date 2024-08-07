@@ -50,6 +50,12 @@ function integrity_check_parent_nodes($env,$path,$subnodes_types){
         'shifts',
         'closures'
       );
+      $skipped_nodes = array(
+        'title',
+        'body',
+        'teaser',
+        'skip_normalize'
+      );
       //get the language
       $language= \Quanta\Common\Localization::getLanguage($env);
       integrity_check_node($parent_node);
@@ -61,9 +67,12 @@ function integrity_check_parent_nodes($env,$path,$subnodes_types){
               $subnode_name = $node->name . '-' . $key;
               //load the subnode
               $subnode = \Quanta\Common\NodeFactory::load($env, $subnode_name);
-              integrity_check_sub_nodes($env,$node,$subnode,$key,$translated_nodes);
+              integrity_check_sub_nodes($env,$node,$subnode,$key,$translated_nodes,$subnode_type);
 
               foreach ($subnode_type as $child => $child_data) {
+                if(in_array($child,$skipped_nodes)){
+                  continue;
+                }
                 //subnode name example : node-name-description
                 $subnode_name = $node->name . '-' . $key . '-' .$child ;
                 //load the subnode
@@ -133,6 +142,7 @@ function integrity_check_sub_nodes($env,$node,$subnode,$subnode_type,$translated
 			$data_array['title']= isset($payload_data['title']) ? $payload_data['title'] : null;
 			$data_array['body']= isset($payload_data['body']) ? $payload_data['body'] : null;
 			$data_array['teaser']= isset($payload_data['teaser']) ? $payload_data['teaser'] : null;
+			$data_array['skip_normalize']= isset($payload_data['skip_normalize']) ? $payload_data['skip_normalize'] : null;
 		}
     //build the node
     $subnode_name = $node->name . '-' . $subnode_type;
