@@ -13,7 +13,9 @@ class Files extends Qtag {
    *   The rendered Qtag.
    */
   public function render() {
-    $filelist = new FileList($this->env, $this->getTarget(), 'file_table', $this->attributes, 'list');
+    $tpl = !empty($this->getAttribute('tpl')) ? $this->getAttribute('tpl') : 'file_table';
+    $module = !empty($this->getAttribute('module')) ? $this->getAttribute('module') : 'list';
+    $filelist = new FileList($this->env, $this->getTarget(),$tpl, $this->attributes, $module);
     return $filelist->render();
   }
 }
