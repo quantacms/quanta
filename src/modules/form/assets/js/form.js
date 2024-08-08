@@ -163,6 +163,7 @@ $(document).ready(function() {
   });
 
   InitializeTelInputs();
+  InitializeAdressInputs();
 
  });
 
@@ -209,6 +210,109 @@ $(document).ready(function() {
     }
   });
  }
+
+ function InitializeAdressInputs(){
+  $('.address-input').each(function() {
+    const input = $(this);
+    const loader = $('#loader'); // Reference to the loader element
+    // Create a hidden input to store the full address
+    const roadInput = $('input[name="road"]');
+    const stateInput = $('input[name="state"]');
+    const postcodeInput = $('input[name="postcode"]');
+    const cityInput = $('input[name="city"]');
+    const countryInput = $('input[name="country"]');
+    const countryCodeInput = $('input[name="country_code"]');
+    const latCodeInput = $('input[name="latitude"]');
+    const lonCodeInput = $('input[name="longitude"]');
+
+    input.autocomplete({
+      source: function(request, response) {
+        loader.show(); // Show the loader
+        $.ajax({
+          url: `https://nominatim.openstreetmap.org/search`,
+          dataType: "json",
+          data: {
+            q: request.term,
+            format: "json",
+            addressdetails: 1,
+            limit: 10 // Limit the number of suggestions
+          },
+          success: function(data) {
+            response(data.map(item => ({
+              label: item.display_name,
+              lat: item.lat,
+              lon: item.lon,
+              road: item.address.road,
+              state: item.address.state,
+              city: item.address.village,
+              postcode: item.address.postcode,
+              country: item.address.country,
+              country_code: item.address.country_code,
+            })));
+          },
+          error: function(xhr, status, error) {
+            console.error("Error fetching data from Nominatim:", status, error);
+            response([]);
+          },
+          complete: function () {
+            loader.hide(); // Hide the loader after the request is complete
+          }
+        });
+      },
+      select: function(event, ui) {
+        console.log("Selected address:", ui.item);
+          // Check if fields are required and if any required field is missing
+        const requiredFields = {
+          road: roadInput,
+          state: stateInput,
+          postcode: postcodeInput,
+          city: cityInput,
+          country: countryInput,
+          country_code: countryCodeInput,
+          lat: latCodeInput,
+          lon: lonCodeInput
+        };
+
+        const isMissingData = Object.keys(requiredFields).some(field =>
+          isRequiredFieldMissing(ui.item[field], requiredFields[field])
+        );
+        var fieldWrapper = $(this).closest('.form-item-wrapper');
+        if(isMissingData){
+          //prevent the user to submit the form
+          $('.shadow-submit').addClass('shadow-submitted');
+          // Add error message to the field wrapper
+          fieldWrapper.addClass('has-validation-errors');
+          if (fieldWrapper.find('.validation-error').length === 0) {
+            fieldWrapper.prepend(`<div class="validation-error">${$('#address-missing-data').text()}</div>`);
+          }
+        }
+        else{
+          $('.shadow-submitted').removeClass('shadow-submitted');
+          // Remove error styling and message if field is not empty and visible
+          fieldWrapper.removeClass('has-validation-errors');
+          fieldWrapper.find('.validation-error').remove();
+          // Update the hidden input
+          if(ui.item.road){ roadInput.val(ui.item.road);}
+          if(ui.item.state){ stateInput.val(ui.item.state);}
+          if(ui.item.postcode){ postcodeInput.val(ui.item.postcode);}
+          if(ui.item.city){ cityInput.val(ui.item.city);}
+          if(ui.item.country){ countryInput.val(ui.item.country);}
+          if(ui.item.country_code){ countryCodeInput.val(ui.item.country_code);}
+          if(ui.item.lat){ latCodeInput.val(ui.item.lat);}
+          if(ui.item.lon){ lonCodeInput.val(ui.item.lon);}
+        }
+       
+      },
+      minLength: 3 // Minimum length of characters before triggering suggestions
+    });
+  });
+
+ }
+
+ // Function to check if a field is required and if its value is present
+function isRequiredFieldMissing(value, input) {
+  return input.is('[required]') && (!value || value.trim() === '');
+}
 
  // Function to handle star filling
  function fillStars($element) {
