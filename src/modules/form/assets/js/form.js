@@ -211,11 +211,11 @@ $(document).ready(function() {
   });
  }
 
- function InitializeAdressInputs(){
+ function InitializeAddressInputs(){
   $('.address-input').each(function() {
     const input = $(this);
     const loader = $('#loader'); // Reference to the loader element
-    // Create a hidden input to store the full address
+    // get the address inputs that we want to use them (these inputs must be added in the form that used) you can add any input of them According to your needs
     const roadInput = $('input[name="road"]');
     const stateInput = $('input[name="state"]');
     const postcodeInput = $('input[name="postcode"]');
