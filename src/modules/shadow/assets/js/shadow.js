@@ -1,6 +1,7 @@
 var shadow;
 var shadowUpdated = false;
 var shadowConfirmClose = true;
+var waitBeforeSubmit = false;
 /**
  * Close the shadow overlay when clicking outside the Shadow area.
  */
@@ -14,14 +15,19 @@ $(document).bind('refresh', function () {
   // window closing, and losing of the work.
   $('#shadow-item').find('input,select,textarea').bind('change', setShadowUpdated);
 
-  $('.shadow-submit').on('click', function () {
+  $('.shadow-submit').on('click', async function () {
     if (!($(this).hasClass('shadow-submitted'))) {
       shadowConfirmClose = true;
 
       $(document).trigger('shadow_save');
-
+     
       if (shadowConfirmClose) {
         $(this).addClass('shadow-submitted');
+
+        if(waitBeforeSubmit){
+          await waitForPreSubmission();
+          waitBeforeSubmit = false;
+        }
         // Trigger the shadow save hook.
         submitShadow();
       }
@@ -31,6 +37,16 @@ $(document).bind('refresh', function () {
   $('.shadow-cancel').on('click', function () {
     closeShadow();
   });
+});
+
+function waitForPreSubmission() {
+  return new Promise((resolve) => {
+    document.addEventListener('preSubmissionCompleted', resolve, { once: true });
+  });
+}
+
+document.addEventListener('waitBeforeSubmit', function(event) {
+  waitBeforeSubmit = true;
 });
 
 // Close the shadow overlay.
@@ -139,6 +155,7 @@ var baseUrl = protocol + "//" + host;
     $(document).trigger('shadow_open');
     $(document).trigger('shadow_' + shadow.context);
     InitializeTelInputs(true);
+    InitializeAdressInputs();
   });
   $('#shadow-outside').fadeIn('medium');
 };
