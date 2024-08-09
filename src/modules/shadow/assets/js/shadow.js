@@ -155,7 +155,7 @@ var baseUrl = protocol + "//" + host;
     $(document).trigger('shadow_open');
     $(document).trigger('shadow_' + shadow.context);
     InitializeTelInputs(true);
-    InitializeAdressInputs();
+    InitializeAddressInputs();
   });
   $('#shadow-outside').fadeIn('medium');
 };
