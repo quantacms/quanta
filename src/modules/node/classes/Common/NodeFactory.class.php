@@ -539,8 +539,6 @@ class NodeFactory {
           if ($node->validate() && $validation_status && $vars['form_validated']) {
             $node->save();
             // Hook node_add_complete, node_edit_complete, etc.
-            $env->hook('node_after_save', $vars);
-            // Hook node_add_complete, node_edit_complete, etc.
             $env->hook($action . '_complete', $vars);
             // Check if 'current_url' is set in the form data, if not, default to the father node's name.
             $redirect_url= isset($form_data['current_url']) ? $form_data['current_url'] : '/' . $node->getFather()->getName() . '/';
