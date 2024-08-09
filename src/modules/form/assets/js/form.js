@@ -163,7 +163,7 @@ $(document).ready(function() {
   });
 
   InitializeTelInputs();
-  InitializeAdressInputs();
+  InitializeAddressInputs();
 
  });
 
