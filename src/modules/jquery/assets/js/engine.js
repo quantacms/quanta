@@ -79,6 +79,8 @@ var actionSuccess = function(data) {
  * @param exception
  */
 var actionError = function(err, exception) {
+    console.log(err);
+    console.log(exception);
     console.log('error');
 
     if(err?.responseJSON?.shadowErrors){
