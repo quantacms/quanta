@@ -572,7 +572,7 @@ class Node extends JSONDataContainer implements Cacheable {
    * Useful for breadcrumbs.
    */
   public function buildLineage() {
-    if (!empty($this->lineage)) {
+    if (!empty($this->lineage) || empty($this->path)) {
       return;
     }
 
