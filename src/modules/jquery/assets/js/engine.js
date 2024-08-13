@@ -98,7 +98,7 @@ var actionError = function(err, exception) {
         // Add error message to the field wrapper
         fieldWrapper.addClass('has-validation-errors');
         if (fieldWrapper.find('.validation-error').length === 0) {
-          fieldWrapper.prepend(`<div class="validation-error">${errors[fieldName]}</div>`);
+          fieldWrapper.append(`<div class="validation-error">${errors[fieldName]}</div>`);
         }
       }
       else{
