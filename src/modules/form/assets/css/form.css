@@ -6,20 +6,13 @@
     color: white;
     background: #ee0000;
     padding: 5px;
-    margin: 8px;
+    margin: 8px 0;
     font-size: 0.5em;
     font-family: "Verdana";
     text-align: center;
     text-transform: uppercase;
     display: inline-block;
-}
-
-div.has-validation-errors {
-    border-style: dashed;
-    border-width: 1px;
-    border-color: #ee0000;
-    padding: 8px;
-
+    border-radius: 5px;
 }
 
 .has-validation-errors label {
