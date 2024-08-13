@@ -370,7 +370,7 @@ class Image extends FileObject {
             // new dimensions and axis values.
 
             imagecopyresampled($tmp2img, $tmpimg, 0, 0,
-                $x_axis, $y_axis,
+                (int)$x_axis, (int)$y_axis,
                 $img_thumb_width,
                 $img_thumb_height,
                 $img_thumb_width,
