@@ -491,6 +491,10 @@ class NodeFactory {
             $node->setAuthor($form_data['author']);
           }
 
+          if (isset($form_data['edit-status'])) {
+            $node->setStatus($form_data['edit-status']);
+          }
+
           if(isset($form_data['password'])){
             //check if repeated password no equal the real password
             if(isset($form_data['password_rp']) && $form_data['password'] != $form_data['password_rp']){
