@@ -244,7 +244,7 @@ $(document).ready(function() {
               lon: item.lon,
               road: item.address.road,
               state: item.address.state,
-              city: item.address.village,
+              city: item.address.village || item.address.town,
               postcode: item.address.postcode,
               country: item.address.country,
               country_code: item.address.country_code,
