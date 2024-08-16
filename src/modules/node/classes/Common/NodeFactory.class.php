@@ -24,7 +24,7 @@ class NodeFactory {
    * @return Node
    *   The built node object.
    */
-  public static function load(Environment $env, $node_name, $language = NULL, $force_reload = TRUE, $classname = 'Node', $fallback_lang = true) {
+  public static function load(Environment $env, $node_name, $language = NULL, $force_reload = TRUE, $classname = 'Node', $use_fallback_language = true) {
     static $loaded_nodes;
 
      
@@ -52,7 +52,7 @@ class NodeFactory {
     $node->load();
    
 
-    if (!($node->hasTranslation($language)) && $fallback_lang) {
+    if (!($node->hasTranslation($language)) && $use_fallback_language) {
       $fallback = Localization::getFallbackLanguage($env);
       $node = new Node($env, $node_name, NULL, 'it');
     }
@@ -76,8 +76,8 @@ class NodeFactory {
    * @return Node
    *   The built node object.
    */
-  public static function loadOrCurrent($env, $node, $language = NULL, $fallback_lang = TRUE) {
-    return empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node, $language, true, 'Node', $fallback_lang );
+  public static function loadOrCurrent($env, $node, $language = NULL, $use_fallback_language = TRUE) {
+    return empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node, $language, true, 'Node', $use_fallback_language );
   }
 
   /**
@@ -491,6 +491,10 @@ class NodeFactory {
             $node->setAuthor($form_data['author']);
           }
 
+          if (isset($form_data['edit-status'])) {
+            $node->setStatus($form_data['edit-status']);
+          }
+
           if(isset($form_data['password'])){
             //check if repeated password no equal the real password
             if(isset($form_data['password_rp']) && $form_data['password'] != $form_data['password_rp']){
@@ -538,8 +542,6 @@ class NodeFactory {
           // If the node is validated, proceed with saving it.
           if ($node->validate() && $validation_status && $vars['form_validated']) {
             $node->save();
-            // Hook node_add_complete, node_edit_complete, etc.
-            $env->hook('node_after_save', $vars);
             // Hook node_add_complete, node_edit_complete, etc.
             $env->hook($action . '_complete', $vars);
             // Check if 'current_url' is set in the form data, if not, default to the father node's name.
@@ -626,7 +628,9 @@ class NodeFactory {
         $value = $value[0];
       }
       $length = (!empty($form_item_data->length) ? $form_item_data->length : 50000);
-      $attributes = array('length' => $length, 'type' => $form_item_data->type, 'required' => $form_item_data->required, 'name' => $form_item, 'value' => $value );      $form_state = null;
+      $required = $form_item_data->required ? true : null;
+      $attributes = array('length' => $length, 'type' => $form_item_data->type, 'required' => $required, 'name' => $form_item, 'value' => $value );
+      $form_state = null;
       $input_item = \Quanta\Common\FormFactory::createInputItem($env, $attributes, $form_state);
       $input_item->validate();
       if(!$input_item->getValidationStatus()){

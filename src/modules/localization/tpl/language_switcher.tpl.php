@@ -1,1 +1,1 @@
-[LINK|language=[LISTITEM]|class=lang-[LISTITEM]|title={ATTRIBUTE|name=title:[LISTITEM]}:{ATTRIBUTE|name=name}]
+[LINK|language=[LISTITEM]|class=lang-[LISTITEM]|title={ATTRIBUTE|name=title:[LISTITEM]}:{ATTRIBUTE|name=name}/?update_language=[LISTITEM]]

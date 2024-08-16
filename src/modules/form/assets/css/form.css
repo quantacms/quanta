@@ -6,20 +6,13 @@
     color: white;
     background: #ee0000;
     padding: 5px;
-    margin: 8px;
+    margin: 8px 0;
     font-size: 0.5em;
     font-family: "Verdana";
     text-align: center;
     text-transform: uppercase;
     display: inline-block;
-}
-
-div.has-validation-errors {
-    border-style: dashed;
-    border-width: 1px;
-    border-color: #ee0000;
-    padding: 8px;
-
+    border-radius: 5px;
 }
 
 .has-validation-errors label {
@@ -167,3 +160,58 @@ display: none;
 .iti--allow-dropdown{
   width: 100%;
 }
+
+/* Style for the autocomplete container */
+.ui-autocomplete {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    background-color: #fff;
+    max-height: 200px; /* Adjust height to fit your needs */
+    overflow-y: auto;
+  }
+  
+  .ui-menu{
+    width: fit-content !important;
+    z-index: 100;
+  }
+  
+  /* Style for each item in the autocomplete list */
+  .ui-menu-item {
+    padding: 10px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+  }
+  
+  /* Hover effect for items */
+  .ui-menu-item:hover {
+    background-color: #f0f0f0;
+    color: #007bff; /* Highlight color */
+  }
+  
+  /* Focus effect for items */
+  .ui-state-focus {
+    background-color: #007bff;
+    color: #fff;
+  }
+
+  /* Loader styling */
+.loader {
+    border: 4px solid rgba(0, 0, 0, 0.1); /* Light grey */
+    border-left: 4px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+    position: absolute;
+    margin-left: 10px; /* Adjust positioning relative to the input */
+    top: 50px;
+    right: 20px;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }

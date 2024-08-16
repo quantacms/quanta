@@ -72,8 +72,8 @@ function file_node_presave(Environment $env, array $vars) {
   $node = $vars['node'];
   $data = $vars['data'];
   $uploaded_files = [];
-  $isMultiple= !isset($data['single_file']) || ($data['single_file'] == 'false') || ((isset($data['single_file']) && (strtolower(strval($data['single_file']->value))  === 'false')));
-  $setAsThumbnail = !$isMultiple && $data['set_as_thumbnail'];
+  $isMultiple= !isset($data['single_file']) || (isset($data['single_file']) && !$data['single_file']->value);
+  $setAsThumbnail = !$isMultiple && $data['set_as_thumbnail']->value;
   // Walk through uploaded files.
   foreach ($data as $label => $name) {
     $exp = explode('-', $label);
@@ -114,7 +114,6 @@ function file_node_after_save(Environment $env, array &$vars) {
   if (is_dir($tmp_dir)) {
     $tmp_files = $env->scanDirectory($tmp_dir);
     foreach ($tmp_files as $file) {
-
       $tmp_file_path = $tmp_dir . '/' . $file;
 
       $fileobj = new FileObject($env, $tmp_file_path, $node);

@@ -2,8 +2,23 @@
 
 set -e
 
-# NOTE: This requires GNU getopt. On Mac OS X and FreeBSD, you have to install this separately.
-OPTIONS=$(getopt -o e:u: -o n:hgor: --long env:,user:,ssh-key:,override,override-recent:,domain:,help -n 'sync.sh' -- "$@")
+# Detect the operating system
+OS=$(uname -s)
+
+# Determine the correct getopt command
+if [[ "$OS" == "Darwin" ]]; then
+  # macOS
+  if ! command -v getopt > /dev/null 2>&1; then
+    echo "GNU getopt is not installed. Please install it using 'brew install gnu-getopt'."
+    exit 1
+  fi
+  GETOPT=$(brew --prefix gnu-getopt)/bin/getopt
+else
+  # Linux and other Unix-like OS
+  GETOPT=$(command -v getopt)
+fi
+
+OPTIONS=$($GETOPT -o e:u: -l env:,user:,ssh-key:,override,override-recent:,domain:,help -n 'sync.sh' -- "$@")
 eval set -- "$OPTIONS"
 
 USER="root"  # Default user
@@ -16,6 +31,7 @@ while true; do
     --override ) OVERRIDE=true; shift ;;
     --override-recent ) OVERRIDE_RECENT="$2"; shift 2 ;;
     --domain ) DOMAIN="$2"; shift 2 ;;
+
     -h | --help )
       printf "Usage: %s [options]\n" $0
       printf "Options:\n"
@@ -46,23 +62,23 @@ fi
 case "$ENV" in
   dev)
     SERVER="212.71.254.132"
-    SOURCE_DIRS=("$USER@$SERVER:/var/www/quanta/sites/dev.walltips.it/db/" "$USER@$SERVER:/var/www/quanta/sites/dev.walltips.it/_users/" "$USER@$SERVER:/var/www/quanta/sites/dev.walltips.it/_translations/")
+    SOURCE_DIRS=("$USER@$SERVER:/var/www/quanta/sites/dev.walltips.it/db/" "$USER@$SERVER:/var/www/quanta/sites/dev.walltips.it/db/_users/" "$USER@$SERVER:/var/www/quanta/sites/dev.walltips.it/db/_translations/")
     ;;
   stage)
     SERVER="212.71.254.132"
-    SOURCE_DIRS=("$USER@$SERVER:/var/www/quanta/sites/walltips-stage/db/" "$USER@$SERVER:/var/www/quanta/sites/walltips-stage/_users/" "$USER@$SERVER:/var/www/quanta/sites/walltips-stage/_translations/")
+    SOURCE_DIRS=("$USER@$SERVER:/var/www/quanta/sites/walltips-stage/db/" "$USER@$SERVER:/var/www/quanta/sites/walltips-stage/db/_users/" "$USER@$SERVER:/var/www/quanta/sites/walltips-stage/db/_translations/")
     ;;
   prod)
     SERVER="172.232.218.137"
-    SOURCE_DIRS=("$USER@$SERVER:/var/www/quanta/sites/walltips.it/db/" "$USER@$SERVER:/var/www/quanta/sites/walltips.it/_users/" "$USER@$SERVER:/var/www/quanta/sites/walltips.it/_translations/")
+    SOURCE_DIRS=("$USER@$SERVER:/var/www/quanta/sites/app.walltips.it/db/" "$USER@$SERVER:/var/www/quanta/sites/app.walltips.it/db/_users/" "$USER@$SERVER:/var/www/quanta/sites/app.walltips.it/db/_translations/")
     ;;
   *)
-    echo "Invalid environment specified. Use dev, stage, or prod."
+    echo "Invalid environment specified $ENV. Use dev, stage, or prod."
     exit 1
     ;;
 esac
 
-# Go to git root directory and then to the desired working directory
+# Go to git root directory
 GIT_ROOT_DIR=$(git rev-parse --show-toplevel)
 cd "$GIT_ROOT_DIR/sites/$DOMAIN" || exit 1
 
@@ -81,7 +97,7 @@ if [ -n "$OVERRIDE_RECENT" ]; then
 fi
 
 # Define the destination directories
-DEST_DIRS=("$DEST_BASE_DIR/db/" "$DEST_BASE_DIR/_users/" "$DEST_BASE_DIR/_translations/")
+DEST_DIRS=("$DEST_BASE_DIR/db/" "$DEST_BASE_DIR/db/_users/" "$DEST_BASE_DIR/db/_translations/")
 
 # Sync directories from the server using rsync with optional SSH key
 for i in "${!SOURCE_DIRS[@]}"; do

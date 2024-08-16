@@ -36,6 +36,10 @@ class Form extends HtmlTag {
       $this->setId($this->getAttribute('name'));
 
     }
+    if (empty($this->html_params['class'])) {
+      $this->html_params['class'] = '';
+    }
+
     if (!empty($this->getAttribute('ajax'))) {
       $this->html_params['class'] .= ' ' . 'ajax-form';
     }
