@@ -24,7 +24,7 @@ class NodeFactory {
    * @return Node
    *   The built node object.
    */
-  public static function load(Environment $env, $node_name, $language = NULL, $force_reload = TRUE, $classname = 'Node') {
+  public static function load(Environment $env, $node_name, $language = NULL, $force_reload = TRUE, $classname = 'Node', $use_fallback_language = true) {
     static $loaded_nodes;
 
      
@@ -50,9 +50,9 @@ class NodeFactory {
     }
 
     $node->load();
+   
 
-
-    if (!($node->hasTranslation($language))) {
+    if (!($node->hasTranslation($language)) && $use_fallback_language) {
       $fallback = Localization::getFallbackLanguage($env);
       $node = new Node($env, $node_name, NULL, 'it');
     }
@@ -76,8 +76,8 @@ class NodeFactory {
    * @return Node
    *   The built node object.
    */
-  public static function loadOrCurrent($env, $node, $language = NULL) {
-    return empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node, $language);
+  public static function loadOrCurrent($env, $node, $language = NULL, $use_fallback_language = TRUE) {
+    return empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node, $language, true, 'Node', $use_fallback_language );
   }
 
   /**
