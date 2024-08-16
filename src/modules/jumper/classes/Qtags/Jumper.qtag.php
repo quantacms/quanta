@@ -50,7 +50,7 @@ class Jumper extends Qtag {
     // TODO: use FORM Qtags.
     $jumper = '<select class="jumper" data-field="' . $field . '" data-jumper-method="' . $method. '" rel="' . $ajax . '" ' . $tpl . '>'.
       (($empty_path != $default_path) ? ('<option value="' . $default_path . '">' . $default_title . '</option>') : '') .
-      '<option value="' . $empty_path . '">' . $empty_title . '</option>' .
+      ($this->attributes['empty_show'] !='false' ?'<option value="' . $empty_path . '">' . $empty_title . '</option>':'') .
       $dirlist->render() . '</select>';
 
     return $jumper;
