@@ -16,7 +16,7 @@ function googledocs_boot($env, $vars) {
             $google_doc_object->createAuthUrl($env);
           }
           $env->hook('google_doc_before_generate',$vars);
-          $doc = $google_doc_object->createDocument($env,$_GET['text'],$_GET['file-title']);
+          $doc = $google_doc_object->createDocument($env,$_GET['node_name'],$_GET['key'],$_GET['file-title']);
           $vars['doc'] = $doc;
           //TODO: show a success message
           $env->hook('google_doc_generated',$vars);

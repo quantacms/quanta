@@ -243,8 +243,14 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
           elseif($filter_value == \Quanta\Common\Access::EMPTY_FILTER){   
             $filter_match = !$check; 
           }
-          else {     
-            $filter_match = trim($check) == trim($filter_value) ? true : false;
+	  else {
+	    if (!empty($check)) {
+	      $check = trim($check);
+	    } 
+	    if (!empty($filter_value)) {
+	      $filter_value = trim($filter_value);
+	    } 
+            $filter_match = ($check == $filter_value) ? true : false;
           }
           if ($filter_match && !isset($negate)) {
             unset($one_match);

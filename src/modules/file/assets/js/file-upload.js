@@ -1,4 +1,5 @@
 var hasMultipleAttribute= true;
+var files = [];
 $(function () {
   if (!($('.upload-files').length)) { return; }
   
@@ -15,8 +16,7 @@ $(function () {
 
     // This function is called when a file is added to the queue;
     // either via the browse button, or via drag/drop:
-    add: function (e, data) {
-
+    add: async function (e, data) {
       var tmp_files_dir = ($('#tmp_files_dir').val());
       // Access the file input element
       var fileInputElement = data.fileInput[0];
@@ -65,9 +65,12 @@ $(function () {
         });
 
       });
+      if(data.files?.length){
+        files.push(data.files[data.files.length - 1]);
 
+      }
       // Automatically upload the file once it is added to the queue
-      var jqXHR = data.submit();
+      var jqXHR = data.submit();    
     },
 
     progress: function (e, data) {// Calculate the completion percentage of the upload
@@ -249,5 +252,14 @@ $(document).bind('shadow_save', function () {
     if ($(this).val() != 100) {
       shadowConfirmClose = confirm('Upload of files still in progress. Are you sure you want to save?');
     }
-  })
+  });
+  if(files.length){
+     // Dispatch a custom event when the form submission
+    var event = new CustomEvent('fileSubmission', {
+      detail: {
+          files: files
+      }
+    });
+    document.dispatchEvent(event);
+  }
 });
