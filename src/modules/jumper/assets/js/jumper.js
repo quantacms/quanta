@@ -8,7 +8,9 @@ var refreshJumpers = function() {
             var field = $(this).data('field');
 
           if (method == 'querystring') {
-              top.location.href = '?' + field + "=" + $(this).val();
+                const url = new URL(top.location.href);                
+                url.searchParams.set(field, $(this).val());
+                top.location.href = url.toString();
           }
           else if (method == 'nothing') {
               // Used for empty jumpers.
