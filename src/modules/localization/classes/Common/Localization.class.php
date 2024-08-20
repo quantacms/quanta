@@ -211,4 +211,18 @@ class Localization {
     $output_text = self::t($output_text,$replace);
     return $output_text; 
   }
+
+  public static function mapLocale($lang){
+     // Define a mapping from short locale codes to full locale strings
+     $localeMap = [
+      'en' => 'en_US',
+      'it' => 'it_IT',
+      'fr' => 'fr_FR',
+      'de' => 'de_DE',
+      'es' => 'es_ES',
+  ];
+
+  // Return the full locale string if it exists, otherwise default to 'it_IT'
+  return isset($localeMap[$lang]) ? $localeMap[$lang] : 'it_IT';
+  }
 }
