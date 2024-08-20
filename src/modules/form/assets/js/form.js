@@ -185,6 +185,8 @@ $(document).ready(function() {
       utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.13/js/utils.js"
     });
 
+    // Store the iti instance in the input's data attribute
+    input.data('iti', iti);
     // Create a hidden input to store the full phone number
     const hiddenInput = $('<input>', {
       type: 'hidden',
