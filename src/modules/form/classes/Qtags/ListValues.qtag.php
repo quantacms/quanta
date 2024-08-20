@@ -16,6 +16,9 @@ class ListValues extends Qtag {
     $this->attributes['editable'] = 'false';
     $this->attributes['clean'] = TRUE;
     $this->attributes['separator'] = ',';
+    if (empty($this->attributes['sort'])) {
+      $this->attributes['sort'] = 'title';
+    }
     $dirlist = new DirList($this->env, $this->getTarget(), 'list-values', $this->attributes, 'form');
     return $dirlist->render();
   }
