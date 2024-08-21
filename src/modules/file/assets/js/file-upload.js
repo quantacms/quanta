@@ -40,7 +40,7 @@ $(function () {
         '</li>');
 
 
-      var ul = $(this).closest('.shadow-content').find('ul');
+      var ul = $(this).closest('.shadow-content').find('ul.list');
 
       if(!hasMultipleAttribute){
         // Hide only the old contents of the UL element
@@ -146,7 +146,7 @@ var refreshFileActions = function (fileElement) {
     // Create file actions.
     if (!$(this).find('.file-actions').length) {
       var actionsButtons= '<div class="file-actions">';
-      if(hasMultipleAttribute){
+      if(hasMultipleAttribute && inputFileInsideForm.attr('thumbnail') !== 'false'){
         actionsButtons += '<input type="button" class="set-thumbnail" data-filename="' + filename + '" value="" />';
       }
       actionsButtons += '<input type="button" class="delete-file" value="delete file" />' +
