@@ -14,7 +14,7 @@ class FormItemFile extends FormItemString {
    */
   function render() {
     $isMultiple = $this->getAttribute('single') ? "" : "multiple";
-    $setAsThumbnail = $this->getAttribute('single') && !$this->getAttribute('not-thumbnail') ? "thumbnail=true" : "thumbnail=false";
+    $setAsThumbnail = !$this->getAttribute('not-thumbnail') ? "thumbnail=true" : "thumbnail=false";
     if(!$setAsThumbnail){
       $this->html_params['not-thumbnail']= 'not-thumbnail';
     }
