@@ -547,7 +547,4 @@ function handleSelectChange() {
   });
 }
 
-// Example usage:
-// removeDuplicateOptions('mySelectId');
-
 
