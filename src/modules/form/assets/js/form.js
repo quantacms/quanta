@@ -123,9 +123,10 @@ var refreshMultiple = function (inputItem) {
       last_item.closest('.form-item-multiple-wrapper').after('<div class="form-item-multiple-wrapper">' + newFormItem.prop('outerHTML') + '</div>');
       refreshMultiple(inputItem);
       refreshAutocomplete();
+      removeDuplicateOptions(new_id);
     });
     }
-
+    
 };
 
 $(document).bind('refresh', function () {
@@ -164,6 +165,7 @@ $(document).ready(function() {
 
   InitializeTelInputs();
   InitializeAddressInputs();
+  handleSelectChange();
 
  });
 
@@ -185,6 +187,8 @@ $(document).ready(function() {
       utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.13/js/utils.js"
     });
 
+    // Store the iti instance in the input's data attribute
+    input.data('iti', iti);
     // Create a hidden input to store the full phone number
     const hiddenInput = $('<input>', {
       type: 'hidden',
@@ -483,4 +487,66 @@ function submitFormViaAjax(e,form) {
       }
   });
 }
+
+function removeDuplicateOptions(id) {
+  // Get the target <select> element based on the provided ID
+  var $targetSelect = $('#' + id);
+
+  if ($targetSelect.length === 0) return;
+
+  // Gather selected values from all other <select> elements
+  var selectedValues = $('.form-item-select').not($targetSelect).map(function() {
+    return $(this).val();
+  }).get().filter(Boolean);
+
+  if (!selectedValues.length) return;
+
+  // Hide matching options in the target <select> element
+  $targetSelect.find('option').each(function() {
+    var $option = $(this);
+    var optionValue = $option.val();
+
+    if (selectedValues.includes(optionValue)) {
+      $option.hide().prop('disabled', true).removeAttr('selected');
+      
+      // If the current option was selected, select the next available option
+      if ($option.is(':selected')) {
+        var $nextOption = $option.next('option:enabled');
+        $nextOption.prop('selected', true);
+        $targetSelect.val($nextOption.val());
+      }
+    } else {
+      $option.show().prop('disabled', false);
+    }
+  });
+
+  handleSelectChange();
+}
+
+function handleSelectChange() {
+  $('.form-item-select').off('change').on('change', function() {
+    var selectedValues = $('.form-item-select').map(function() {
+      return $(this).val();
+    }).get().filter(Boolean);
+
+    if (!selectedValues.length) return;
+
+    // Update all selects to remove selected values
+    $('.form-item-select').each(function() {
+      var $select = $(this);
+
+      $select.find('option').each(function() {
+        var $option = $(this);
+        var optionValue = $option.val();
+
+        if (selectedValues.includes(optionValue) && optionValue !== $select.val()) {
+          $option.hide().prop('disabled', true).removeAttr('selected');
+        } else {
+          $option.show().prop('disabled', false);
+        }
+      });
+    });
+  });
+}
+
 
