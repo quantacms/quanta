@@ -218,6 +218,14 @@ class Localization {
     if($node->exists && !empty($node->getAttributeJSON('locale_code'))){
       $locale_code = $node->getAttributeJSON('locale_code');
     }
+    else{
+      new Message($env,
+      t('Warning:You should add a language code to the language !language',
+        array('!language' => $lang)
+      ),
+      \Quanta\Common\Message::MESSAGE_WARNING
+    );
+    }
     return $locale_code;
   }
 }
