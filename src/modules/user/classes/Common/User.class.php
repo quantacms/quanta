@@ -167,17 +167,19 @@ class User extends Node {
    * @return mixed $response_json
    *   The JSON-encoded response to the logout action.
    */
-  public function logOut($message = 'You logged out') {
-    new Message($this->env,
-      t($message),
-      \Quanta\Common\Message::MESSAGE_CONFIRM,
-      \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
-    );
-    new Message($this->env,
-      t('User !user logged out', array('!user' => $this->name)),
-      \Quanta\Common\Message::MESSAGE_CONFIRM,
-      \Quanta\Common\Message::MESSAGE_TYPE_LOG
-    );
+  public function logOut($message = 'You logged out', $show_message = true) {
+    if($show_message){
+      new Message($this->env,
+        t($message),
+        \Quanta\Common\Message::MESSAGE_CONFIRM,
+        \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
+      );
+      new Message($this->env,
+        t('User !user logged out', array('!user' => $this->name)),
+        \Quanta\Common\Message::MESSAGE_CONFIRM,
+        \Quanta\Common\Message::MESSAGE_TYPE_LOG
+      );
+    }
     unset($_SESSION['user']);
 
     // TODO: adapt cookies.
