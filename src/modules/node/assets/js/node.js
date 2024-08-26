@@ -61,7 +61,8 @@ $(document).bind('refresh', function() {
                 widget: $(this).attr('data-widget'),
                 language: $(this).attr('data-language'),
                 components: components,
-                node: $(this).attr('data-rel')
+                node: $(this).attr('data-rel'),
+                redirect: $(this).data('redirect')
             };
 
 

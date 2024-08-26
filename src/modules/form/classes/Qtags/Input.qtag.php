@@ -74,7 +74,7 @@ class Input extends HtmlTag {
       if ($this->hasValidationErrors()) {
         $error_attr = array();
         $error = new ValidationError($this->env, $error_attr, $this->getValidationErrors());
-        $this->html_body = $error . $this->html_body;
+        $this->html_body = $this->html_body . $error;
         $this->addClass('has-validation-errors');
       }
 
