@@ -159,3 +159,72 @@ function file_page_init(Environment $env, array $vars) {
     print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/file-upload.js');
   }
 }
+
+
+function file_shadow_preview_img($env, $vars) {
+	$vars['shadow']->addTab('Preview', file_get_contents($env->getModulePath('file') . '/tpl/preview_img.inc'), 2);
+	$vars['shadow']->addButton('set_as_thumbnail', t('Imposta come miniatura'));
+	$vars['shadow']->addButton('delete_img', t('Eliminare'));
+}
+
+function file_action_file_operations($env, $vars){
+	$response = new \stdClass();
+	$success = true;
+	$errors = array();
+	http_response_code(200);
+	$action = is_array($vars['data']['action_type']->value) ? array_pop($vars['data']['action_type']->value) : $vars['data']['action_type']->value;
+	$node_name = is_array($vars['data']['img_node']->value) ? array_pop($vars['data']['img_node']->value) : $vars['data']['img_node']->value;
+	$img_name = is_array($vars['data']['img']->value) ? array_pop($vars['data']['img']->value) : $vars['data']['img']->value;
+	$node = \Quanta\Common\NodeFactory::load($env,$node_name);
+	$img_path = $node->getPath() . '/' . $img_name;
+	$node_files = $node->getAttributeJSON('files');
+
+	switch ($action) {
+		case 'set_as_thumbnail':
+				$node->setThumbnail($img_name);
+				$node->setLanguage(\Quanta\Common\Localization::LANGUAGE_NEUTRAL);
+				$node->save();
+			break;
+
+		case 'delete_img':
+			if (file_exists($img_path)) {
+				// Attempt to delete the file
+				if (unlink($img_path)) {
+					if(in_array($img_name,$node_files)){
+						  // Remove the image from the array
+						$node_files = array_filter($node_files, function($file) use ($img_name) {
+							return $file !== $img_name;
+						});
+						// Re-index the array to remove any gaps in the numeric keys
+						$node_files = array_values($node_files);
+						$node->setAttributeJSON('files', $node_files);
+					}
+					if($node->getThumbnail() == $img_name){
+						$node->setThumbnail(null);
+					}
+					$node->setLanguage(\Quanta\Common\Localization::LANGUAGE_NEUTRAL);
+					$node->save();
+				} else {
+					$success = false;
+					$errors['error-message'] = 'Failed to delete the image file from the server';
+				}
+			} else {
+				$success = false;
+				$errors['error-message'] = 'Image file does not exist on the server';
+			}
+			break;
+		
+		default:
+			$success = false;
+			$errors ['error-message']= 'Invalid action type';
+			break;
+	}
+	if(!$success){
+		http_response_code(400);
+		$response->shadowErrors = json_encode($errors);
+	}
+	$redirect_url = is_array( $vars['data']['current_url']->value) ? array_pop( $vars['data']['current_url']->value) :  $vars['data']['current_url']->value;
+	$response->redirect = $redirect_url;
+	$response_json = json_encode($response);
+	exit($response_json);
+}
