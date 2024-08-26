@@ -97,7 +97,6 @@ $(document).bind('shadow_open', function() {
 
 $(document).ready(function() {	
   $('.file-operation').click(function (e) {
-    console.log('clicked');
 		e.preventDefault();
 		openShadow({
 			module: 'file',
@@ -110,8 +109,6 @@ $(document).ready(function() {
 	  });
 });
   function initImgOperationsModal(){
-    console.log('delete');
-    console.log($('#delete_img'));
     if ($('#delete_img').length > 0) {
       $('#set_as_thumbnail').addClass('not-submittable');
       $('#delete_img').addClass('not-submittable');
@@ -126,9 +123,7 @@ $(document).ready(function() {
       var $form = $('#shadow-form');
       // Find the hidden input with the name 'action_type'
       var $input = $form.find('input[name="action_type"]');
-      console.log($input);
       if ($input.length === 0) {
-        console.log('will add');
         // If the input doesn't exist, create and append it to the form
         $('<input>').attr({
           type: 'hidden',
