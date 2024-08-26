@@ -28,7 +28,6 @@ $(function () {
       // TODO: should use a normal QTAG.
       var tpl = $('' +
         '<li class="working file-list-item list-item-file_admin">' +
-        '<span class="sort-handle"></span>' +
         '<span class="file-link-item">' +
         '<span class="file-preview"></span>' +
         '<a class="file-link" target="_blank" data-filenew="true" data-filename="' + (data.files[0].name) + '" href="/tmp/' + tmp_files_dir + '/' + (data.files[0].name) + '">' + (data.files[0].name) + "</a>" +
@@ -209,9 +208,11 @@ var refreshThumbnail = function () {
 
 $(document).bind('refresh', function () {
   $('.list-item-file_admin').each(function () {
-    refreshFileActions($(this));
-    refreshThumbnail();
-  });
+    if (!$(this).parent().hasClass('just-view')) {
+        refreshFileActions($(this));
+        refreshThumbnail();
+    }
+});
 
   $('.list-file_admin').each(function () {
     $(this).sortable({
