@@ -1,4 +1,5 @@
 [FORM|name=files:
-    [INPUT|type=file|plugin=drop|name=files:files]
+    [INPUT|type=file|plugin=drop|widget|name=files:files]
+    [INPUT|title=thumbnail|id=edit_thumbnail|type=hidden|name=edit-thumbnail|value={ATTRIBUTE|name=thumbnail|no_qtags}:metadata-form]
 ]
-[UPLOAD_VIEW]
+[FILES_ADMIN|file_field=files|sort=weight]

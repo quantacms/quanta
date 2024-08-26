@@ -143,17 +143,17 @@ var refreshFileActions = function (fileElement) {
     $(this).addClass('is-editing');
 
     // Create file actions.
-    // if (!$(this).find('.file-actions').length) {
-    //   var actionsButtons= '<div class="file-actions">';
-    //   if(hasMultipleAttribute && inputFileInsideForm.attr('thumbnail') !== 'false'){
-    //     actionsButtons += '<input type="button" class="set-thumbnail" data-filename="' + filename + '" value="" />';
-    //   }
-    //   actionsButtons += '<input type="button" class="delete-file" value="delete file" />' +
-    //   '</div>';
-    //   // Append file actions to manage files.
-    //   $(this).append(actionsButtons);
+    if (!$(this).find('.file-actions').length) {
+      var actionsButtons= '<div class="file-actions">';
+      if(hasMultipleAttribute && inputFileInsideForm.attr('thumbnail') !== 'false'){
+        actionsButtons += '<input type="button" class="set-thumbnail" data-filename="' + filename + '" value="" />';
+      }
+      actionsButtons += '<input type="button" class="delete-file" value="delete file" />' +
+      '</div>';
+      // Append file actions to manage files.
+      $(this).append(actionsButtons);
       
-    // }
+    }
 
     // Initialize set thumbnail buttons.
     $('.set-thumbnail').on('click', function () {
@@ -208,9 +208,11 @@ var refreshThumbnail = function () {
 
 $(document).bind('refresh', function () {
   $('.list-item-file_admin').each(function () {
-    refreshFileActions($(this));
-    refreshThumbnail();
-  });
+    if (!$(this).parent().hasClass('just-view')) {
+        refreshFileActions($(this));
+        refreshThumbnail();
+    }
+});
 
   $('.list-file_admin').each(function () {
     $(this).sortable({

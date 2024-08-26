@@ -18,6 +18,15 @@ function file_shadow_file_form(Environment $env, array $vars) {
   }
 }
 
+function file_shadow_modern_file_form(Environment $env, array $vars) {
+  /** @var Shadow $shadow */
+  $shadow = $vars['shadow'];
+  $node = $shadow->getNode();
+  if (NodeAccess::check($env, $env->getContext(), array('node' => $node))) {
+    $vars['shadow']->addTab('manage files', file_get_contents($env->getModulePath('file') . '/tpl/modern_upload_form.html'), 2);
+  }
+}
+
 /**
  * Implements hook_load_includes().
  *
