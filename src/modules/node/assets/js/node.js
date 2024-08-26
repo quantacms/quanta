@@ -89,3 +89,57 @@ $(document).bind('refresh', function() {
             $(this).children('.node-item-actions').hide();
         });
 });
+$(document).bind('shadow_open', function() {
+	initImgOperationsModal();
+	handleImgOperation('set_as_thumbnail');
+	handleImgOperation('delete_img');
+});
+
+$(document).ready(function() {	
+  $('.file-operation').click(function (e) {
+    console.log('clicked');
+		e.preventDefault();
+		openShadow({
+			module: 'file',
+			context: 'preview_img',
+			widget: 'single',
+			components: ['preview_img'],
+			img_node: $(this).data('img_node'),
+			img: $(this).data('img'),
+		});	
+	  });
+});
+  function initImgOperationsModal(){
+    console.log('delete');
+    console.log($('#delete_img'));
+    if ($('#delete_img').length > 0) {
+      $('#set_as_thumbnail').addClass('not-submittable');
+      $('#delete_img').addClass('not-submittable');
+          $('#cancel').hide();
+      }
+  }
+  
+  function handleImgOperation(button){
+    $(`#${button}`).click(function (e) {
+      e.preventDefault();
+      $(this).addClass('shadow-submitted');
+      var $form = $('#shadow-form');
+      // Find the hidden input with the name 'action_type'
+      var $input = $form.find('input[name="action_type"]');
+      console.log($input);
+      if ($input.length === 0) {
+        console.log('will add');
+        // If the input doesn't exist, create and append it to the form
+        $('<input>').attr({
+          type: 'hidden',
+          name: 'action_type',
+          value: button
+        }).appendTo($form);
+      } else {
+        // If the input exists, just update its value
+        $input.val(button);
+      }
+      // Call the submitShadow function to handle form submission
+      submitShadow();
+    });
+  }

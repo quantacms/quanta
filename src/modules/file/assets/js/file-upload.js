@@ -28,7 +28,6 @@ $(function () {
       // TODO: should use a normal QTAG.
       var tpl = $('' +
         '<li class="working file-list-item list-item-file_admin">' +
-        '<span class="sort-handle"></span>' +
         '<span class="file-link-item">' +
         '<span class="file-preview"></span>' +
         '<a class="file-link" target="_blank" data-filenew="true" data-filename="' + (data.files[0].name) + '" href="/tmp/' + tmp_files_dir + '/' + (data.files[0].name) + '">' + (data.files[0].name) + "</a>" +
@@ -144,17 +143,17 @@ var refreshFileActions = function (fileElement) {
     $(this).addClass('is-editing');
 
     // Create file actions.
-    if (!$(this).find('.file-actions').length) {
-      var actionsButtons= '<div class="file-actions">';
-      if(hasMultipleAttribute && inputFileInsideForm.attr('thumbnail') !== 'false'){
-        actionsButtons += '<input type="button" class="set-thumbnail" data-filename="' + filename + '" value="" />';
-      }
-      actionsButtons += '<input type="button" class="delete-file" value="delete file" />' +
-      '</div>';
-      // Append file actions to manage files.
-      $(this).append(actionsButtons);
+    // if (!$(this).find('.file-actions').length) {
+    //   var actionsButtons= '<div class="file-actions">';
+    //   if(hasMultipleAttribute && inputFileInsideForm.attr('thumbnail') !== 'false'){
+    //     actionsButtons += '<input type="button" class="set-thumbnail" data-filename="' + filename + '" value="" />';
+    //   }
+    //   actionsButtons += '<input type="button" class="delete-file" value="delete file" />' +
+    //   '</div>';
+    //   // Append file actions to manage files.
+    //   $(this).append(actionsButtons);
       
-    }
+    // }
 
     // Initialize set thumbnail buttons.
     $('.set-thumbnail').on('click', function () {
