@@ -35,7 +35,7 @@ class Shadow extends Content {
         foreach ($shadow->getData('buttons') as $action => $button) {
           $buttons .= '<a class="shadow-submit" id="' . $action . '">' . $button . '</a>';
         }
-        $cancelTitle = $shadow->getData('delete_form') ? t("No") : t("Cancel"); 
+        $cancelTitle = $shadow->getData('delete_form') ? \Quanta\Common\Localization::translatableText($this->env,"No",'shadow-no') : \Quanta\Common\Localization::translatableText($this->env,"Cancel",'shadow-cancel'); 
         $buttons .= '<a class="shadow-cancel" id="cancel">'.$cancelTitle.'</a>';
         $buttons .= '</div>';
         $string = $buttons;
