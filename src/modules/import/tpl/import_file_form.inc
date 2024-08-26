@@ -4,4 +4,4 @@
     [INPUT|single|not-thumbnail|type=file|plugin=csv-file|name=files:files]
     [INPUT|id=import_csv|type=hidden|name=import-csv:metadata-form]
 ]
-[UPLOAD_VIEW|file_field=files|sort=weight]
+[UPLOAD_VIEW]
