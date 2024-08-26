@@ -16,7 +16,7 @@ $(document).bind('refresh', function () {
   $('#shadow-item').find('input,select,textarea').bind('change', setShadowUpdated);
 
   $('.shadow-submit').on('click', async function () {
-    if (!($(this).hasClass('shadow-submitted'))) {
+    if (!($(this).hasClass('shadow-submitted')) && !($(this).hasClass('not-submittable'))) {
       shadowConfirmClose = true;
 
       $(document).trigger('shadow_save');
