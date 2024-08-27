@@ -122,7 +122,7 @@ $(function () {
 
 
 // Initialize button events for file table admin.
-var refreshFileActions = function (fileElement) {
+var refreshFileActions = function (fileElement, justView = false) {
   var filename = fileElement.find('.file-link').data('filename');
   var formname = fileElement.closest('.shadow-content').find('form').attr('id');
   var inputFileInsideForm = fileElement.closest('.shadow-content').find('form').find('input[type="file"]');
@@ -132,8 +132,8 @@ var refreshFileActions = function (fileElement) {
   if (fileElement.find('.file-preview').length) {
     fileElement.prepend('<input type="hidden" class="file-name" name="uploaded_file' + '-' + formname + '-' + filename + '" value="' + filename + '" >');
   }
-
-  /**
+  if(!justView){
+     /**
    * Open manage file settings form on mouse enter.
    */
   fileElement.on('mouseenter', function () {
@@ -192,6 +192,7 @@ var refreshFileActions = function (fileElement) {
     $(this).removeClass('is-editing');
     $(this).find('.file-actions').remove();
   });
+  }
 
 };
 
@@ -208,10 +209,9 @@ var refreshThumbnail = function () {
 
 $(document).bind('refresh', function () {
   $('.list-item-file_admin').each(function () {
-    if (!$(this).parent().hasClass('just-view')) {
-        refreshFileActions($(this));
+        refreshFileActions($(this),$(this).parent().hasClass('just-view'));
         refreshThumbnail();
-    }
+    
 });
 
   $('.list-file_admin').each(function () {
