@@ -126,8 +126,18 @@ class Api {
    *   Returns True if the URL is valid.
    */
   public static function valid_url($url) {
-    return (!filter_var($url, FILTER_VALIDATE_URL) === FALSE);
+    // Check if the URL starts with 'http://', 'https://', or 'www.'
+    if (preg_match('/^(https?:\/\/|www\.)[^\s]+$/i', $url)) {
+      // If it starts with 'www.', prepend 'http://' for validation purposes
+      if (strpos($url, 'www.') === 0) {
+          $url = 'http://' . $url;
+      }
 
+      // Validate the URL using FILTER_VALIDATE_URL
+      return filter_var($url, FILTER_VALIDATE_URL) !== FALSE;
+    }
+
+    return FALSE;
   }
 
   /**
