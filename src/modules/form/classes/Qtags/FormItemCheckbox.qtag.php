@@ -16,7 +16,15 @@ class FormItemCheckbox extends FormItemString {
    *   The rendered form item.
    */
   public function render() {
-    $checked = $this->getCheckedValue() ? $this->getAttribute('value') ==  $this->getAttribute('selected-value') : false;
+    $selected_value = $this->getAttribute('selected-value');
+    $value = $this->getAttribute('value');
+    $checked = false;
+    if(!empty($this->getAttribute('separator'))){
+      $selected_value = explode($this->getAttribute('separator'),$selected_value);
+    }
+    if(!empty($selected_value)){
+      $checked = is_array($selected_value) ? in_array($value,$selected_value) : $value == $selected_value;
+    }
     if($checked){
       $this->html_params['checked'] = 'checked';
     }
