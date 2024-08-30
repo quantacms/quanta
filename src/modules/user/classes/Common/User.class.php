@@ -60,23 +60,6 @@ class User extends Node {
   }
 
   /**
-   * Check if the user entered a correct password.
-   *
-   * @param string $password
-   *   The entered password.
-   *
-   * @return bool
-   *   Return true if the user/pass combination matches.
-   */
-  private function checkPassword($password) {
-    if (!isset($this->json->password)) {
-      return FALSE;
-    }
-    // We compare with the encrypted password.
-    return ($this->json->password == UserFactory::passwordEncrypt($password));
-  }
-
-  /**
    * Check if the user is anonymous / guest user.
    *
    * @return bool
@@ -214,7 +197,7 @@ class User extends Node {
     }
 
     else {
-      if ($this->checkPassword($password) || $force_login) {
+      if (UserFactory::checkPassword($this,$password) || $force_login) {
 				if (!empty($success_message)) {
           new Message($this->env,
             $success_message,
