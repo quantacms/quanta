@@ -18,6 +18,7 @@ class Environment extends DataContainer {
   public $host = array();
   public $dir = array();
   public $request_uri;
+  public $site_url;
   public $query_params;
   public $request_path;
   public $request_json;
@@ -74,6 +75,7 @@ class Environment extends DataContainer {
     if ($docroot == NULL) {
       $docroot = $_SERVER['DOCUMENT_ROOT'];
     }
+    $this->site_url =  $this->getProtocol() . '://' . $this->host;
     // TODO: move request_uri in data.
     $this->setData('request_url', $this->getProtocol() . '://' . $this->host . $this->request_uri);
     $this->dir['quanta'] = $docroot;
