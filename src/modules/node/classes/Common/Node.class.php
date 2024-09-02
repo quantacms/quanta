@@ -514,6 +514,9 @@ class Node extends JSONDataContainer implements Cacheable {
 
       // Check if the move was successful
       if ($return === 0) {
+        $vars = array('node' => &$this);
+        // Run node delete hooks.
+        $this->env->hook('node_delete', $vars);
         // Node moved successfully
         new Message($this->env,
         t('User deleted this node: !node.', array('!node' => $this->getName())),
