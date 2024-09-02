@@ -77,7 +77,7 @@ class Environment extends DataContainer {
     }
     $this->site_url =  $this->getProtocol() . '://' . $this->host;
     // TODO: move request_uri in data.
-    $this->setData('request_url', $this->getProtocol() . '://' . $this->host . $this->request_uri);
+    $this->setData('request_url', $this->site_url . $this->request_uri);
     $this->dir['quanta'] = $docroot;
     $this->dir['sites'] = $this->dir['quanta'] . '/sites';
     $this->dir['src'] = $this->dir['quanta'] . '/src';
