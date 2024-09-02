@@ -279,4 +279,23 @@ class UserFactory {
   public static function passwordEncrypt($pass) {
     return substr((md5(substr($pass, 0, 5) . 'ABC' . substr($pass, 5, 2) . 'nginE')) . md5($pass), 0, 50);
   }
+
+    /**
+   * Check if the user entered a correct password.
+   *
+   * @param Node $user
+   *   The User Node.
+   * @param string $password
+   *   The entered password.
+   *
+   * @return bool
+   *   Return true if the user/pass combination matches.
+   */
+  public static function checkPassword($user,$password) {
+    if (!isset($user->json->password)) {
+      return FALSE;
+    }
+    // We compare with the encrypted password.
+    return ($user->json->password == UserFactory::passwordEncrypt($password));
+  }
 }
