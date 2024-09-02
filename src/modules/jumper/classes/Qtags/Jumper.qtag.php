@@ -42,16 +42,19 @@ class Jumper extends Qtag {
       $filter_prefix = !empty($list_filters) ? ',' : '';
       $list_filters .= $filter_prefix . 'path@!'. $default_path;
     }
- 
-
-    $dirlist = new DirList($this->env, $this->getTarget(), 'jumper', array('sort' => 'title','list_filter' => $list_filters) + $this->attributes, 'jumper');
+    
+    $options = !empty($this->getAttribute('values')) ? $this->getAttribute('values') : null;
+    if(!$options){
+      $dirlist = new DirList($this->env, $this->getTarget(), 'jumper', array('sort' => 'title','list_filter' => $list_filters) + $this->attributes, 'jumper');
+      $options =  $dirlist->render();
+    }
     $tpl = 'jumper';
     // Render the jumper.
     // TODO: use FORM Qtags.
     $jumper = '<select class="jumper" data-field="' . $field . '" data-jumper-method="' . $method. '" rel="' . $ajax . '" ' . $tpl . '>'.
       (($empty_path != $default_path) ? ('<option value="' . $default_path . '">' . $default_title . '</option>') : '') .
       ($this->attributes['empty_show'] !='false' ?'<option value="' . $empty_path . '">' . $empty_title . '</option>':'') .
-      $dirlist->render() . '</select>';
+      $options . '</select>';
 
     return $jumper;
  
