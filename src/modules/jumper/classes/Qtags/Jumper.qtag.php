@@ -34,7 +34,9 @@ class Jumper extends Qtag {
     if (!empty($this->attributes['empty_show']) && ($this->attributes['empty_show'] == 'always')) {
       $empty_path = (isset($this->attributes['empty_path'])) ? $this->attributes['empty_path'] : '';
       $empty_title = (isset($this->attributes['empty'])) ? $this->attributes['empty'] : '----------';
-
+    } else {
+      $empty_title = '';
+      $empty_path = '';
     }
 
     $list_filters = (isset($this->attributes['list_filter'])) ? $this->attributes['list_filter'] : '';
