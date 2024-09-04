@@ -79,10 +79,6 @@ var actionSuccess = function(data) {
  * @param exception
  */
 var actionError = function(err, exception) {
-    console.log(err);
-    console.log(exception);
-    console.log('error');
-
     if(err?.responseJSON?.shadowErrors){
     var errors = JSON.parse(err.responseJSON.shadowErrors);
     $('.shadow-submitted').removeClass('shadow-submitted');
@@ -108,6 +104,10 @@ var actionError = function(err, exception) {
       }
   
     });  
+  }
+  else if (err?.responseJSON?.error_message){
+   const shadowButtons = $('#shadow-buttons'); 
+   shadowButtons.parent().prepend(`<div style="font-size: 12px;" class="validation-error">${err.responseJSON.error_message}</div>`)
   }
   else{
     alert(exception);
