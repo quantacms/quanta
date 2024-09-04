@@ -176,17 +176,21 @@ function file_shadow_preview_img($env, $vars) {
 	$vars['shadow']->addButton('delete_img', t('Eliminare'));
 }
 
-function file_action_file_operations($env, $vars){
+function file_file_operations_form_after_submit($env, $vars){
 	$response = new \stdClass();
 	$success = true;
 	$errors = array();
 	http_response_code(200);
-	$action = is_array($vars['data']['action_type']->value) ? array_pop($vars['data']['action_type']->value) : $vars['data']['action_type']->value;
-	$node_name = is_array($vars['data']['img_node']->value) ? array_pop($vars['data']['img_node']->value) : $vars['data']['img_node']->value;
-	$img_name = is_array($vars['data']['img']->value) ? array_pop($vars['data']['img']->value) : $vars['data']['img']->value;
+  $form_state = $vars['form_state'];
+	$action = $form_state->getData('action_type');
+	$node_name = $form_state->getData('img_node');
+	$img_name = $form_state->getData('img');
+	$img_key = $form_state->getData('img_key');
+	$current_url = $form_state->getData('current_url');
 	$node = \Quanta\Common\NodeFactory::load($env,$node_name);
 	$img_path = $node->getPath() . '/' . $img_name;
-	$node_files = $node->getAttributeJSON('files');
+	$node_files = !empty($node->getAttributeJSON('files')) ? $node->getAttributeJSON('files') : array();
+	$node_files = !is_array($node_files) ? array($node_files) : $node_files;
 
 	switch ($action) {
 		case 'set_as_thumbnail':
@@ -211,6 +215,9 @@ function file_action_file_operations($env, $vars){
 					if($node->getThumbnail() == $img_name){
 						$node->setThumbnail(null);
 					}
+          if(!empty($node->json->{$img_key})){
+            $node->removeAttributeJSON($img_key);
+          }
 					$node->setLanguage(\Quanta\Common\Localization::LANGUAGE_NEUTRAL);
 					$node->save();
 				} else {
@@ -228,12 +235,13 @@ function file_action_file_operations($env, $vars){
 			$errors ['error-message']= 'Invalid action type';
 			break;
 	}
+  $response->success = $success;
+  $response->img = $img_name;
+  $response->action_type = $action;
 	if(!$success){
 		http_response_code(400);
 		$response->shadowErrors = json_encode($errors);
 	}
-	$redirect_url = is_array( $vars['data']['current_url']->value) ? array_pop( $vars['data']['current_url']->value) :  $vars['data']['current_url']->value;
-	$response->redirect = $redirect_url;
 	$response_json = json_encode($response);
 	exit($response_json);
 }
