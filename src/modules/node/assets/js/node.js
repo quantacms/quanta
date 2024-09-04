@@ -105,6 +105,7 @@ $(document).ready(function() {
 			widget: 'single',
 			components: ['preview_img'],
 			img_node: $(this).data('img_node'),
+			img_key: $(this).data('img_key'),
 			img: $(this).data('img'),
 		});	
 	  });
