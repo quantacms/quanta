@@ -184,9 +184,11 @@ function file_action_file_operations($env, $vars){
 	$action = is_array($vars['data']['action_type']->value) ? array_pop($vars['data']['action_type']->value) : $vars['data']['action_type']->value;
 	$node_name = is_array($vars['data']['img_node']->value) ? array_pop($vars['data']['img_node']->value) : $vars['data']['img_node']->value;
 	$img_name = is_array($vars['data']['img']->value) ? array_pop($vars['data']['img']->value) : $vars['data']['img']->value;
+	$img_key = is_array($vars['data']['img_key']->value) ? array_pop($vars['data']['img_key']->value) : $vars['data']['img_key']->value;
 	$node = \Quanta\Common\NodeFactory::load($env,$node_name);
 	$img_path = $node->getPath() . '/' . $img_name;
-	$node_files = $node->getAttributeJSON('files');
+	$node_files = !empty($node->getAttributeJSON('files')) ? $node->getAttributeJSON('files') : array();
+	$node_files = !is_array($node_files) ? array($node_files) : $node_files;
 
 	switch ($action) {
 		case 'set_as_thumbnail':
@@ -211,6 +213,9 @@ function file_action_file_operations($env, $vars){
 					if($node->getThumbnail() == $img_name){
 						$node->setThumbnail(null);
 					}
+          if(!empty($node->json->{$img_key})){
+            $node->removeAttributeJSON($img_key);
+          }
 					$node->setLanguage(\Quanta\Common\Localization::LANGUAGE_NEUTRAL);
 					$node->save();
 				} else {

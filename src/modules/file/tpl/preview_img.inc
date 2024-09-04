@@ -4,6 +4,7 @@
     [INPUT|type=hidden|name=form|value=file_operations:shadow-form]
     [INPUT|type=hidden|id=current_url|required|name=current_url:shadow-form]
     [INPUT|type=hidden|name=img_node|value={SHADOW:img_node}:shadow-form]
+    [INPUT|type=hidden|name=img_key|value={SHADOW:img_key}:shadow-form]
     [INPUT|type=hidden|name=img|value={SHADOW:img}:shadow-form]
     [INPUT|id=edit_action|type=hidden|name=action|value=file_operations:shadow-form]
 ]
