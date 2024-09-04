@@ -152,7 +152,7 @@ document.addEventListener('formSubmissionSuccess', function(event) {
         switch (response.action_type) {
           case "delete_img":
             $(`img[src$="${imgSrc}"]`).closest('div').fadeOut(1000, function() {
-              $(this).remove(); // Optional: remove the entire div structure after fade out
+              $(this).remove();
             });
             break;
             
@@ -163,7 +163,6 @@ document.addEventListener('formSubmissionSuccess', function(event) {
            // Add "is-thumbnail" class to the target image's parent div with an animation
            const $target = $(`img[src$="${imgSrc}"]`).closest('.preview-item');
            
-           // Optional: Add an initial animation before setting as thumbnail
            $target.css({ transform: 'scale(1.1)', opacity: 0 })
                .addClass('is-thumbnail')
                .animate({ opacity: 1 }, 500)
