@@ -424,7 +424,13 @@ class Environment extends DataContainer {
   public function hook($function, array &$vars = array()) {
     $env = &$this;
     $hooked = FALSE;
-    foreach ($this->getLoadedModules() as $module) {
+    $modules = $this->getLoadedModules();
+    // Remove 'environment' from its original position
+    $environment = $modules['environment'];
+    unset($array['environment']);
+    // Add 'environment' to the beginning of the array
+    $modules = array('environment' => $environment) + $modules;
+    foreach ($modules as $module) {
       $hook = __NAMESPACE__ . '\\' . $module['name'] . '_' . $function;
       if (function_exists( $hook)) {
         $hook($env, $vars);
