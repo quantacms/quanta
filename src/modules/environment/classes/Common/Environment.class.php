@@ -233,8 +233,18 @@ class Environment extends DataContainer {
    * @return array
    *   The modules already loaded in the environment.
    */
-  public function getLoadedModules() {
-    return $this->modules_loaded;
+  public function getLoadedModules($priority = null) {
+    $modules_loaded = $this->modules_loaded;
+    if($priority){
+      if(isset($modules_loaded[$priority])){
+        $priority_module = $modules_loaded[$priority];
+        // Remove priority module from its original position
+        unset($modules_loaded[$priority]);
+        // Add priority module to the beginning of the array
+        $modules_loaded = array($priority => $priority_module) + $modules_loaded;
+      }
+    }
+    return $modules_loaded;
   }
 
   /**
@@ -424,13 +434,7 @@ class Environment extends DataContainer {
   public function hook($function, array &$vars = array()) {
     $env = &$this;
     $hooked = FALSE;
-    $modules = $this->getLoadedModules();
-    // Remove 'environment' from its original position
-    $environment = $modules['environment'];
-    unset($array['environment']);
-    // Add 'environment' to the beginning of the array
-    $modules = array('environment' => $environment) + $modules;
-    foreach ($modules as $module) {
+    foreach ($this->getLoadedModules('environment') as $module) {
       $hook = __NAMESPACE__ . '\\' . $module['name'] . '_' . $function;
       if (function_exists( $hook)) {
         $hook($env, $vars);
