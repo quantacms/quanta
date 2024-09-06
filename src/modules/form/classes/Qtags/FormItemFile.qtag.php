@@ -23,7 +23,6 @@ class FormItemFile extends FormItemString {
     $accept_values= "";
     if(!empty($this->getAttribute('accept'))){
       $accept_values =$this->getAttribute('accept');
-      $accept_values = str_replace(';', ',', $accept_values);
       $accept_values = ' accept="' . $accept_values . '"';
     }
 
