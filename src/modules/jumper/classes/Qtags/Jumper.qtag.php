@@ -24,7 +24,7 @@ class Jumper extends Qtag {
 
     if (!empty($this->attributes['default'])) {
       $default_path = $this->attributes['default'];
-      $default_title = '[TITLE:' . $this->attributes['default'] . ']';
+      $default_title = !empty($this->getAttribute('default-title')) ? $this->getAttribute('default-title') :  '[TITLE:' . $this->attributes['default'] . ']';
 
     } else {
       $default_path = (isset($this->attributes['empty_path'])) ? $this->attributes['empty_path'] : '';
@@ -45,9 +45,12 @@ class Jumper extends Qtag {
       $list_filters .= $filter_prefix . 'path@!'. $default_path;
     }
     
+    $tpl = !empty($this->getAttribute('tpl')) ? $this->getAttribute('tpl') : 'jumper';
+    $module = !empty($this->getAttribute('module')) ? $this->getAttribute('module') : 'jumper';
+
     $options = !empty($this->getAttribute('values')) ? $this->getAttribute('values') : null;
     if(!$options){
-      $dirlist = new DirList($this->env, $this->getTarget(), 'jumper', array('sort' => 'title','list_filter' => $list_filters) + $this->attributes, 'jumper');
+      $dirlist = new DirList($this->env, $this->getTarget(), $tpl, array('sort' => 'title','list_filter' => $list_filters) + $this->attributes, $module);
       $options =  $dirlist->render();
     }
     $tpl = 'jumper';
