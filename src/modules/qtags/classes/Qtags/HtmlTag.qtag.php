@@ -46,6 +46,10 @@ class HtmlTag extends Qtag {
     	}
     }
     foreach ($this->html_params as $param_name => $param_value) {
+      // check if param value is html tag and escape it
+      if ($param_value !== strip_tags($param_value)) {
+        $param_value = htmlspecialchars($param_value);
+      }
       if (!empty($param_name)) {
         $html .= $param_name . '="' . $param_value . '"';
       }
