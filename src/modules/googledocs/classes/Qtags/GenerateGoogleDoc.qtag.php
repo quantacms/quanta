@@ -11,7 +11,7 @@ class GenerateGoogleDoc extends Link {
    * @return mixed
    */
   function render() {
-    $generate_path = \Quanta\Common\GoogleDocs::GENERATE_GOOGLE_DOC_PATH;
+    $generate_path = 'generate-google-doc';
     $node_name = $this->getTarget();
     $key =  $this->getAttribute('key');
     $query = $this->getAttribute('query');
