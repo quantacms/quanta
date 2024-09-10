@@ -20,8 +20,14 @@ class FormItemFile extends FormItemString {
     }
     $this->html_params['single'] = $this->getAttribute('single');
 
+    $accept_values= "";
+    if(!empty($this->getAttribute('accept'))){
+      $accept_values =$this->getAttribute('accept');
+      $accept_values = ' accept="' . $accept_values . '"';
+    }
+
     $rendered_icon = '<img class="upload-icon" src="/modules/file/assets/img/icons/upload-icon.png">';
-    $rendered_input = '<input type="file" name="' . $this->getName() . '" id="' . $this->getId() . '" ' .$isMultiple .' ' .$setAsThumbnail;
+    $rendered_input = '<input type="file" name="' . $this->getName() . '" id="' . $this->getId() . '" ' .$isMultiple .' ' .$setAsThumbnail . ' ' . $accept_values;
     $rendered_drop = '[TEXT|tag=drop-here-files:Drop here files]<a>[TEXT|tag=or-press-here:or press here]</a>';
     $rendered = '<input type="hidden" name="tmp_upload_dir" value="[ATTRIBUTE|name=tmp_files_dir]" />' . '<div class="upload-files"><div class="drop">';
     
