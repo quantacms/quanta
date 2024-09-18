@@ -332,19 +332,20 @@ function user_user_form_form_validate(Environment $env, &$vars) {
   if (!\Quanta\Common\Api::valid_email($form_state->getData('email'))) {
     $form_state->validationError('email', t('Please enter a valid E-mail address!'));
   }
-  // Checks that old password matches new.
-  if ($check_password && $user->exists && (!empty($user->getData('old_password'))) && ($user->getPassword() != UserFactory::passwordEncrypt($user->getData('old_password')))) {
-    $form_state->validationError('old_password', t('The old password you entered is not valid. Please try again.'));
-  }
+  if(!isset($vars['skip_password'])){
+    // Checks that old password matches new.
+    if ($check_password && $user->exists && (!empty($user->getData('old_password'))) && ($user->getPassword() != UserFactory::passwordEncrypt($user->getData('old_password')))) {
+      $form_state->validationError('old_password', t('The old password you entered is not valid. Please try again.'));
+    }
 
-  // Checks password length.
-  // TODO: make customizable in hooks.
-  if ($check_password && (strlen($form_state->getData('password')) < \Quanta\Common\User::USER_PASSWORD_MIN_LENGTH)) {
-    $form_state->validationError('password', t('Password should be at least %length characters long.', array('%length' => \Quanta\Common\User::USER_PASSWORD_MIN_LENGTH)));
+    // Checks password length.
+    // TODO: make customizable in hooks.
+    if ($check_password && (strlen($form_state->getData('password')) < \Quanta\Common\User::USER_PASSWORD_MIN_LENGTH)) {
+      $form_state->validationError('password', t('Password should be at least %length characters long.', array('%length' => \Quanta\Common\User::USER_PASSWORD_MIN_LENGTH)));
+    }
+    // Checks that the repeated password matches the original.
+    if ($check_password && ($form_state->getData('password_rp') != $form_state->getData('password'))) {
+      $form_state->validationError('password_rp', 'Password fields are not the same.');
+    }
   }
-  // Checks that the repeated password matches the original.
-  if ($check_password && ($form_state->getData('password_rp') != $form_state->getData('password'))) {
-    $form_state->validationError('password_rp', 'Password fields are not the same.');
-  }
-
 }
