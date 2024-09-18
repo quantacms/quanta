@@ -104,8 +104,8 @@ var refreshMultiple = function (inputItem) {
   });
 
   // Remove - button if only one element present.
-  if (inputCounter < 2) {
-    wrapper.find('.form-item-remove').remove();
+  if (inputCounter < 2) {    
+    $('*[name=' + inputItemName + ']').siblings('.form-item-remove').remove();
   }
   // Preparing the + button. Remove the existing one...
   var form_item_add_id = 'form-item-add-' + inputItemName;
