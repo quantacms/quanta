@@ -81,7 +81,6 @@ var refreshAutocomplete = function() {
  * @param inputItem
  */
 var refreshMultiple = function (inputItem) {
-  var wrapper = inputItem.closest('.form-item-multiple-wrapper');
   var inputItemID = inputItem.attr('id');
   var inputItemName = inputItem.attr('name');
   var inputCounter = 0;
