@@ -245,13 +245,7 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
           }
 	  else {
 	    if (!empty($check)) {
-        try {
           $check = trim($check);
-
-        } catch (\Throwable $th) {
-         print_r($check);
-         die();
-        }
 	    } 
 	    if (!empty($filter_value)) {
 	      $filter_value = trim($filter_value);
