@@ -228,7 +228,7 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
         break;
     }
 
-    if (!empty($filter_check)) {         
+    if (!empty($filter_check)) {       
       // Check if the filtered item corresponds to the user input.
       foreach ($filter_check as $check) {
         foreach ($filter_values as $filter_value) {
@@ -245,7 +245,7 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
           }
 	  else {
 	    if (!empty($check)) {
-          $check = trim($check);
+        $check = trim($check);
 	    } 
 	    if (!empty($filter_value)) {
 	      $filter_value = trim($filter_value);
