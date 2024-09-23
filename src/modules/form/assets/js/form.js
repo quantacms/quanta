@@ -524,7 +524,7 @@ function removeDuplicateOptions(id) {
 
 function handleSelectChange() {
   $('.form-item-select').off('change').on('change', function() {
-    if(!$(this).data('multiple')){  return ;}
+    if($(this).data('multiple') != true){  return ;}
     var selectedValues = $('.form-item-select').map(function() {
       return $(this).val();
     }).get().filter(Boolean);
@@ -534,7 +534,7 @@ function handleSelectChange() {
     // Update all selects to remove selected values
     $('.form-item-select').each(function() {
       var $select = $(this);
-
+      if($(this).data('multiple') != true){  return ;}
       $select.find('option').each(function() {
         var $option = $(this);
         var optionValue = $option.val();
