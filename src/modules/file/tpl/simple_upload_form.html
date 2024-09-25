@@ -1,4 +1,12 @@
 [FORM|name=files:
-    [INPUT|type=file|plugin=drop|widget|name=files:files]
+    [HTML_TAG|class=host-shadow-title:
+        [RESOLUTION_MESSAGE:{SHADOW:resolution}]
+    ]
+    [INPUT|resolution={SHADOW:resolution}|type=file|plugin=drop|widget|name=files:files]
 ]
+
+[HTML_TAG|id=resolution-error-message|class=intro-description alert-description hidden:
+    [TEXT|tag=resolution-error-message:la risoluzione è troppo bassa! La risoluzione minima richiesta è] {SHADOW:resolution}
+]
+
 [UPLOAD_VIEW]
