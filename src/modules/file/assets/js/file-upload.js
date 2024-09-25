@@ -4,7 +4,7 @@ $(function () {
   if (!($('.upload-files').length)) { return; }
   
   $('.drop a').click(function () {
-    // Simulate a click on the file input button
+     // Simulate a click on the file input button
     // to show the file browser dialog
     $(this).parent().find('input').click();
   });
@@ -23,60 +23,32 @@ $(function () {
       // Check if the file input has the 'multiple' attribute
       hasMultipleAttribute = fileInputElement.hasAttribute('multiple');
       
-      var form_name = data.paramName;
+      var file = data.files[0];
+      var resolutionAttr = fileInputElement.getAttribute('data-resolution');
+      $('#resolution-error-message').hide();
+      if (resolutionAttr) {
+        var [minWidth, minHeight] = resolutionAttr.split('*').map(Number);
 
-      // TODO: should use a normal QTAG.
-      var tpl = $('' +
-        '<li class="working file-list-item list-item-file_admin">' +
-        '<span class="file-link-item">' +
-        '<span class="file-preview"></span>' +
-        '<a class="file-link" target="_blank" data-filenew="true" data-filename="' + (data.files[0].name) + '" href="/tmp/' + tmp_files_dir + '/' + (data.files[0].name) + '">' + (data.files[0].name) + "</a>" +
-        '</span>' +
-        '<span class="progress-wrapper">' +
-        '<input type="text" value="0" data-width="20" data-height="20" />' +
-        '</span>' +
-        '<span class="file-qtag"></span>' +
-        '</li>');
-
-
-      var ul = $(this).closest('.shadow-content').find('ul.list');
-
-      if(!hasMultipleAttribute){
-        // Hide only the old contents of the UL element
-        ul.children().hide();
+        // Create an image element to check dimensions
+        var img = new Image();
+        img.src = URL.createObjectURL(file);
+        elementContext = $(this);
+        img.onload = function () {
+          console.log(img.width + " * " + img.height);
+          if (img.width < minWidth || img.height < minHeight) {
+            $('#resolution-error-message').show();
+            return;
+          }          
+          // If resolution is valid, proceed to handle the file upload
+          handleFileUpload(data, tmp_files_dir, hasMultipleAttribute, elementContext);
+        };
+      } else {
+        handleFileUpload(data, tmp_files_dir, hasMultipleAttribute, $(this));
       }
-
-      // Add the HTML to the UL element
-      data.context = tpl.appendTo(ul);
-
-      // Initialize the knob plugin
-      tpl.find('input').knob();
-
-      // Listen for clicks on the cancel icon
-      tpl.find('.progress').click(function () {
-
-        if (tpl.hasClass('working')) {
-          jqXHR.abort();
-        }
-
-        tpl.fadeOut(function () {
-          tpl.remove();
-        });
-
-      });
-      if(data.files?.length){
-        files.push(data.files[data.files.length - 1]);
-
-      }
-      // Automatically upload the file once it is added to the queue
-      var jqXHR = data.submit();    
     },
 
-    progress: function (e, data) {// Calculate the completion percentage of the upload
+    progress: function (e, data) {
       var progress = parseInt(data.loaded / data.total * 100, 10);
-     
-      // Update the hidden input field and trigger a change
-      // so that the jQuery knob plugin knows to update the dial
       var red = 200 - (progress * 2);
       var green = (progress * 2);
       data.context.find('input').val(progress).css('width', progress + '%').css('background', 'rgb(' + red + ',' + green + ',0)').change();
@@ -84,18 +56,53 @@ $(function () {
       if (progress == 100) {
         data.context.removeClass('working');
         data.context.find('.progress-wrapper').hide();
-        //data.context.find('input').fadeOut('slow');
         $(document).trigger('refresh');
       }
     },
 
     fail: function (e, data) {
-      // Something has gone wrong!
       data.context.addClass('error');
     }
 
   });
 
+  function handleFileUpload(data, tmp_files_dir, hasMultipleAttribute, elementContext) {
+    // TODO: should use a normal QTAG.
+    var tpl = $('' +
+      '<li class="working file-list-item list-item-file_admin">' +
+      '<span class="file-link-item">' +
+      '<span class="file-preview"></span>' +
+      '<a class="file-link" target="_blank" data-filenew="true" data-filename="' + (data.files[0].name) + '" href="/tmp/' + tmp_files_dir + '/' + (data.files[0].name) + '">' + (data.files[0].name) + "</a>" +
+      '</span>' +
+      '<span class="progress-wrapper">' +
+      '<input type="text" value="0" data-width="20" data-height="20" />' +
+      '</span>' +
+      '<span class="file-qtag"></span>' +
+      '</li>');
+
+    var ul = $(elementContext).closest('.shadow-content').find('ul.list');
+
+    if (!hasMultipleAttribute) {
+      ul.children().hide();
+    }
+    data.context = tpl.appendTo(ul);
+    tpl.find('input').knob();
+
+    tpl.find('.progress').click(function () {
+      if (tpl.hasClass('working')) {
+        jqXHR.abort();
+      }
+      tpl.fadeOut(function () {
+        tpl.remove();
+      });
+    });
+
+    if (data.files?.length) {
+      files.push(data.files[data.files.length - 1]);
+    }
+
+    var jqXHR = data.submit();
+  }
 
   // Prevent the default action when a file is dropped on the window
   $(document).on('drop dragover', function (e) {
