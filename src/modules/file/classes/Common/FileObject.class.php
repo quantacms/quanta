@@ -346,6 +346,7 @@ class FileObject extends DataContainer {
       'csv',
       'wav',
       'svg',
+      'webp'
     );
 
     // Create a temporary upload directory.
