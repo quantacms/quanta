@@ -602,9 +602,9 @@ class NodeFactory {
    * @return string
    *   The rendered HTML of the node object.
    */
-  public static function render(Environment $env, $node_name = NULL, $language = NULL) {
+  public static function render(Environment $env, $node_name = NULL, $language = NULL, $tpl = null, $module = null) {
     $node = empty($node_name) ? NodeFactory::current($env) : NodeFactory::load($env, $node_name);
-    $tpl = new NodeTemplate($env, $node);
+    $tpl = new NodeTemplate($env, $node, $tpl, $module);
     return $tpl->getHtml();
   }
 

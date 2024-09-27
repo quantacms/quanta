@@ -12,6 +12,10 @@ class NodeTemplate extends DataContainer {
   public $node;
   /** @var string $html */
   public $html = '';
+  /** @var string $tpl */
+  public $tpl = null;
+  /** @var string $module */
+  public $module = null;
 
   /**
    * Constructs a Node Template  object.
@@ -22,9 +26,11 @@ class NodeTemplate extends DataContainer {
    * @param string $node
    *   The node related to the template.
    */
-  public function __construct(Environment &$env, $node) {
+  public function __construct(Environment &$env, $node, $tpl = null, $module = null) {
     $this->env = $env;
     $this->node = $node;
+    $this->tpl = $tpl;
+    $this->module = $module;
     $this->buildTemplate();
   }
 
@@ -83,9 +89,12 @@ class NodeTemplate extends DataContainer {
     $lineages = $this->node->getLineage() + array($this->node->name => $this->node);
     // Invert lineage: from specific to generic.
     $lineages = array_reverse($lineages);
-    // Priority 1: tpl without levels.
+    // Priority 1: custom tpl
+    if($this->tpl != null){
+      $this->setData('tpl_file', $this->module . '/tpl/' . $this->tpl . '.tpl.php');
+    }
     // If the current node has a TPL set use that directly and don't look for others.
-    if (is_file($this->node->path . '/tpl.html')) {
+    elseif (is_file($this->node->path . '/tpl.html')) {
       $this->setData('tpl_file', $this->node->path . '/tpl.html');
     }
     elseif (is_file($this->env->dir['tpl'] . '/' . $this->node->name . '_tpl.html')) {
@@ -106,18 +115,18 @@ class NodeTemplate extends DataContainer {
           // "node/subnode/tpl-" has priority over "node/tpl--"
           for ($i = 1; $i <= 5; $i++) {
             $min .= '-';
-	    $file = $lineage->path . '/tpl' . $min . '.html';
-	    $file_tpl = $this->env->dir['tpl'] . '/' . $lineage->name . '_tpl' . $min . '.html';
-	    if ($tpl_sublevel == $i) {
-		if (file_exists($file)) {
+            $file = $lineage->path . '/tpl' . $min . '.html';
+            $file_tpl = $this->env->dir['tpl'] . '/' . $lineage->name . '_tpl' . $min . '.html';
+	          if ($tpl_sublevel == $i) {
+		          if (file_exists($file)) {
               // tpl matches sublevel and distance form current node position: add it!
-		  $tpl[$tpl_sublevel] = $file;
-		}
-		elseif (file_exists($file_tpl)) {
-		  $tpl[$tpl_sublevel] = $file_tpl;
-		}
-		else {
-		}
+		          $tpl[$tpl_sublevel] = $file;
+		        }
+		        elseif (file_exists($file_tpl)) {
+		          $tpl[$tpl_sublevel] = $file_tpl;
+		        }
+		        else {
+		        }
             }
           }
         }
@@ -126,10 +135,10 @@ class NodeTemplate extends DataContainer {
         // If tpl^.html exists - template applies to all sublevels of the node.
         if (!isset($tpl_catch_all) && is_file($lineage->path . '/tpl^.html')) {
           $tpl_catch_all = $lineage->path . '/tpl^.html';
-	}
-	elseif (!isset($tpl_catch_all) && is_file($this->env->dir['tpl'] . '/' . $lineage->name . '_tpl^.html')) {
+	      }
+	      elseif (!isset($tpl_catch_all) && is_file($this->env->dir['tpl'] . '/' . $lineage->name . '_tpl^.html')) {
           $tpl_catch_all = $this->env->dir['tpl'] . '/' . $lineage->name . '_tpl^.html';
-	}
+	      }
 
         $tpl_sublevel++;
       }
@@ -152,6 +161,9 @@ class NodeTemplate extends DataContainer {
 
     // Set the template. By default, if no template file is found, a node renders its body.
     $this->html = (!empty($this->getData('tpl_file'))) ? file_get_contents($this->getData('tpl_file')) : $this->node->getBody();
-
+    $this->html = preg_replace("/\[NODEITEM\]/is", Api::string_normalize($this->node->getName()), $this->html);
+    if($this->tpl){
+      $this->html = QtagFactory::transformCodeTags($this->env, $this->html);
+    }
   }
 }
