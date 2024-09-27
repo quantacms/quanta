@@ -89,11 +89,11 @@ class NodeTemplate extends DataContainer {
     $lineages = $this->node->getLineage() + array($this->node->name => $this->node);
     // Invert lineage: from specific to generic.
     $lineages = array_reverse($lineages);
-    // Priority 1: tpl without levels.
-    // If the current node has a TPL set use that directly and don't look for others.
+    // Priority 1: custom tpl
     if($this->tpl != null){
       $this->setData('tpl_file', $this->module . '/tpl/' . $this->tpl . '.tpl.php');
     }
+    // If the current node has a TPL set use that directly and don't look for others.
     elseif (is_file($this->node->path . '/tpl.html')) {
       $this->setData('tpl_file', $this->node->path . '/tpl.html');
     }
