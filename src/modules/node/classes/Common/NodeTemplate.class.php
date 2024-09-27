@@ -161,7 +161,9 @@ class NodeTemplate extends DataContainer {
 
     // Set the template. By default, if no template file is found, a node renders its body.
     $this->html = (!empty($this->getData('tpl_file'))) ? file_get_contents($this->getData('tpl_file')) : $this->node->getBody();
-    $this->html = preg_replace("/\[NODEITEM\]/is", Api::string_normalize($this->node->getName()), $this->html);
+    if ($this->html !== null) {
+        $this->html = preg_replace("/\[NODEITEM\]/is", Api::string_normalize($this->node->getName()), $this->html);
+    }    
     if($this->tpl){
       $this->html = QtagFactory::transformCodeTags($this->env, $this->html);
     }
