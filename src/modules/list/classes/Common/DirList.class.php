@@ -154,9 +154,8 @@ class DirList extends ListObject {
    *   The key to be removed from the list.
    */
   public function removeItem($key) {
-    if(!isset($this->items[$key])){
-      return;
+    if (!empty($this->items[$key])) {
+        unset($this->items[$key]); 
     }
-    unset($this->items[$key]); 
   }
 }
