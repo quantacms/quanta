@@ -146,4 +146,17 @@ class DirList extends ListObject {
   public function addItem($node) {
 		$this->items[$node->getName()] = $node;
   }
+
+   /**
+   * Remove a node item to the list.
+   *
+   * @param String $key
+   *   The key to be removed from the list.
+   */
+  public function removeItem($key) {
+    if(!isset($this->items[$key])){
+      return;
+    }
+    unset($this->items[$key]); 
+  }
 }
