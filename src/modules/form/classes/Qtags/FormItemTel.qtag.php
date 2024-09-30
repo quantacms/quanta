@@ -28,7 +28,12 @@ class FormItemTel extends FormItemString {
    *
    */
   public function validate() {
-    $phone = $this->getSubmittedValue() ? $this->getSubmittedValue() : $this->getValue(true);
+    $full_phone = !empty($this->form_state) ? $this->form_state->getData('fullphone') : null;
+    if(!empty($full_phone)){
+      $phone = $full_phone;
+    }else{
+      $phone = $this->getSubmittedValue() ? $this->getSubmittedValue() : $this->getValue(true);
+    }
     if (!empty($phone) && !\Quanta\Common\Api::valid_phone($phone)) {
       $this->setValidationStatus(false);
       $translated_text = \Quanta\Common\Localization::translatableText($this->env,'Si prega di inserire un numero di telefono valido!','enter-valid-phone-message');

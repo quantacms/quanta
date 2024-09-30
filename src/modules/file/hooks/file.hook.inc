@@ -18,6 +18,15 @@ function file_shadow_file_form(Environment $env, array $vars) {
   }
 }
 
+function file_shadow_simple_file_form(Environment $env, array $vars) {
+  /** @var Shadow $shadow */
+  $shadow = $vars['shadow'];
+  $node = $shadow->getNode();
+  if (NodeAccess::check($env, $env->getContext(), array('node' => $node))) {
+    $vars['shadow']->addTab('manage files', file_get_contents($env->getModulePath('file') . '/tpl/simple_upload_form.html'), 2);
+  }
+}
+
 /**
  * Implements hook_load_includes().
  *
@@ -72,7 +81,7 @@ function file_node_presave(Environment $env, array $vars) {
   $node = $vars['node'];
   $data = $vars['data'];
   $uploaded_files = [];
-  $isMultiple= !isset($data['single_file']) || (isset($data['single_file']) && !$data['single_file']->value);
+  $isMultiple= !isset($data['single_file']) || (isset($data['single_file']) && empty($data['single_file']->value));
   $setAsThumbnail = !$isMultiple && $data['set_as_thumbnail']->value;
   // Walk through uploaded files.
   foreach ($data as $label => $name) {
@@ -158,4 +167,81 @@ function file_page_init(Environment $env, array $vars) {
     print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/jquery.fileupload.js');
     print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/file-upload.js');
   }
+}
+
+
+function file_shadow_preview_img($env, $vars) {
+	$vars['shadow']->addTab('Preview', file_get_contents($env->getModulePath('file') . '/tpl/preview_img.inc'), 2);
+	$vars['shadow']->addButton('set_as_thumbnail', t('Imposta come miniatura'));
+	$vars['shadow']->addButton('delete_img', t('Eliminare'));
+}
+
+function file_file_operations_form_after_submit($env, $vars){
+	$response = new \stdClass();
+	$success = true;
+	$errors = array();
+	http_response_code(200);
+  $form_state = $vars['form_state'];
+	$action = $form_state->getData('action_type');
+	$node_name = $form_state->getData('img_node');
+	$img_name = $form_state->getData('img');
+	$img_key = $form_state->getData('img_key');
+	$current_url = $form_state->getData('current_url');
+	$node = \Quanta\Common\NodeFactory::load($env,$node_name);
+	$img_path = $node->getPath() . '/' . $img_name;
+	$node_files = !empty($node->getAttributeJSON('files')) ? $node->getAttributeJSON('files') : array();
+	$node_files = !is_array($node_files) ? array($node_files) : $node_files;
+
+	switch ($action) {
+		case 'set_as_thumbnail':
+				$node->setThumbnail($img_name);
+				$node->setLanguage(\Quanta\Common\Localization::LANGUAGE_NEUTRAL);
+				$node->save();
+			break;
+
+		case 'delete_img':
+			if (file_exists($img_path)) {
+				// Attempt to delete the file
+				if (unlink($img_path)) {
+					if(in_array($img_name,$node_files)){
+						  // Remove the image from the array
+						$node_files = array_filter($node_files, function($file) use ($img_name) {
+							return $file !== $img_name;
+						});
+						// Re-index the array to remove any gaps in the numeric keys
+						$node_files = array_values($node_files);
+						$node->setAttributeJSON('files', $node_files);
+					}
+					if($node->getThumbnail() == $img_name){
+						$node->setThumbnail(null);
+					}
+          if(!empty($node->json->{$img_key})){
+            $node->removeAttributeJSON($img_key);
+          }
+					$node->setLanguage(\Quanta\Common\Localization::LANGUAGE_NEUTRAL);
+					$node->save();
+				} else {
+					$success = false;
+					$errors['error-message'] = 'Failed to delete the image file from the server';
+				}
+			} else {
+				$success = false;
+				$errors['error-message'] = 'Image file does not exist on the server';
+			}
+			break;
+		
+		default:
+			$success = false;
+			$errors ['error-message']= 'Invalid action type';
+			break;
+	}
+  $response->success = $success;
+  $response->img = $img_name;
+  $response->action_type = $action;
+	if(!$success){
+		http_response_code(400);
+		$response->shadowErrors = json_encode($errors);
+	}
+	$response_json = json_encode($response);
+	exit($response_json);
 }

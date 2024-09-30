@@ -11,7 +11,7 @@ class ReadGoogleDoc extends Link {
    * @return mixed
    */
   function render() {
-    $read_path = \Quanta\Common\GoogleDocs::READ_GOOGLE_DOC_PATH;
+    $read_path = 'read-google-doc';
     $doc_id = $this->getAttribute('doc-id');
     $query = $this->getAttribute('query');
     $path = $this->env->request_path;

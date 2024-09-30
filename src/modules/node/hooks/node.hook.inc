@@ -117,10 +117,10 @@ function node_shadow_node_form(Environment $env, array $vars){
   $shadow->addTab(NULL, file_get_contents($env->getModulePath('node') . '/tpl/node_data.inc'), 1);
   if($env->getContext() == \Quanta\Common\Node::NODE_ACTION_DELETE){
     $shadow->setData('delete_form',true);
-    $shadow->addButton('edit-save', t('Yes'));
+    $shadow->addButton('edit-save', Localization::translatableText($env,'Yes','shadow-yes'));
   }
   else{
-    $shadow->addButton('edit-save',t('Save'));
+    $shadow->addButton('edit-save',Localization::translatableText($env,'Save','shadow-save'));
   }
 }
 
@@ -174,7 +174,7 @@ function node_shadow_node_delete(Environment $env, array $vars){
   else {
     $shadow->addTab('Confirm Delete', $node->renderDeleteForm(), 1);
   }
-  $shadow->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> Delete');
+  $shadow->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> '.Localization::translatableText($env,'Delete','shadow-delete'));
 
 }
 

@@ -24,7 +24,7 @@ class NodeFactory {
    * @return Node
    *   The built node object.
    */
-  public static function load(Environment $env, $node_name, $language = NULL, $force_reload = TRUE, $classname = 'Node') {
+  public static function load(Environment $env, $node_name, $language = NULL, $force_reload = TRUE, $classname = 'Node', $use_fallback_language = true) {
     static $loaded_nodes;
 
      
@@ -50,9 +50,9 @@ class NodeFactory {
     }
 
     $node->load();
+   
 
-
-    if (!($node->hasTranslation($language))) {
+    if (!($node->hasTranslation($language)) && $use_fallback_language) {
       $fallback = Localization::getFallbackLanguage($env);
       $node = new Node($env, $node_name, NULL, 'it');
     }
@@ -76,8 +76,8 @@ class NodeFactory {
    * @return Node
    *   The built node object.
    */
-  public static function loadOrCurrent($env, $node, $language = NULL) {
-    return empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node, $language);
+  public static function loadOrCurrent($env, $node, $language = NULL, $use_fallback_language = TRUE) {
+    return empty($node) ? NodeFactory::current($env) : NodeFactory::load($env, $node, $language, true, 'Node', $use_fallback_language );
   }
 
   /**
@@ -491,6 +491,10 @@ class NodeFactory {
             $node->setAuthor($form_data['author']);
           }
 
+          if (isset($form_data['edit-status'])) {
+            $node->setStatus($form_data['edit-status']);
+          }
+
           if(isset($form_data['password'])){
             //check if repeated password no equal the real password
             if(isset($form_data['password_rp']) && $form_data['password'] != $form_data['password_rp']){
@@ -538,8 +542,6 @@ class NodeFactory {
           // If the node is validated, proceed with saving it.
           if ($node->validate() && $validation_status && $vars['form_validated']) {
             $node->save();
-            // Hook node_add_complete, node_edit_complete, etc.
-            $env->hook('node_after_save', $vars);
             // Hook node_add_complete, node_edit_complete, etc.
             $env->hook($action . '_complete', $vars);
             // Check if 'current_url' is set in the form data, if not, default to the father node's name.
@@ -600,9 +602,9 @@ class NodeFactory {
    * @return string
    *   The rendered HTML of the node object.
    */
-  public static function render(Environment $env, $node_name = NULL, $language = NULL) {
+  public static function render(Environment $env, $node_name = NULL, $language = NULL, $tpl = null, $module = null) {
     $node = empty($node_name) ? NodeFactory::current($env) : NodeFactory::load($env, $node_name);
-    $tpl = new NodeTemplate($env, $node);
+    $tpl = new NodeTemplate($env, $node, $tpl, $module);
     return $tpl->getHtml();
   }
 
@@ -648,4 +650,6 @@ class NodeFactory {
             $form_item_name
             );
   }
+
+
 }
