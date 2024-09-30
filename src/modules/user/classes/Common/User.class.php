@@ -60,23 +60,6 @@ class User extends Node {
   }
 
   /**
-   * Check if the user entered a correct password.
-   *
-   * @param string $password
-   *   The entered password.
-   *
-   * @return bool
-   *   Return true if the user/pass combination matches.
-   */
-  private function checkPassword($password) {
-    if (!isset($this->json->password)) {
-      return FALSE;
-    }
-    // We compare with the encrypted password.
-    return ($this->json->password == UserFactory::passwordEncrypt($password));
-  }
-
-  /**
    * Check if the user is anonymous / guest user.
    *
    * @return bool
@@ -167,17 +150,19 @@ class User extends Node {
    * @return mixed $response_json
    *   The JSON-encoded response to the logout action.
    */
-  public function logOut($message = 'You logged out') {
-    new Message($this->env,
-      t($message),
-      \Quanta\Common\Message::MESSAGE_CONFIRM,
-      \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
-    );
-    new Message($this->env,
-      t('User !user logged out', array('!user' => $this->name)),
-      \Quanta\Common\Message::MESSAGE_CONFIRM,
-      \Quanta\Common\Message::MESSAGE_TYPE_LOG
-    );
+  public function logOut($message = 'You logged out', $show_message = true) {
+    if($show_message){
+      new Message($this->env,
+        t($message),
+        \Quanta\Common\Message::MESSAGE_CONFIRM,
+        \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
+      );
+      new Message($this->env,
+        t('User !user logged out', array('!user' => $this->name)),
+        \Quanta\Common\Message::MESSAGE_CONFIRM,
+        \Quanta\Common\Message::MESSAGE_TYPE_LOG
+      );
+    }
     unset($_SESSION['user']);
 
     // TODO: adapt cookies.
@@ -212,7 +197,7 @@ class User extends Node {
     }
 
     else {
-      if ($this->checkPassword($password) || $force_login) {
+      if (UserFactory::checkPassword($this,$password) || $force_login) {
 				if (!empty($success_message)) {
           new Message($this->env,
             $success_message,

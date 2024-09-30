@@ -18,6 +18,7 @@ class Environment extends DataContainer {
   public $host = array();
   public $dir = array();
   public $request_uri;
+  public $site_url;
   public $query_params;
   public $request_path;
   public $request_json;
@@ -74,8 +75,9 @@ class Environment extends DataContainer {
     if ($docroot == NULL) {
       $docroot = $_SERVER['DOCUMENT_ROOT'];
     }
+    $this->site_url =  $this->getProtocol() . '://' . $this->host;
     // TODO: move request_uri in data.
-    $this->setData('request_url', $this->getProtocol() . '://' . $this->host . $this->request_uri);
+    $this->setData('request_url', $this->site_url . $this->request_uri);
     $this->dir['quanta'] = $docroot;
     $this->dir['sites'] = $this->dir['quanta'] . '/sites';
     $this->dir['src'] = $this->dir['quanta'] . '/src';
@@ -231,8 +233,18 @@ class Environment extends DataContainer {
    * @return array
    *   The modules already loaded in the environment.
    */
-  public function getLoadedModules() {
-    return $this->modules_loaded;
+  public function getLoadedModules($priority = null) {
+    $modules_loaded = $this->modules_loaded;
+    if($priority){
+      if(isset($modules_loaded[$priority])){
+        $priority_module = $modules_loaded[$priority];
+        // Remove priority module from its original position
+        unset($modules_loaded[$priority]);
+        // Add priority module to the beginning of the array
+        $modules_loaded = array($priority => $priority_module) + $modules_loaded;
+      }
+    }
+    return $modules_loaded;
   }
 
   /**
@@ -422,7 +434,7 @@ class Environment extends DataContainer {
   public function hook($function, array &$vars = array()) {
     $env = &$this;
     $hooked = FALSE;
-    foreach ($this->getLoadedModules() as $module) {
+    foreach ($this->getLoadedModules('environment') as $module) {
       $hook = __NAMESPACE__ . '\\' . $module['name'] . '_' . $function;
       if (function_exists( $hook)) {
         $hook($env, $vars);

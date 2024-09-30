@@ -61,7 +61,8 @@ $(document).bind('refresh', function() {
                 widget: $(this).attr('data-widget'),
                 language: $(this).attr('data-language'),
                 components: components,
-                node: $(this).attr('data-rel')
+                node: $(this).attr('data-rel'),
+                redirect: $(this).data('redirect')
             };
 
 
@@ -88,4 +89,88 @@ $(document).bind('refresh', function() {
             $(this).parent().css('opacity', '1');
             $(this).children('.node-item-actions').hide();
         });
+});
+$(document).bind('shadow_open', function() {
+	initImgOperationsModal();
+	handleImgOperation('set_as_thumbnail');
+	handleImgOperation('delete_img');
+});
+
+$(document).ready(function() {	
+  $('.file-operation').click(function (e) {
+		e.preventDefault();
+		openShadow({
+			module: 'file',
+			context: 'preview_img',
+			widget: 'single',
+			components: ['preview_img'],
+			img_node: $(this).data('img_node'),
+			img_key: $(this).data('img_key'),
+			img: $(this).data('img'),
+		});	
+	  });
+});
+  function initImgOperationsModal(){
+    if ($('#delete_img').length > 0) {
+      $('#set_as_thumbnail').addClass('not-submittable');
+      $('#delete_img').addClass('not-submittable');
+          $('#cancel').hide();
+      }
+  }
+  
+  function handleImgOperation(button){
+    $(`#${button}`).click(function (e) {
+      e.preventDefault();
+      $(this).addClass('shadow-submitted');
+      var $form = $('#file_operations_form');
+      // Find the hidden input with the name 'action_type'
+      var $input = $form.find('input[name="action_type"]');
+      if ($input.length === 0) {
+        // If the input doesn't exist, create and append it to the form
+        $('<input>').attr({
+          type: 'hidden',
+          name: 'action_type',
+          value: button
+        }).appendTo($form);
+      } else {
+        // If the input exists, just update its value
+        $input.val(button);
+      }
+      // Call the submitFormViaAjax function to handle form submission
+      submitFormViaAjax(e,$form);
+    });
+  }
+
+document.addEventListener('formSubmissionSuccess', function(event) {
+    if(formId == "#file_operations_form"){
+      const response = JSON.parse(event.detail.response);
+      console.log(response);
+      if(response.success){
+        closeShadow();
+        // Find the image by its src attribute and fade it out
+        const imgSrc = response.img;
+        switch (response.action_type) {
+          case "delete_img":
+            $(`img[src$="${imgSrc}"]`).closest('div').fadeOut(1000, function() {
+              $(this).remove();
+            });
+            break;
+            
+          case "set_as_thumbnail":
+           // Remove the "is-thumbnail" class from all other images
+           $('.is-thumbnail').removeClass('is-thumbnail');
+  
+           // Add "is-thumbnail" class to the target image's parent div with an animation
+           const $target = $(`img[src$="${imgSrc}"]`).closest('.preview-item');
+           
+           $target.css({ transform: 'scale(1.1)', opacity: 0 })
+               .addClass('is-thumbnail')
+               .animate({ opacity: 1 }, 500)
+               .css({ transform: 'scale(1.0)' });
+            break;
+          default:
+            break;
+        }   
+      }
+    }
 });

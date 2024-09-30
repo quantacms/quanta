@@ -79,8 +79,6 @@ var actionSuccess = function(data) {
  * @param exception
  */
 var actionError = function(err, exception) {
-    console.log('error');
-
     if(err?.responseJSON?.shadowErrors){
     var errors = JSON.parse(err.responseJSON.shadowErrors);
     $('.shadow-submitted').removeClass('shadow-submitted');
@@ -96,7 +94,7 @@ var actionError = function(err, exception) {
         // Add error message to the field wrapper
         fieldWrapper.addClass('has-validation-errors');
         if (fieldWrapper.find('.validation-error').length === 0) {
-          fieldWrapper.prepend(`<div class="validation-error">${errors[fieldName]}</div>`);
+          fieldWrapper.append(`<div class="validation-error">${errors[fieldName]}</div>`);
         }
       }
       else{
@@ -106,6 +104,10 @@ var actionError = function(err, exception) {
       }
   
     });  
+  }
+  else if (err?.responseJSON?.error_message){
+   const shadowButtons = $('#shadow-buttons'); 
+   shadowButtons.parent().prepend(`<div style="font-size: 12px;" class="validation-error">${err.responseJSON.error_message}</div>`)
   }
   else{
     alert(exception);

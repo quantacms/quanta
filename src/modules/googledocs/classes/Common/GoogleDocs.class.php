@@ -20,23 +20,6 @@ use DOMDocument;
  */
 class GoogleDocs extends \Quanta\Common\GoogleClient{
 
-    const GENERATE_GOOGLE_DOC_PATH = "generate-google-doc";
-    const READ_GOOGLE_DOC_PATH = "read-google-doc";
-    const GOOGLE_AUTH_CALLBACK_PATH = "google-auth-callback";
-
-    //style types
-    const GOOGLE_DOC_TITLE_STYLE = "TITLE";
-    const GOOGLE_DOC_HEADING_1_STYLE = "HEADING_1";
-    const GOOGLE_DOC_BULLET_DISC_CIRCLE_SQUARE_STYLE = "BULLET_DISC_CIRCLE_SQUARE";
-
-    //TODO: remove this, this is just a test text to generate
-    private $test_text = array(
-        self::GOOGLE_DOC_TITLE_STYLE => "Document Title",
-        self::GOOGLE_DOC_HEADING_1_STYLE => "Chapter 1: Introduction",
-        self::GOOGLE_DOC_BULLET_DISC_CIRCLE_SQUARE_STYLE => "First bullet point\nSecond bullet point\nThird bullet point"
-
-    );
-
     public function __construct(&$env){
        // Call the parent class constructor at the end
        parent::__construct($env,array(Google_Service_Docs::DOCUMENTS,Google_Service_Drive::DRIVE));

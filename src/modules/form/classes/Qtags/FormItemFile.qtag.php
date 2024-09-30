@@ -14,27 +14,41 @@ class FormItemFile extends FormItemString {
    */
   function render() {
     $isMultiple = $this->getAttribute('single') ? "" : "multiple";
-    $setAsThumbnail = $this->getAttribute('single') && !$this->getAttribute('not-thumbnail') ? "thumbnail=true" : "thumbnail=false";
+    $setAsThumbnail = !$this->getAttribute('not-thumbnail') ? "thumbnail=true" : "thumbnail=false";
     if(!$setAsThumbnail){
       $this->html_params['not-thumbnail']= 'not-thumbnail';
     }
     $this->html_params['single'] = $this->getAttribute('single');
 
-    $rendered_input = '<input type="file" name="' . $this->getName() . '" id="' . $this->getId() . '" ' .$isMultiple .' ' .$setAsThumbnail;
-    $rendered_drop = 'Drop here files<a>or press here</a>';
+    $accept_values= "";
+    if(!empty($this->getAttribute('accept'))){
+      $accept_values =$this->getAttribute('accept');
+      $accept_values = ' accept="' . $accept_values . '"';
+    }
+
+    $resolution = "";
+
+    if(!empty($this->getAttribute('resolution'))){
+      $resolution =$this->getAttribute('resolution');
+      
+    }
+
+    $rendered_icon = '<img class="upload-icon" src="/modules/file/assets/img/icons/upload-icon.png">';
+    $rendered_input = '<input type="file" name="' . $this->getName() . '" id="' . $this->getId() . '" ' .$isMultiple .' ' .$setAsThumbnail . ' ' . $accept_values . ' data-resolution="' . $resolution . '"';
+    $rendered_drop = '[TEXT|tag=drop-here-files:Drop here files]<a>[TEXT|tag=or-press-here:or press here]</a>';
     $rendered = '<input type="hidden" name="tmp_upload_dir" value="[ATTRIBUTE|name=tmp_files_dir]" />' . '<div class="upload-files"><div class="drop">';
     
     switch($this->getAttribute('plugin')) {
       case 'drop':
       default:
-        $rendered .= $rendered_drop . $rendered_input . ' /></div></div>';
+        $rendered .= $rendered_icon . $rendered_drop . $rendered_input . ' /></div></div>';
         break;
       case 'non-drop':
-        $rendered_drop = '<a>Press here</a>';
-        $rendered .= $rendered_drop . $rendered_input . ' /></div></div>';
+        $rendered_drop = '<a>[TEXT|tag=press-here-to-upload:Press here to upload]</a>';
+        $rendered .= $rendered_icon . $rendered_drop . $rendered_input . ' /></div></div>';
         break;
       case 'csv-type':
-        $rendered .= $rendered_drop . $rendered_input . ' accept=".csv"/></div></div>';
+        $rendered .= $rendered_icon . $rendered_drop . $rendered_input . ' accept=".csv"/></div></div>';
         break;
 
     }

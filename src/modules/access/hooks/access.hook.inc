@@ -222,13 +222,13 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
         break;
 
       default:
-        if (!empty($filter_type) && !empty($node->getAttributeJSON($filter_type))) {
-		$filter_check[] = $node->getAttributeJSON($filter_type);
+        if (!empty($filter_type) && !empty($node->getAttributeJSON($filter_type)) || (in_array(\Quanta\Common\Access::EMPTY_FILTER,$filter_values))) {
+		      $filter_check[] = $node->getAttributeJSON($filter_type);
         }
         break;
     }
-   
-    if (!empty($filter_check)) {  
+
+    if (!empty($filter_check)) {       
       // Check if the filtered item corresponds to the user input.
       foreach ($filter_check as $check) {
         foreach ($filter_values as $filter_value) {
@@ -243,8 +243,14 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
           elseif($filter_value == \Quanta\Common\Access::EMPTY_FILTER){   
             $filter_match = !$check; 
           }
-          else {     
-            $filter_match = trim($check) == trim($filter_value) ? true : false;
+	  else {
+	    if (!empty($check)) {
+        $check = trim($check);
+	    } 
+	    if (!empty($filter_value)) {
+	      $filter_value = trim($filter_value);
+	    } 
+            $filter_match = ($check == $filter_value) ? true : false;
           }
           if ($filter_match && !isset($negate)) {
             unset($one_match);
