@@ -166,8 +166,11 @@ class Qtag implements \Quanta\Common\Cacheable {
       }
       if (!empty($this->attributes['empty_replace'])) {
         // allow self closed tags
-        $allowed_tags='<br><img><hr>';
-        if (empty(strip_tags(trim($this->html),$allowed_tags)) && $this->attributes['class'] != 'icon') {
+        $allowed_tags = ['br','img','hr','input'];
+        if(isset($this->attributes['allowed_empty_tags'])) {
+          $allowed_tags = array_merge($allowed_tags,explode(',',$this->attributes['allowed_empty_tags']));
+        }
+        if (empty(strip_tags(trim($this->html),$allowed_tags))) {
           $this->html = $this->attributes['empty_replace'];
         }
       }
