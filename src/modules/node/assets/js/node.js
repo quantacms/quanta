@@ -151,8 +151,18 @@ document.addEventListener('formSubmissionSuccess', function(event) {
         const imgSrc = response.img;
         switch (response.action_type) {
           case "delete_img":
-            $(`img[src$="${imgSrc}"]`).closest('div').fadeOut(1000, function() {
-              $(this).remove();
+            $(`img[src$="${imgSrc}"]`).each(function() {
+              const $parent = $(this).parent();
+              
+              if ($parent.is('div')) {
+                $parent.fadeOut(1000, function() {
+                  $(this).remove();
+                });
+              } else {
+                $(this).fadeOut(1000, function() {
+                  $(this).remove();
+                });
+              }
             });
             break;
             
