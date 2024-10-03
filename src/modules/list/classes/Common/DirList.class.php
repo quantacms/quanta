@@ -57,6 +57,10 @@ class DirList extends ListObject {
       }
       */
       // TODO: not so beautiful to include a fake qTag. Can be done better.
+      // accept nodes with numbers only
+      if (!is_string($dir_url)) {
+        $dir_url = strval($dir_url);
+      }
       $list_item = preg_replace("/\[LISTCOUNTER\]/is", $i, $tpl);
       $list_item = preg_replace("/\[LISTITEM\]/is", Api::string_normalize($dir_url), $list_item);
       $list_item = preg_replace("/\[LISTNODE\]/is", Api::string_normalize($this->getNode()->getName()), $list_item);
