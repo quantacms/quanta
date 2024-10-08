@@ -101,6 +101,10 @@ function file_node_presave(Environment $env, array $vars) {
       $node->setThumbnail($uploaded_file_list[count($uploaded_file_list) - 1]);
     }
   }
+  // set thumbnail in case multiple files and no thumbnail
+  if ($isMultiple && empty($node->json->thumbnail) && !empty($uploaded_file_list[0])) {
+    $node->setThumbnail($uploaded_file_list[0]);
+  }
 }
 
 /**
