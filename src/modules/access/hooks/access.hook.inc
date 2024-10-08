@@ -125,7 +125,9 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
   $i = 0;
   // Check all filters.
   foreach ($filter as $filter_item) {
-
+    if($filter_item == null){
+      continue;
+    }
     // Count the occurrences of '@'
     $at_count = substr_count($filter_item, '@');
     // If there's more than one '@', split at the first occurrence
@@ -136,6 +138,9 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
       } else {
         // Otherwise, split at the first ';' occurrence
         $exp = explode('@', $filter_item);
+        if(!isset($exp[0]) || !isset($exp[1])){
+          continue;
+        }
         $filter_type = $exp[0];
         $filter_values = explode(';', $exp[1]);
     }
