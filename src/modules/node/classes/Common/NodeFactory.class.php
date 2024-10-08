@@ -411,7 +411,7 @@ class NodeFactory {
     // Prepare the response object.
     $response = new \stdClass();
     $user = UserFactory::current($env);
-    
+
     // When user didn't enter a path for a new node, create a candidate
     // path based on title.
     if (($action == \Quanta\Common\Node::NODE_ACTION_ADD)) {
@@ -675,8 +675,6 @@ class NodeFactory {
         $new_file_path = $new_node->path . '/' . $file_name;
         //copy the file
         copy($language_file, $new_file_path);
-        $translated_node = \Quanta\Common\NodeFactory::load($env, $new_node_name, $lang);
-        //we can edit the translated node
       }
     }
      // Copy all other files (e.g., images, etc.) except `data*.json`
