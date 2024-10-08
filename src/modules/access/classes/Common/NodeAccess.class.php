@@ -27,7 +27,7 @@ class NodeAccess extends Access implements \Quanta\Common\Cacheable  {
     if (empty($access_checked)) {
       $access_checked = array();
     }
-    // make the duplicate action as add action
+    // make the duplicate action as add action in permissions
     if($action == \Quanta\Common\Node::NODE_ACTION_DUPLICATE){
       $action = \Quanta\Common\Node::NODE_ACTION_ADD;
     }
