@@ -50,9 +50,9 @@ document.addEventListener('waitBeforeSubmit', function(event) {
 });
 
 // Close the shadow overlay.
-function closeShadow() {
+function closeShadow(forceClose = false) {
   // Prevent accidental closing of shadow when there are unsaved changes.
-  if (!shadowUpdated || confirm('You have unsaved changes. Are you sure you want to close the window?')) {
+  if (forceClose || !shadowUpdated || confirm('You have unsaved changes. Are you sure you want to close the window?')) {
     $('#shadow-outside, .shadow-element').hide();
   }
 };
