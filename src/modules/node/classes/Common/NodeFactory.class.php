@@ -425,23 +425,33 @@ class NodeFactory {
         $father = NULL;
       }
     }
+    elseif($action == \Quanta\Common\Node::NODE_ACTION_DUPLICATE){
+      $node_name = $env->getCandidatePath($form_data['edit-title']);
+      $father = $form_data['edit-father'];
+    }
     else {
       $node_name = $form_data['edit-path'];
     }
     $env->setData('action',$action);
     // Check the father of the node.
-    $father = ($action == \Quanta\Common\Node::NODE_ACTION_ADD) ? $form_data['edit-father'] : NULL;
+    $father = ($action == \Quanta\Common\Node::NODE_ACTION_ADD || $action == \Quanta\Common\Node::NODE_ACTION_DUPLICATE) ? $form_data['edit-father'] : NULL;
+    
+    if($action == \Quanta\Common\Node::NODE_ACTION_DUPLICATE){
+      $source_node = \Quanta\Common\NodeFactory::load($env, $form_data['edit-path']);
+      self::duplicate($env, $source_node, $node_name, $father, $language, true);
+    }
+
     $node = new Node($env, $node_name, $father, $language);
 
     // Setup the after-save redirect.
     if (isset($form_data['redirect'])) {
       $node->setData('redirect', $form_data['redirect']);
     }
-
     // Perform the requested action.
     switch ($action) {
       case \Quanta\Common\Node::NODE_ACTION_ADD:
       case \Quanta\Common\Node::NODE_ACTION_EDIT:
+      case \Quanta\Common\Node::NODE_ACTION_DUPLICATE:
         if ($action == \Quanta\Common\Node::NODE_ACTION_ADD) {
           $check_access = $node->father;
           // Setup the path of the node to be created / updated.
@@ -649,6 +659,53 @@ class NodeFactory {
             \Quanta\Common\Message::MESSAGE_NOMODULE,
             $form_item_name
             );
+  }
+
+  public static function duplicate($env, $source_node, $new_node_name, $father, $language = \Quanta\Common\Localization::LANGUAGE_NEUTRAL, $subnodes = true, $overrides = array()){
+    $new_node = new Node($env, $new_node_name, $father, $language);
+    $new_node->json = $source_node->json;
+    $new_node->setAuthor($source_node->getAuthor());
+    $new_node->setThumbnail($source_node->getThumbnail());
+    $new_node->save();
+    // Check if the node have multiple language files
+    $language_files = glob($source_node->path . '/data_*.json');
+    if(count($language_files)){
+      foreach ($language_files as $language_file){
+        $file_name = basename($language_file);
+        $new_file_path = $new_node->path . '/' . $file_name;
+        //copy the file
+        copy($language_file, $new_file_path);
+      }
+    }
+     // Copy all other files (e.g., images, etc.) except `data*.json`
+     $all_files = glob($source_node->path . '/*'); // Get all files in the directory
+     if (count($all_files)) {
+         foreach ($all_files as $file) {
+             $file_name = basename($file);
+             // Exclude files that are `data.json` or `data_<language>.json`
+             if (!preg_match('/^data(_[a-zA-Z]+)?\.json$/', $file_name)) {
+                 $new_file_path = $new_node->path . '/' . $file_name;
+                 copy($file, $new_file_path);
+             }
+         }
+     }
+    // If subnodes should be cloned
+    if ($subnodes) {
+      $source_sub_nodes = new \Quanta\Common\DirList($env,  $source_node->name, null,[], 'node');
+        foreach ($source_sub_nodes->getItems() as $subnode) {
+            // Replace the source node name in subnode with the new node's name
+            $new_subnode_name = str_replace($source_node->name, $new_node_name, $subnode->name);
+            if (!str_contains($subnode->name, $source_node->name)) { 
+              $new_subnode_name = $env->getCandidatePath($new_subnode_name);
+            }
+            // Fix the father name
+            $new_subnode_father = str_replace($source_node->father, $new_node_name, $new_node_name);
+            // Recursively clone subnodes
+            self::duplicate($env, $subnode, $new_subnode_name, $new_subnode_father, $subnode->language, true);
+        }
+    }
+    // Return the new cloned node
+    return $new_node;
   }
 
 
