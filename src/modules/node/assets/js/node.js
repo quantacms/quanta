@@ -78,6 +78,31 @@ $(document).bind('refresh', function() {
       e.preventDefault();
         });
 
+     // Duplicate Node link behavior.
+     $('.duplicate-link').off('click').on('click', function(e) {
+        var components = (($(this).attr('data-components') != undefined) ? ($(this).attr('data-components').split(',')) : ['node_edit', 'node_metadata', 'node_status', 'file_form', 'node_form']);
+
+        var shadow = {
+          module : 'node',
+          context: 'node_duplicate',
+          widget: $(this).data('widget'),
+          components: components,
+          node: $(this).data('rel'),
+          redirect: $(this).data('redirect')
+        };
+
+        // Use jQuery's data() method to get all data attributes
+        $.each($(this).data(), function(key, value) {
+            if (shadow[key] == undefined) {
+                shadow[key] = value;
+            }
+        });
+
+        openShadow(shadow);
+
+        e.preventDefault();
+    });
+
 
     $('.node-item-actions').parent()
         // TO BE COMPLETED
