@@ -80,6 +80,8 @@ function file_node_presave(Environment $env, array $vars) {
   /** @var Node $node */
   $node = $vars['node'];
   $data = $vars['data'];
+  $set_auto_thumbnail = isset($data['set_auto_thumbnail']) && $data['set_auto_thumbnail'] ? true : false;
+
   $uploaded_files = [];
   $isMultiple= !isset($data['single_file']) || (isset($data['single_file']) && empty($data['single_file']->value));
   $setAsThumbnail = !$isMultiple && $data['set_as_thumbnail']->value;
@@ -100,6 +102,10 @@ function file_node_presave(Environment $env, array $vars) {
     if($setAsThumbnail){
       $node->setThumbnail($uploaded_file_list[count($uploaded_file_list) - 1]);
     }
+  }
+   // set thumbnail in case multiple files and no thumbnail
+   if ($set_auto_thumbnail && $isMultiple && empty($node->json->thumbnail) && !empty($uploaded_file_list[0])) {
+    $node->setThumbnail($uploaded_file_list[0]);
   }
 }
 
