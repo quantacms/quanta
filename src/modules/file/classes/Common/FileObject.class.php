@@ -200,6 +200,7 @@ class FileObject extends DataContainer {
       case 'jpeg':
       case 'ico':
       case 'raw':
+      case 'webp':
         $type = 'image';
         break;
 
