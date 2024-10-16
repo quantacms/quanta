@@ -3,6 +3,7 @@
         [RESOLUTION_MESSAGE:{SHADOW:resolution}]
     ]
     [INPUT|resolution={SHADOW:resolution}|type=file|plugin=drop|widget|name=files:files]
+    [INPUT|type=hidden|class=d-none|id=set_auto_thumbnail|name=set_auto_thumbnail|value={SHADOW:set_auto_thumbnail}:files]
 ]
 
 [HTML_TAG|id=resolution-error-message|class=intro-description alert-description hidden:
