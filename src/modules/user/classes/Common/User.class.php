@@ -124,7 +124,7 @@ class User extends Node {
     if (!($this->hasRole($role))) {
       // TODO: check that the role is a real existing one!
       // TODO: create Role entity.
-      $this->roles[$role] = $role;
+      $this->roles[] = $role;
     }
   }
 
@@ -210,7 +210,7 @@ class User extends Node {
           \Quanta\Common\Message::MESSAGE_CONFIRM,
           \Quanta\Common\Message::MESSAGE_TYPE_LOG
         );
-        $this->roles += array(self::ROLE_LOGGED => self::ROLE_LOGGED);
+        self::addRole(self::ROLE_LOGGED);
         $_SESSION['user'] = $this->serializeForSession();
         $this->env->hook('user_login', $vars);
 
@@ -364,7 +364,7 @@ class User extends Node {
    */
   public function rebuildSession() {
     // TODO: always appropriate to set logged when rebuilding a session?
-    $this->roles += array('logged' => 'logged');
+    self::addRole(self::ROLE_LOGGED);
     $_SESSION['user'] = $this->serializeForSession();
   }
 
