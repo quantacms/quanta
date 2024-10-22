@@ -439,8 +439,9 @@ class NodeFactory {
       $source_node = \Quanta\Common\NodeFactory::load($env, $form_data['edit-path']);
       self::duplicate($env, $source_node, $node_name, $father, $language, true);
     }
-    $path = $language == \Quanta\Common\Localization::LANGUAGE_NEUTRAL ? 
-      $env->nodePath($this->getName()) : $env->nodePath($node_name) . "/data_{$language}.json";
+
+    $path = $language == null || $language == \Quanta\Common\Localization::LANGUAGE_NEUTRAL ? 
+      $env->nodePath($node_name) : $env->nodePath($node_name) . "/data_{$language}.json";
     $node = new Node($env, $node_name, $father, $language, $path);
 
     // Setup the after-save redirect.
