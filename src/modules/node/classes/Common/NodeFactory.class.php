@@ -431,17 +431,17 @@ class NodeFactory {
     }
     else {
       $node_name = $form_data['edit-path'];
+      $father = isset($form_data['edit-father']) ? $form_data['edit-father'] : NULL;
     }
     $env->setData('action',$action);
-    // Check the father of the node.
-    $father = ($action == \Quanta\Common\Node::NODE_ACTION_ADD || $action == \Quanta\Common\Node::NODE_ACTION_DUPLICATE) ? $form_data['edit-father'] : NULL;
     
     if($action == \Quanta\Common\Node::NODE_ACTION_DUPLICATE){
       $source_node = \Quanta\Common\NodeFactory::load($env, $form_data['edit-path']);
       self::duplicate($env, $source_node, $node_name, $father, $language, true);
     }
-
-    $node = new Node($env, $node_name, $father, $language);
+    $path = $language == \Quanta\Common\Localization::LANGUAGE_NEUTRAL ? 
+      $env->nodePath($this->getName()) : $env->nodePath($node_name) . "/data_{$language}.json";
+    $node = new Node($env, $node_name, $father, $language, $path);
 
     // Setup the after-save redirect.
     if (isset($form_data['redirect'])) {
@@ -452,7 +452,7 @@ class NodeFactory {
       case \Quanta\Common\Node::NODE_ACTION_ADD:
       case \Quanta\Common\Node::NODE_ACTION_EDIT:
       case \Quanta\Common\Node::NODE_ACTION_DUPLICATE:
-        if ($action == \Quanta\Common\Node::NODE_ACTION_ADD) {
+        if ($action == \Quanta\Common\Node::NODE_ACTION_ADD || !$node->exists) {
           $check_access = $node->father;
           // Setup the path of the node to be created / updated.
           $node->path = $node->father->path . '/' . $node_name;
@@ -461,7 +461,7 @@ class NodeFactory {
         else {
           $check_access = $node;
         }
-
+        
         // Check if the user can access node add / edit for this node.
         $access_check = (NodeAccess::check($env, $action, array('node' => $check_access)));
         if ($access_check) {
