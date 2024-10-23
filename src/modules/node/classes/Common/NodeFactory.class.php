@@ -453,7 +453,7 @@ class NodeFactory {
       case \Quanta\Common\Node::NODE_ACTION_ADD:
       case \Quanta\Common\Node::NODE_ACTION_EDIT:
       case \Quanta\Common\Node::NODE_ACTION_DUPLICATE:
-        if ($action == \Quanta\Common\Node::NODE_ACTION_ADD || !$node->exists) {
+        if ($action == \Quanta\Common\Node::NODE_ACTION_ADD || !$node->exists || !empty($language)) {
           $check_access = $node->father;
           // Setup the path of the node to be created / updated.
           $node->path = $node->father->path . '/' . $node_name;
@@ -462,7 +462,7 @@ class NodeFactory {
         else {
           $check_access = $node;
         }
-        
+
         // Check if the user can access node add / edit for this node.
         $access_check = (NodeAccess::check($env, $action, array('node' => $check_access)));
         if ($access_check) {
