@@ -65,14 +65,10 @@ $(document).bind('refresh', function() {
                 redirect: $(this).data('redirect')
             };
 
-
       if ($(this).data('language') != undefined) {
         shadow.language = $(this).attr('data-language');
       }
 
-      if ($(this).data('manager') != undefined) {
-        shadow.manager = $(this).attr('data-manager');
-      }
       openShadow(shadow);
 
       e.preventDefault();
