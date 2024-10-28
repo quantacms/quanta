@@ -24,6 +24,7 @@ function file_shadow_simple_file_form(Environment $env, array $vars) {
   $node = $shadow->getNode();
   if (NodeAccess::check($env, $env->getContext(), array('node' => $node))) {
     $vars['shadow']->addTab('manage files', file_get_contents($env->getModulePath('file') . '/tpl/simple_upload_form.html'), 2);
+    $vars['shadow']->setSingleTitle('[RESOLUTION_MESSAGE:{SHADOW:resolution}]');
   }
 }
 
