@@ -200,8 +200,7 @@
 }
 
 .close-shadow-container{
-    display: flex;
-    justify-content: end;
+    margin-left: auto;
     padding: 5px 0px;
 }
 

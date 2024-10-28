@@ -16,6 +16,9 @@ class Shadow extends Content {
       case 'tab-titles':
         $string = $shadow->getData('tab_titles');
         break;
+      case 'single-title':
+        $string = $shadow->getData('single_title');
+        break;
 
       case 'tab-contents':
         $string = $shadow->getData('tab_contents');
