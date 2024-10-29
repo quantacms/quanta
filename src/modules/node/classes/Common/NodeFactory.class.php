@@ -440,8 +440,7 @@ class NodeFactory {
       self::duplicate($env, $source_node, $node_name, $father, $language, true);
     }
 
-    $path = $language == null || $language == \Quanta\Common\Localization::LANGUAGE_NEUTRAL ? 
-      $env->nodePath($node_name) : $env->nodePath($node_name) . "/data_{$language}.json";
+    $path = $env->nodePath($node_name);
     $node = new Node($env, $node_name, $father, $language, $path);
 
     // Setup the after-save redirect.
