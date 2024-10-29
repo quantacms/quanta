@@ -128,6 +128,7 @@ $(document).ready(function() {
 			img_node: $(this).data('img_node'),
 			img_key: $(this).data('img_key'),
 			img: $(this).data('img'),
+			show_buttons: $(this).data('show-buttons'),
 		});	
 	  });
 });
@@ -135,8 +136,14 @@ $(document).ready(function() {
     if ($('#delete_img').length > 0) {
       $('#set_as_thumbnail').addClass('not-submittable');
       $('#delete_img').addClass('not-submittable');
-          $('#cancel').hide();
+      $('#cancel').hide();
+      if(!$('#show_buttons').val().includes('set-as-thumbnail-btn')){
+        $('#set_as_thumbnail').hide();
       }
+      if(!$('#show_buttons').val().includes('delete-btn')){
+        $('#delete_img').hide();
+      }
+    }
   }
   
   function handleImgOperation(button){
