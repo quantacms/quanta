@@ -11,7 +11,7 @@ class Shadow extends Page {
   public $buttons = array();
   public $extra = array();
   public $components = array();
-  public $single_title = '';
+  public $title = '';
   public $priority = 0;
   /**
    * @var Node $node.
@@ -103,7 +103,7 @@ class Shadow extends Page {
       }
     }
     $this->setData('tab_titles', $tab_titles);
-    $this->setData('single_title', $this->single_title);
+    $this->setData('title', $this->title);
     $this->setData('tab_contents', $tab_contents);
     $this->setData('buttons', $this->buttons);
     $this->setData('content', file_get_contents($this->env->getModulePath('shadow') . '/tpl/' . $this->getWidget() . '.inc'));
@@ -120,14 +120,14 @@ class Shadow extends Page {
     $this->buttons[$action] = $button;
   }
   /**
-   * Set Single Title to the shadow.
+   * Set Title of the shadow.
    * @param string $title
    * @param int $priority
    */
-  public function setSingleTitle($title,$priority=0) {
+  public function setTitle($title,$priority=0) {
     if ($priority >= $this->priority) {
       $this->priority = $priority;
-      $this->single_title = '<h3 class="shadow-title">'.$title.'</h3>';
+      $this->title = '<h3 class="shadow-title">'.$title.'</h3>';
     }
   }
   /**
