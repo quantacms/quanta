@@ -189,7 +189,7 @@ function node_shadow_node_delete(Environment $env, array $vars){
     $shadow->addTab('Confirm Delete', $node->renderDeleteForm(), 1);
   }
   $shadow->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> '.Localization::translatableText($env,'Delete','shadow-delete'));
-
+  $shadow->setTitle('[TEXT|tag=node-delete-confirm:Confirm Delete]');
 }
 
 /**

@@ -22,11 +22,30 @@
     max-height: 90%;
     overflow: auto;
     border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+}
+.shadow-inside > .inner {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: auto;
 }
 .shadow-inside .inner, #shadow-contents {
     padding: 10px;
     background: #fff;
-
+}
+.shadow-inside > .inner > div {
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    flex-grow: 1;
+}
+.shadow-inside .shadow-container {
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 }
 
 #edit-content, #edit-content-wrapper {
@@ -181,8 +200,7 @@
 }
 
 .close-shadow-container{
-    display: flex;
-    justify-content: end;
+    margin-left: auto;
     padding: 5px 0px;
 }
 
