@@ -65,18 +65,39 @@ $(document).bind('refresh', function() {
                 redirect: $(this).data('redirect')
             };
 
-
       if ($(this).data('language') != undefined) {
         shadow.language = $(this).attr('data-language');
       }
 
-      if ($(this).data('manager') != undefined) {
-        shadow.manager = $(this).attr('data-manager');
-      }
       openShadow(shadow);
 
       e.preventDefault();
         });
+
+     // Duplicate Node link behavior.
+     $('.duplicate-link').off('click').on('click', function(e) {
+        var components = (($(this).attr('data-components') != undefined) ? ($(this).attr('data-components').split(',')) : ['node_edit', 'node_metadata', 'node_status', 'file_form', 'node_form']);
+
+        var shadow = {
+          module : 'node',
+          context: 'node_duplicate',
+          widget: $(this).data('widget'),
+          components: components,
+          node: $(this).data('rel'),
+          redirect: $(this).data('redirect')
+        };
+
+        // Use jQuery's data() method to get all data attributes
+        $.each($(this).data(), function(key, value) {
+            if (shadow[key] == undefined) {
+                shadow[key] = value;
+            }
+        });
+
+        openShadow(shadow);
+
+        e.preventDefault();
+    });
 
 
     $('.node-item-actions').parent()
@@ -107,6 +128,7 @@ $(document).ready(function() {
 			img_node: $(this).data('img_node'),
 			img_key: $(this).data('img_key'),
 			img: $(this).data('img'),
+			show_buttons: $(this).data('show-buttons'),
 		});	
 	  });
 });
@@ -114,8 +136,14 @@ $(document).ready(function() {
     if ($('#delete_img').length > 0) {
       $('#set_as_thumbnail').addClass('not-submittable');
       $('#delete_img').addClass('not-submittable');
-          $('#cancel').hide();
+      $('#cancel').hide();
+      if(!$('#show_buttons').val().includes('set-as-thumbnail-btn')){
+        $('#set_as_thumbnail').hide();
       }
+      if(!$('#show_buttons').val().includes('delete-btn')){
+        $('#delete_img').hide();
+      }
+    }
   }
   
   function handleImgOperation(button){
@@ -151,8 +179,18 @@ document.addEventListener('formSubmissionSuccess', function(event) {
         const imgSrc = response.img;
         switch (response.action_type) {
           case "delete_img":
-            $(`img[src$="${imgSrc}"]`).closest('div').fadeOut(1000, function() {
-              $(this).remove();
+            $(`img[src$="${imgSrc}"]`).each(function() {
+              const $parent = $(this).parent();
+              
+              if ($parent.is('div')) {
+                $parent.fadeOut(1000, function() {
+                  $(this).remove();
+                });
+              } else {
+                $(this).fadeOut(1000, function() {
+                  $(this).remove();
+                });
+              }
             });
             break;
             

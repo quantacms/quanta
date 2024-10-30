@@ -24,6 +24,7 @@ function file_shadow_simple_file_form(Environment $env, array $vars) {
   $node = $shadow->getNode();
   if (NodeAccess::check($env, $env->getContext(), array('node' => $node))) {
     $vars['shadow']->addTab('manage files', file_get_contents($env->getModulePath('file') . '/tpl/simple_upload_form.html'), 2);
+    $vars['shadow']->setTitle('[RESOLUTION_MESSAGE:{SHADOW:resolution}]');
   }
 }
 
@@ -80,6 +81,8 @@ function file_node_presave(Environment $env, array $vars) {
   /** @var Node $node */
   $node = $vars['node'];
   $data = $vars['data'];
+  $set_auto_thumbnail = isset($data['set_auto_thumbnail']) && $data['set_auto_thumbnail'] ? true : false;
+
   $uploaded_files = [];
   $isMultiple= !isset($data['single_file']) || (isset($data['single_file']) && empty($data['single_file']->value));
   $setAsThumbnail = !$isMultiple && $data['set_as_thumbnail']->value;
@@ -100,6 +103,10 @@ function file_node_presave(Environment $env, array $vars) {
     if($setAsThumbnail){
       $node->setThumbnail($uploaded_file_list[count($uploaded_file_list) - 1]);
     }
+  }
+   // set thumbnail in case multiple files and no thumbnail
+   if ($set_auto_thumbnail && $isMultiple && empty($node->json->thumbnail) && !empty($uploaded_file_list[0])) {
+    $node->setThumbnail($uploaded_file_list[0]);
   }
 }
 
@@ -174,6 +181,7 @@ function file_shadow_preview_img($env, $vars) {
 	$vars['shadow']->addTab('Preview', file_get_contents($env->getModulePath('file') . '/tpl/preview_img.inc'), 2);
 	$vars['shadow']->addButton('set_as_thumbnail', t('Imposta come miniatura'));
 	$vars['shadow']->addButton('delete_img', t('Eliminare'));
+  $vars['shadow']->setTitle('[TEXT|tag=file-operations:Operazioni sulle immagini]');
 }
 
 function file_file_operations_form_after_submit($env, $vars){

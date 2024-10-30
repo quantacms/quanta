@@ -30,6 +30,20 @@ function node_action_node_edit(Environment $env, array $vars){
   exit($response_json);
 }
 
+/**
+ * Implements hook_action_node_duplicate.
+ * There is a node duplicate request.
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param array $vars
+ *   An array of variables.
+ */
+function node_action_node_duplicate(Environment $env, array $vars){
+  $response_json = NodeFactory::requestAction($env, $vars['action'], $vars['data']);
+  exit($response_json);
+}
+
 
 /**
  * Implements hook_action_node_delete.
@@ -175,7 +189,7 @@ function node_shadow_node_delete(Environment $env, array $vars){
     $shadow->addTab('Confirm Delete', $node->renderDeleteForm(), 1);
   }
   $shadow->addButton('edit-save', '<span style="color:green">&check;&nbsp;</span> '.Localization::translatableText($env,'Delete','shadow-delete'));
-
+  $shadow->setTitle('[TEXT|tag=node-delete-confirm:Confirm Delete]');
 }
 
 /**
