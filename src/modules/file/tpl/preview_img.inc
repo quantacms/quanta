@@ -1,4 +1,3 @@
-<h4>[TEXT|tag=file-operations:Operazioni sulle immagini]</h4>
 [FORM|name=file_operations_form|id=file_operations_form:
     [TEXT|tag=file-operations-desc:Scegli l'azione che desideri applicare all'immagine]
     [INPUT|type=hidden|name=form|value=file_operations:file_operations_form]
