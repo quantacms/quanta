@@ -181,6 +181,7 @@ function file_shadow_preview_img($env, $vars) {
 	$vars['shadow']->addTab('Preview', file_get_contents($env->getModulePath('file') . '/tpl/preview_img.inc'), 2);
 	$vars['shadow']->addButton('set_as_thumbnail', t('Imposta come miniatura'));
 	$vars['shadow']->addButton('delete_img', t('Eliminare'));
+  $vars['shadow']->setTitle('[TEXT|tag=file-operations:Operazioni sulle immagini]');
 }
 
 function file_file_operations_form_after_submit($env, $vars){
