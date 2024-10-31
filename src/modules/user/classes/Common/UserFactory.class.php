@@ -212,7 +212,19 @@ class UserFactory {
 
     // Check if there is a logged in user in session.
     if (!isset($_SESSION['user'])) {
-      $user = new User($env, \Quanta\Common\User::USER_ANONYMOUS);
+      $token = self::getBearerToken();
+      if ($token) {
+          $decodedData = self::verifyToken($env, $token);
+          if ($decodedData && isset($decodedData['user_name'])) {
+              print_r('welcome: ' . $decodedData['user_name']);
+              die();
+              $user = new User($env, $decodedData['user_name']);
+          } else {
+              $user = new User($env, \Quanta\Common\User::USER_ANONYMOUS); // Invalid token or expired
+          }
+      } else {
+          $user = new User($env, \Quanta\Common\User::USER_ANONYMOUS); // No token provided
+      }
     }
     else {
       $user = unserialize($_SESSION['user']);
@@ -298,4 +310,38 @@ class UserFactory {
     // We compare with the encrypted password.
     return ($user->json->password == UserFactory::passwordEncrypt($password));
   }
+
+  public static function generateToken(Environment $env, $user_name){
+    $issuedAt = time();
+    $expiration = $issuedAt + (60 * 60 * 24 * 90); // Token valid for approximately 3 months
+    $secret_key = $env->getData('JWT_SECRET_KEY');
+    $payload = [
+        'user_name' => $user_name,
+        'iat' => $issuedAt,
+        'exp' => $expiration
+    ];
+
+    return \Firebase\JWT\JWT::encode($payload, $secret_key, 'HS256');
+  }
+
+  public static function verifyToken($env, $token){
+    $secret_key = $env->getData('JWT_SECRET_KEY');
+    try {
+        $decoded = \Firebase\JWT\JWT::decode($token, new \Firebase\JWT\Key($secret_key, 'HS256'));
+        return (array) $decoded; // Returns payload as an array
+    } catch (Exception $e) {
+        return null; // Invalid token
+    }
+  }
+
+  public static function getBearerToken() {
+    $headers = getallheaders();
+    if (isset($headers['Authorization'])) {
+        $matches = [];
+        if (preg_match('/Bearer\s(\S+)/', $headers['Authorization'], $matches)) {
+            return $matches[1];
+        }
+    }
+    return null;
+}
 }
