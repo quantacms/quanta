@@ -216,8 +216,6 @@ class UserFactory {
       if ($token) {
           $decodedData = self::verifyToken($env, $token);
           if ($decodedData && isset($decodedData['user_name'])) {
-              print_r('welcome: ' . $decodedData['user_name']);
-              die();
               $user = new User($env, $decodedData['user_name']);
           } else {
               $user = new User($env, \Quanta\Common\User::USER_ANONYMOUS); // Invalid token or expired
