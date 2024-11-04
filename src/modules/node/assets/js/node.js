@@ -14,15 +14,21 @@ $(document).bind('refresh', function() {
   // Delete Node link behavior.
   $('.delete-link').off('click').on('click', function(e) {
     var component = $('.delete-link').attr('data-component') ? $('.delete-link').attr('data-component') : 'node_delete';
-        openShadow({
-            module: 'node',
-            context: 'node_delete',
-            widget: 'single',
-            components: [component,'node_form'],
-            node: $(this).attr('data-rel'),
-            redirect: $(this).data('redirect')
-        });
-        e.preventDefault();
+    var shadow = {
+      module: 'node',
+      context: 'node_delete',
+      widget: 'single',
+      components: [component,'node_form'],
+      node: $(this).attr('data-rel'),
+      redirect: $(this).data('redirect')
+    };
+    $.each($(this).data(), function(key, value) {
+      if (shadow[key] == undefined) {
+          shadow[key] = value;
+      }
+    });
+    openShadow(shadow);
+    e.preventDefault();
 
     });
 
