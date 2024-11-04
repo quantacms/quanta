@@ -576,6 +576,10 @@ class NodeFactory {
       // User requested to delete a Node...
       case
       \Quanta\Common\Node::NODE_ACTION_DELETE:
+        // Check if the node not exists in this language get the default language
+        if(!empty($language) && !is_file($node->path . '/data_' . $language . '.json')){
+          $node = new Node($env, $node_name, $father, \Quanta\Common\Localization::getFallbackLanguage($env), $path);
+        }
         // Check that the current user has the right to delete the node.
         $has_access = (NodeAccess::check($env, \Quanta\Common\Node::NODE_ACTION_DELETE, array('node' => $node)));
         if ($has_access) {
