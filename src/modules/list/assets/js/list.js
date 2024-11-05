@@ -9,7 +9,7 @@ var refreshLists = function () {
                 list.find('.link-active').removeClass('link-active');
 
                 if (rel == '_self') {
-                    top.location.href = '/' + $(this).attr('href');
+                    window.location.href = '/' + $(this).attr('href');
                 }
                 else if ($(this).attr('href') != '_empty') {
                     openAjax($(this).attr('href'), rel, undefined, tpl);

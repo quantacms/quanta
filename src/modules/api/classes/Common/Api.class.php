@@ -26,7 +26,7 @@ class Api {
    *   Where to redirect the user.
    */
   public static function redirect($where) {
-    print '<script>top.location.href="' . $where . '";</script>';
+    print '<script>window.location.href="' . $where . '";</script>';
     exit;
   }
 
