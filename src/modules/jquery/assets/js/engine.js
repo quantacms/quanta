@@ -67,7 +67,7 @@ var actionSuccess = function(data) {
     }, 6000);
   }
   if (data.redirect != undefined) {
-    top.location.href = data.redirect;
+    window.location.href = data.redirect;
   }
   return true;
 
