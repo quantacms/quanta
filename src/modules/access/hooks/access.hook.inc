@@ -186,9 +186,6 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
         break;
       case 'user_can_edit':
         $filter_check = array('user_can_edit');
-        foreach ($filter_values as $value) {
-          $filter_check[] = \Quanta\Common\NodeAccess::check($env,\Quanta\Common\Node::NODE_ACTION_EDIT,array('node' => \Quanta\Common\NodeFactory::load($env,$value)));
-        }
         break;
       // Filter by current user's role.
 			case 'status':
