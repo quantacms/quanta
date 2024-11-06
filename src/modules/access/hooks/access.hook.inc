@@ -184,6 +184,12 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
       case 'user_name':
         $filter_check = array($user->getName());
         break;
+      case 'user_can_edit':
+        $filter_check = array('user_can_edit');
+        foreach ($filter_values as $value) {
+          $filter_check[] = \Quanta\Common\NodeAccess::check($env,\Quanta\Common\Node::NODE_ACTION_EDIT,array('node' => \Quanta\Common\NodeFactory::load($env,$value)));
+        }
+        break;
       // Filter by current user's role.
 			case 'status':
         $filter_check = array($node->getStatus());
@@ -247,6 +253,8 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
           }
           elseif($filter_value == \Quanta\Common\Access::EMPTY_FILTER){   
             $filter_match = !$check; 
+          }elseif($check == 'user_can_edit'){
+            $filter_match = \Quanta\Common\NodeAccess::check($env,\Quanta\Common\Node::NODE_ACTION_EDIT,array('node' => \Quanta\Common\NodeFactory::load($env,$filter_value)));
           }
 	  else {
 	    if (!empty($check)) {
