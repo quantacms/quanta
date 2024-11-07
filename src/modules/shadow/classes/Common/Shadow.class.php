@@ -49,6 +49,12 @@ class Shadow extends Page {
         }
       }
 
+    if (isset($data['buttons'])) {
+      foreach ($data['buttons'] as $button) {
+        $this->addButton($button['action'], $button);
+      }
+    }
+
 
   }
 
