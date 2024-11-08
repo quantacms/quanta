@@ -205,11 +205,13 @@ class User extends Node {
             \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
           );
         }
-        new Message($this->env,
-          t('User !user logged in', array('!user' => $this->getName())),
-          \Quanta\Common\Message::MESSAGE_CONFIRM,
-          \Quanta\Common\Message::MESSAGE_TYPE_LOG
-        );
+        if(!$force_login){
+          new Message($this->env,
+            t('User !user logged in', array('!user' => $this->getName())),
+            \Quanta\Common\Message::MESSAGE_CONFIRM,
+            \Quanta\Common\Message::MESSAGE_TYPE_LOG
+          );
+        }
         self::addRole(self::ROLE_LOGGED);
         $_SESSION['user'] = $this->serializeForSession();
         $this->env->hook('user_login', $vars);
