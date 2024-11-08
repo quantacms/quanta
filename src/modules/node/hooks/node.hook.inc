@@ -108,9 +108,9 @@ function node_page_init(Environment $env, array $vars) {
     $node_403 = NodeFactory::load($env, '403');
     if ($node_403->exists) {
       // Get the full requested URL dynamically
-      $currentUrl = $_SERVER['REQUEST_URI']; // This includes both the path and the query string
+      $current_url = $_SERVER['REQUEST_URI']; // This includes both the path and the query string
       // Store the original URL in the session
-      $_SESSION['original_url'] = $currentUrl;
+      $_SESSION['original_url'] = $current_url;
       Api::redirect('/403');
     }
     else {
