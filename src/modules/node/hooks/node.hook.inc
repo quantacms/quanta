@@ -107,6 +107,10 @@ function node_page_init(Environment $env, array $vars) {
   else if ($env->request_path != '403' && $node->isForbidden() && !isset($_REQUEST['shadow'])) {
     $node_403 = NodeFactory::load($env, '403');
     if ($node_403->exists) {
+      // Get the full requested URL dynamically
+      $currentUrl = $_SERVER['REQUEST_URI']; // This includes both the path and the query string
+      // Store the original URL in the session
+      $_SESSION['original_url'] = $currentUrl;
       Api::redirect('/403');
     }
     else {
