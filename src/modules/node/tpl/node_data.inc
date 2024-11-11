@@ -5,7 +5,7 @@
 [INPUT|id=tmp_files_dir|type=hidden|required|name=tmp_files_dir|value={ATTRIBUTE|name=tmp_files_dir|no_qtags}:node_data]
 [INPUT|id=files_count|type=hidden|name=files_count|value={ATTRIBUTE|name=files_count|no_qtags}:node_data]
 [INPUT|type=hidden|title=father|id=edit_father|required|name=edit-father|value={ATTRIBUTE|name=father}:node_data]
-[INPUT|type=hidden|id=language|required|name=language|value={LANGUAGE}:node_data]
+[INPUT|type=hidden|id=language|name=language|value={LANGUAGE}:node_data]
 [INPUT|type=hidden|id=current_url|required|name=current_url:node_data]
 [INPUT|type=hidden|id=single_file|required|value=false|name=single_file:node_data]
 [INPUT|type=hidden|id=set_as_thumbnail|required|value=true|name=set_as_thumbnail:node_data]
