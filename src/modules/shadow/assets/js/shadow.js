@@ -193,6 +193,17 @@ function submitShadow() {
       fieldWrapper.removeClass('has-validation-errors');
       fieldWrapper.find('.validation-error').remove();
     }
+
+       // Additional handling for phone number fields if the hidden input (like fullphone) is also required
+       var hiddenField = fieldWrapper.find('input[type="hidden"][required]');
+       if (hiddenField.length > 0 && hiddenField.val()?.trim() === '') {
+           hasEmptyRequiredFields = true;
+           // Add validation error for the hidden field
+           fieldWrapper.addClass('has-validation-errors');
+           if (fieldWrapper.find('.validation-error').length === 0) {
+               fieldWrapper.append('<div class="validation-error">This field is required.</div>');
+           }
+       }
     
     if (form_items[fieldName] == undefined) {
       form_items[fieldName] = getJSONFormItem(inputField,[]);
