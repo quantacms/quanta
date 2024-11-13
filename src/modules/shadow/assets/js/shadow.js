@@ -210,11 +210,10 @@ function submitShadow() {
     }
     
     if (inputField.attr('type') == 'checkbox') {
-      if(inputField.is(':checked')){
-        var checkboxValue = inputField.is(':checked') ? inputField.val() : '';
+        var uncheckValue = inputField.attr('unchecked_value') != '' ? inputField.attr('unchecked_value') : '';
+        var checkboxValue = inputField.is(':checked') ? inputField.val() : uncheckValue;
         var newValue = !form_items[fieldName] ? [checkboxValue] :  (form_items[fieldName].value.push(checkboxValue), form_items[fieldName].value);
         form_items[fieldName] = getJSONFormItem(inputField,newValue);
-      }
     }
     else if(inputField.attr('type') == 'hidden' && fieldName.startsWith("full")){
       fieldName= fieldName.substring(4);
