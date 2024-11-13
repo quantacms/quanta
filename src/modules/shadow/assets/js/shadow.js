@@ -195,8 +195,8 @@ function submitShadow() {
     }
 
        // Additional handling for phone number fields if the hidden input (like fullphone) is also required
-       var hiddenField = fieldWrapper.find('input[type="hidden"][required]');
-       if (hiddenField.length > 0 && hiddenField.val()?.trim() === '') {
+       var hiddenInputs = ['fullphone','fullwhatsapp'];
+       if (hiddenInputs.includes(fieldName) && inputField.prop('required')  && fieldValue === '') {
            hasEmptyRequiredFields = true;
            // Add validation error for the hidden field
            fieldWrapper.addClass('has-validation-errors');
