@@ -33,7 +33,7 @@ $(document).bind('refresh', function() {
     });
 
     // Add Node link behavior.
-    $('.add-link, .edit-link').off('click').on('click', function(e) {
+    $('.add-link, .edit-link, .duplicate-link').off('click').on('click', function(e) {
         var context;
         if ($(this).hasClass('add-link')) {
             context = 'node_add';
@@ -66,7 +66,7 @@ $(document).bind('refresh', function() {
         });
       openShadow(shadow);
       e.preventDefault();
-        });
+    });
 
     $('.node-item-actions').parent()
         // TO BE COMPLETED
