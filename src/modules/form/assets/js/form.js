@@ -217,8 +217,11 @@ $(document).ready(function() {
  function InitializeAddressInputs() {
   $('.address-input').each(function() {
     const input = $(this);
+    // Prevent the user to submit the form until enter the address
+    if(input.val() === ''){
+      $('#edit-save').addClass('shadow-submitted');
+    }
     const loader = $('#loader'); // Reference to the loader element
-    
     // Get the address inputs that we want to use them (these inputs must be added in the form that used)
     const roadInput = $('input[name="road"]');
     const stateInput = $('input[name="state"]');
@@ -268,8 +271,8 @@ $(document).ready(function() {
         });
       },
       select: function(event, ui) {
-        console.log("Selected address:", ui.item);
-
+        // Allow the user to submit the form
+        $('#edit-save').removeClass('shadow-submitted');
         // Check if fields are required and if any required field is missing
         const requiredFields = {
           road: roadInput,

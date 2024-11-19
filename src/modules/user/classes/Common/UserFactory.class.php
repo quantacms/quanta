@@ -86,23 +86,28 @@ class UserFactory {
    *   The retrieved user object.
    */
   public static function getUserFromField(Environment $env, $field, $value) {
-    // This is the best we found so far from retrieving one user from one field...
-    $command = 'grep -r -i -o --include \*.json "\"' . $field . '\"\:\"' . $value . '\"" ' . $env->dir['users'];
+    // Build the search pattern, escaping properly for shell execution
+    $searchPattern = escapeshellarg('"' . $field . '":"' . $value . '"');
+    $directory = escapeshellarg($env->dir['users']);
+
+    // Construct the grep command
+    $command = "grep -r -i -o --include=*.json $searchPattern $directory";
+
     exec($command, $results);
+
+    // Check if any results were found
     if (!empty($results)) {
-    $explode = explode('/', array_pop($results));
-    if (count($explode) > 2) {
-      return $explode[count($explode) - 2];
-    }
-    else {
-      return NULL;
-    }
-    }
-    else {
-      return NULL;
+        // Process the last result
+        $explode = explode('/', array_pop($results));
+        if (count($explode) > 2) {
+            return $explode[count($explode) - 2];
+        }
     }
     
-  }
+    // Return NULL if no result
+    return NULL;
+}
+
 
   /**
    * Request performing an user action: login, logout, register, etc.
