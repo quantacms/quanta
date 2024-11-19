@@ -115,6 +115,10 @@ display: none;
     display: flex;
     gap: 75px;
 }
+.form-item-wrapper:has(.form-item-color) .form-item {
+  width: 40px;
+  height: 40px;
+}
 
 /* Star Rating */
 
