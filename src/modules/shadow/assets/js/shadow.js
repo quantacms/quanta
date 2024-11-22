@@ -211,6 +211,9 @@ function submitShadow() {
     
     if (inputField.attr('type') == 'checkbox') {
         var uncheckValue = inputField.attr('unchecked_value') != '' ? inputField.attr('unchecked_value') : '';
+        if(!inputField.is(':checked') && uncheckValue == '__empty__'){
+          return;
+        }
         var checkboxValue = inputField.is(':checked') ? inputField.val() : uncheckValue;
         var newValue = !form_items[fieldName] ? [checkboxValue] :  (form_items[fieldName].value.push(checkboxValue), form_items[fieldName].value);
         form_items[fieldName] = getJSONFormItem(inputField,newValue);
