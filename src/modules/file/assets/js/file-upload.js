@@ -24,10 +24,15 @@ $(function () {
       hasMultipleAttribute = fileInputElement.hasAttribute('multiple');
       
       var file = data.files[0];
-      var resolutionAttr = fileInputElement.getAttribute('data-resolution');
-      $('#resolution-error-message').hide();
-      if (resolutionAttr) {
-        var [minWidth, minHeight] = resolutionAttr.split('*').map(Number);
+      var minResolutionAttr = fileInputElement.getAttribute('data-min_resolution');
+      
+      var maxResolutionAttr = fileInputElement.getAttribute('data-max_resolution');      
+      
+      $('#min-resolution-error-message').hide();
+      $('#max-resolution-error-message').hide();
+      if (minResolutionAttr || maxResolutionAttr) {
+        var [minWidth, minHeight] = minResolutionAttr.split('*').map(Number);
+        var [maxWidth, maxHeight] = maxResolutionAttr.split('*').map(Number);
 
         // Create an image element to check dimensions
         var img = new Image();
@@ -35,8 +40,12 @@ $(function () {
         elementContext = $(this);
         img.onload = function () {
           console.log(img.width + " * " + img.height);
-          if (img.width < minWidth || img.height < minHeight) {
-            $('#resolution-error-message').show();
+          if (minResolutionAttr &&(img.width < minWidth || img.height > minHeight)) {
+            $('#min-resolution-error-message').show();
+            return;
+          }          
+          if (maxResolutionAttr &&(img.width > maxWidth || img.height > maxHeight)) {
+            $('#max-resolution-error-message').show();
             return;
           }          
           // If resolution is valid, proceed to handle the file upload
