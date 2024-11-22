@@ -67,7 +67,7 @@ class Message {
     }
     else {
       $this->env->addData('message', array($this));
-      if ($type == self::MESSAGE_TYPE_SCREEN) {
+      if ($type == self::MESSAGE_TYPE_SCREEN && (empty($this->env->getData('IS_PRODUCTION')) || $this->env->getData('IS_PRODUCTION') != 'true')) {
         $_SESSION['messages'][] = serialize($this);
       }
     }
