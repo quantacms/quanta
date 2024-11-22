@@ -1,10 +1,13 @@
 [FORM|name=files:
-    [INPUT|resolution={SHADOW:resolution}|type=file|plugin=drop|widget|name=files:files]
+    [INPUT|min_resolution={SHADOW:min_resolution}|max_resolution={SHADOW:max_resolution}|type=file|plugin=drop|widget|name=files:files]
     [INPUT|type=hidden|class=d-none|id=set_auto_thumbnail|name=set_auto_thumbnail|value={SHADOW:set_auto_thumbnail}:files]
 ]
 
-[HTML_TAG|id=resolution-error-message|class=intro-description alert-description hidden:
-    [TEXT|tag=resolution-error-message:la risoluzione è troppo bassa! La risoluzione minima richiesta è] {SHADOW:resolution}
+[HTML_TAG|id=min-resolution-error-message|class=intro-description alert-description hidden:
+    [TEXT|tag=min-resolution-error-message:la risoluzione è troppo bassa! La risoluzione minima richiesta è] {SHADOW:min_resolution}
+]
+[HTML_TAG|id=max-resolution-error-message|class=intro-description alert-description hidden:
+    [TEXT|tag=max-resolution-error-message:La risoluzione è troppo alta! La risoluzione massima richiesta è] {SHADOW:max_resolution}
 ]
 
 [UPLOAD_VIEW]
