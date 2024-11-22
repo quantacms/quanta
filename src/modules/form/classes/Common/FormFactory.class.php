@@ -137,6 +137,9 @@ class FormFactory {
       case 'address':
         $formitem = new \Quanta\Qtags\FormItemAddress($env, $input, $form);
         break;
+      case 'color':
+        $formitem = new \Quanta\Qtags\FormItemColor($env, $input, $form);
+        break;
       case 'string':
       default:
         // TODO: use a hook to eventually get custom formitem items from other modules.
