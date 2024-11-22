@@ -245,7 +245,7 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
             $filter_value = str_replace('!', '', $filter_value);
           }
           // If comparing with an array of values, check if the value is in the array.
-          if (is_array($check)) {   
+          if (is_array($check) && $filter_value != \Quanta\Common\Access::EMPTY_FILTER) {   
             $filter_match = in_array($filter_value, $check);
           }
           elseif($filter_value == \Quanta\Common\Access::EMPTY_FILTER){   
@@ -301,6 +301,5 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
     $criteria_match[$i] = $filter_match;
     $i++;
   }
-
   return $filter_match;
 }

@@ -313,6 +313,10 @@ class NodeFactory {
           $node->setBody($field_value);
           break;
 
+        case 'teaser':
+          $node->setTeaser($field_value);
+          break;
+
         case 'language':
           $node->setLanguage($field_value);
           break;
@@ -407,7 +411,6 @@ class NodeFactory {
       }
       $full_form_data[$k] = $v;
     }
-
     // Prepare the response object.
     $response = new \stdClass();
     $user = UserFactory::current($env);
