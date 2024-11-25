@@ -32,38 +32,23 @@ $(document).bind('refresh', function() {
 
     });
 
-    // Edit Node link behavior.
-    $('.edit-link').off('click').on('click', function(e) {
-      // TODO: select default components in a hook.
-        var components = (($(this).attr('data-components') != undefined) ? ($(this).attr('data-components').split(',')) : ['node_edit', 'node_metadata', 'node_status', 'file_form', 'node_form']);
-
-        var shadow = {
-          module : 'node',
-          context: 'node_edit',
-          widget: $(this).data('widget'),
-          components: components,
-          node: $(this).data('rel'),
-          redirect: $(this).data('redirect')
-        };
-
-        // Use jQuery's data() method to get all data attributes
-        $.each($(this).data(), function(key, value) {
-            if (shadow[key] == undefined) {
-                shadow[key] = value;
-            }
-        });
-
-        openShadow(shadow);
-
-        e.preventDefault();
-    });
-
     // Add Node link behavior.
-    $('.add-link').off('click').on('click', function(e) {
+    $('.add-link, .edit-link, .duplicate-link').off('click').on('click', function(e) {
+        var context;
+        if ($(this).hasClass('add-link')) {
+            context = 'node_add';
+        }
+        else if ($(this).hasClass('edit-link')) {
+            context = 'node_edit';
+        }
+        else if ($(this).hasClass('duplicate-link')) {
+            context = 'node_duplicate';
+        }
+
             var components = (($(this).attr('data-components') != undefined) ? ($(this).attr('data-components').split(',')) : ['node_edit', 'node_metadata', 'node_status', 'file_form', 'node_form']);
             var shadow = {
                 module: 'node',
-                context: 'node_add',
+                context: context,
                 widget: $(this).attr('data-widget'),
                 language: $(this).attr('data-language'),
                 components: components,
@@ -74,37 +59,14 @@ $(document).bind('refresh', function() {
       if ($(this).data('language') != undefined) {
         shadow.language = $(this).attr('data-language');
       }
-
-      openShadow(shadow);
-
-      e.preventDefault();
-        });
-
-     // Duplicate Node link behavior.
-     $('.duplicate-link').off('click').on('click', function(e) {
-        var components = (($(this).attr('data-components') != undefined) ? ($(this).attr('data-components').split(',')) : ['node_edit', 'node_metadata', 'node_status', 'file_form', 'node_form']);
-
-        var shadow = {
-          module : 'node',
-          context: 'node_duplicate',
-          widget: $(this).data('widget'),
-          components: components,
-          node: $(this).data('rel'),
-          redirect: $(this).data('redirect')
-        };
-
-        // Use jQuery's data() method to get all data attributes
         $.each($(this).data(), function(key, value) {
             if (shadow[key] == undefined) {
                 shadow[key] = value;
             }
         });
-
-        openShadow(shadow);
-
-        e.preventDefault();
+      openShadow(shadow);
+      e.preventDefault();
     });
-
 
     $('.node-item-actions').parent()
         // TO BE COMPLETED
