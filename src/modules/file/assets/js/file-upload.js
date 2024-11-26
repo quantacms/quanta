@@ -39,8 +39,7 @@ $(function () {
         img.src = URL.createObjectURL(file);
         elementContext = $(this);
         img.onload = function () {
-          console.log(img.width + " * " + img.height);
-          if (minResolutionAttr &&(img.width < minWidth || img.height > minHeight)) {
+          if (minResolutionAttr && (img.width < minWidth || img.height < minHeight)) {
             $('#min-resolution-error-message').show();
             return;
           }          
