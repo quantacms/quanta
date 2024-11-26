@@ -18,7 +18,14 @@ class FormItemDate extends FormItemString {
    */
   public function getDefaultValue() {
     $curr = parent::getDefaultValue();
-    return $this->parseDate($curr, 'Y-m-d');
+    $default_empty = $this->getAttribute('default_empty');
+    if($default_empty){
+      $date = '';
+    }
+    else{
+      $date = $this->parseDate($curr, 'Y-m-d');
+    }
+    return $date;
   }
 
   /**
