@@ -33,7 +33,7 @@ $(document).bind('refresh', function() {
     });
 
     // Add Node link behavior.
-    $('.add-link, .edit-link, .duplicate-link').off('click').on('click', function(e) {
+    $('.add-link, .edit-link, .duplicate-link, .change-author-link').off('click').on('click', function(e) {
         var context;
         if ($(this).hasClass('add-link')) {
             context = 'node_add';
@@ -43,6 +43,9 @@ $(document).bind('refresh', function() {
         }
         else if ($(this).hasClass('duplicate-link')) {
             context = 'node_duplicate';
+        }
+        else if ($(this).hasClass('change-author-link')) {
+            context = 'node_change_author';
         }
 
             var components = (($(this).attr('data-components') != undefined) ? ($(this).attr('data-components').split(',')) : ['node_edit', 'node_metadata', 'node_status', 'file_form', 'node_form']);

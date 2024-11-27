@@ -391,7 +391,7 @@ class NodeFactory {
    * @return string
    */
   public static function requestAction(Environment $env, $action, array $form_data) {
-
+    
     // TODO language management needs many further check that language actually exists
     // As well as security checks.
     $language = isset($form_data['language']->value) ? (array_pop($form_data['language']->value)) : \Quanta\Common\Localization::LANGUAGE_NEUTRAL;
@@ -443,6 +443,12 @@ class NodeFactory {
       self::duplicate($env, $source_node, $node_name, $father, $language, true);
     }
 
+    elseif($action == \Quanta\Common\Node::NODE_ACTION_CHANGE_AUTHOR){
+      $source_node = \Quanta\Common\NodeFactory::load($env, $form_data['edit-path']);
+      $payload_data = isset($form_data['payload']) && $form_data['payload'] ? explode(',', $form_data['payload']) : array();
+      self::changeAuthor($env, $source_node, $form_data['author'], $form_data['subnodes'], $payload_data);
+    }
+
     $path = $env->nodePath($node_name);
     $node = new Node($env, $node_name, $father, $language, $path);
 
@@ -455,6 +461,7 @@ class NodeFactory {
       case \Quanta\Common\Node::NODE_ACTION_ADD:
       case \Quanta\Common\Node::NODE_ACTION_EDIT:
       case \Quanta\Common\Node::NODE_ACTION_DUPLICATE:
+      case \Quanta\Common\Node::NODE_ACTION_CHANGE_AUTHOR:
         if ($action == \Quanta\Common\Node::NODE_ACTION_ADD || !$node->exists || (!empty($language) && $node->father->exists)) {
           $check_access = $node->father;
           // Setup the path of the node to be created / updated.
@@ -715,5 +722,22 @@ class NodeFactory {
     return $new_node;
   }
 
+  public static function changeAuthor($env, $node, $author, $subnodes = true, $payload = array()){
+    $node->setAuthor($author);
+    foreach ($payload as $key) {
+      $node->setAttributeJSON($key, $author);
+    }
+    $default_lang = Localization::getFallbackLanguage($env);
+    if(!$node->hasTranslation($default_lang)){
+      $node->setLanguage(\Quanta\Common\Localization::LANGUAGE_NEUTRAL);
+    } 
+    $node->save();
+    if($subnodes){
+      $subnodes = new \Quanta\Common\DirList($env,  $node->name, null,[], 'node');
+      foreach ($subnodes->getItems() as $subnode) {
+        self::changeAuthor($env, $subnode, $author, true, $payload);
+      }
+    }
+  }
 
 }

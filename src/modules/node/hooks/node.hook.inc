@@ -44,6 +44,20 @@ function node_action_node_duplicate(Environment $env, array $vars){
   exit($response_json);
 }
 
+/**
+ * Implements hook_action_node_change_author.
+ * There is a node change author request.
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param array $vars
+ *   An array of variables.
+ */
+function node_action_node_change_author(Environment $env, array $vars){
+  $response_json = NodeFactory::requestAction($env, $vars['action'], $vars['data']);
+  exit($response_json);
+}
+
 
 /**
  * Implements hook_action_node_delete.

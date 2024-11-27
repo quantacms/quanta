@@ -13,6 +13,7 @@ class Node extends JSONDataContainer implements Cacheable {
   const NODE_ACTION_VIEW = 'node_view';
   const NODE_ACTION_EDIT = 'node_edit';
   const NODE_ACTION_DUPLICATE = 'node_duplicate';
+  const NODE_ACTION_CHANGE_AUTHOR = 'node_change_author';
   const NODE_ACTION_DELETE = 'node_delete';
   const NODE_ACTION_DELETE_FILE = 'file_delete';
   const NODE_STATUS_DRAFT = 'node-status-draft';
