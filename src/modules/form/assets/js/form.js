@@ -316,7 +316,13 @@ $(document).ready(function() {
           if (ui.item.lon) { lonCodeInput.val(ui.item.lon); }
         }
       },
-      minLength: 3 // Minimum length of characters before triggering suggestions
+      minLength: 3, // Minimum length of characters before triggering suggestions
+      appendTo: "#wrapper-address",
+      position: {
+        my: "left top",
+        at: "left bottom",
+        collision: "none" // Prevents the dropdown from getting cut off
+      }
     });
   });
 }
