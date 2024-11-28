@@ -20,6 +20,7 @@ class Jumper extends Qtag {
     $default = (isset($this->attributes['empty'])) ? $this->attributes['empty'] : '----------';
     $field = isset($this->attributes['field']) ? $this->attributes['field'] : NULL;
     $method = isset($this->attributes['method']) ? $this->attributes['method'] : 'redirect';
+    $payload_queries = isset($this->attributes['payload_queries']) ? $this->attributes['payload_queries'] : '';
     $default_path = null;
 
     if (!empty($this->attributes['default'])) {
@@ -56,7 +57,7 @@ class Jumper extends Qtag {
     $tpl = 'jumper';
     // Render the jumper.
     // TODO: use FORM Qtags.
-    $jumper = '<select class="jumper" data-field="' . $field . '" data-jumper-method="' . $method. '" rel="' . $ajax . '" ' . $tpl . '>'.
+    $jumper = '<select class="jumper" data-field="' . $field . '" data-payload-queries="' . $payload_queries . '" data-jumper-method="' . $method. '" rel="' . $ajax . '" ' . $tpl . '>'.
       (($empty_path != $default_path) ? ('<option value="' . $default_path . '">' . $default_title . '</option>') : '') .
       ($this->attributes['empty_show'] !='false' ?'<option value="' . $empty_path . '">' . $empty_title . '</option>':'') .
       $options . '</select>';
