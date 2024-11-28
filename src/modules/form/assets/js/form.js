@@ -224,6 +224,7 @@ $(document).ready(function() {
     const loader = $('#loader'); // Reference to the loader element
     // Get the address inputs that we want to use them (these inputs must be added in the form that used)
     const roadInput = $('input[name="road"]');
+    const streetNumberInput = $('input[name="street_number"]');
     const stateInput = $('input[name="state"]');
     const postcodeInput = $('input[name="postcode"]');
     const cityInput = $('input[name="city"]');
@@ -252,10 +253,11 @@ $(document).ready(function() {
               lat: item.position.lat,
               lon: item.position.lng,
               road: item.address.street,
+              road: item.address.street,
               state: item.address.state,
               city: item.address.city,
               postcode: item.address.postalCode,
-              houseNumber: item.address.houseNumber,
+              streetNumber: item.address.houseNumber,
               county: item.address.county,
               country: item.address.countryName,
               country_code: item.address.countryCode,
@@ -304,6 +306,7 @@ $(document).ready(function() {
           fieldWrapper.find('.validation-error').remove();
           // Update the hidden input
           if (ui.item.road) { roadInput.val(ui.item.road); }
+          if (ui.item.streetNumber) { streetNumberInput.val(ui.item.streetNumber); }
           if (ui.item.state) { stateInput.val(ui.item.state); }
           if (ui.item.postcode) { postcodeInput.val(ui.item.postcode); }
           if (ui.item.city) { cityInput.val(ui.item.city); }
