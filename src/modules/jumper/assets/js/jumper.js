@@ -6,10 +6,18 @@ var refreshJumpers = function() {
 
             var method = $(this).data('jumper-method');
             var field = $(this).data('field');
+            var payloadQueries = $(this).data('payload-queries');
 
           if (method == 'querystring') {
                 const url = new URL(window.location.href);                
                 url.searchParams.set(field, $(this).val());
+                if(payloadQueries){
+                  const payloadQueriesArray = payloadQueries.split(',');
+                  payloadQueriesArray.forEach(function(query) {
+                    const [key, value] = query.split('=');
+                    url.searchParams.set(key, value);
+                  });
+                }
                 window.location.href = url.toString();
           }
           else if (method == 'nothing') {
