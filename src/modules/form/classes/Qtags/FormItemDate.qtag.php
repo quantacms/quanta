@@ -19,7 +19,7 @@ class FormItemDate extends FormItemString {
   public function getDefaultValue() {
     $curr = parent::getDefaultValue();
     $default_empty = $this->getAttribute('default_empty');
-    if($default_empty){
+    if($default_empty && empty($curr)){
       $date = '';
     }
     else{
