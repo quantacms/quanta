@@ -12,7 +12,7 @@ $(document).bind('refresh', function() {
   });
 
   // Delete Node link behavior.
-  $('.delete-link').off('click').on('click', function(e) {
+  $(document).on('click', '.delete-link', function(e){
     var component = $('.delete-link').attr('data-component') ? $('.delete-link').attr('data-component') : 'node_delete';
     var shadow = {
       module: 'node',
