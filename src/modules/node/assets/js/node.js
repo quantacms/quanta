@@ -33,7 +33,7 @@ $(document).bind('refresh', function() {
     });
 
     // Add Node link behavior.
-    $('.add-link, .edit-link, .duplicate-link, .change-author-link').off('click').on('click', function(e) {
+    $(document).on('click', '.add-link, .edit-link, .duplicate-link, .change-author-link', function(e) {
         var context;
         if ($(this).hasClass('add-link')) {
             context = 'node_add';
