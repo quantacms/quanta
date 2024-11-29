@@ -67,8 +67,18 @@ class Message {
     }
     else {
       $this->env->addData('message', array($this));
-      if ($type == self::MESSAGE_TYPE_SCREEN && (empty($this->env->getData('IS_PRODUCTION')) || $this->env->getData('IS_PRODUCTION') != 'true')) {
-        $_SESSION['messages'][] = serialize($this);
+      if ($type == self::MESSAGE_TYPE_SCREEN) {
+        $isProduction = !empty($this->env->getData('IS_PRODUCTION')) && $this->env->getData('IS_PRODUCTION') === 'true';
+        if ($isProduction) {
+            // Log the error to Apache/PHP log
+            error_log("Error message from quanta: " . $this->body, 0); // Logs to the server error log (Apache/PHP error log)
+        } else {
+            // Show the error message on screen
+            if (!isset($_SESSION['messages'])) {
+                $_SESSION['messages'] = [];
+            }
+          $_SESSION['messages'][] = serialize($this);
+        }
       }
     }
   }
