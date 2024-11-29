@@ -69,10 +69,9 @@ class Message {
       $this->env->addData('message', array($this));
       if ($type == self::MESSAGE_TYPE_SCREEN) {
         $isProduction = !empty($this->env->getData('IS_PRODUCTION')) && $this->env->getData('IS_PRODUCTION') === 'true';
-    
         if ($isProduction) {
             // Log the error to Apache/PHP log
-            error_log("Error message from quanta: " . json_encode($this), 0); // Logs to the server error log (Apache/PHP error log)
+            error_log("Error message from quanta: " . $this->body, 0); // Logs to the server error log (Apache/PHP error log)
         } else {
             // Show the error message on screen
             if (!isset($_SESSION['messages'])) {
