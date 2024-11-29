@@ -12,7 +12,7 @@ $(document).bind('refresh', function() {
   });
 
   // Delete Node link behavior.
-  $('.delete-link').off('click').on('click', function(e) {
+  $(document).on('click', '.delete-link', function(e){
     var component = $('.delete-link').attr('data-component') ? $('.delete-link').attr('data-component') : 'node_delete';
     var shadow = {
       module: 'node',
@@ -33,7 +33,7 @@ $(document).bind('refresh', function() {
     });
 
     // Add Node link behavior.
-    $('.add-link, .edit-link, .duplicate-link, .change-author-link').off('click').on('click', function(e) {
+    $(document).on('click', '.add-link, .edit-link, .duplicate-link, .change-author-link', function(e) {
         var context;
         if ($(this).hasClass('add-link')) {
             context = 'node_add';
