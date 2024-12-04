@@ -80,14 +80,18 @@ function access_node_open(Environment $env, array &$vars) {
 function access_qtag_preload(Environment $env, array $vars) {
   $node = NodeFactory::current($env);
   $user = UserFactory::current($env);
+  $filter_key = null;
   /** @var Qtag $qtag */
   $qtag = &$vars['qtag'];
   if(!empty($qtag->getAttribute('filter_node'))){
     $node = NodeFactory::load($env,$qtag->getAttribute('filter_node'));
   }
+  if(!empty($qtag->getAttribute('filter_key'))){
+    $filter_key = $qtag->getAttribute('filter_key');
+  }
   // The user has selected to show the tag only if a certain criteria is matched.
   if (!empty($qtag->getAttribute('filter'))) {
-    $filter_match = _access_filter($env, $qtag->getAttribute('filter'), $node, $user);
+    $filter_match = _access_filter($env, $qtag->getAttribute('filter'), $node, $user, $filter_key);
     // If there is an active tag filter, and it doesn't match, empty the tag.
     if (!$filter_match) {
       $qtag->setAccess(FALSE);
@@ -227,6 +231,10 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
 
       case 'file_name':
         $filter_check = array($custom_value);
+        break;
+
+      case 'env':
+        $filter_check = array($env->getData($custom_value));
         break;
 
       default:
