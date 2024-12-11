@@ -18,8 +18,12 @@ class FormItemNumber extends FormItemString {
    */
   function validate() {
     $values = $this->getValue();
+    if (!is_array($values)) {
+      $values = array($values);
+    }
     foreach ($values as $value) {
       if (!is_numeric($value)) {
+        print ("NAME:" . $this->getName());
         $this->getFormState()->validationError($this->getName(), t('Please input a number'));
       }
     }

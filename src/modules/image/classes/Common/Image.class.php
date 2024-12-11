@@ -65,9 +65,19 @@ class Image extends FileObject {
     // If width or height are not specified, get it from img directly. (Slow).
     if (empty($this->width) || empty($this->height)) {
       if (is_file($this->getRealPath())) {
-        $get_size = getimagesize($this->getRealPath());
-        $this->width = $get_size[0];
-        $this->height = $get_size[1];
+        $realpath = $this->getRealPath();
+        if ($realpath === false) {
+          error_log("Error: getRealPath() returned false for ". $this->getFileName() . ".");
+        } else {
+          error_log("Path: " . $realpath);
+    	}
+	$get_size = getimagesize($this->getRealPath());
+    	if ($get_size === false) {
+        	error_log("Error: getimagesize() failed for path: " . $realpath);
+    	} else {
+        	$this->width = $get_size[0];
+        	$this->height = $get_size[1];
+    	}
       }
     }
   }
