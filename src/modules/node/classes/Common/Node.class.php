@@ -569,7 +569,10 @@ class Node extends JSONDataContainer implements Cacheable {
    *   The teaser.
    */
   public function setTeaser($teaser) {
-    $this->teaser = strip_tags($teaser);
+    if (!empty($teaser)) {
+      $teaser = strip_tags($teaser);
+    }
+    $this->teaser = $teaser;
   }
 
   /**
