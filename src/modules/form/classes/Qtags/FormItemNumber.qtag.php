@@ -21,9 +21,10 @@ class FormItemNumber extends FormItemString {
     if (!is_array($values)) {
       $values = array($values);
     }
+    $form_state = $this->getFormState();
     foreach ($values as $value) {
-      if (!is_numeric($value)) {
-        print ("NAME:" . $this->getName());
+      // TODO: this generated error. See ALFA-1676
+      if (!is_numeric($value) && !empty($form_state)) {
         $this->getFormState()->validationError($this->getName(), t('Please input a number'));
       }
     }
