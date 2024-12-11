@@ -179,8 +179,8 @@ function file_page_init(Environment $env, array $vars) {
 
 function file_shadow_preview_img($env, $vars) {
 	$vars['shadow']->addTab('Preview', file_get_contents($env->getModulePath('file') . '/tpl/preview_img.inc'), 2);
-	$vars['shadow']->addButton('set_as_thumbnail', t('Imposta come miniatura'));
-	$vars['shadow']->addButton('delete_img', t('Eliminare'));
+	$vars['shadow']->addButton('set_as_thumbnail', t('Imposta come principale'));
+	$vars['shadow']->addButton('delete_img', t('Elimina'));
   $vars['shadow']->setTitle('[TEXT|tag=file-operations:Operazioni sulle immagini]');
 }
 
