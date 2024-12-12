@@ -18,8 +18,16 @@ class DirList extends ListObject {
   public function generateList() {
 
     $i = 0;
+    // TODO: maybe Don't consider template here.
+    if (!empty($this->getTpl())) {
+      $tpl_path = $this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php';
+      $tpl = file_get_contents($tpl_path);
+    }
+    else {
+      $tpl = NULL;
+    }
     // TODO: better management of this, including in NodeTemplate class etc.
-    $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
+
     /** @var Node $node_current */
     $node_current = NodeFactory::current($this->env);
     /** @var Node $node_father */
