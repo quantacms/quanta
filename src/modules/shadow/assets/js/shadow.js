@@ -15,7 +15,7 @@ $(document).bind('refresh', function () {
   // window closing, and losing of the work.
   $('#shadow-item').find('input,select,textarea').bind('change', setShadowUpdated);
 
-  $('.shadow-submit').on('click', async function () {
+  $('.shadow-submit').off('click').on('click', async function () {
     if (!($(this).hasClass('shadow-submitted')) && !($(this).hasClass('not-submittable'))) {
       shadowConfirmClose = true;
 
@@ -34,7 +34,7 @@ $(document).bind('refresh', function () {
     }
   });
 
-  $('.shadow-cancel').on('click', function () {
+  $('.shadow-cancel').off('click').on('click', function () {
     closeShadow();
   });
 });
