@@ -250,6 +250,7 @@ $(document).bind('refresh', function () {
     var tag_attr = (filelink.data('filenew') != undefined) ? ('tmp_path=' + tmp_files_dir) : ('node=' + node_name);
     var qtag = '/qtag/[FILE_PREVIEW|' + tag_attr + ':' + encodeURIComponent(filename) + ']';
     $(this).load(qtag);
+    $(this).off('click').click(imageToggleZoom);
   });
 
   //TODO: I don't know what the purpose of [FILE_QTAG_SUGGESTION|] is It only displays incorrect data, but the name is displayed correctly elsewhere
@@ -262,7 +263,20 @@ $(document).bind('refresh', function () {
   //   $(this).load(qtag_suggestion);
   // });
 });
-
+function imageToggleZoom() {
+  const image = $(this).find('img');
+  if (!image.length) return;
+  if (image.hasClass('zoomed')) {
+    // Trigger zoom-out animation
+    image.addClass('removing').removeClass('zoomed');
+    
+    // Reset after the animation to avoid stacking animations
+    setTimeout(() => image.removeClass('removing'), 400);
+  } else {
+    // Trigger zoom-in animation
+    image.addClass('zoomed');
+  }
+}
 $(document).bind('shadow_save', function () {
   $('.progressBar').each(function () {
     if ($(this).val() != 100) {

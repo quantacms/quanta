@@ -169,10 +169,12 @@ class Qtag implements \Quanta\Common\Cacheable {
         $allowed_tags = ['br','img','hr','input'];
         if(isset($this->attributes['allowed_empty_tags'])) {
           $allowed_tags = array_merge($allowed_tags,explode(',',$this->attributes['allowed_empty_tags']));
-        }
-        if (empty(strip_tags(trim($this->html),$allowed_tags)) && ((!isset($this->attributes['class'])) || (isset($this->attributes['class']) && $this->attributes['class'] != 'icon'))) {
-          $this->html = $this->attributes['empty_replace'];
-        }
+	}
+	if (!empty($this->html)) {
+          if (empty(strip_tags(trim($this->html),$allowed_tags)) && ((!isset($this->attributes['class'])) || (isset($this->attributes['class']) && $this->attributes['class'] != 'icon'))) {
+            $this->html = $this->attributes['empty_replace'];
+	  }
+	}
       }
       // Prevent replacement where no_qtags attribute present. Used for input forms etc.
       if (isset($this->attributes['no_qtags'])) {
