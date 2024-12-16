@@ -25,7 +25,6 @@ class FilePreview extends Qtag {
     $preview = '';
     switch($file->getType()) {
       case 'image':
-        $this->attributes['150x150'] = TRUE;
         $attributes['node'] = $node->getName();
         $preview_img = new ImgThumb($this->env, $this->getAttributes(), $this->getTarget());
         $preview = $preview_img;
