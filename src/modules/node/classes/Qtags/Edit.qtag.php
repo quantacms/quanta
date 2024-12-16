@@ -10,7 +10,6 @@ class Edit extends Link {
   public $widget;
   public $components;
 
-  protected $html_body = '&#9998;';
   /**
    * Render the Qtag.
    *
@@ -20,6 +19,9 @@ class Edit extends Link {
   public function render() {
     $nodeobj = \Quanta\Common\NodeFactory::loadOrCurrent($this->env, $this->getTarget());
     $this->setTarget($nodeobj->getName());
+    if (empty($this->attributes['title'])) {
+      $this->html_body = '&#9998;';
+    }
 
     if (\Quanta\Common\NodeAccess::check($this->env, \Quanta\Common\Node::NODE_ACTION_EDIT, array('node' => $nodeobj))) {
       $this->attributes['redirect'] = isset($this->attributes['redirect']) ? $this->attributes['redirect'] : '';
