@@ -19,7 +19,7 @@ class Edit extends Link {
   public function render() {
     $nodeobj = \Quanta\Common\NodeFactory::loadOrCurrent($this->env, $this->getTarget());
     $this->setTarget($nodeobj->getName());
-    if (empty($this->attributes['title'])) {
+    if (empty($this->attributes['title']) && empty($this->html_body)) {
       $this->html_body = '&#9998;';
     }
 
