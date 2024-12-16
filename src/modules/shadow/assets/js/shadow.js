@@ -218,6 +218,14 @@ function submitShadow() {
         var newValue = !form_items[fieldName] ? [checkboxValue] :  (form_items[fieldName].value.push(checkboxValue), form_items[fieldName].value);
         form_items[fieldName] = getJSONFormItem(inputField,newValue);
     }
+    else if (inputField.attr('type') == 'radio') {
+      if(!inputField.is(':checked')){
+        return;
+      }
+      var radioValue = inputField.val();
+      var newValue = !form_items[fieldName] ? [radioValue] :  (form_items[fieldName].value.push(radioValue), form_items[fieldName].value);
+      form_items[fieldName] = getJSONFormItem(inputField,newValue);
+    }
     else if(inputField.attr('type') == 'hidden' && fieldName.startsWith("full")){
       fieldName= fieldName.substring(4);
       var newValue = !form_items[fieldName] ? [fieldValue] :  (form_items[fieldName].value.push(fieldValue), form_items[fieldName].value);
