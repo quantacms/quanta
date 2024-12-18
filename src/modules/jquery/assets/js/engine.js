@@ -107,7 +107,12 @@ var actionError = function(err, exception) {
   }
   else if (err?.responseJSON?.error_message){
    const shadowButtons = $('#shadow-buttons'); 
-   shadowButtons.parent().prepend(`<div style="font-size: 12px;" class="validation-error">${err.responseJSON.error_message}</div>`)
+   if($('.validation-error').length > 0){
+    $('.validation-error').html(err.responseJSON.error_message);
+   }
+   else{
+    shadowButtons.parent().prepend(`<div style="font-size: 12px;" class="validation-error">${err.responseJSON.error_message}</div>`);
+   }
   }
   else{
     alert(exception);
