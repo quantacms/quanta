@@ -164,7 +164,7 @@ class User extends Node {
       );
     }
     unset($_SESSION['user']);
-
+    $this->env->hook('user_logged_out');
     // TODO: adapt cookies.
     $response = new \stdClass();
     $response->redirect = '/' . $this->env->getRequestedPath();
