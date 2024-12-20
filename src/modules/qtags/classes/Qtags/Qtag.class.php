@@ -170,7 +170,8 @@ class Qtag implements \Quanta\Common\Cacheable {
         if(isset($this->attributes['allowed_empty_tags'])) {
           $allowed_tags = array_merge($allowed_tags,explode(',',$this->attributes['allowed_empty_tags']));
 	}
-          if (empty(strip_tags(trim($this->html),$allowed_tags))) {
+          // Check if $this->html is not empty before using strip_tags
+          if (empty($this->html) || empty(strip_tags(trim($this->html),$allowed_tags))) {
             $this->html = $this->attributes['empty_replace'];
 	  }
       }
