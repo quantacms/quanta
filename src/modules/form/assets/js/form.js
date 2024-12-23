@@ -277,9 +277,6 @@ $(document).ready(function() {
         $('#edit-save').removeClass('shadow-submitted');
         // Check if fields are required and if any required field is missing
         const requiredFields = {
-          road: roadInput,
-          state: stateInput,
-          postcode: postcodeInput,
           city: cityInput,
           country: countryInput,
           country_code: countryCodeInput,
