@@ -277,6 +277,9 @@ $(document).ready(function() {
         $('#edit-save').removeClass('shadow-submitted');
         // Check if fields are required and if any required field is missing
         const requiredFields = {
+          road: roadInput,
+          state: stateInput,
+          postcode: postcodeInput,
           city: cityInput,
           country: countryInput,
           country_code: countryCodeInput,
@@ -532,8 +535,7 @@ function removeDuplicateOptions(id) {
 }
 
 function handleSelectChange() {
-  $('.form-item-select').off('change').on('change', function() {
-    if($(this).data('multiple') != true){  return ;}
+  $('.form-item-select[data-multiple="true"]').off('change').on('change', function() {
     var selectedValues = $('.form-item-select').map(function() {
       return $(this).val();
     }).get().filter(Boolean);
