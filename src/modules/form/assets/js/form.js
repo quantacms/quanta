@@ -215,10 +215,14 @@ $(document).ready(function() {
  }
 
  function InitializeAddressInputs() {
-  $('.address-input').each(function() {
-    const input = $(this);
+   $('.address-input').each(function() {
+    const input = this; // `this` refers to the current DOM element in the jQuery `.each` loop    // Create an Autocomplete instance
+    var autocomplete = new google.maps.places.Autocomplete(input, {
+      types: ["geocode"], // Optional: Restrict to addresses
+    });
+
     // Prevent the user to submit the form until enter the address
-    if(input.val() === ''){
+    if ($(input).val() === '') {
       $('#edit-save').addClass('shadow-submitted');
     }
     const loader = $('#loader'); // Reference to the loader element
@@ -232,197 +236,70 @@ $(document).ready(function() {
     const countryCodeInput = $('input[name="country_code"]');
     const latCodeInput = $('input[name="latitude"]');
     const lonCodeInput = $('input[name="longitude"]');
-
-    input.autocomplete({
-      source: function(request, response) {
-        loader.show(); // Show the loader
-        $.ajax({
-          url: `https://geocode.search.hereapi.com/v1/geocode`,
-          dataType: "json",
-          data: {
-            q: request.term,
-            // Include your Here API key below
-            apiKey: 'lDxfyBrF9You62PBblLf3K5WPoojbL9xlrPYw7GBAOQ',
-            // Specify the type of result you want
-            at: '52.5160,13.3779', // Replace with user's location or leave out for global results
-            limit: 10 // Limit the number of suggestions
-          },
-          success: function(data) {
-            response(data.items.map(item => ({
-              label: item.address.label,
-              lat: item.position.lat,
-              lon: item.position.lng,
-              road: item.address.street,
-              road: item.address.street,
-              state: item.address.state,
-              city: item.address.city,
-              postcode: item.address.postalCode,
-              streetNumber: item.address.houseNumber,
-              county: item.address.county,
-              country: item.address.countryName,
-              country_code: item.address.countryCode,
-            })));
-          },
-          error: function(xhr, status, error) {
-            console.error("Error fetching data from Here Places API:", status, error);
-            response([]);
-          },
-          complete: function() {
-            loader.hide(); // Hide the loader after the request is complete
-          }
-        });
-      },
-      select: function(event, ui) {
-        // Allow the user to submit the form
-        $('#edit-save').removeClass('shadow-submitted');
-        // Check if fields are required and if any required field is missing
-        const requiredFields = {
-          city: cityInput,
-          country: countryInput,
-          country_code: countryCodeInput,
-          lat: latCodeInput,
-          lon: lonCodeInput
-        };
-
-        const isMissingData = Object.keys(requiredFields).some(field =>
-          isRequiredFieldMissing(ui.item[field], requiredFields[field])
-        );
-        var fieldWrapper = $(this).closest('.form-item-wrapper');
-        if (isMissingData) {
-          // Prevent the user from submitting the form
-          $('.shadow-submit').addClass('shadow-submitted');
-          // Add error message to the field wrapper
-          fieldWrapper.addClass('has-validation-errors');
-          if (fieldWrapper.find('.validation-error').length === 0) {
-            fieldWrapper.append(`<div class="validation-error">${$('#address-missing-data').text()}</div>`);
-          }
-        } else {
+    // Listen for the place_changed event
+    autocomplete.addListener("place_changed", function () {
+      // Allow the user to submit the form
+      $('#edit-save').removeClass('shadow-submitted');
+      const place = autocomplete.getPlace();
+      const addressComponents = place.address_components;
+      // Extract specific components
+      const getComponent = (types, useShortName = false) => {
+        const component = addressComponents.find(comp => types.every(type => comp.types.includes(type)));
+        return component ? (useShortName ? component.short_name : component.long_name) : null;
+      };
+      const getCity = () => {
+        const city = getComponent(['locality']) ||
+                      getComponent(['administrative_area_level_3']) ||
+                      getComponent(['administrative_area_level_2']);
+        return city;
+      };
+      const details = {
+        road: getComponent(['route']),
+        streetNumber: getComponent(['street_number']),
+        city: getCity(), // Enhanced city extraction logic
+        state: getComponent(['administrative_area_level_1']),
+        postcode: getComponent(['postal_code']),
+        country: getComponent(['country']),
+        country_code: getComponent(['country'], true),
+        lat: place.geometry?.location.lat(),
+        lon: place.geometry?.location.lng(),
+      };
+      const requiredFields = {
+        lat: latCodeInput,
+        lon: lonCodeInput
+      };
+      const isMissingData = Object.keys(requiredFields).some(field =>
+        isRequiredFieldMissing(details[field], requiredFields[field])
+      );
+    
+      var fieldWrapper = $(this).closest('.form-item-wrapper');
+      if (isMissingData) {
+        // Prevent the user from submitting the form
+        $('.shadow-submit').addClass('shadow-submitted');
+        // Add error message to the field wrapper
+        fieldWrapper.addClass('has-validation-errors');
+        if (fieldWrapper.find('.validation-error').length === 0) {
+          fieldWrapper.append(`<div class="validation-error">${$('#address-missing-data').text()}</div>`);
+        }
+      } else {
           $('.shadow-submitted').removeClass('shadow-submitted');
           // Remove error styling and message if field is not empty and visible
           fieldWrapper.removeClass('has-validation-errors');
           fieldWrapper.find('.validation-error').remove();
           // Update the hidden input
-          if (ui.item.road) { roadInput.val(ui.item.road); }
-          if (ui.item.streetNumber) { streetNumberInput.val(ui.item.streetNumber); }
-          if (ui.item.state) { stateInput.val(ui.item.state); }
-          if (ui.item.postcode) { postcodeInput.val(ui.item.postcode); }
-          if (ui.item.city) { cityInput.val(ui.item.city); }
-          if (ui.item.country) { countryInput.val(ui.item.country); }
-          if (ui.item.country_code) { countryCodeInput.val(ui.item.country_code); }
-          if (ui.item.lat) { latCodeInput.val(ui.item.lat); }
-          if (ui.item.lon) { lonCodeInput.val(ui.item.lon); }
+          if (details.road) { roadInput.val(details.road); }
+          if (details.streetNumber) { streetNumberInput.val(details.streetNumber); }
+          if (details.state) { stateInput.val(details.state); }
+          if (details.postcode) { postcodeInput.val(details.postcode); }
+          if (details.city) { cityInput.val(details.city); }
+          if (details.country) { countryInput.val(details.country); }
+          if (details.country_code) { countryCodeInput.val(details.country_code); }
+          if (details.lat) { latCodeInput.val(details.lat); }
+          if (details.lon) { lonCodeInput.val(details.lon); }
         }
-      },
-      minLength: 3, // Minimum length of characters before triggering suggestions
-      appendTo: "#wrapper-address",
-      position: {
-        my: "left top",
-        at: "left bottom",
-        collision: "none" // Prevents the dropdown from getting cut off
-      }
     });
   });
 }
-
-//openstreetmap approach (deprecated)
-// function InitializeAddressInputs(){
-//   $('.address-input').each(function() {
-//     const input = $(this);
-//     const loader = $('#loader'); // Reference to the loader element
-//     // get the address inputs that we want to use them (these inputs must be added in the form that used) you can add any input of them According to your needs
-//     const roadInput = $('input[name="road"]');
-//     const stateInput = $('input[name="state"]');
-//     const postcodeInput = $('input[name="postcode"]');
-//     const cityInput = $('input[name="city"]');
-//     const countryInput = $('input[name="country"]');
-//     const countryCodeInput = $('input[name="country_code"]');
-//     const latCodeInput = $('input[name="latitude"]');
-//     const lonCodeInput = $('input[name="longitude"]');
-
-//     input.autocomplete({
-//       source: function(request, response) {
-//         loader.show(); // Show the loader
-//         $.ajax({
-//           url: `https://nominatim.openstreetmap.org/search`,
-//           dataType: "json",
-//           data: {
-//             q: request.term,
-//             format: "json",
-//             addressdetails: 1,
-//             limit: 10 // Limit the number of suggestions
-//           },
-//           success: function(data) {
-//             response(data.map(item => ({
-//               label: item.display_name,
-//               lat: item.lat,
-//               lon: item.lon,
-//               road: item.address.road,
-//               state: item.address.state,
-//               city: item.address.town || item.address.village,
-//               postcode: item.address.postcode,
-//               country: item.address.country,
-//               country_code: item.address.country_code,
-//             })));
-//           },
-//           error: function(xhr, status, error) {
-//             console.error("Error fetching data from Nominatim:", status, error);
-//             response([]);
-//           },
-//           complete: function () {
-//             loader.hide(); // Hide the loader after the request is complete
-//           }
-//         });
-//       },
-//       select: function(event, ui) {
-//         console.log("Selected address:", ui.item);
-//           // Check if fields are required and if any required field is missing
-//         const requiredFields = {
-//           road: roadInput,
-//           state: stateInput,
-//           postcode: postcodeInput,
-//           city: cityInput,
-//           country: countryInput,
-//           country_code: countryCodeInput,
-//           lat: latCodeInput,
-//           lon: lonCodeInput
-//         };
-
-//         const isMissingData = Object.keys(requiredFields).some(field =>
-//           isRequiredFieldMissing(ui.item[field], requiredFields[field])
-//         );
-//         var fieldWrapper = $(this).closest('.form-item-wrapper');
-//         if(isMissingData){
-//           //prevent the user to submit the form
-//           $('.shadow-submit').addClass('shadow-submitted');
-//           // Add error message to the field wrapper
-//           fieldWrapper.addClass('has-validation-errors');
-//           if (fieldWrapper.find('.validation-error').length === 0) {
-//             fieldWrapper.append(`<div class="validation-error">${$('#address-missing-data').text()}</div>`);
-//           }
-//         }
-//         else{
-//           $('.shadow-submitted').removeClass('shadow-submitted');
-//           // Remove error styling and message if field is not empty and visible
-//           fieldWrapper.removeClass('has-validation-errors');
-//           fieldWrapper.find('.validation-error').remove();
-//           // Update the hidden input
-//           if(ui.item.road){ roadInput.val(ui.item.road);}
-//           if(ui.item.state){ stateInput.val(ui.item.state);}
-//           if(ui.item.postcode){ postcodeInput.val(ui.item.postcode);}
-//           if(ui.item.city){ cityInput.val(ui.item.city);}
-//           if(ui.item.country){ countryInput.val(ui.item.country);}
-//           if(ui.item.country_code){ countryCodeInput.val(ui.item.country_code);}
-//           if(ui.item.lat){ latCodeInput.val(ui.item.lat);}
-//           if(ui.item.lon){ lonCodeInput.val(ui.item.lon);}
-//         }
-       
-//       },
-//       minLength: 3 // Minimum length of characters before triggering suggestions
-//     });
-//   });
-
-//  }
-
  // Function to check if a field is required and if its value is present
 function isRequiredFieldMissing(value, input) {
   return input.is('[required]') && (!value || (typeof value === 'string' && value.trim() === '' ));
