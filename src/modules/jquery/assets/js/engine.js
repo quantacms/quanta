@@ -56,7 +56,10 @@ var actionSuccess = function(data) {
     console.log(data);
     return false;
   }
-
+  
+  if(data.shadow){
+    openShadow(data.shadow);
+  }
   // TODO: better way to display errors.
   if (data.errors) {
     $('.messages').html(data.errors).fadeIn('slow');
