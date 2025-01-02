@@ -676,19 +676,23 @@ class NodeFactory {
   }
 
   public static function duplicate($env, $source_node, $new_node_name, $father, $language = \Quanta\Common\Localization::LANGUAGE_NEUTRAL, $subnodes = true, $overrides = array()){
-    $new_node = new Node($env, $new_node_name, $father, $language);
-    $new_node->json = $source_node->json;
-    $new_node->setAuthor($source_node->getAuthor());
-    $new_node->setThumbnail($source_node->getThumbnail());
-    $new_node->save();
+    $new_node = self::createNode($env,$source_node, $new_node_name, $father, $language, $overrides);
     // Check if the node have multiple language files
     $language_files = glob($source_node->path . '/data_*.json');
     if(count($language_files)){
       foreach ($language_files as $language_file){
-        $file_name = basename($language_file);
-        $new_file_path = $new_node->path . '/' . $file_name;
-        //copy the file
-        copy($language_file, $new_file_path);
+        if($language_file == $language){
+          continue;
+        }
+        // Extract the language code from the file name
+        preg_match('/data_(\w+)\.json/', basename($language_file), $matches);
+        $lang = $matches[1] ?? null;
+        $data_array = [];
+        if ($lang) {
+          // Load the description node
+          $source_desc_node = \Quanta\Common\NodeFactory::load($env, $source_node->getName(), $lang);
+          self::createNode($env,$source_desc_node, $new_node_name, $father, $lang, $overrides);
+        }
       }
     }
      // Copy all other files (e.g., images, etc.) except `data*.json`
@@ -715,7 +719,7 @@ class NodeFactory {
             // Fix the father name
             $new_subnode_father = str_replace($source_node->father, $new_node_name, $new_node_name);
             // Recursively clone subnodes
-            self::duplicate($env, $subnode, $new_subnode_name, $new_subnode_father, $subnode->language, true);
+            self::duplicate($env, $subnode, $new_subnode_name, $new_subnode_father, null, true);
         }
     }
     // Return the new cloned node
@@ -738,6 +742,28 @@ class NodeFactory {
         self::changeAuthor($env, $subnode, $author, true, $payload);
       }
     }
+  }
+
+  private static function createNode($env,$source_node, $new_node_name, $father, $language, $overrides){
+    $new_node = new Node($env, $new_node_name, $father, $language); 
+    $new_node->json = $source_node->json;
+    $new_node->setTitle($source_node->getTitle());
+    $new_node->setAuthor($source_node->getAuthor());
+    $new_node->setThumbnail($source_node->getThumbnail());
+    $new_node->setStatus($source_node->getStatus());
+    foreach ($overrides as $key => $value) {
+      switch ($key) {
+        case 'author':
+          $new_node->setAuthor($value);
+          break;
+        
+        default:
+          $new_node->setAttributeJSON($key, $value);
+          break;
+      }
+    }
+    $new_node->save();
+    return $new_node;
   }
 
 }
