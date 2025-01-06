@@ -221,10 +221,6 @@ $(document).ready(function() {
       types: ["geocode"], // Optional: Restrict to addresses
     });
 
-    // Prevent the user to submit the form until enter the address
-    if ($(input).val() === '') {
-      $('#edit-save').addClass('shadow-submitted');
-    }
     const loader = $('#loader'); // Reference to the loader element
     // Get the address inputs that we want to use them (these inputs must be added in the form that used)
     const roadInput = $('input[name="road"]');
@@ -238,8 +234,6 @@ $(document).ready(function() {
     const lonCodeInput = $('input[name="longitude"]');
     // Listen for the place_changed event
     autocomplete.addListener("place_changed", function () {
-      // Allow the user to submit the form
-      $('#edit-save').removeClass('shadow-submitted');
       const place = autocomplete.getPlace();
       const addressComponents = place.address_components;
       // Extract specific components
@@ -274,15 +268,12 @@ $(document).ready(function() {
     
       var fieldWrapper = $(this).closest('.form-item-wrapper');
       if (isMissingData) {
-        // Prevent the user from submitting the form
-        $('.shadow-submit').addClass('shadow-submitted');
         // Add error message to the field wrapper
         fieldWrapper.addClass('has-validation-errors');
         if (fieldWrapper.find('.validation-error').length === 0) {
           fieldWrapper.append(`<div class="validation-error">${$('#address-missing-data').text()}</div>`);
         }
       } else {
-          $('.shadow-submitted').removeClass('shadow-submitted');
           // Remove error styling and message if field is not empty and visible
           fieldWrapper.removeClass('has-validation-errors');
           fieldWrapper.find('.validation-error').remove();
