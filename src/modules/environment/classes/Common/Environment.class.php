@@ -91,6 +91,7 @@ class Environment extends DataContainer {
     $this->dir['vendor'] = $this->dir['quanta'] . '/vendor';
     $this->dir['modules_core'] = $this->dir['src'] . '/modules';
     $this->dir['modules_custom'] = $this->dir['docroot'] . '/_modules';
+    $this->dir['db'] = $this->dir['docroot'] . '/db';
     $this->dir['users'] = $this->dir['docroot'] . '/db/_users';
     $this->dir['tpl'] = $this->dir['docroot'] . '/_tpl';
 	
