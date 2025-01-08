@@ -19,7 +19,7 @@ $(function () {
     add: async function (e, data) {
       var tmp_files_dir = ($('#tmp_files_dir').val());
       // Access the file input element
-      var fileInputElement = $(this).find('#input-files').get(0);
+      var fileInputElement = $(this).find('input[type="file"]').get(0);
       // Check if the file input has the 'multiple' attribute
       hasMultipleAttribute = fileInputElement.hasAttribute('multiple');
       
