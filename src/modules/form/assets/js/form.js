@@ -215,14 +215,20 @@ $(document).ready(function() {
  }
 
  function InitializeAddressInputs() {
-   $('.address-input').each(function() {
-    const input = this; // `this` refers to the current DOM element in the jQuery `.each` loop    // Create an Autocomplete instance
-    var autocomplete = new google.maps.places.Autocomplete(input, {
-      types: ["geocode"], // Optional: Restrict to addresses
-    });
+  const debounce = (func, delay) => {
+    let timeout;
+    return (...args) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func(...args), delay);
+    };
+  };
 
+  $('.address-input').each(function () {
+    const input = this; // Current DOM element
     const loader = $('#loader'); // Reference to the loader element
-    // Get the address inputs that we want to use them (these inputs must be added in the form that used)
+    const service = new google.maps.places.AutocompleteService(); // Create AutocompleteService instance
+
+    // Inputs to populate address details
     const roadInput = $('input[name="road"]');
     const streetNumberInput = $('input[name="street_number"]');
     const stateInput = $('input[name="state"]');
@@ -232,65 +238,120 @@ $(document).ready(function() {
     const countryCodeInput = $('input[name="country_code"]');
     const latCodeInput = $('input[name="latitude"]');
     const lonCodeInput = $('input[name="longitude"]');
-    // Listen for the place_changed event
-    autocomplete.addListener("place_changed", function () {
-      const place = autocomplete.getPlace();
-      const addressComponents = place.address_components;
-      // Extract specific components
-      const getComponent = (types, useShortName = false) => {
-        const component = addressComponents.find(comp => types.every(type => comp.types.includes(type)));
-        return component ? (useShortName ? component.short_name : component.long_name) : null;
-      };
-      const getCity = () => {
-        const city = getComponent(['locality']) ||
-                      getComponent(['administrative_area_level_3']) ||
-                      getComponent(['administrative_area_level_2']);
-        return city;
-      };
-      const details = {
-        road: getComponent(['route']),
-        streetNumber: getComponent(['street_number']),
-        city: getCity(), // Enhanced city extraction logic
-        state: getComponent(['administrative_area_level_1']),
-        postcode: getComponent(['postal_code']),
-        country: getComponent(['country']),
-        country_code: getComponent(['country'], true),
-        lat: place.geometry?.location.lat(),
-        lon: place.geometry?.location.lng(),
-      };
-      const requiredFields = {
-        lat: latCodeInput,
-        lon: lonCodeInput
-      };
-      const isMissingData = Object.keys(requiredFields).some(field =>
-        isRequiredFieldMissing(details[field], requiredFields[field])
-      );
-    
-      var fieldWrapper = $(this).closest('.form-item-wrapper');
-      if (isMissingData) {
-        // Add error message to the field wrapper
-        fieldWrapper.addClass('has-validation-errors');
-        if (fieldWrapper.find('.validation-error').length === 0) {
-          fieldWrapper.append(`<div class="validation-error">${$('#address-missing-data').text()}</div>`);
+
+    let lastRequest; // Track the last active request
+    let placeDetailsService = new google.maps.places.PlacesService(document.createElement('div')); // Service to fetch place details
+
+    // Debounced event handler for input changes
+    const handleInputChange = debounce((query) => {
+      if (query.length < 5) {
+        loader.hide(); // Hide loader for short queries
+        return;
+      }
+
+      // Cancel the last pending request if any
+      if (lastRequest) {
+        lastRequest.cancel();
+      }
+
+      loader.show(); // Show loader for new request
+
+      // Create a new cancellable request
+      lastRequest = {
+        cancel: () => {
+          console.log("Request canceled.");
         }
-      } else {
-          // Remove error styling and message if field is not empty and visible
-          fieldWrapper.removeClass('has-validation-errors');
-          fieldWrapper.find('.validation-error').remove();
-          // Update the hidden input
-          if (details.road) { roadInput.val(details.road); }
-          if (details.streetNumber) { streetNumberInput.val(details.streetNumber); }
-          if (details.state) { stateInput.val(details.state); }
-          if (details.postcode) { postcodeInput.val(details.postcode); }
-          if (details.city) { cityInput.val(details.city); }
-          if (details.country) { countryInput.val(details.country); }
-          if (details.country_code) { countryCodeInput.val(details.country_code); }
-          if (details.lat) { latCodeInput.val(details.lat); }
-          if (details.lon) { lonCodeInput.val(details.lon); }
+      };
+
+      // Fetch predictions from AutocompleteService
+      service.getPlacePredictions({ input: query, types: ["geocode"] }, (predictions, status) => {
+        if (status !== google.maps.places.PlacesServiceStatus.OK || !predictions) {
+          loader.hide();
+          return;
         }
+
+        // Use the first prediction to get place details
+        const firstPrediction = predictions[0];
+        if (!firstPrediction) {
+          loader.hide();
+          return;
+        }
+
+        placeDetailsService.getDetails({ placeId: firstPrediction.place_id }, (place, detailsStatus) => {
+          if (detailsStatus !== google.maps.places.PlacesServiceStatus.OK) {
+            loader.hide();
+            return;
+          }
+
+          const addressComponents = place.address_components;
+
+          const getComponent = (types, useShortName = false) => {
+            const component = addressComponents.find(comp => types.every(type => comp.types.includes(type)));
+            return component ? (useShortName ? component.short_name : component.long_name) : null;
+          };
+
+          const getCity = () => {
+            return getComponent(['locality']) ||
+              getComponent(['administrative_area_level_3']) ||
+              getComponent(['administrative_area_level_2']);
+          };
+
+          const details = {
+            road: getComponent(['route']),
+            streetNumber: getComponent(['street_number']),
+            city: getCity(),
+            state: getComponent(['administrative_area_level_1']),
+            postcode: getComponent(['postal_code']),
+            country: getComponent(['country']),
+            country_code: getComponent(['country'], true),
+            lat: place.geometry?.location.lat(),
+            lon: place.geometry?.location.lng(),
+          };
+
+          const requiredFields = {
+            lat: latCodeInput,
+            lon: lonCodeInput
+          };
+
+          const isMissingData = Object.keys(requiredFields).some(field =>
+            !details[field] || requiredFields[field].length === 0
+          );
+
+          const fieldWrapper = $(input).closest('.form-item-wrapper');
+          if (isMissingData) {
+            fieldWrapper.addClass('has-validation-errors');
+            if (fieldWrapper.find('.validation-error').length === 0) {
+              fieldWrapper.append(`<div class="validation-error">${$('#address-missing-data').text()}</div>`);
+            }
+          } else {
+            fieldWrapper.removeClass('has-validation-errors');
+            fieldWrapper.find('.validation-error').remove();
+
+            if (details.road) { roadInput.val(details.road); }
+            if (details.streetNumber) { streetNumberInput.val(details.streetNumber); }
+            if (details.state) { stateInput.val(details.state); }
+            if (details.postcode) { postcodeInput.val(details.postcode); }
+            if (details.city) { cityInput.val(details.city); }
+            if (details.country) { countryInput.val(details.country); }
+            if (details.country_code) { countryCodeInput.val(details.country_code); }
+            if (details.lat) { latCodeInput.val(details.lat); }
+            if (details.lon) { lonCodeInput.val(details.lon); }
+          }
+
+          loader.hide();
+        });
+      });
+    }, 500); // Adjust debounce delay as needed
+
+    // Bind input change event to the debounced handler
+    $(input).on('input', function () {
+      handleInputChange($(this).val());
     });
   });
 }
+
+
+
  // Function to check if a field is required and if its value is present
 function isRequiredFieldMissing(value, input) {
   return input.is('[required]') && (!value || (typeof value === 'string' && value.trim() === '' ));
