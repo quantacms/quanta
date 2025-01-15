@@ -14,6 +14,7 @@ abstract class FormItem extends HtmlTag {
   protected $type;
   protected $title;
   protected $label;
+  protected $description;
   protected $label_position = Label::LABEL_ON_TOP;
   /** @var \Quanta\Common\FormState $form */
   protected $form_state;
@@ -69,6 +70,8 @@ abstract class FormItem extends HtmlTag {
     $this->setTitle(!empty($this->getAttribute('title')) ? $this->getAttribute('title') : '');
 
     $this->setLabel(!empty($this->getAttribute('label')) ? $this->getAttribute('label') : $this->getTitle());
+    
+    $this->setDescription(!empty($this->getAttribute('description')) && $this->getAttribute('description') != self::INPUT_EMPTY_VALUE ? $this->getAttribute('description') : null);
 
     $this->setId(!empty($this->getAttribute('id')) ? $this->getAttribute('id') : ('input-' . $this->getAttribute('name')));
     $this->checkRequired();
@@ -305,6 +308,24 @@ abstract class FormItem extends HtmlTag {
    */
   public function getLabel() {
     return $this->label;
+  }
+
+    /**
+   * Set the description of a form item.
+   *
+   * @param string $label
+   */
+  public function setDescription($description) {
+    $this->description = $description;
+  }
+
+  /**
+   * Get the description of a form item.
+   *
+   * @return string
+   */
+  public function getDescription() {
+    return $this->description;
   }
 
   /**
