@@ -219,3 +219,10 @@ display: none;
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
+
+.form-item-description-wrapper{
+  margin-bottom: 2px;
+}
+.form-item-description-wrapper span{
+  font-style: italic;
+}

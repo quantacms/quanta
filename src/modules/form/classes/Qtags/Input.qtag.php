@@ -54,6 +54,12 @@ class Input extends HtmlTag {
 
     // Name attribute is mandatory to render an input.
     if (!(empty($this->getAttribute('name')))) {
+      $description = '';
+      if(!empty($this->form_item->getDescription())){
+        $description = "<div class=\"form-item-description-wrapper\">
+        <span>{$this->form_item->getDescription()}</span>
+        </div>";
+      }
       // Add a label to the form item.
       if (!empty($this->form_item->getLabel())) {
         $label_attributes = array(
@@ -63,12 +69,13 @@ class Input extends HtmlTag {
           );
         $label = new Label($this->env, $label_attributes, $this->form_item->getId());
         if ($this->form_item->getLabelPosition() == Label::LABEL_ASIDE) {
-          $this->html_body = $this->html_body . $label->render();
+          $this->html_body = $this->html_body . $label->render() . $description;
 	}
         elseif ($this->form_item->getLabelPosition() == Label::LABEL_ON_TOP) {
-          $this->html_body = $label->render() . $this->html_body;
+          $this->html_body = $label->render() . $description . $this->html_body;
         }
       }
+
 
       $this->addClass('form-item-wrapper');
       if ($this->hasValidationErrors()) {
