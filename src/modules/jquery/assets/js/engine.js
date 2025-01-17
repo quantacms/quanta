@@ -122,6 +122,7 @@ var actionError = function(err, exception) {
   }
   // Stop form submission if there are empty required fields
   $('.shadow-submit').removeClass('shadow-submitted'); // Remove shadow-submitted class
+  $(document).trigger('action_error');
 };
 
 var quanta_html_escape = function(str) {
