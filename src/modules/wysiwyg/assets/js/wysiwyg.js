@@ -22,6 +22,8 @@ $('.wysiwyg').each(function (elm) {
     console.log( editor );
   editor.model.document.on( 'change:data', ( evt, data ) => {
     editor.updateSourceElement();
+    // Trigger the change event on the original textarea
+    $(editor.sourceElement).trigger('change');
 });
 })
 .catch(error => {console.log( error );});
