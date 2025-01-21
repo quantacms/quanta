@@ -215,6 +215,11 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
       case 'context':
         $filter_check[] = $env->getContext();
         break;
+      
+      case 'shadow':
+        $shadow = $env->getData('shadow');
+        $filter_check[] = $shadow->getData($custom_value);
+        break;
 
       case 'category':
         $filter_check = array();

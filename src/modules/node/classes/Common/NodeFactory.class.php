@@ -564,10 +564,38 @@ class NodeFactory {
             $node->save();
             // Hook node_add_complete, node_edit_complete, etc.
             $env->hook($action . '_complete', $vars);
-            // Check if 'current_url' is set in the form data, if not, default to the father node's name.
-            $redirect_url= isset($form_data['current_url']) ? $form_data['current_url'] : '/' . $node->getFather()->getName() . '/';
-            // Set the redirect URL in the response. If 'redirect' is not empty in the form data, use it, otherwise, use the calculated $redirect_url.
-            $response->redirect = !empty($form_data['redirect']) ? $form_data['redirect'] : $redirect_url;
+            if(isset($form_data['shadow_response']) && $form_data['shadow_response']){
+              $child_node = isset($form_data['shadow_child_node']) && !empty($form_data['shadow_child_node']) ? '-' . $form_data['shadow_child_node'] : '';
+              $current_node_name = isset($form_data['shadow_node']) && !empty($form_data['shadow_node']) ? $form_data['shadow_node'] : $node->getName();
+              $node_name = $current_node_name . $child_node;
+              $translated_text = \Quanta\Common\Localization::translatableText($env,'Lo farò più tardi', 'will-do-it-later');
+              $buttons = array('skip' => ['title' => $translated_text, 'class' => 'shadow-skip']);
+              $shadow_data = array(
+                'module' => $form_data['shadow_module'],
+                'context' => $form_data['shadow_context'],
+                'widget' => $form_data['shadow_widget'],
+                'language' => isset($form_data['shadow_language']) ? $form_data['shadow_language'] : null,
+                'components' => explode(',',$form_data['shadow_components']),
+                'node' => $node_name,
+                'father' => $current_node_name,
+                'redirect' => isset($form_data['shadow_redirect']) ? $form_data['shadow_redirect'] : null,
+                'entity' => isset($form_data['shadow_entity']) ? $form_data['shadow_entity'] : null,
+                'opening_shadow' => 'new',
+                'buttons' => $buttons,
+              );
+              if(isset($form_data['shadow_extra_attributes_keys']) && !empty($form_data['shadow_extra_attributes_keys'])){
+                foreach ($form_data['shadow_extra_attributes_keys'] as $index => $key) {
+                  $shadow_data [$key] = $form_data['shadow_extra_attributes_values'][$index];
+                }
+              }
+              $response->shadow = $shadow_data;
+            }
+            else{
+              // Check if 'current_url' is set in the form data, if not, default to the father node's name.
+              $redirect_url= isset($form_data['current_url']) ? $form_data['current_url'] : '/' . $node->getFather()->getName() . '/';
+              // Set the redirect URL in the response. If 'redirect' is not empty in the form data, use it, otherwise, use the calculated $redirect_url.
+              $response->redirect = !empty($form_data['redirect']) ? $form_data['redirect'] : $redirect_url;
+            }
           }
           else {
             // TODO: make this good.
