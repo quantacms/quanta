@@ -35,7 +35,37 @@ $(document).bind('refresh', function () {
   });
 
   $('.shadow-cancel').off('click').on('click', function () {
+    closeShadow();    
+    if(shadow?.opening_shadow == 'new' && shadow?.redirect){
+      window.location.href = shadow.redirect;
+    }
+  });
+  $('.shadow-skip').off('click').on('click', function () {
     closeShadow();
+    if(shadow?.opening_shadow == 'new' && shadow?.redirect){
+      window.location.href = shadow.redirect;
+    }
+    let buttons ={
+        "skip": {
+          "title": $(this).text(),
+          "class": "shadow-skip"
+        }
+    };
+    
+    let shadowData = {
+      'module' : $('#edit_module').val(),
+      'context' : $('#edit_context').val(),
+      'widget' : $('#edit_widget').val(),
+      'language' : $('#edit_language').val(),
+      'components' : $('#edit_components').val().split(','),
+      'node' : $('#edit_node').val(),
+      'father' : shadow.father,
+      'redirect' : $('#edit_redirect').val(),
+      'entity' : $('#edit_entity').val(),
+      'opening_shadow' : 'new',
+      'buttons': shadow?.redirect ? null : buttons,
+    };
+    openShadow(shadowData);
   });
 });
 
