@@ -90,6 +90,9 @@ $(document).bind('shadow_open', function() {
 
 $(document).ready(function() {	
   $('.file-operation').click(function (e) {
+    if(isDragging){
+      return;
+    }
 		e.preventDefault();
 		openShadow({
 			module: 'file',

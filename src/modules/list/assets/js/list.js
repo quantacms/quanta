@@ -1,3 +1,4 @@
+let isDragging = false; // Add a flag to track dragging state
 var refreshLists = function () {
 
     $('.list').each(function () {
@@ -40,4 +41,32 @@ var refreshLists = function () {
 
 $(document).bind('refresh', function () {
     refreshLists();
+    $('.file-sortable').each(function() {
+      // Render sortable items list.
+      $(this).sortable({
+        update: async function(e) {
+          var files = $(this).sortable('toArray', { key: "data-img", attribute: "data-img"});
+          const items = $(this).children();
+          const nodeName = items.first().attr('data-img_node'); // Extract the first `data-img_node`
+          await $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: '/',
+            data: {json: JSON.stringify({"action":{"value":"file_weight_update"},"files":{"value":JSON.stringify(files)},"node_name":{"value":nodeName}})},
+            success: function(response) {
+              
+            }
+          });
+  
+        },
+        start: function(e) {
+          isDragging = true; // Set flag to true when dragging starts
+        },
+        stop: function(e) {
+          setTimeout(() => {
+            isDragging = false; // Reset flag when dragging stops
+          }, 500);
+        },
+      });
+    });
 });
