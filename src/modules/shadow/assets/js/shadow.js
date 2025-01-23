@@ -35,7 +35,7 @@ $(document).bind('refresh', function () {
   });
 
   $('.shadow-cancel').off('click').on('click', function () {
-    closeShadow();    
+    closeShadow();
   });
 });
 
