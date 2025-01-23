@@ -590,6 +590,9 @@ class NodeFactory {
               }
               $response->shadow = $shadow_data;
             }
+            else if(isset($form_data['without_redirect']) && !empty($form_data['without_redirect'])){
+              $response->close = true;
+            }
             else{
               // Check if 'current_url' is set in the form data, if not, default to the father node's name.
               $redirect_url= isset($form_data['current_url']) ? $form_data['current_url'] : '/' . $node->getFather()->getName() . '/';
