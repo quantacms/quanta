@@ -27,7 +27,7 @@ class FileOperations extends HtmlTag {
       \Quanta\Common\NodeAccess::check($this->env, \Quanta\Common\Node::NODE_ACTION_EDIT, array('node' => $nodeobj)) &&
       (!$q_filter || ($q_filter && (isset($_REQUEST[$q_filter]) && $_REQUEST[$q_filter] == $q_filter_value)))
       ) {
-      $this->addClass('file-operation');
+      $this->addClass('file-operation ui-sortable-handle');
       $this->attributes['attr-data-img_node'] = $node_name;
       $this->attributes['attr-data-img'] = $img_name;
       $this->attributes['attr-data-img_key'] = $img_key;
