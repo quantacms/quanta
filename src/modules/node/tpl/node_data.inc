@@ -9,4 +9,5 @@
 [INPUT|type=hidden|id=current_url|required|name=current_url:node_data]
 [INPUT|type=hidden|id=single_file|required|value=false|name=single_file:node_data]
 [INPUT|type=hidden|id=set_as_thumbnail|required|value=true|name=set_as_thumbnail:node_data]
+[INPUT|type=hidden|id=without_redirect|required|value={SHADOW:without_redirect}|name=without_redirect:node_data]
 ]

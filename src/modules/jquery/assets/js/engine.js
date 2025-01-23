@@ -57,8 +57,11 @@ var actionSuccess = function(data) {
     return false;
   }
   
-  if(data.shadow){
+  if(data?.shadow){
     openShadow(data.shadow);
+  }
+  else if(data?.close){
+    closeShadow(true);
   }
   // TODO: better way to display errors.
   if (data.errors) {
