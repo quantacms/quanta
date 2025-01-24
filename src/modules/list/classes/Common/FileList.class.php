@@ -15,6 +15,8 @@ class FileList extends ListObject {
   /** @var string $filename */
   public $filefield = self::DEFAULT_FILE_FIELD;
 
+  protected $files = true;
+
   public function start() {
     if (!empty($this->getData('file_field'))) {
       $this->filefield = $this->getData('file_field');
@@ -118,7 +120,7 @@ class FileList extends ListObject {
           // Rearrange Files according with what was set in the node json.
           $files_json = array_flip($filefield);
           if (isset($files_json[$x->getName()]) && isset($files_json[$y->getName()])) {
-            $check = ($files_json[$x->getName()] > $files_json[$y->getName()]);
+            $check = ($files_json[$x->getName()] < $files_json[$y->getName()]);
           }
           else {
             $check = TRUE;

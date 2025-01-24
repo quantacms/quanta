@@ -41,32 +41,43 @@ var refreshLists = function () {
 
 $(document).bind('refresh', function () {
     refreshLists();
-    $('.file-sortable').each(function() {
+    $('.file-sortable').each(function () {
       // Render sortable items list.
       $(this).sortable({
-        update: async function(e) {
-          var files = $(this).sortable('toArray', { key: "data-img", attribute: "data-img"});
-          const items = $(this).children();
-          const nodeName = items.first().attr('data-img_node'); // Extract the first `data-img_node`
+        update: async function (e) {
+          // Get all `.file-operation` divs in the sortable container
+          const operations = $(this).find('.file-operation');
+    
+          // Extract `data-img` values into an array
+          const files = operations.map(function () {
+            return $(this).attr('data-img'); // Get `data-img` from `.file-operation`
+          }).get(); // Convert to standard array
+    
+          // Extract the `data-img_node` value from the first `.file-operation` (assuming all are the same)
+          const nodeName = operations.first().attr('data-img_node');
+    
+          // AJAX request
           await $.ajax({
             type: "POST",
             dataType: 'json',
             url: '/',
-            data: {json: JSON.stringify({"action":{"value":"file_weight_update"},"files":{"value":JSON.stringify(files)},"node_name":{"value":nodeName}})},
-            success: function(response) {
-              
+            data: {
+              json: JSON.stringify({
+                action: { value: "file_weight_update" },
+                files: { value: JSON.stringify(files) },
+                node_name: { value: nodeName }
+              })
             }
           });
-  
         },
-        start: function(e) {
+        start: function (e) {
           isDragging = true; // Set flag to true when dragging starts
         },
-        stop: function(e) {
+        stop: function (e) {
           setTimeout(() => {
             isDragging = false; // Reset flag when dragging stops
           }, 500);
         },
       });
-    });
+    });  
 });
