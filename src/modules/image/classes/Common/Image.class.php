@@ -242,11 +242,21 @@ class Image extends FileObject {
                 // the thumbnail we want is actually
                 // bigger than the original image
 
-                // Calculate the new height and width
-                // based on the scale
+                // Calculate aspect ratios
 
-                $img_new_width = floor($scale * $img_orig_width);
-                $img_new_height = floor($scale * $img_orig_height);
+                $target_aspect_ratio = $img_max_width / $img_max_height;
+                $original_aspect_ratio = $img_orig_width / $img_orig_height;
+
+                if ($original_aspect_ratio < $target_aspect_ratio) {
+                  // Taller image (narrower aspect ratio) - scale by width
+                  $img_new_width = $img_max_width;
+                  $img_new_height = floor($img_max_width / $original_aspect_ratio);
+                } else {
+                  // Wider or equal image - scale by height
+                  $img_new_height = $img_max_height;
+                  $img_new_width = floor($img_max_height * $original_aspect_ratio);
+                }
+
                 // Create a new temporary image using the
                 // imagecreatetruecolor function
 
