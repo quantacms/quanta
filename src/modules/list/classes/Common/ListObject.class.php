@@ -56,6 +56,9 @@ abstract class ListObject extends DataContainer {
   /** @var bool $sortable */
   protected $sortable = FALSE;
 
+   /** @var bool $files */
+   protected $files = FALSE;
+
   /**
    * ListObject constructor.
    * @param Environment $env
@@ -144,7 +147,7 @@ abstract class ListObject extends DataContainer {
    * @return string
    *   The rendered HTML list.
    */
-  public function render($attributes = array()) {
+  public function render($attributes = array()) {  
 
     // Check if the list was already generated. If not, generate it.
     if (!($this->generated)) {
@@ -172,9 +175,12 @@ abstract class ListObject extends DataContainer {
       $output = $this->getData('empty_message');
     }
 
-		if ($this->sortable) {
+		if ($this->sortable && !$this->files) {
       $classes[] = 'list-sortable';
 		}
+    elseif ($this->sortable && $this->files) {
+      $classes[] = 'file-sortable';
+    }
     // If the "clean" attribute is not present, add some wrapping html.
     if (empty($this->getData('clean')) && (empty($this->getData('hide_if_empty')) || !empty($this->rendered_items)))  {
       $output = '<' . $this->getData('list_html_tag') . ' '  . $ajax . $tpl . ' class="list ' . $this->getTpl() . ' list-' . $this->getTpl() . ' list-' . $this->node->getName() . ' ' . implode(' ', $classes) . '" data-node="' . $this->node->getName() . '">' . $output . '</' . $this->getData('list_html_tag') . '>';
@@ -184,7 +190,7 @@ abstract class ListObject extends DataContainer {
     if ($this->getData('nolinks')) {
       $output = preg_replace('/<a[^>]+\>/i', "", $output);
     }
-
+    
     return $output;
   }
 
