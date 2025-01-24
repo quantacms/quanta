@@ -18,7 +18,7 @@ class FormItemRating extends FormItemString {
    */
   public function render() {
     $max = !empty($this->getAttribute('max')) ? $this->getAttribute('max') : 5;
-    $plugin =  $this->getAttribute('plugin');
+    $plugin =  !empty($this->getAttribute('plugin')) ? $this->getAttribute('plugin') : 'stars';
     $form_item_name =  $this->getName();
     $value = $this->getValue(true);
     $html_body = "<div class=\"$plugin-rating\">";

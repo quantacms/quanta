@@ -564,10 +564,15 @@ class NodeFactory {
             $node->save();
             // Hook node_add_complete, node_edit_complete, etc.
             $env->hook($action . '_complete', $vars);
-            // Check if 'current_url' is set in the form data, if not, default to the father node's name.
-            $redirect_url= isset($form_data['current_url']) ? $form_data['current_url'] : '/' . $node->getFather()->getName() . '/';
-            // Set the redirect URL in the response. If 'redirect' is not empty in the form data, use it, otherwise, use the calculated $redirect_url.
-            $response->redirect = !empty($form_data['redirect']) ? $form_data['redirect'] : $redirect_url;
+            if(isset($form_data['without_redirect']) && !empty($form_data['without_redirect'])){
+              $response->close = true;
+            }
+            else{
+              // Check if 'current_url' is set in the form data, if not, default to the father node's name.
+              $redirect_url= isset($form_data['current_url']) ? $form_data['current_url'] : '/' . $node->getFather()->getName() . '/';
+              // Set the redirect URL in the response. If 'redirect' is not empty in the form data, use it, otherwise, use the calculated $redirect_url.
+              $response->redirect = !empty($form_data['redirect']) ? $form_data['redirect'] : $redirect_url;
+            }
           }
           else {
             // TODO: make this good.
