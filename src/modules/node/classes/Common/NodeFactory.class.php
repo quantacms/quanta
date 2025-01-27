@@ -779,6 +779,8 @@ class NodeFactory {
     $new_node = new Node($env, $new_node_name, $father, $language); 
     $new_node->json = $source_node->json;
     $new_node->setTitle($source_node->getTitle());
+    $new_node->setTeaser($source_node->getTeaser());
+    $new_node->setBody($source_node->getBody());
     $new_node->setAuthor($source_node->getAuthor());
     $new_node->setThumbnail($source_node->getThumbnail());
     $new_node->setStatus($source_node->getStatus());
