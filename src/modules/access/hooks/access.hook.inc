@@ -91,7 +91,8 @@ function access_qtag_preload(Environment $env, array $vars) {
   }
   // The user has selected to show the tag only if a certain criteria is matched.
   if (!empty($qtag->getAttribute('filter'))) {
-    $filter_match = _access_filter($env, $qtag->getAttribute('filter'), $node, $user, $filter_key);
+    $or_logic = !empty($qtag->getAttribute('or_logic')) ? true : false;
+    $filter_match = _access_filter($env, $qtag->getAttribute('filter'), $node, $user, $filter_key, $or_logic);
     // If there is an active tag filter, and it doesn't match, empty the tag.
     if (!$filter_match) {
       $qtag->setAccess(FALSE);
@@ -113,8 +114,7 @@ function access_qtag_preload(Environment $env, array $vars) {
  * @return bool
  *   Returns true if the access check was positive.
  */
-function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = null) {
-
+function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = null, $or_logic = false) {
   // Explode the criteria values.
   $filter = explode(',', $criteria);
 
@@ -290,11 +290,15 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
           }
 
           if ($break) {
+            $criteria_match[$i] = $filter_match;
+            $i++;
             break;
           }
         }
         // For multiple fields such as lineage one match is enough to validate.
         if ($break) {
+          $criteria_match[$i] = $filter_match;
+          $i++;
           break;
         }
       }
@@ -303,6 +307,8 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
       //TODO: use hook for custom filters.
 
       if (!$filter_match) {
+        $criteria_match[$i] = $filter_match;
+        $i++;
         break;
       }
     }
@@ -314,5 +320,6 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
     $criteria_match[$i] = $filter_match;
     $i++;
   }
-  return $filter_match;
+
+  return $or_logic ? array_filter($criteria_match, fn($value) => $value !== 1) : $filter_match;
 }
