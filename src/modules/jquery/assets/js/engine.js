@@ -50,7 +50,7 @@ var action = function(dataJson) {
  * @param data
  */
 var actionSuccess = function(data) {
-    console.log('success');
+  $("#spinner").hide();
   if (typeof data !== 'object') {
     alert("There was an error with your submission.");
     console.log(data);
@@ -82,6 +82,7 @@ var actionSuccess = function(data) {
  * @param exception
  */
 var actionError = function(err, exception) {
+    $("#spinner").hide();
     if(err?.responseJSON?.shadowErrors){
     var errors = JSON.parse(err.responseJSON.shadowErrors);
     $('.shadow-submitted').removeClass('shadow-submitted');
