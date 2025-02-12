@@ -111,7 +111,6 @@ class Message {
             $output[$message->key] = $message->body;
           }
           else{
-            // $output .= '<div class="message message-severity-' . $message->severity . '">' . $message->body . '</div>';
             $output .= "[HTML_TAG|class={$message->style} message-popup:
                           {$message->body}
                         ]";
