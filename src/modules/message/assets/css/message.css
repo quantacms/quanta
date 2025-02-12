@@ -63,3 +63,17 @@
 	font-size: 24px;
 	margin-right: 10px;
 }
+
+.message-alert-success {
+	border: solid 1px var(--color-success);
+	color: #027A48;
+  	background-color: #0398551A;
+	margin-bottom: 24px !important;
+}
+
+.message-alert-success::before {
+	content: '\e90b'; /* Change the icon if needed */
+	font-family: "Icomoon";
+	font-size: 24px;
+	margin-right: 10px;
+}
