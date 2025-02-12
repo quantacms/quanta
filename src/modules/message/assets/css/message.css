@@ -14,3 +14,52 @@
 .message-severity-confirm {
     background: #afa;
 }
+
+.message-popup{
+    position: absolute;
+	top: 20px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 75%;
+	max-width: 600px; /* Optional: to prevent it from being too wide on large screens */
+	z-index: 100;
+	justify-content: center;
+	opacity: 0.9;
+	border-radius: 10px;
+	padding: 15px;
+	display: flex;
+	align-items: center;
+	font-size: 16px;
+}
+
+.message-info-style {
+	border: 2px solid #007BFF; /* Blue border */
+	background-color: #E9F5FF; /* Light blue background */
+	border-radius: 10px; /* Rounded corners */
+	padding: 15px; /* Some padding inside the box */
+	display: flex; /* Flexbox for aligning icon and text */
+	align-items: center; /* Vertically center the content */
+	font-size: 16px; /* Slightly larger text */
+	color: #333; /* Darker text color */
+	margin-bottom: 20px; /* Space below the box */
+}
+
+.message-info-style::before {
+	content: "\1F4D6"; /* Book emoji as an icon (represents advice or tip) */
+	font-size: 24px; /* Icon size */
+	margin-right: 10px; /* Space between icon and text */
+}
+
+.message-alert-style {
+	border: solid 1px var(--color-danger);
+	background-color: #FFDCDC;
+	color: var(--color-danger);
+	margin-bottom: 24px !important;
+}
+
+.message-alert-style::before {
+	content: '\e958';
+	font-family: "Icomoon";
+	font-size: 24px;
+	margin-right: 10px;
+}
