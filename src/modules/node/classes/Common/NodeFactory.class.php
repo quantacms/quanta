@@ -627,7 +627,7 @@ class NodeFactory {
           // Delete the node...
           $node->delete();
           // ...and display a confirmation message.
-          new Message($env, t('!node was deleted correctly', array('!node' => $node->getTitle())));
+          new Message($env, t('!node was deleted correctly', array('!node' => $node->getTitle())), Message::MESSAGE_GENERIC, Message::MESSAGE_TYPE_SCREEN, Message::MESSAGE_NOMODULE, null, Message::MESSAGE_STYLE_ALERT);
           // Check if 'current_url' is set in the form data, if not, default to the father node's name.
           $redirect_url= isset($form_data['current_url']) ? $form_data['current_url'] : '/' . $node->getFather()->getName() . '/';
           // Set the redirect URL in the response. If 'redirect' is not empty in the form data, use it, otherwise, use the calculated $redirect_url.
