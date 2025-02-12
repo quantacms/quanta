@@ -17,6 +17,7 @@ class Message {
   const MESSAGE_TYPE_LOG = 'log';
   const MESSAGE_TYPE_SCREEN = 'screen';
 
+  const MESSAGE_STYLE_SUCCESS = 'message-alert-success';
   const MESSAGE_STYLE_ALERT = 'message-alert-style';
   const MESSAGE_STYLE_WARNING = 'message-warning-style';
   const MESSAGE_STYLE_INFO = 'message-info-style';
