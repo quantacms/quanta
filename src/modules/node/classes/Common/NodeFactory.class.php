@@ -584,8 +584,13 @@ class NodeFactory {
                 'buttons' => $buttons,
               );
               if(isset($form_data['shadow_extra_attributes_keys']) && !empty($form_data['shadow_extra_attributes_keys'])){
-                foreach ($form_data['shadow_extra_attributes_keys'] as $index => $key) {
-                  $shadow_data [$key] = $form_data['shadow_extra_attributes_values'][$index];
+                if(is_array($form_data['shadow_extra_attributes_keys'])){
+                  foreach ($form_data['shadow_extra_attributes_keys'] as $index => $key) {
+                    $shadow_data [$key] = $form_data['shadow_extra_attributes_values'][$index];
+                  }
+                }
+                else{
+                  $shadow_data[$form_data['shadow_extra_attributes_keys']] = $form_data['shadow_extra_attributes_values'];
                 }
               }
               $response->shadow = $shadow_data;
