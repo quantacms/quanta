@@ -266,13 +266,13 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
           }elseif($check == 'user_can_edit'){
             $filter_match = \Quanta\Common\NodeAccess::check($env,\Quanta\Common\Node::NODE_ACTION_EDIT,array('node' => \Quanta\Common\NodeFactory::load($env,$filter_value)));
           }
-	  else {
-	    if (!empty($check)) {
-        $check = trim($check);
-	    } 
-	    if (!empty($filter_value)) {
-	      $filter_value = trim($filter_value);
-	    } 
+	        else {
+            if (!empty($check)) {
+              $check = trim($check);
+            } 
+            if (!empty($filter_value)) {
+              $filter_value = trim($filter_value);
+            } 
             $filter_match = ($check == $filter_value) ? true : false;
           }
           if ($filter_match && !isset($negate)) {
@@ -309,7 +309,9 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
       if (!$filter_match) {
         $criteria_match[$i] = $filter_match;
         $i++;
-        break;
+        if(!$or_logic){
+          break;
+        }
       }
     }
     else {
@@ -320,6 +322,6 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
     $criteria_match[$i] = $filter_match;
     $i++;
   }
-
-  return $or_logic ? array_filter($criteria_match, fn($value) => $value !== 1) : $filter_match;
+  
+  return $or_logic ? in_array(true, $criteria_match, true) : $filter_match;
 }
