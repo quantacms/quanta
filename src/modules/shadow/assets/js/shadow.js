@@ -126,6 +126,14 @@ function openShadow(shadowData) {
   shadowPath += '/?shadow=' + encodeURIComponent(JSON.stringify(shadow));
 
   console.log(shadowPath);
+  const allowedLangs = ["it", "en", "fr", "de", "es"];
+  const pathSegments = window.location.pathname.split('/').filter(Boolean); // Remove empty segments  
+  pathSegments.forEach((segment, index) => {
+      console.log(segment);      
+      if (allowedLangs.includes(segment)) {
+          shadow.language = segment;
+      }
+  });
   // Add Language prefix for multilingual opening.
   if (shadow.language != undefined) {
     shadowPath = '/' + shadow.language + shadowPath;
