@@ -110,7 +110,7 @@ function createShadow() {
  *
  * @param stdClass shadowData
  */
-function openShadow(shadowData) {
+async function openShadow(shadowData) {
   if (!($('#shadow-outside').length)) {
     createShadow();
   }
@@ -126,7 +126,7 @@ function openShadow(shadowData) {
   shadowPath += '/?shadow=' + encodeURIComponent(JSON.stringify(shadow));
 
   console.log(shadowPath);
-  const allowedLangs = ["it", "en", "fr", "de", "es"];
+  const allowedLangs = await getLanguages();
   const pathSegments = window.location.pathname.split('/').filter(Boolean); // Remove empty segments  
   pathSegments.forEach((segment, index) => {
       console.log(segment);      
@@ -318,4 +318,19 @@ function getJSONFormItem(inputField,value){
     "length": inputField.data('length'),
     "value" : value
   };
+}
+
+async function getLanguages(){
+  let languages = [];
+  await $.ajax({
+    type: "POST",
+    dataType: 'json',
+    url: '/',
+    data: {json: JSON.stringify({"action":{"value":"get_languages"}})},
+    success: function(response) {
+      languages = response.languages;
+    
+    }
+  });
+  return languages;
 }
