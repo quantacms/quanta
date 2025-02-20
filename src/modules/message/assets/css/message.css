@@ -44,12 +44,6 @@
 	margin-bottom: 20px; /* Space below the box */
 }
 
-.message-info-style::before {
-	content: "\1F4D6"; /* Book emoji as an icon (represents advice or tip) */
-	font-size: 24px; /* Icon size */
-	margin-right: 10px; /* Space between icon and text */
-}
-
 .message-alert-style {
 	border: solid 1px var(--color-danger);
 	background-color: #FFDCDC;
@@ -57,23 +51,9 @@
 	margin-bottom: 24px !important;
 }
 
-.message-alert-style::before {
-	content: '\e958';
-	font-family: "Icomoon";
-	font-size: 24px;
-	margin-right: 10px;
-}
-
 .message-alert-success {
 	border: solid 1px var(--color-success);
 	color: #027A48;
   	background-color: #0398551A;
 	margin-bottom: 24px !important;
-}
-
-.message-alert-success::before {
-	content: '\e90b'; /* Change the icon if needed */
-	font-family: "Icomoon";
-	font-size: 24px;
-	margin-right: 10px;
 }
