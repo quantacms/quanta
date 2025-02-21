@@ -128,14 +128,15 @@ async function openShadow(shadowData) {
   console.log(shadowPath);
   const allowedLangs = await getLanguages();
   const pathSegments = window.location.pathname.split('/').filter(Boolean); // Remove empty segments  
+  let shadowLanguage = undefined;
   pathSegments.forEach((segment, index) => {
       console.log(segment);      
       if (allowedLangs.includes(segment)) {
-          shadow.language = segment;
+        shadowLanguage = segment;
       }
   });
   // Add Language prefix for multilingual opening.
-  if (shadow.language != undefined) {
+  if (shadow.language != undefined || shadowLanguage != undefined) {
     shadowPath = '/' + shadow.language + shadowPath;
   }
 
