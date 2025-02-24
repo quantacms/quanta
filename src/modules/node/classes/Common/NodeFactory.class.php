@@ -440,7 +440,7 @@ class NodeFactory {
     
     if($action == \Quanta\Common\Node::NODE_ACTION_DUPLICATE){
       $source_node = \Quanta\Common\NodeFactory::load($env, $form_data['edit-path']);
-      self::duplicate($env, $source_node, $node_name, $father, $language, true);
+      self::duplicate($env, $source_node, $node_name, $father, $language, true, ['title' => $form_data['edit-title']]);
     }
 
     elseif($action == \Quanta\Common\Node::NODE_ACTION_CHANGE_AUTHOR){
@@ -755,7 +755,7 @@ class NodeFactory {
             // Fix the father name
             $new_subnode_father = str_replace($source_node->father, $new_node_name, $new_node_name);
             // Recursively clone subnodes
-            self::duplicate($env, $subnode, $new_subnode_name, $new_subnode_father, null, true);
+            self::duplicate($env, $subnode, $new_subnode_name, $new_subnode_father, null, true, $overrides);
         }
     }
     // Return the new cloned node
@@ -793,6 +793,9 @@ class NodeFactory {
       switch ($key) {
         case 'author':
           $new_node->setAuthor($value);
+          break;
+        case 'title':
+          $new_node->setTitle($value);
           break;
         
         default:
