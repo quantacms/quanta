@@ -213,6 +213,17 @@ class User extends Node {
           );
         }
         self::addRole(self::ROLE_LOGGED);
+        $last_login = !empty($this->getAttributeJSON('last_login')) ? (array)$this->getAttributeJSON('last_login') : [];
+
+        $timestamp = time();
+        array_unshift($last_login, "{$timestamp}"); // Insert the new timestamp at the beginning
+
+        if (count($last_login) > 10) {
+            array_pop($last_login); // Remove the oldest entry if the array exceeds 10 elements
+        }
+        $this->setAttributeJSON('last_login', $last_login);
+        $this->setLanguage(\Quanta\Common\Localization::LANGUAGE_NEUTRAL);
+        $this->save();
         $_SESSION['user'] = $this->serializeForSession();
         $this->env->hook('user_login', $vars);
 
