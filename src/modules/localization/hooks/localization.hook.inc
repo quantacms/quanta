@@ -115,3 +115,16 @@ function localization_link_alter($env, $vars) {
     $link->destination = '/' . $lang . $link->destination;
   }
 }
+
+function localization_action_get_languages($env, $vars){
+  $response = new \stdClass();
+  http_response_code(200);
+  $languages = [];
+  $dirlist = new \Quanta\Common\DirList($env, '_languages', null, [], 'localization');
+  foreach ($dirlist->getItems() as $node) {
+    $languages []= $node->getName();
+  }
+  $response->languages = $languages;
+  $response_json = json_encode($response);
+  exit($response_json);
+}
