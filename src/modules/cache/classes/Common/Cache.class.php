@@ -67,16 +67,21 @@ class Cache extends DataContainer {
    * @param null $nodepath
    *   A full path to a node
    */
-  public static function storeNodePath($env, $nodepath = NULL) {
+  public static function storeNodePath($env, $nodepath = NULL, $overwrite = false) {
     $exp = explode('/', $nodepath);
     $node_name = $exp[count($exp) - 1];
+
     $cache_folder = Cache::nodePathFolder($env, $node_name);
     // Remove old link if existing.
     if (is_link($cache_folder . '/' . $node_name)) {
-      unlink($cache_folder . '/' . $node_name);
+      if ($overwrite) {
+        unlink($cache_folder . '/' . $node_name);
+      }
+      else {
+        return $cache_folder . '/' . $node_name;
+      }
     }
-
-    symlink($nodepath, $cache_folder . '/' . $node_name);
+    symlink($nodepath, $cache_folder . '/' . $node_name) or die("NO SYM");
 
     return $cache_folder . '/' . $node_name;
   }
@@ -92,8 +97,8 @@ class Cache extends DataContainer {
    * @return bool|string
    *  The real path of the node.
    */
-  public static function getStoredNodePath($env, $node_name) {
-    $cache_folder = Cache::nodePathFolder($env, $node_name, $build = FALSE);
+  public static function getStoredNodePath($env, $node_name, $build = FALSE) {
+    $cache_folder = Cache::nodePathFolder($env, $node_name, $build);
 
     $node_link = $cache_folder . '/' . $node_name;
 
@@ -125,6 +130,7 @@ class Cache extends DataContainer {
     for ($i = 0; $i < 3; $i++) {
       $char = substr($node_name, $i, 1);
       $cache_folder = $cache_folder . '/' . $char;
+
       if ($build && !is_dir($cache_folder)) {
         mkdir($cache_folder, 0755, TRUE);
       }
