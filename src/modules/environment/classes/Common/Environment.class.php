@@ -562,7 +562,6 @@ class Environment extends DataContainer {
    *   The result of the node search.
    */
   private function findNodePath($folder) {
-    print $folder . '<br>';
     // TODO: cleaner way to exclude folders in _modules.
     $findcmd = 'find ' . $this->dir['docroot'] . '/ -type d -name "' . $folder . '" -not -path */_modules* -not -path *.git*';
     // TODO: sometimes getting empty folder. Why? Temporary fix.
@@ -617,7 +616,7 @@ class Environment extends DataContainer {
       $cache_exists = TRUE;
       //return $node_paths[$folder];
     } else {
-      $node_path_link = Cache::getStoredNodePath($this, $folder);
+      $node_path_link = Cache::getStoredNodePath($this, $folder, TRUE);
     }
 
     $node_path = @readlink($node_path_link);
