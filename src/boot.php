@@ -38,9 +38,6 @@
     $env->hook('load_includes',$vars);
   }
 
-  if (isset($_GET['test'])) {
-  print \Quanta\Common\UserFactory::passwordEncrypt('FraZiran!123');
-  }
   // Initialize doctor, if there is a request to do so. TODO: move in doctor as static.
   if (isset($doctor_cmd)) {
     $doctor = new \Quanta\Common\Doctor($env, $doctor_cmd, $doctor_args);
