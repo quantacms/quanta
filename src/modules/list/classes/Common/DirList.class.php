@@ -69,11 +69,12 @@ class DirList extends ListObject {
       if (!is_string($dir_url)) {
         $dir_url = strval($dir_url);
       }
-      $list_item = preg_replace("/\[LISTCOUNTER\]/is", $i, $tpl);
-      $list_item = preg_replace("/\[LISTITEM\]/is", Api::string_normalize($dir_url), $list_item);
-      $list_item = preg_replace("/\[LISTNODE\]/is", Api::string_normalize($this->getNode()->getName()), $list_item);
-      $list_item = QtagFactory::transformCodeTags($this->env, $list_item);
-
+      if (!empty($tpl)) {
+	$list_item = preg_replace("/\[LISTCOUNTER\]/is", $i, $tpl);
+      	$list_item = preg_replace("/\[LISTITEM\]/is", Api::string_normalize($dir_url), $list_item);
+      	$list_item = preg_replace("/\[LISTNODE\]/is", Api::string_normalize($this->getNode()->getName()), $list_item);
+      	$list_item = QtagFactory::transformCodeTags($this->env, $list_item);
+      }
       $vars = array(
         'list' => &$this,
         'list_item' => &$list_item,
