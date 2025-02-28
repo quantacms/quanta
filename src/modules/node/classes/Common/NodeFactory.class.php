@@ -37,9 +37,11 @@ class NodeFactory {
       $language = Localization::getLanguage($env);
     }
 
-    $node = new Node($env, $node_name, NULL, $language);
 
-    $cached = Cache::get($env, 'node', $node->cacheTag());
+
+
+    $cache_tag = NodeFactory::cacheTag($node_name, $language);
+    $cached = Cache::get($env, 'node', $cache_tag);
     if ($cached) {
       $node = $cached;
       $vars = array('node' => &$node);
@@ -47,21 +49,24 @@ class NodeFactory {
 
       $node->built = TRUE;
       $node->exists = TRUE;
+      return $node;
     }
-
+    $node = new Node($env, $node_name, NULL, $language);
     $node->load();
-   
-
     if (!($node->hasTranslation($language)) && $use_fallback_language) {
       $fallback = Localization::getFallbackLanguage($env);
-      $node = new Node($env, $node_name, NULL, 'it');
+      $node->setLanguage($fallback);
     }
     $vars = array('node' => &$node);
     $env->hook('node_open', $vars);
     $loaded_nodes[$node_name] = $node;
+    Cache::set($env, 'node', $cache_tag, $node);
     return $node;
   }
 
+  public static function cacheTag($node_name, $node_language) {
+    return 'node_' . $node_name . '_' . $node_language;
+  }
   /**
    * Helper function, loading a node if its name is not empty, returning the current
    * node otherwise.
