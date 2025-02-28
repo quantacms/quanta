@@ -55,7 +55,7 @@ class Attribute extends Qtag {
 
       // Node's father node.
       case 'father':
-        $string = $node->getFather()->getName();
+        $string = !empty($node->getFather()) ? $node->getFather()->getName() : null;
         break;
 
       // Node's creation time.
