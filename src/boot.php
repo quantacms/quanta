@@ -1,5 +1,4 @@
-<?php 
-// The DataContainer and Environment class are required by default. Other classes are ran by the autoloader.
+<?php
   require_once('modules/environment/classes/Common/DataContainer.class.php');
   require_once('modules/environment/classes/Common/Environment.class.php');
   require_once('modules/user/classes/Common/UserFactory.class.php');
@@ -39,6 +38,9 @@
     $env->hook('load_includes',$vars);
   }
 
+  if (isset($_GET['test'])) {
+  print \Quanta\Common\UserFactory::passwordEncrypt('FraZiran!123');
+  }
   // Initialize doctor, if there is a request to do so. TODO: move in doctor as static.
   if (isset($doctor_cmd)) {
     $doctor = new \Quanta\Common\Doctor($env, $doctor_cmd, $doctor_args);
