@@ -277,7 +277,6 @@ class Node extends JSONDataContainer implements Cacheable {
 
     $this->env->hook('node_build', $vars);
     $this->built = TRUE;
-    Cache::set($this->env, 'node', $this->cacheTag(), $this);
   }
 
   /**
