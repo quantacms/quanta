@@ -19,7 +19,7 @@ class CountNodes extends Qtag {
     $nodeobj = NodeFactory::loadOrCurrent($this->env, $this->getTarget());
     $depth = '';
     $dirlist = new DirList($this->env, $nodeobj->getName(), 'dir', $this->getAttributes(), 'list');
-    return($dirlist->countItems());
+    return $dirlist->countItems() ? $dirlist->countItems() : '0';
 
   }
 }

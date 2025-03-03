@@ -204,7 +204,10 @@ class Localization {
         $attributes = array('title' => $text);
         $node = NodeFactory::buildNode($env, $tagnode, Localization::DIR_TRANSLATIONS, $attributes, $lang);
       }
-      elseif ($node->hasTranslation($lang) && ($node->title != NULL)){
+      elseif (
+        ($node->hasTranslation($lang) && ($node->title != NULL)) ||
+        ($node->hasTranslation(self::getFallbackLanguage($env)) && ($node->title != NULL))
+        ){
         $output_text = $node->title;
       }	
     }

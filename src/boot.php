@@ -1,5 +1,4 @@
-<?php 
-// The DataContainer and Environment class are required by default. Other classes are ran by the autoloader.
+<?php
   require_once('modules/environment/classes/Common/DataContainer.class.php');
   require_once('modules/environment/classes/Common/Environment.class.php');
   require_once('modules/user/classes/Common/UserFactory.class.php');

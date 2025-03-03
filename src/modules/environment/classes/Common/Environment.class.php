@@ -616,7 +616,7 @@ class Environment extends DataContainer {
       $cache_exists = TRUE;
       //return $node_paths[$folder];
     } else {
-      $node_path_link = Cache::getStoredNodePath($this, $folder);
+      $node_path_link = Cache::getStoredNodePath($this, $folder, TRUE);
     }
 
     $node_path = @readlink($node_path_link);
