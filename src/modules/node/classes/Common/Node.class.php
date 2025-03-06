@@ -373,7 +373,7 @@ class Node extends JSONDataContainer implements Cacheable {
   public function save() {
     // If path has not been set (i.e. new node) create it based on father node.
     if (empty($this->path)) {
-      $this->path = $this->getFather()->path . '/' . $this->getName();
+      $this->path = $this->env->nodePath($this->getFather()->getName()) . '/' . $this->getName();
     }
 
     $vars = array('node' => &$this, 'action' => $this->env->getData('action'));
