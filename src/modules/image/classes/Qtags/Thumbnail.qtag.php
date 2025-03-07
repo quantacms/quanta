@@ -15,7 +15,27 @@ class Thumbnail extends ImgThumb {
   public function render() {
     $node = NodeFactory::loadOrCurrent($this->env, $this->getTarget());
     $this->setAttribute('node', $node->getName());
-    $this->setTarget($node->getThumbnail());
+    $thumbnail = $node->getThumbnail();
+    $fallback = $this->getAttribute('fallback');
+    $target = $thumbnail;
+    if (! $thumbnail && !empty($fallback)) {
+      if ($fallback === 'first_image') {
+        $this->attributes['file_types'] = 'image';
+        $this->attributes['clean'] = true;
+        $filelist = new \Quanta\Common\FileList($this->env, $this->getTarget(), null, $this->attributes, 'list');
+
+        // make sure it is image
+        foreach ($filelist->getItems() as $file) {
+          if ($file->type === 'image') {
+            $target = $file->getName();
+            break;
+          }
+        }
+      } else {
+        $target = $fallback;
+      }
+    }
+    $this->setTarget($target);
     $html = parent::render();
     if (empty($this->getAttribute('link')) || $this->getAttribute('link') != 'false') {
       $link = new Link($this->env, $this->getAttributes(), $node->getName());
