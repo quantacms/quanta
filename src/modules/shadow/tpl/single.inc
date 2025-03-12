@@ -1,5 +1,5 @@
 [HTML_TAG|grid=shadow-inside align-self-center  margin-auto flex text-center p-1:
-     [HTML_TAG|class=flex align-items-center gap-1:
+     [HTML_TAG|class=flex align-items-center gap-1 pb-2 border-bottom mb-3:
           [SHADOW:title]
           [SHADOW_CLOSE_BUTTON]
      ]
