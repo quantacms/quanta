@@ -107,6 +107,9 @@ $(document).ready(function() {
 			show_buttons: $(this).data('show-buttons'),
 		});	
 	  });
+    $('.message-popup').fadeOut(10000, function() {
+      $(this).remove();
+    });
 });
   function initImgOperationsModal(){
     if ($('#delete_img').length > 0) {
