@@ -137,7 +137,7 @@ $(function () {
 
 
 // Initialize button events for file table admin.
-var refreshFileActions = function (fileElement, justView = false) {
+var refreshFileActions = function (fileElement, justView = false, deleteAction = true, thumbnailAction = true) {
   var filename = fileElement.find('.file-link').data('filename');
   var formname = fileElement.closest('.shadow-content').find('form').attr('id');
   var inputFileInsideForm = fileElement.closest('.shadow-content').find('form').find('input[type="file"]');
@@ -160,11 +160,13 @@ var refreshFileActions = function (fileElement, justView = false) {
     // Create file actions.
     if (!$(this).find('.file-actions').length) {
       var actionsButtons= '<div class="file-actions">';
-      if(hasMultipleAttribute && inputFileInsideForm.attr('thumbnail') !== 'false'){
+      if(thumbnailAction && hasMultipleAttribute && inputFileInsideForm.attr('thumbnail') !== 'false'){
         actionsButtons += '<input type="button" class="set-thumbnail" data-filename="' + filename + '" value="" />';
       }
-      actionsButtons += '<input type="button" class="delete-file" value="delete file" />' +
-      '</div>';
+      if(deleteAction){
+        actionsButtons += '<input type="button" class="delete-file" value="delete file" />';
+      }
+      actionsButtons +='</div>';
       // Append file actions to manage files.
       $(this).append(actionsButtons);
       
@@ -186,7 +188,7 @@ var refreshFileActions = function (fileElement, justView = false) {
     $('.delete-file').on('click', function () {
       var filepath = $(this).parents('li').find('.file-link').data('filename');
       var parent = $(this).closest('li');
-      if (confirm('Are you sure you want to delete this file? \n' + filepath)) {
+      if (confirm('Are you sure you want to delete this file? \n' + filepath)) {        
         var node_name = ($(this).closest('.list').data('node'));
 
         $.ajax({
@@ -224,7 +226,7 @@ var refreshThumbnail = function () {
 
 $(document).bind('refresh', function () {
   $('.list-item-file_admin').each(function () {
-        refreshFileActions($(this),$(this).parent().hasClass('just-view'));
+        refreshFileActions($(this),$(this).parent().hasClass('just-view'), $(this).parent().hasClass('delete-action'), $(this).parent().hasClass('thumbnail-action'));
         refreshThumbnail();
     
 });
