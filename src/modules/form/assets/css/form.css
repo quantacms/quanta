@@ -52,9 +52,12 @@
 
 .form-item-multiple-wrapper {
 display: flex;
+align-items: center;
+gap: 5px;
 }
 .form-item-select.form-item-multiple {
 text-align: left;
+max-width: calc(100% - 2 * 35px);
 }
 
 .form-item-add, .form-item-remove {
@@ -62,9 +65,9 @@ text-align: left;
     text-align: center;
     display: inline-block;
     width: 30px;
+    aspect-ratio: 1/1;
 border-radius: 20px;
 border: 1px solid #aaa;
-margin-left: 5px;
 font-size: 16px;
 padding: 0;
 margin-bottom: 10px;
