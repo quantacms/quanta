@@ -286,3 +286,7 @@ function node_body_classes(Environment $env, array $vars){
   }
   $vars['page']->addData('body_classes', array('page-' . $node->name));
 }
+
+function node_shadow_duplicate_form($env, $vars) {
+	$vars['shadow']->addTab('Duplicate', file_get_contents($env->getModulePath('node') . '/tpl/duplicate_form.inc'), 1);
+}
