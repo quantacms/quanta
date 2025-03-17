@@ -447,7 +447,7 @@
 
       if ($action == Node::NODE_ACTION_DUPLICATE) {
         $source_node = NodeFactory::load($env, $form_data['edit-path']);
-        self::duplicate($env, $source_node, $node_name, $father, $language, true, ['title' => $form_data['edit-title']]);
+        self::duplicate($env, $source_node, $node_name, $father, $language, true, ['title' => $form_data['edit-title']], ['description'], $form_data['exclude']);
       } elseif ($action == Node::NODE_ACTION_CHANGE_AUTHOR) {
         $source_node = NodeFactory::load($env, $form_data['edit-path']);
         $payload_data = isset($form_data['payload']) && $form_data['payload'] ? explode(',', $form_data['payload']) : array();
@@ -712,9 +712,10 @@
       );
     }
 
-    public static function duplicate($env, $source_node, $new_node_name, $father, $language = Localization::LANGUAGE_NEUTRAL, $subnodes = true, $overrides = array())
+    public static function duplicate($env, $source_node, $new_node_name, $father, $language = Localization::LANGUAGE_NEUTRAL, $subnodes = true, $overrides = array(), $overrides_sub_nodes = array(), $exclude = '')
     {
-      $new_node = self::createNode($env, $source_node, $new_node_name, $father, $language, $overrides);
+      $exclude = explode(',', $exclude);
+      $new_node = self::createNode($env, $source_node, $new_node_name, $father, $language, $overrides, $exclude);
       // Check if the node have multiple language files
       $language_files = glob($source_node->path . '/data_*.json');
       if (count($language_files)) {
@@ -757,6 +758,11 @@
           // Fix the father name
           $new_subnode_father = str_replace($source_node->father, $new_node_name, $new_node_name);
           // Recursively clone subnodes
+          foreach ($overrides_sub_nodes as $key) {
+            if($new_subnode_name != $new_node->name . '-' . $key){
+              $overrides = [];
+            }
+          }
           self::duplicate($env, $subnode, $new_subnode_name, $new_subnode_father, null, true, $overrides);
         }
       }
@@ -783,7 +789,7 @@
       }
     }
 
-    private static function createNode($env, $source_node, $new_node_name, $father, $language, $overrides)
+    private static function createNode($env, $source_node, $new_node_name, $father, $language, $overrides = [], $exclude = [])
     {
       $new_node = new Node($env, $new_node_name, $father, $language);
       $new_node->json = $source_node->json;
@@ -806,6 +812,9 @@
             $new_node->setAttributeJSON($key, $value);
             break;
         }
+      }
+      foreach ($exclude as $key) {
+        $new_node->removeAttributeJSON($key);
       }
       $new_node->save();
       return $new_node;
