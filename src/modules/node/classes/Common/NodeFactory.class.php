@@ -58,6 +58,7 @@
         if (!($node->hasTranslation($language)) && $use_fallback_language) {
           $fallback = Localization::getFallbackLanguage($env);
           $node->setLanguage($fallback);
+          $node->load();
         }
         $vars = array('node' => &$node);
         $env->hook('node_open', $vars);
