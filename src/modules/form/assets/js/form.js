@@ -316,7 +316,7 @@ function isRequiredFieldMissing(value, input) {
   });
 }
 
-function submitFormViaAjax(e,form) {
+function submitFormViaAjax(e,form, hide = true) {
   e.preventDefault(); // Prevent the default form submission
   formId = `#${$(form).attr('id')}`;
   // Serialize form data
@@ -344,7 +344,9 @@ function submitFormViaAjax(e,form) {
       success: function(response) {
           $(formId+'_confirm_message').show(); 
           $(formId).find('.submit-error-message').hide();
-          $(formId).hide();
+          if(hide){
+            $(formId).hide();
+          }
            // Dispatch a custom event on success
            var event = new CustomEvent('formSubmissionSuccess', {
             detail: {
