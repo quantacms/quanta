@@ -226,7 +226,7 @@ abstract class FormItem extends HtmlTag {
     } // ...otherwise look for the values attribute (that might be NULL, of course!)
     else {
       if ($this->getAttribute('values') != NULL) {
-	$values = explode(',', $this->getAttribute('values'));
+	$values = \Quanta\Common\Api::explode_comma_outside_tags($this->getAttribute('values'));
       }
     }
 

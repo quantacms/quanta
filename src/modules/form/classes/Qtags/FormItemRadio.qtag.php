@@ -11,34 +11,6 @@ class FormItemRadio extends FormItemString {
 
 
 
-    /**
-   * Renders a form item as HTML.
-   *
-   * @return string
-   *   The rendered form item.
-   */
-  public function render() {
-    $selected_value = $this->getAttribute('selected-value');
-    $default_value = $this->getAttribute('default_value');
-    $value = $this->getAttribute('value');
-    $checked = false;
-    if(!empty($this->getAttribute('separator'))){
-      $selected_value = explode($this->getAttribute('separator'),$selected_value);
-    }
-    if($selected_value != self::INPUT_EMPTY_VALUE){
-      $checked = is_array($selected_value) ? in_array($value,$selected_value) : $value == $selected_value;
-    }
-    else{
-      $checked = is_array($default_value) ? in_array($value,$default_value) : $value == $default_value;
-    }
-    if($checked){
-      $this->html_params['checked'] = 'checked';
-    }
-
-    // Return the full rendered form item.
-    return parent::render();
-  }
-
   /**
    * @return mixed|null
    */
