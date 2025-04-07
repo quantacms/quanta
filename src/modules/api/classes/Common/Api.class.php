@@ -325,7 +325,18 @@ class Api {
    */
   public static function filter_xss($string) {
     if ($string != NULL) {
+      $allowed_entities = [
+        '&colon;' => '__COLON__',
+      ];
+      // Replace allowed entities with placeholders
+      foreach ($allowed_entities as $entity => $placeholder) {
+        $string = str_replace($entity, $placeholder, $string);
+      }
       $filtered_string = htmlspecialchars($string, ENT_QUOTES,'utf-8');
+      // Restore allowed entities
+      foreach ($allowed_entities as $entity => $placeholder) {
+        $filtered_string = str_replace($placeholder, $entity, $filtered_string);
+      }
     }
     else {
       $filtered_string = '';
