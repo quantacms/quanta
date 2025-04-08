@@ -311,7 +311,6 @@ function submitShadow() {
     $('.shadow-submit').removeClass('shadow-submitted'); // Remove shadow-submitted class
     return;
   }
-  console.log(form_items);
   var formData = JSON.stringify(form_items);
   $(document).trigger('shadow_submit');
   action(formData);
