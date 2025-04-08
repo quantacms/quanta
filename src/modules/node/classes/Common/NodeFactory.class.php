@@ -607,7 +607,7 @@
               }
             } else {
               // TODO: make this good.
-              $response->shadowErrors = Message::burnMessages(Message::MESSAGE_TYPE_SCREEN, true);
+              $response->shadowErrors = Message::burnMessages(Message::MESSAGE_TYPE_VALIDATION, true);
               http_response_code(400);
             }
           } else {

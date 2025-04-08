@@ -16,6 +16,7 @@ class Message {
   const MESSAGE_CONFIRM = 'confirm';
   const MESSAGE_TYPE_LOG = 'log';
   const MESSAGE_TYPE_SCREEN = 'screen';
+  const MESSAGE_TYPE_VALIDATION = 'validation';
 
   const MESSAGE_STYLE_SUCCESS = 'message-alert-success';
   const MESSAGE_STYLE_ALERT = 'message-alert-style';
