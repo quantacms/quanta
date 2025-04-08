@@ -53,7 +53,10 @@ class Api {
    *   TRUE if the argument is a valid email address.
    */
   public static function valid_email($email) {
-    return (!filter_var($email, FILTER_VALIDATE_EMAIL) === FALSE);
+    return (
+      filter_var($email, FILTER_VALIDATE_EMAIL) !== false &&
+      !ctype_upper($email[0])
+    );
   }
 
   /**
