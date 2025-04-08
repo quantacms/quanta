@@ -58,6 +58,7 @@
         if (!($node->hasTranslation($language)) && $use_fallback_language) {
           $fallback = Localization::getFallbackLanguage($env);
           $node->setLanguage($fallback);
+          $node->load();
         }
         $vars = array('node' => &$node);
         $env->hook('node_open', $vars);
@@ -606,7 +607,7 @@
               }
             } else {
               // TODO: make this good.
-              $response->shadowErrors = Message::burnMessages(Message::MESSAGE_TYPE_SCREEN, true);
+              $response->shadowErrors = Message::burnMessages(Message::MESSAGE_TYPE_VALIDATION, true);
               http_response_code(400);
             }
           } else {

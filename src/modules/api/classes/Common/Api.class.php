@@ -53,7 +53,10 @@ class Api {
    *   TRUE if the argument is a valid email address.
    */
   public static function valid_email($email) {
-    return (!filter_var($email, FILTER_VALIDATE_EMAIL) === FALSE);
+    return (
+      filter_var($email, FILTER_VALIDATE_EMAIL) !== false &&
+      !ctype_upper($email[0])
+    );
   }
 
   /**
@@ -324,16 +327,32 @@ class Api {
    *   The filtered string.
    */
   public static function filter_xss($string) {
-    if ($string != NULL) {
-      $filtered_string = htmlspecialchars($string, ENT_QUOTES,'utf-8');
+    if ($string === null) {
+        return '';
     }
-    else {
-      $filtered_string = '';
-    }
+
+    $allowed_entities = [
+        '&colon;',
+    ];
+
+    // Create a regex pattern to match HTML entities
+    $pattern = '/(&#?[a-zA-Z0-9]+;?)/';
+
+    // Replacement function to handle each matched entity
+    $replacement = function ($match) use ($allowed_entities) {
+        $entity = $match[1];
+        if (in_array($entity, $allowed_entities, true)) {
+            return $entity; // Return the allowed entity as is
+        } else {
+            return htmlspecialchars($entity, ENT_QUOTES, 'utf-8'); // Escape other entities
+        }
+    };
+
+    // Perform the replacement
+    $filtered_string = preg_replace_callback($pattern, $replacement, $string);
+
     return $filtered_string;
-
-  }
-
+}
   /**
    * Get Browser (user agent) info.
    *
