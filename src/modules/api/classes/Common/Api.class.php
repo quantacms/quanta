@@ -324,27 +324,32 @@ class Api {
    *   The filtered string.
    */
   public static function filter_xss($string) {
-    if ($string != NULL) {
-      $allowed_entities = [
-        '&colon;' => '__COLON__',
-      ];
-      // Replace allowed entities with placeholders
-      foreach ($allowed_entities as $entity => $placeholder) {
-        $string = str_replace($entity, $placeholder, $string);
-      }
-      $filtered_string = htmlspecialchars($string, ENT_QUOTES,'utf-8');
-      // Restore allowed entities
-      foreach ($allowed_entities as $entity => $placeholder) {
-        $filtered_string = str_replace($placeholder, $entity, $filtered_string);
-      }
+    if ($string === null) {
+        return '';
     }
-    else {
-      $filtered_string = '';
-    }
+
+    $allowed_entities = [
+        '&colon;',
+    ];
+
+    // Create a regex pattern to match HTML entities
+    $pattern = '/(&#?[a-zA-Z0-9]+;?)/';
+
+    // Replacement function to handle each matched entity
+    $replacement = function ($match) use ($allowed_entities) {
+        $entity = $match[1];
+        if (in_array($entity, $allowed_entities, true)) {
+            return $entity; // Return the allowed entity as is
+        } else {
+            return htmlspecialchars($entity, ENT_QUOTES, 'utf-8'); // Escape other entities
+        }
+    };
+
+    // Perform the replacement
+    $filtered_string = preg_replace_callback($pattern, $replacement, $string);
+
     return $filtered_string;
-
-  }
-
+}
   /**
    * Get Browser (user agent) info.
    *
