@@ -246,6 +246,10 @@ function submitShadow() {
        }
     
     if (form_items[fieldName] == undefined) {
+      var uncheckValue = inputField.attr('unchecked_value') != '' ? inputField.attr('unchecked_value') : '';
+      if(inputField.attr('type') == 'radio' && !inputField.is(':checked') && uncheckValue == '__empty__'){
+        return;
+      }
       form_items[fieldName] = getJSONFormItem(inputField,[]);
     }
     
@@ -307,6 +311,7 @@ function submitShadow() {
     $('.shadow-submit').removeClass('shadow-submitted'); // Remove shadow-submitted class
     return;
   }
+  console.log(form_items);
   var formData = JSON.stringify(form_items);
   $(document).trigger('shadow_submit');
   action(formData);
