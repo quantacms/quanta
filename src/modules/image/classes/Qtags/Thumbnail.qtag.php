@@ -24,12 +24,9 @@ class Thumbnail extends ImgThumb {
     if (! $thumbnail && !empty($fallback)) {
       // If the fallback is set to 'first_image', attempt to find the first image file
       if ($fallback === self::FIRST_IMAGE_FALLBACK) {
-        // Set attributes to filter for images only
-        $this->attributes['file_types'] = 'image';
-        $this->attributes['clean'] = true;
 
         // Get the list of files associated with the node, filtered by the specified attributes
-        $filelist = new \Quanta\Common\FileList($this->env, $node->getName(), null, $this->attributes, 'list');
+        $filelist = new \Quanta\Common\FileList($this->env, $node->getName(), null, ['file_types'=>'image','clean'=>true], 'list');
 
         // Retrieve the filtered list of files
         $files = $filelist->getItems();
