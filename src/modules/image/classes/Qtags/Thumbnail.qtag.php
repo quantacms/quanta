@@ -6,6 +6,8 @@ use Quanta\Common\NodeFactory;
  * Renders an image.
  */
 class Thumbnail extends ImgThumb {
+
+  const FIRST_IMAGE_FALLBACK = "first_image";
   /**
    * Render the Qtag.
    *
@@ -21,7 +23,7 @@ class Thumbnail extends ImgThumb {
     // Check if the thumbnail is empty and a fallback value is provided
     if (! $thumbnail && !empty($fallback)) {
       // If the fallback is set to 'first_image', attempt to find the first image file
-      if ($fallback === 'first_image') {
+      if ($fallback === self::FIRST_IMAGE_FALLBACK) {
         // Set attributes to filter for images only
         $this->attributes['file_types'] = 'image';
         $this->attributes['clean'] = true;
