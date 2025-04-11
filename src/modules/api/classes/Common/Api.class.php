@@ -466,4 +466,35 @@ class Api {
         return array_merge($replacement, $preservedExcluded);
     }
 
+  /**
+   * Explodes a string by commas, but only if the commas are outside of HTML tags and attributes.
+   *
+   * This function uses a regular expression to split a string by commas, while ensuring that commas
+   * within HTML tags (including attributes within double quotes, single quotes and unquoted attributes) are ignored.
+   *
+   * @param string $valuesString The string to explode.
+   *
+   * @return array An array containing the exploded values, or an array containing the original string if the regex fails.
+   */
+  public static function explode_comma_outside_tags($valuesString)
+  {
+    $result = [];
+    // Regular expression to split by commas outside HTML tags and attributes.
+    // ,                       : Match a literal comma.
+    // (?![^<]*(?:>|<\/)))     : Negative lookahead to ensure the comma isn't inside an HTML tag.
+    // (?![^<]*\s[^=]*="[^"]*,) : Negative lookahead to ensure the comma isn't inside a double-quoted attribute.
+    // (?![^<]*\s[^=]*=\'[^']*,) : Negative lookahead to ensure the comma isn't inside a single-quoted attribute.
+    // (?![^<]*\s[^=]*=[^>]*>,) : Negative lookahead to ensure the comma isn't inside an unquoted attribute.
+    $parts = preg_split('/,(?![^<]*(?:>|<\/))(?![^<]*\s[^=]*="[^"]*,)/', $valuesString);
+
+    if ($parts !== false) { // Check if the regex split was successful.
+      foreach ($parts as $part) { // Iterate through the split parts.
+        $result[] = trim($part); // Trim whitespace and add the part to the result array.
+      }
+    } else {
+      $result[] = trim($valuesString); // If regex failed, return the original string inside an array.
+    }
+
+    return $result;
+  }
 }
