@@ -93,7 +93,9 @@ class FormFactory {
       case 'radio':
         $formitem = new \Quanta\Qtags\FormItemRadio($env, $input, $form);
         break;
-
+      case 'radios':
+        $formitem = new \Quanta\Qtags\FormItemRadios($env, $input, $form);
+        break;
       case 'date':
         $formitem = new \Quanta\Qtags\FormItemDate($env, $input, $form);
         break;
