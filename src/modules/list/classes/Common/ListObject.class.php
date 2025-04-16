@@ -126,7 +126,8 @@ abstract class ListObject extends DataContainer {
       $page->addJS('/modules/jquery/assets/js/jquery.ui.widget.js');
       $page->addJS('/modules/jquery/assets/js/jquery.tablesorter.js');
     }
-    $this->load();
+    $lang = isset($attr_arr['language']) ? $attr_arr['language'] : null;
+    $this->load($lang);
   }
 
   /**
@@ -198,7 +199,7 @@ abstract class ListObject extends DataContainer {
    * Load the list and all the files and directories.
    * @return bool
    */
-  public function load() {
+  public function load($lang = null) {
     // Empty path. Usually happens with a new node, that has no path yet.
     if (empty($this->path)) {
       $this->loaded = TRUE;
@@ -250,7 +251,7 @@ abstract class ListObject extends DataContainer {
       $item_name = is_array($item) ? $item['name'] : $item;
 
       if ($this->scantype == \Quanta\Common\Environment::DIR_DIRS) {
-        $node = NodeFactory::load($this->env, $item_name);
+        $node = NodeFactory::load($this->env, $item_name, $lang);
 
         if ($node->exists && $this->validateListItem($node)) {
           $this->addItem($node);
