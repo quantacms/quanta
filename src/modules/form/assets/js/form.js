@@ -248,7 +248,7 @@ $(document).ready(function() {
           return city;
         };
         const details = {
-          road: getComponent(['route']),
+          road: getComponent(['route']) || getComponent(['intersection']) || getComponent(['town_square']),
           streetNumber: getComponent(['street_number']),
           city: getCity(), // Enhanced city extraction logic
           state: getComponent(['administrative_area_level_1']),
