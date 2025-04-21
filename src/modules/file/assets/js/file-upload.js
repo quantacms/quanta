@@ -24,12 +24,18 @@ $(function () {
       hasMultipleAttribute = fileInputElement.hasAttribute('multiple');
       
       var file = data.files[0];
+      // Check if file size is more than 12 MB (12 * 1024 * 1024 bytes)
+      if (file.size > 12 * 1024 * 1024) {
+        $('#max-resolution-error-message').show();
+        return;
+      }
       var minResolutionAttr = fileInputElement.getAttribute('data-min_resolution');
       
       var maxResolutionAttr = fileInputElement.getAttribute('data-max_resolution');      
       
       $('#min-resolution-error-message').hide();
       $('#max-resolution-error-message').hide();
+      $('#max-size-error-message').hide();
       if (minResolutionAttr || maxResolutionAttr) {
         var [minWidth, minHeight] = minResolutionAttr.split('*').map(Number);
         var [maxWidth, maxHeight] = maxResolutionAttr.split('*').map(Number);
