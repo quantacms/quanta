@@ -754,7 +754,7 @@
           // Replace the source node name in subnode with the new node's name
           $new_subnode_name = str_replace($source_node->name, $new_node_name, $subnode->name);
           if (!str_contains($subnode->name, $source_node->name)) {
-            $new_subnode_name = $env->getCandidatePath($new_node_name . '-' . time());
+            $new_subnode_name = $env->getCandidatePath($subnode->getTitle());
           }
           // Fix the father name
           $new_subnode_father = str_replace($source_node->father, $new_node_name, $new_node_name);
