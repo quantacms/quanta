@@ -153,6 +153,7 @@ document.addEventListener('formSubmissionSuccess', function(event) {
       const response = JSON.parse(event.detail.response);
       console.log(response);
       if(response.success){
+        $("#spinner").hide();
         closeShadow();
         // Find the image by its src attribute and fade it out
         const imgSrc = response.img;
