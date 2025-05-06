@@ -17,6 +17,20 @@ $(function () {
     // This function is called when a file is added to the queue;
     // either via the browse button, or via drag/drop:
     add: async function (e, data) {
+      const timestamp = new Date().getTime();
+      data.files = data.files.map(file => {
+        const nameParts = file.name.split('.');
+        if (nameParts.length > 1) {
+          const ext = nameParts.pop();
+          const baseName = nameParts.join('.');
+          const newName = `${baseName}-${timestamp}.${ext}`;
+          return new File([file], newName, { type: file.type });
+        } else {
+          // Fallback in case there's no extension
+          const newName = `${file.name}-${timestamp}`;
+          return new File([file], newName, { type: file.type });
+        }
+      });
       var tmp_files_dir = ($('#tmp_files_dir').val());
       // Access the file input element
       var fileInputElement = $(this).find('input[type="file"]').get(0);
@@ -80,7 +94,7 @@ $(function () {
 
   });
 
-  function handleFileUpload(data, tmp_files_dir, hasMultipleAttribute, elementContext) {
+  function handleFileUpload(data, tmp_files_dir, hasMultipleAttribute, elementContext) {    
     // TODO: should use a normal QTAG.
     var tpl = $('' +
       '<li class="working file-list-item list-item-file_admin">' +
