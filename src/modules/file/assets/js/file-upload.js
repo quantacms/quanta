@@ -94,7 +94,7 @@ $(function () {
 
   });
 
-  function handleFileUpload(data, tmp_files_dir, hasMultipleAttribute, elementContext) {    
+  function handleFileUpload(data, tmp_files_dir, hasMultipleAttribute, elementContext) {
     // TODO: should use a normal QTAG.
     var tpl = $('' +
       '<li class="working file-list-item list-item-file_admin">' +
