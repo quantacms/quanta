@@ -278,15 +278,15 @@ $(document).ready(function() {
             fieldWrapper.removeClass('has-validation-errors');
             fieldWrapper.find('.validation-error').remove();
             // Update the hidden input
-            if (details.road) { roadInput.val(details.road); }
-            if (details.streetNumber) { streetNumberInput.val(details.streetNumber); }
-            if (details.state) { stateInput.val(details.state); }
-            if (details.postcode) { postcodeInput.val(details.postcode); }
-            if (details.city) { cityInput.val(details.city); }
-            if (details.country) { countryInput.val(details.country); }
-            if (details.country_code) { countryCodeInput.val(details.country_code); }
-            if (details.lat) { latCodeInput.val(details.lat); }
-            if (details.lon) { lonCodeInput.val(details.lon); }
+            if (details.road) { roadInput.val(details.road); } else{ roadInput.val(""); }
+            if (details.streetNumber) { streetNumberInput.val(details.streetNumber); } else{ streetNumberInput.val(""); }
+            if (details.state) { stateInput.val(details.state); } else{ stateInput.val(""); }
+            if (details.postcode) { postcodeInput.val(details.postcode); } else{ postcodeInput.val(""); }
+            if (details.city) { cityInput.val(details.city); } else{ cityInput.val(""); }
+            if (details.country) { countryInput.val(details.country); } else{ countryInput.val(""); }
+            if (details.country_code) { countryCodeInput.val(details.country_code); } else{ countryCodeInput.val(""); }
+            if (details.lat) { latCodeInput.val(details.lat); } else{ latCodeInput.val(""); }
+            if (details.lon) { lonCodeInput.val(details.lon); } else{ lonCodeInput.val(""); }
           }
       });
     });
