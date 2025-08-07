@@ -36,7 +36,7 @@ class User extends Node {
    */
   public function load() {
 
-    if (strlen($this->name) > 0 && $this->exists) {
+    if ($this->exists && (strlen($this->name) > 0)) {
       $this->loadJSON();
       if (isset($this->json->roles)) {
         $this->roles = (array)$this->json->roles;
