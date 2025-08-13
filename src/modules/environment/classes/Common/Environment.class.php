@@ -619,8 +619,10 @@ class Environment extends DataContainer {
       $node_path_link = Cache::getStoredNodePath($this, $folder, TRUE);
     }
 
+    //print '<br>' . $folder . ': ' . $node_path_link;
     $node_path = @readlink($node_path_link);
     if ($node_path == false) {
+      //print "NOT FOUND";
       // Use find to locate the node's directory in the file system.
       // TODO: run a sanity check that there is only one folder or throw error instead?
       $results = $this->findNodePath($folder);

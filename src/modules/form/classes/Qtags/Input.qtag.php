@@ -28,6 +28,7 @@ class Input extends HtmlTag {
     }
 
     $form_item_values = $this->form_item->getValue();
+
     $values = is_array($form_item_values) ? $form_item_values : array($form_item_values);
     $i = 0;
     // Load and render all existing values...
