@@ -34,6 +34,7 @@ class FormItemSelect extends FormItem {
         $option_value = $option;
       }
       $option_attributes = array();
+
       $option = new Option($this->env, $option_attributes, NULL);
       $option->html_params['value'] = $option_key;
       if ($this->getCurrentValue() == $option_key) {

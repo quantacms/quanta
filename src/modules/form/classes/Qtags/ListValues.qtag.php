@@ -20,6 +20,8 @@ class ListValues extends Qtag {
       $this->attributes['sort'] = 'title';
     }
     $dirlist = new DirList($this->env, $this->getTarget(), 'list-values', $this->attributes, 'form');
-    return $dirlist->render();
+
+    $render = $dirlist->render();
+    return $render;
   }
 }
