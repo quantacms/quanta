@@ -12,52 +12,48 @@ $(document).bind('refresh', function() {
   });
 
   // Delete Node link behavior.
-  $('.delete-link').off('click').on('click', function(e) {
+  $(document).off('click', '.delete-link');
+  $(document).on('click', '.delete-link', function(e){
     var component = $('.delete-link').attr('data-component') ? $('.delete-link').attr('data-component') : 'node_delete';
-        openShadow({
-            module: 'node',
-            context: 'node_delete',
-            widget: 'single',
-            components: [component,'node_form'],
-            node: $(this).attr('data-rel'),
-            redirect: $(this).data('redirect')
-        });
-        e.preventDefault();
-
+    var shadow = {
+      module: 'node',
+      context: 'node_delete',
+      widget: 'single',
+      components: [component,'node_form'],
+      node: $(this).attr('data-rel'),
+      redirect: $(this).data('redirect')
+    };
+    $.each($(this).data(), function(key, value) {
+      if (shadow[key] == undefined) {
+          shadow[key] = value;
+      }
     });
+    openShadow(shadow);
+    e.preventDefault();
 
-    // Edit Node link behavior.
-    $('.edit-link').off('click').on('click', function(e) {
-      // TODO: select default components in a hook.
-        var components = (($(this).attr('data-components') != undefined) ? ($(this).attr('data-components').split(',')) : ['node_edit', 'node_metadata', 'node_status', 'file_form', 'node_form']);
-
-        var shadow = {
-          module : 'node',
-          context: 'node_edit',
-          widget: $(this).data('widget'),
-          components: components,
-          node: $(this).data('rel'),
-          redirect: $(this).data('redirect')
-        };
-
-        // Use jQuery's data() method to get all data attributes
-        $.each($(this).data(), function(key, value) {
-            if (shadow[key] == undefined) {
-                shadow[key] = value;
-            }
-        });
-
-        openShadow(shadow);
-
-        e.preventDefault();
     });
 
     // Add Node link behavior.
-    $('.add-link').off('click').on('click', function(e) {
+    $(document).off('click', '.add-link, .edit-link, .duplicate-link, .change-author-link');
+    $(document).on('click', '.add-link, .edit-link, .duplicate-link, .change-author-link', function(e) {
+        var context;
+        if ($(this).hasClass('add-link')) {
+            context = 'node_add';
+        }
+        else if ($(this).hasClass('edit-link')) {
+            context = 'node_edit';
+        }
+        else if ($(this).hasClass('duplicate-link')) {
+            context = 'node_duplicate';
+        }
+        else if ($(this).hasClass('change-author-link')) {
+            context = 'node_change_author';
+        }
+
             var components = (($(this).attr('data-components') != undefined) ? ($(this).attr('data-components').split(',')) : ['node_edit', 'node_metadata', 'node_status', 'file_form', 'node_form']);
             var shadow = {
                 module: 'node',
-                context: 'node_add',
+                context: context,
                 widget: $(this).attr('data-widget'),
                 language: $(this).attr('data-language'),
                 components: components,
@@ -68,37 +64,14 @@ $(document).bind('refresh', function() {
       if ($(this).data('language') != undefined) {
         shadow.language = $(this).attr('data-language');
       }
-
-      openShadow(shadow);
-
-      e.preventDefault();
-        });
-
-     // Duplicate Node link behavior.
-     $('.duplicate-link').off('click').on('click', function(e) {
-        var components = (($(this).attr('data-components') != undefined) ? ($(this).attr('data-components').split(',')) : ['node_edit', 'node_metadata', 'node_status', 'file_form', 'node_form']);
-
-        var shadow = {
-          module : 'node',
-          context: 'node_duplicate',
-          widget: $(this).data('widget'),
-          components: components,
-          node: $(this).data('rel'),
-          redirect: $(this).data('redirect')
-        };
-
-        // Use jQuery's data() method to get all data attributes
         $.each($(this).data(), function(key, value) {
             if (shadow[key] == undefined) {
                 shadow[key] = value;
             }
         });
-
-        openShadow(shadow);
-
-        e.preventDefault();
+      openShadow(shadow);
+      e.preventDefault();
     });
-
 
     $('.node-item-actions').parent()
         // TO BE COMPLETED
@@ -119,6 +92,9 @@ $(document).bind('shadow_open', function() {
 
 $(document).ready(function() {	
   $('.file-operation').click(function (e) {
+    if(isDragging){
+      return;
+    }
 		e.preventDefault();
 		openShadow({
 			module: 'file',
@@ -131,6 +107,9 @@ $(document).ready(function() {
 			show_buttons: $(this).data('show-buttons'),
 		});	
 	  });
+    $('.message-popup').fadeOut(10000, function() {
+      $(this).remove();
+    });
 });
   function initImgOperationsModal(){
     if ($('#delete_img').length > 0) {
@@ -174,6 +153,7 @@ document.addEventListener('formSubmissionSuccess', function(event) {
       const response = JSON.parse(event.detail.response);
       console.log(response);
       if(response.success){
+        $("#spinner").hide();
         closeShadow();
         // Find the image by its src attribute and fade it out
         const imgSrc = response.img;

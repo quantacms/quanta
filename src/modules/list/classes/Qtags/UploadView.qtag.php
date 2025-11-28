@@ -15,7 +15,8 @@ class UploadView extends HtmlTag {
    *   The rendered HtmlTag.
    */
   public function render() {
-    $this->attributes['class'] = "just-view list file_admin list-file_admin  ui-sortable";
+    $this->attributes['class'] = "delete-action list file_admin list-file_admin  ui-sortable";
+    $this->html_params['data-node'] = $this->getAttribute('node');
     return parent::render();
   }
 }

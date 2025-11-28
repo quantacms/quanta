@@ -16,7 +16,9 @@ class Video extends HtmlTag {
     $node = $this->getAttribute('node');
     $this->html_params['src'] = $node . '/' . $this->getTarget();
     $this->html_params['preload'] = 'auto';
-    $this->html_params['controls'] = TRUE;
+    if (!isset($this->attributes['no-controls'])) {
+      $this->html_params['controls'] = TRUE;
+    }
     $this->html_body = 'Your browser does not support the video element.';
     return parent::render();
   }

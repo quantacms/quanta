@@ -18,8 +18,16 @@ class DirList extends ListObject {
   public function generateList() {
 
     $i = 0;
+    // TODO: maybe Don't consider template here.
+    if (!empty($this->getTpl())) {
+      $tpl_path = $this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php';
+      $tpl = file_get_contents($tpl_path);
+    }
+    else {
+      $tpl = NULL;
+    }
     // TODO: better management of this, including in NodeTemplate class etc.
-    $tpl = file_get_contents($this->getModulePath() . '/tpl/' . $this->getTpl() . '.tpl.php');
+
     /** @var Node $node_current */
     $node_current = NodeFactory::current($this->env);
     /** @var Node $node_father */
@@ -61,11 +69,12 @@ class DirList extends ListObject {
       if (!is_string($dir_url)) {
         $dir_url = strval($dir_url);
       }
-      $list_item = preg_replace("/\[LISTCOUNTER\]/is", $i, $tpl);
-      $list_item = preg_replace("/\[LISTITEM\]/is", Api::string_normalize($dir_url), $list_item);
-      $list_item = preg_replace("/\[LISTNODE\]/is", Api::string_normalize($this->getNode()->getName()), $list_item);
-      $list_item = QtagFactory::transformCodeTags($this->env, $list_item);
-
+      if (!empty($tpl)) {
+	$list_item = preg_replace("/\[LISTCOUNTER\]/is", $i, $tpl);
+      	$list_item = preg_replace("/\[LISTITEM\]/is", Api::string_normalize($dir_url), $list_item);
+      	$list_item = preg_replace("/\[LISTNODE\]/is", Api::string_normalize($this->getNode()->getName()), $list_item);
+      	$list_item = QtagFactory::transformCodeTags($this->env, $list_item);
+      }
       $vars = array(
         'list' => &$this,
         'list_item' => &$list_item,

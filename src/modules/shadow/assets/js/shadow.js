@@ -15,7 +15,7 @@ $(document).bind('refresh', function () {
   // window closing, and losing of the work.
   $('#shadow-item').find('input,select,textarea').bind('change', setShadowUpdated);
 
-  $('.shadow-submit').on('click', async function () {
+  $('.shadow-submit').off('click').on('click', async function () {
     if (!($(this).hasClass('shadow-submitted')) && !($(this).hasClass('not-submittable'))) {
       shadowConfirmClose = true;
 
@@ -34,8 +34,39 @@ $(document).bind('refresh', function () {
     }
   });
 
-  $('.shadow-cancel').on('click', function () {
+  $('.shadow-cancel').off('click').on('click', function () {
+    closeShadow();    
+    if(shadow?.opening_shadow == 'new' && shadow?.redirect){
+      window.location.href = shadow.redirect;
+    }
+  });
+  
+  $('.shadow-skip').off('click').on('click', function () {
     closeShadow();
+    if(shadow?.opening_shadow == 'new' && shadow?.redirect){
+      window.location.href = shadow.redirect;
+    }
+    let buttons ={
+        "skip": {
+          "title": $(this).text(),
+          "class": "shadow-skip"
+        }
+    };
+
+    let shadowData = {
+      'module' : $('#edit_module').val(),
+      'context' : $('#edit_context').val(),
+      'widget' : $('#edit_widget').val(),
+      'language' : $('#edit_language').val(),
+      'components' : $('#edit_components').val().split(','),
+      'node' : $('#edit_node').val(),
+      'father' : shadow.father,
+      'redirect' : $('#edit_redirect').val(),
+      'entity' : $('#edit_entity').val(),
+      'opening_shadow' : 'new',
+      'buttons': shadow?.redirect ? null : buttons,
+    };
+    openShadow(shadowData);
   });
 });
 
@@ -79,7 +110,7 @@ function createShadow() {
  *
  * @param stdClass shadowData
  */
-function openShadow(shadowData) {
+async function openShadow(shadowData) {
   if (!($('#shadow-outside').length)) {
     createShadow();
   }
@@ -95,8 +126,17 @@ function openShadow(shadowData) {
   shadowPath += '/?shadow=' + encodeURIComponent(JSON.stringify(shadow));
 
   console.log(shadowPath);
+  const allowedLangs = await getLanguages();
+  const pathSegments = window.location.pathname.split('/').filter(Boolean); // Remove empty segments  
+  let shadowLanguage = undefined;
+  pathSegments.forEach((segment, index) => {
+      console.log(segment);      
+      if (allowedLangs.includes(segment)) {
+        shadowLanguage = segment;
+      }
+  });
   // Add Language prefix for multilingual opening.
-  if (shadow.language != undefined) {
+  if (shadow.language != undefined || shadowLanguage != undefined) {
     shadowPath = '/' + shadow.language + shadowPath;
   }
 
@@ -193,17 +233,42 @@ function submitShadow() {
       fieldWrapper.removeClass('has-validation-errors');
       fieldWrapper.find('.validation-error').remove();
     }
+
+       // Additional handling for phone number fields if the hidden input (like fullphone) is also required
+       var hiddenInputs = ['fullphone','fullwhatsapp'];
+       if (hiddenInputs.includes(fieldName) && inputField.prop('required')  && fieldValue === '') {
+           hasEmptyRequiredFields = true;
+           // Add validation error for the hidden field
+           fieldWrapper.addClass('has-validation-errors');
+           if (fieldWrapper.find('.validation-error').length === 0) {
+               fieldWrapper.append('<div class="validation-error">This field is required.</div>');
+           }
+       }
     
     if (form_items[fieldName] == undefined) {
+      var uncheckValue = inputField.attr('unchecked_value') != '' ? inputField.attr('unchecked_value') : '';
+      if(inputField.attr('type') == 'radio' && !inputField.is(':checked') && uncheckValue == '__empty__'){
+        return;
+      }
       form_items[fieldName] = getJSONFormItem(inputField,[]);
     }
     
     if (inputField.attr('type') == 'checkbox') {
-      if(inputField.is(':checked')){
-        var checkboxValue = inputField.is(':checked') ? inputField.val() : '';
+        var uncheckValue = inputField.attr('unchecked_value') != '' ? inputField.attr('unchecked_value') : '';
+        if(!inputField.is(':checked') && uncheckValue == '__empty__'){
+          return;
+        }
+        var checkboxValue = inputField.is(':checked') ? inputField.val() : uncheckValue;
         var newValue = !form_items[fieldName] ? [checkboxValue] :  (form_items[fieldName].value.push(checkboxValue), form_items[fieldName].value);
         form_items[fieldName] = getJSONFormItem(inputField,newValue);
+    }
+    else if (inputField.attr('type') == 'radio') {
+      if(!inputField.is(':checked')){
+        return;
       }
+      var radioValue = inputField.val();
+      var newValue = !form_items[fieldName] ? [radioValue] :  (form_items[fieldName].value.push(radioValue), form_items[fieldName].value);
+      form_items[fieldName] = getJSONFormItem(inputField,newValue);
     }
     else if(inputField.attr('type') == 'hidden' && fieldName.startsWith("full")){
       fieldName= fieldName.substring(4);
@@ -258,4 +323,19 @@ function getJSONFormItem(inputField,value){
     "length": inputField.data('length'),
     "value" : value
   };
+}
+
+async function getLanguages(){
+  let languages = [];
+  await $.ajax({
+    type: "POST",
+    dataType: 'json',
+    url: '/',
+    data: {json: JSON.stringify({"action":{"value":"get_languages"}})},
+    success: function(response) {
+      languages = response.languages;
+    
+    }
+  });
+  return languages;
 }

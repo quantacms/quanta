@@ -17,26 +17,54 @@ $(function () {
     // This function is called when a file is added to the queue;
     // either via the browse button, or via drag/drop:
     add: async function (e, data) {
+      const timestamp = new Date().getTime();
+      data.files = data.files.map(file => {
+        const nameParts = file.name.split('.');
+        if (nameParts.length > 1) {
+          const ext = nameParts.pop();
+          const baseName = nameParts.join('.');
+          const newName = `${baseName}-${timestamp}.${ext}`;
+          return new File([file], newName, { type: file.type });
+        } else {
+          // Fallback in case there's no extension
+          const newName = `${file.name}-${timestamp}`;
+          return new File([file], newName, { type: file.type });
+        }
+      });
       var tmp_files_dir = ($('#tmp_files_dir').val());
       // Access the file input element
-      var fileInputElement = data.fileInput[0];
+      var fileInputElement = $(this).find('input[type="file"]').get(0);
       // Check if the file input has the 'multiple' attribute
       hasMultipleAttribute = fileInputElement.hasAttribute('multiple');
       
       var file = data.files[0];
-      var resolutionAttr = fileInputElement.getAttribute('data-resolution');
-      $('#resolution-error-message').hide();
-      if (resolutionAttr) {
-        var [minWidth, minHeight] = resolutionAttr.split('*').map(Number);
+      // Check if file size is more than 12 MB (12 * 1024 * 1024 bytes)
+      if (file.size > 12 * 1024 * 1024) {
+        $('#max-resolution-error-message').show();
+        return;
+      }
+      var minResolutionAttr = fileInputElement.getAttribute('data-min_resolution');
+      
+      var maxResolutionAttr = fileInputElement.getAttribute('data-max_resolution');      
+      
+      $('#min-resolution-error-message').hide();
+      $('#max-resolution-error-message').hide();
+      $('#max-size-error-message').hide();
+      if (minResolutionAttr || maxResolutionAttr) {
+        var [minWidth, minHeight] = minResolutionAttr.split('*').map(Number);
+        var [maxWidth, maxHeight] = maxResolutionAttr.split('*').map(Number);
 
         // Create an image element to check dimensions
         var img = new Image();
         img.src = URL.createObjectURL(file);
         elementContext = $(this);
         img.onload = function () {
-          console.log(img.width + " * " + img.height);
-          if (img.width < minWidth || img.height < minHeight) {
-            $('#resolution-error-message').show();
+          if (minResolutionAttr && (img.width < minWidth || img.height < minHeight)) {
+            $('#min-resolution-error-message').show();
+            return;
+          }          
+          if (maxResolutionAttr &&(img.width > maxWidth || img.height > maxHeight)) {
+            $('#max-resolution-error-message').show();
             return;
           }          
           // If resolution is valid, proceed to handle the file upload
@@ -129,7 +157,7 @@ $(function () {
 
 
 // Initialize button events for file table admin.
-var refreshFileActions = function (fileElement, justView = false) {
+var refreshFileActions = function (fileElement, justView = false, deleteAction = true, thumbnailAction = true) {
   var filename = fileElement.find('.file-link').data('filename');
   var formname = fileElement.closest('.shadow-content').find('form').attr('id');
   var inputFileInsideForm = fileElement.closest('.shadow-content').find('form').find('input[type="file"]');
@@ -152,11 +180,13 @@ var refreshFileActions = function (fileElement, justView = false) {
     // Create file actions.
     if (!$(this).find('.file-actions').length) {
       var actionsButtons= '<div class="file-actions">';
-      if(hasMultipleAttribute && inputFileInsideForm.attr('thumbnail') !== 'false'){
+      if(thumbnailAction && hasMultipleAttribute && inputFileInsideForm.attr('thumbnail') !== 'false'){
         actionsButtons += '<input type="button" class="set-thumbnail" data-filename="' + filename + '" value="" />';
       }
-      actionsButtons += '<input type="button" class="delete-file" value="delete file" />' +
-      '</div>';
+      if(deleteAction){
+        actionsButtons += '<input type="button" class="delete-file" value="delete file" />';
+      }
+      actionsButtons +='</div>';
       // Append file actions to manage files.
       $(this).append(actionsButtons);
       
@@ -178,7 +208,7 @@ var refreshFileActions = function (fileElement, justView = false) {
     $('.delete-file').on('click', function () {
       var filepath = $(this).parents('li').find('.file-link').data('filename');
       var parent = $(this).closest('li');
-      if (confirm('Are you sure you want to delete this file? \n' + filepath)) {
+      if (confirm('Are you sure you want to delete this file? \n' + filepath)) {        
         var node_name = ($(this).closest('.list').data('node'));
 
         $.ajax({
@@ -216,7 +246,7 @@ var refreshThumbnail = function () {
 
 $(document).bind('refresh', function () {
   $('.list-item-file_admin').each(function () {
-        refreshFileActions($(this),$(this).parent().hasClass('just-view'));
+        refreshFileActions($(this),$(this).parent().hasClass('just-view'), $(this).parent().hasClass('delete-action'), $(this).parent().hasClass('thumbnail-action'));
         refreshThumbnail();
     
 });
@@ -242,6 +272,7 @@ $(document).bind('refresh', function () {
     var tag_attr = (filelink.data('filenew') != undefined) ? ('tmp_path=' + tmp_files_dir) : ('node=' + node_name);
     var qtag = '/qtag/[FILE_PREVIEW|' + tag_attr + ':' + encodeURIComponent(filename) + ']';
     $(this).load(qtag);
+    $(this).off('click').click(imageToggleZoom);
   });
 
   //TODO: I don't know what the purpose of [FILE_QTAG_SUGGESTION|] is It only displays incorrect data, but the name is displayed correctly elsewhere
@@ -254,7 +285,20 @@ $(document).bind('refresh', function () {
   //   $(this).load(qtag_suggestion);
   // });
 });
-
+function imageToggleZoom() {
+  const image = $(this).find('img');
+  if (!image.length) return;
+  if (image.hasClass('zoomed')) {
+    // Trigger zoom-out animation
+    image.addClass('removing').removeClass('zoomed');
+    
+    // Reset after the animation to avoid stacking animations
+    setTimeout(() => image.removeClass('removing'), 400);
+  } else {
+    // Trigger zoom-in animation
+    image.addClass('zoomed');
+  }
+}
 $(document).bind('shadow_save', function () {
   $('.progressBar').each(function () {
     if ($(this).val() != 100) {

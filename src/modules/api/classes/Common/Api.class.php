@@ -26,7 +26,7 @@ class Api {
    *   Where to redirect the user.
    */
   public static function redirect($where) {
-    print '<script>top.location.href="' . $where . '";</script>';
+    print '<script>window.location.href="' . $where . '";</script>';
     exit;
   }
 
@@ -53,7 +53,10 @@ class Api {
    *   TRUE if the argument is a valid email address.
    */
   public static function valid_email($email) {
-    return (!filter_var($email, FILTER_VALIDATE_EMAIL) === FALSE);
+    return (
+      filter_var($email, FILTER_VALIDATE_EMAIL) !== false &&
+      !ctype_upper($email[0])
+    );
   }
 
   /**
@@ -324,16 +327,32 @@ class Api {
    *   The filtered string.
    */
   public static function filter_xss($string) {
-    if ($string != NULL) {
-      $filtered_string = htmlspecialchars($string, ENT_QUOTES,'utf-8');
+    if ($string === null) {
+        return '';
     }
-    else {
-      $filtered_string = '';
-    }
+
+    $allowed_entities = [
+        '&colon;',
+    ];
+
+    // Create a regex pattern to match HTML entities
+    $pattern = '/(&#?[a-zA-Z0-9]+;?)/';
+
+    // Replacement function to handle each matched entity
+    $replacement = function ($match) use ($allowed_entities) {
+        $entity = $match[1];
+        if (in_array($entity, $allowed_entities, true)) {
+            return $entity; // Return the allowed entity as is
+        } else {
+            return htmlspecialchars($entity, ENT_QUOTES, 'utf-8'); // Escape other entities
+        }
+    };
+
+    // Perform the replacement
+    $filtered_string = preg_replace_callback($pattern, $replacement, $string);
+
     return $filtered_string;
-
-  }
-
+}
   /**
    * Get Browser (user agent) info.
    *
@@ -447,4 +466,35 @@ class Api {
         return array_merge($replacement, $preservedExcluded);
     }
 
+  /**
+   * Explodes a string by commas, but only if the commas are outside of HTML tags and attributes.
+   *
+   * This function uses a regular expression to split a string by commas, while ensuring that commas
+   * within HTML tags (including attributes within double quotes, single quotes and unquoted attributes) are ignored.
+   *
+   * @param string $valuesString The string to explode.
+   *
+   * @return array An array containing the exploded values, or an array containing the original string if the regex fails.
+   */
+  public static function explode_comma_outside_tags($valuesString)
+  {
+    $result = [];
+    // Regular expression to split by commas outside HTML tags and attributes.
+    // ,                       : Match a literal comma.
+    // (?![^<]*(?:>|<\/)))     : Negative lookahead to ensure the comma isn't inside an HTML tag.
+    // (?![^<]*\s[^=]*="[^"]*,) : Negative lookahead to ensure the comma isn't inside a double-quoted attribute.
+    // (?![^<]*\s[^=]*=\'[^']*,) : Negative lookahead to ensure the comma isn't inside a single-quoted attribute.
+    // (?![^<]*\s[^=]*=[^>]*>,) : Negative lookahead to ensure the comma isn't inside an unquoted attribute.
+    $parts = preg_split('/,(?![^<]*(?:>|<\/))(?![^<]*\s[^=]*="[^"]*,)/', $valuesString);
+
+    if ($parts !== false) { // Check if the regex split was successful.
+      foreach ($parts as $part) { // Iterate through the split parts.
+        $result[] = trim($part); // Trim whitespace and add the part to the result array.
+      }
+    } else {
+      $result[] = trim($valuesString); // If regex failed, return the original string inside an array.
+    }
+
+    return $result;
+  }
 }

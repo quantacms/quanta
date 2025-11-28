@@ -52,9 +52,12 @@
 
 .form-item-multiple-wrapper {
 display: flex;
+align-items: center;
+gap: 5px;
 }
 .form-item-select.form-item-multiple {
 text-align: left;
+max-width: calc(100% - 2 * 35px);
 }
 
 .form-item-add, .form-item-remove {
@@ -62,9 +65,9 @@ text-align: left;
     text-align: center;
     display: inline-block;
     width: 30px;
+    aspect-ratio: 1/1;
 border-radius: 20px;
 border: 1px solid #aaa;
-margin-left: 5px;
 font-size: 16px;
 padding: 0;
 margin-bottom: 10px;
@@ -114,6 +117,10 @@ display: none;
 .form-item-checkbox{
     display: flex;
     gap: 75px;
+}
+.form-item-wrapper:has(.form-item-color) .form-item {
+  width: 40px;
+  height: 40px;
 }
 
 /* Star Rating */
@@ -215,3 +222,10 @@ display: none;
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
+
+.form-item-description-wrapper{
+  margin-bottom: 2px;
+}
+.form-item-description-wrapper span{
+  font-style: italic;
+}

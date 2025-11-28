@@ -38,3 +38,23 @@ function list_action_node_weight_update(Environment $env, array $vars) {
   }
   exit(json_encode(array('no_redirect' => 'true')) );
 }
+
+/**
+ * Implements hook_file_weight_update().
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param array $vars
+ *   An array of variables.
+ */
+function list_action_file_weight_update(Environment $env, array $vars) {
+  $files = json_decode($vars['data']['files']->value);
+  $node_name = is_array($vars['data']['node_name']->value) ? array_pop($vars['data']['node_name']->value) : $vars['data']['node_name']->value;
+  $node = \Quanta\Common\NodeFactory::load($env, $node_name);
+  if (NodeAccess::check($env, \Quanta\Common\Node::NODE_ACTION_EDIT, array('node' => $node))) {
+    $node->setAttributeJSON('files', $files);
+    $node->setLanguage(\Quanta\Common\Localization::LANGUAGE_NEUTRAL);
+    $node->save();
+  }
+  exit(json_encode(array('no_redirect' => 'true')) );
+}

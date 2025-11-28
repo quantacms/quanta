@@ -50,13 +50,16 @@ var action = function(dataJson) {
  * @param data
  */
 var actionSuccess = function(data) {
-    console.log('success');
+  $("#spinner").hide();
   if (typeof data !== 'object') {
     alert("There was an error with your submission.");
     console.log(data);
     return false;
   }
-
+  
+  if(data.shadow){
+    openShadow(data.shadow);
+  }
   // TODO: better way to display errors.
   if (data.errors) {
     $('.messages').html(data.errors).fadeIn('slow');
@@ -67,7 +70,7 @@ var actionSuccess = function(data) {
     }, 6000);
   }
   if (data.redirect != undefined) {
-    top.location.href = data.redirect;
+    window.location.href = data.redirect;
   }
   return true;
 
@@ -79,6 +82,7 @@ var actionSuccess = function(data) {
  * @param exception
  */
 var actionError = function(err, exception) {
+    $("#spinner").hide();
     if(err?.responseJSON?.shadowErrors){
     var errors = JSON.parse(err.responseJSON.shadowErrors);
     $('.shadow-submitted').removeClass('shadow-submitted');
@@ -107,13 +111,19 @@ var actionError = function(err, exception) {
   }
   else if (err?.responseJSON?.error_message){
    const shadowButtons = $('#shadow-buttons'); 
-   shadowButtons.parent().prepend(`<div style="font-size: 12px;" class="validation-error">${err.responseJSON.error_message}</div>`)
+   if($('.validation-error').length > 0){
+    $('.validation-error').html(err.responseJSON.error_message);
+   }
+   else{
+    shadowButtons.parent().prepend(`<div style="font-size: 12px;" class="validation-error">${err.responseJSON.error_message}</div>`);
+   }
   }
   else{
     alert(exception);
   }
   // Stop form submission if there are empty required fields
   $('.shadow-submit').removeClass('shadow-submitted'); // Remove shadow-submitted class
+  $(document).trigger('action_error');
 };
 
 var quanta_html_escape = function(str) {
