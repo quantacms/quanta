@@ -56,6 +56,9 @@ abstract class ListObject extends DataContainer {
   /** @var bool $sortable */
   protected $sortable = FALSE;
 
+   /** @var bool $files */
+   protected $files = FALSE;
+
   /**
    * ListObject constructor.
    * @param Environment $env
@@ -123,7 +126,8 @@ abstract class ListObject extends DataContainer {
       $page->addJS('/modules/jquery/assets/js/jquery.ui.widget.js');
       $page->addJS('/modules/jquery/assets/js/jquery.tablesorter.js');
     }
-    $this->load();
+    $lang = isset($attr_arr['language']) ? $attr_arr['language'] : null;
+    $this->load($lang);
   }
 
   /**
@@ -144,7 +148,7 @@ abstract class ListObject extends DataContainer {
    * @return string
    *   The rendered HTML list.
    */
-  public function render($attributes = array()) {
+  public function render($attributes = array()) {  
 
     // Check if the list was already generated. If not, generate it.
     if (!($this->generated)) {
@@ -172,9 +176,12 @@ abstract class ListObject extends DataContainer {
       $output = $this->getData('empty_message');
     }
 
-		if ($this->sortable) {
+		if ($this->sortable && !$this->files) {
       $classes[] = 'list-sortable';
 		}
+    elseif ($this->sortable && $this->files) {
+      $classes[] = 'file-sortable';
+    }
     // If the "clean" attribute is not present, add some wrapping html.
     if (empty($this->getData('clean')) && (empty($this->getData('hide_if_empty')) || !empty($this->rendered_items)))  {
       $output = '<' . $this->getData('list_html_tag') . ' '  . $ajax . $tpl . ' class="list ' . $this->getTpl() . ' list-' . $this->getTpl() . ' list-' . $this->node->getName() . ' ' . implode(' ', $classes) . '" data-node="' . $this->node->getName() . '">' . $output . '</' . $this->getData('list_html_tag') . '>';
@@ -184,7 +191,7 @@ abstract class ListObject extends DataContainer {
     if ($this->getData('nolinks')) {
       $output = preg_replace('/<a[^>]+\>/i', "", $output);
     }
-
+    
     return $output;
   }
 
@@ -192,7 +199,7 @@ abstract class ListObject extends DataContainer {
    * Load the list and all the files and directories.
    * @return bool
    */
-  public function load() {
+  public function load($lang = null) {
     // Empty path. Usually happens with a new node, that has no path yet.
     if (empty($this->path)) {
       $this->loaded = TRUE;
@@ -244,7 +251,7 @@ abstract class ListObject extends DataContainer {
       $item_name = is_array($item) ? $item['name'] : $item;
 
       if ($this->scantype == \Quanta\Common\Environment::DIR_DIRS) {
-        $node = NodeFactory::load($this->env, $item_name);
+        $node = NodeFactory::load($this->env, $item_name, $lang);
 
         if ($node->exists && $this->validateListItem($node)) {
           $this->addItem($node);

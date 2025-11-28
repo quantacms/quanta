@@ -44,6 +44,20 @@ function node_action_node_duplicate(Environment $env, array $vars){
   exit($response_json);
 }
 
+/**
+ * Implements hook_action_node_change_author.
+ * There is a node change author request.
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param array $vars
+ *   An array of variables.
+ */
+function node_action_node_change_author(Environment $env, array $vars){
+  $response_json = NodeFactory::requestAction($env, $vars['action'], $vars['data']);
+  exit($response_json);
+}
+
 
 /**
  * Implements hook_action_node_delete.
@@ -107,6 +121,10 @@ function node_page_init(Environment $env, array $vars) {
   else if ($env->request_path != '403' && $node->isForbidden() && !isset($_REQUEST['shadow'])) {
     $node_403 = NodeFactory::load($env, '403');
     if ($node_403->exists) {
+      // Get the full requested URL dynamically
+      $current_url = $_SERVER['REQUEST_URI']; // This includes both the path and the query string
+      // Store the original URL in the session
+      $_SESSION['original_url'] = $current_url;
       Api::redirect('/403');
     }
     else {
@@ -263,4 +281,8 @@ function node_body_classes(Environment $env, array $vars){
     $vars['page']->addData('body_classes', array('section-' . $lineage_node->name));
   }
   $vars['page']->addData('body_classes', array('page-' . $node->name));
+}
+
+function node_shadow_duplicate_form($env, $vars) {
+	$vars['shadow']->addTab('Duplicate', file_get_contents($env->getModulePath('node') . '/tpl/duplicate_form.inc'), 1);
 }

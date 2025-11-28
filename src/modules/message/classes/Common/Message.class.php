@@ -16,6 +16,12 @@ class Message {
   const MESSAGE_CONFIRM = 'confirm';
   const MESSAGE_TYPE_LOG = 'log';
   const MESSAGE_TYPE_SCREEN = 'screen';
+  const MESSAGE_TYPE_VALIDATION = 'validation';
+
+  const MESSAGE_STYLE_SUCCESS = 'message-alert-success';
+  const MESSAGE_STYLE_ALERT = 'message-alert-style';
+  const MESSAGE_STYLE_WARNING = 'message-warning-style';
+  const MESSAGE_STYLE_INFO = 'message-info-style';
 
   /** @var Environment $env */
   public $env;
@@ -29,6 +35,8 @@ class Message {
   public $severity;
   /** @var string $key */
   public $key;
+  /** @var string $style */
+  public $style;
 
   /**
    * Construct the message item.
@@ -44,13 +52,14 @@ class Message {
    * @param string $module
    *   The module generating the message.
    */
-  public function __construct($env, $body, $severity = self::MESSAGE_GENERIC, $type = self::MESSAGE_TYPE_SCREEN, $module = self::MESSAGE_NOMODULE, $key = null) {
+  public function __construct($env, $body, $severity = self::MESSAGE_GENERIC, $type = self::MESSAGE_TYPE_SCREEN, $module = self::MESSAGE_NOMODULE, $key = null, $style = self::MESSAGE_STYLE_INFO) {
     $this->env = $env;
     $this->body = $body;
     $this->type = $type;
     $this->module = $module;
     $this->severity = $severity;
     $this->key = $key;
+    $this->style = $style;
     $doctor = $env->getData('doctor');
 
     // If the Doctor is curing the environment, show messages in the blackboard.
@@ -68,7 +77,17 @@ class Message {
     else {
       $this->env->addData('message', array($this));
       if ($type == self::MESSAGE_TYPE_SCREEN) {
-        $_SESSION['messages'][] = serialize($this);
+        $isProduction = !empty($this->env->getData('IS_PRODUCTION')) && $this->env->getData('IS_PRODUCTION') === 'true';
+        if ($isProduction) {
+            // Log the error to Apache/PHP log
+            error_log("Error message from quanta: " . $this->body, 0); // Logs to the server error log (Apache/PHP error log)
+        } else {
+            // Show the error message on screen
+            if (!isset($_SESSION['messages'])) {
+                $_SESSION['messages'] = [];
+            }
+          $_SESSION['messages'][] = serialize($this);
+        }
       }
     }
   }
@@ -94,7 +113,9 @@ class Message {
             $output[$message->key] = $message->body;
           }
           else{
-            $output .= '<div class="message message-severity-' . $message->severity . '">' . $message->body . '</div>';
+            $output .= "[HTML_TAG|class={$message->style} message-popup:
+                          {$message->body}
+                        ]";
           }
           unset($_SESSION['messages'][$k]);
         }

@@ -101,6 +101,18 @@ class Doctor extends DataContainer {
       $this->ok();
     }
 
+    if (!is_dir($this->env->dir['db'])) {
+      $this->op('Creating db directory...');
+      $this->createDir($this->env->dir['db']);
+      $this->ok();
+    }
+
+    if (!file_exists($this->env->dir['docroot'] . '/.env')) {
+      $this->op('Creating env file...');
+      $this->createFile($this->env->dir['docroot'] . '/.env');
+      $this->ok();
+    }
+
     if (!is_dir($this->env->dir['tmp'])) {
       $this->op('Creating tmp directory...');
       $this->createDir($this->env->dir['tmp']);
@@ -140,6 +152,31 @@ class Doctor extends DataContainer {
       mkdir($dir, 0755, TRUE) or die('Fatal error - could not create directory ' . $dir . ' and something went wrong in checking its permissions. Aborting.');
     }
   }
+
+    /**
+   * Create a File.
+   *
+   * @param string $file_path
+   *   The full path of the file to be created, including the file name.
+   * @param string $content
+   *   The content to be written to the file.
+   */
+  public function createFile($file_path, $content = '') {
+    $file_dir = dirname($file_path);
+    
+    // Check if the directory is writable
+    if (!is_writable($file_dir)) {
+        $this->stop(
+            t("Sorry, we can't create the file because the current user has no privileges in the directory: %file_dir.\nSuggested solution (unix): chown -R www-data %file_dir",
+            array('%file_dir' => $file_dir)));
+    }
+    
+    // Attempt to create and write to the file
+    if (file_put_contents($file_path, $content) === false) {
+        t('Fatal error - could not create or write to file ' . $file_path . '. Aborting.');
+    }
+  }
+
 
   /**
    * Execute an UNIX command.

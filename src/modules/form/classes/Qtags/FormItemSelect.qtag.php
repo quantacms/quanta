@@ -22,6 +22,7 @@ class FormItemSelect extends FormItem {
    * Load Options for select inputs.
    */
   public function loadOptions() {
+    $this->html_body = '';
     foreach ($this->getAllowableValues() as $k => $option) {
       // TODO: when it's single, it becomes a simple string...
       if (is_array($option)) {
@@ -33,6 +34,7 @@ class FormItemSelect extends FormItem {
         $option_value = $option;
       }
       $option_attributes = array();
+
       $option = new Option($this->env, $option_attributes, NULL);
       $option->html_params['value'] = $option_key;
       if ($this->getCurrentValue() == $option_key) {

@@ -80,14 +80,19 @@ function access_node_open(Environment $env, array &$vars) {
 function access_qtag_preload(Environment $env, array $vars) {
   $node = NodeFactory::current($env);
   $user = UserFactory::current($env);
+  $filter_key = null;
   /** @var Qtag $qtag */
   $qtag = &$vars['qtag'];
   if(!empty($qtag->getAttribute('filter_node'))){
     $node = NodeFactory::load($env,$qtag->getAttribute('filter_node'));
   }
+  if(!empty($qtag->getAttribute('filter_key'))){
+    $filter_key = $qtag->getAttribute('filter_key');
+  }
   // The user has selected to show the tag only if a certain criteria is matched.
   if (!empty($qtag->getAttribute('filter'))) {
-    $filter_match = _access_filter($env, $qtag->getAttribute('filter'), $node, $user);
+    $or_logic = !empty($qtag->getAttribute('or_logic')) ? true : false;
+    $filter_match = _access_filter($env, $qtag->getAttribute('filter'), $node, $user, $filter_key, $or_logic);
     // If there is an active tag filter, and it doesn't match, empty the tag.
     if (!$filter_match) {
       $qtag->setAccess(FALSE);
@@ -109,8 +114,7 @@ function access_qtag_preload(Environment $env, array $vars) {
  * @return bool
  *   Returns true if the access check was positive.
  */
-function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = null) {
-
+function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = null, $or_logic = false) {
   // Explode the criteria values.
   $filter = explode(',', $criteria);
 
@@ -184,6 +188,9 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
       case 'user_name':
         $filter_check = array($user->getName());
         break;
+      case 'user_can_edit':
+        $filter_check = array('user_can_edit');
+        break;
       // Filter by current user's role.
 			case 'status':
         $filter_check = array($node->getStatus());
@@ -209,6 +216,11 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
         $filter_check[] = $env->getContext();
         break;
 
+      case 'shadow':
+        $shadow = $env->getData('shadow');
+        $filter_check[] = $shadow->getData($custom_value);
+        break;
+
       case 'category':
         $filter_check = array();
         $categories = $node->getCategories();
@@ -224,6 +236,10 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
 
       case 'file_name':
         $filter_check = array($custom_value);
+        break;
+
+      case 'env':
+        $filter_check = array($env->getData($custom_value));
         break;
 
       default:
@@ -242,19 +258,21 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
             $filter_value = str_replace('!', '', $filter_value);
           }
           // If comparing with an array of values, check if the value is in the array.
-          if (is_array($check)) {   
+          if (is_array($check) && $filter_value != \Quanta\Common\Access::EMPTY_FILTER) {   
             $filter_match = in_array($filter_value, $check);
           }
           elseif($filter_value == \Quanta\Common\Access::EMPTY_FILTER){   
             $filter_match = !$check; 
+          }elseif($check == 'user_can_edit'){
+            $filter_match = \Quanta\Common\NodeAccess::check($env,\Quanta\Common\Node::NODE_ACTION_EDIT,array('node' => \Quanta\Common\NodeFactory::load($env,$filter_value)));
           }
-	  else {
-	    if (!empty($check)) {
-        $check = trim($check);
-	    } 
-	    if (!empty($filter_value)) {
-	      $filter_value = trim($filter_value);
-	    } 
+	        else {
+            if (!empty($check)) {
+              $check = trim($check);
+            } 
+            if (!empty($filter_value)) {
+              $filter_value = trim($filter_value);
+            } 
             $filter_match = ($check == $filter_value) ? true : false;
           }
           if ($filter_match && !isset($negate)) {
@@ -272,11 +290,15 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
           }
 
           if ($break) {
+            $criteria_match[$i] = $filter_match;
+            $i++;
             break;
           }
         }
         // For multiple fields such as lineage one match is enough to validate.
         if ($break) {
+          $criteria_match[$i] = $filter_match;
+          $i++;
           break;
         }
       }
@@ -285,7 +307,11 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
       //TODO: use hook for custom filters.
 
       if (!$filter_match) {
-        break;
+        $criteria_match[$i] = $filter_match;
+        $i++;
+        if(!$or_logic){
+          break;
+        }
       }
     }
     else {
@@ -296,6 +322,6 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
     $criteria_match[$i] = $filter_match;
     $i++;
   }
-
-  return $filter_match;
+  
+  return $or_logic ? in_array(true, $criteria_match, true) : $filter_match;
 }

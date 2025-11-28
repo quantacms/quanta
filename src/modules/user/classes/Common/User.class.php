@@ -36,7 +36,7 @@ class User extends Node {
    */
   public function load() {
 
-    if (strlen($this->name) > 0 && $this->exists) {
+    if ($this->exists && (strlen($this->name) > 0)) {
       $this->loadJSON();
       if (isset($this->json->roles)) {
         $this->roles = (array)$this->json->roles;
@@ -164,7 +164,7 @@ class User extends Node {
       );
     }
     unset($_SESSION['user']);
-
+    $this->env->hook('user_logout');
     // TODO: adapt cookies.
     $response = new \stdClass();
     $response->redirect = '/' . $this->env->getRequestedPath();
@@ -205,12 +205,25 @@ class User extends Node {
             \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
           );
         }
-        new Message($this->env,
-          t('User !user logged in', array('!user' => $this->getName())),
-          \Quanta\Common\Message::MESSAGE_CONFIRM,
-          \Quanta\Common\Message::MESSAGE_TYPE_LOG
-        );
+        if(!$force_login){
+          new Message($this->env,
+            t('User !user logged in', array('!user' => $this->getName())),
+            \Quanta\Common\Message::MESSAGE_CONFIRM,
+            \Quanta\Common\Message::MESSAGE_TYPE_LOG
+          );
+        }
         self::addRole(self::ROLE_LOGGED);
+        $last_login = !empty($this->getAttributeJSON('last_login')) ? (array)$this->getAttributeJSON('last_login') : [];
+
+        $timestamp = time();
+        array_unshift($last_login, "{$timestamp}"); // Insert the new timestamp at the beginning
+
+        if (count($last_login) > 10) {
+            array_pop($last_login); // Remove the oldest entry if the array exceeds 10 elements
+        }
+        $this->setAttributeJSON('last_login', $last_login);
+        $this->setLanguage(\Quanta\Common\Localization::LANGUAGE_NEUTRAL);
+        $this->save();
         $_SESSION['user'] = $this->serializeForSession();
         $this->env->hook('user_login', $vars);
 

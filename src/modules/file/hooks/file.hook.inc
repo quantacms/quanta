@@ -24,7 +24,7 @@ function file_shadow_simple_file_form(Environment $env, array $vars) {
   $node = $shadow->getNode();
   if (NodeAccess::check($env, $env->getContext(), array('node' => $node))) {
     $vars['shadow']->addTab('manage files', file_get_contents($env->getModulePath('file') . '/tpl/simple_upload_form.html'), 2);
-    $vars['shadow']->setTitle('[RESOLUTION_MESSAGE:{SHADOW:resolution}]');
+    $vars['shadow']->setTitle('[RESOLUTION_MESSAGE|min={SHADOW:min_resolution}|max={SHADOW:max_resolution}]');
   }
 }
 
@@ -62,7 +62,20 @@ function file_init(Environment $env, array $vars) {
   if (isset($_REQUEST[\Quanta\Common\Node::NODE_ACTION_DELETE_FILE])) {
     $node = NodeFactory::current($env);
     $split_file_to_delete = explode('/', $_REQUEST[\Quanta\Common\Node::NODE_ACTION_DELETE_FILE]);
-    FileObject::deleteFile($node, $split_file_to_delete[count($split_file_to_delete) - 1]);
+    $file_name = $split_file_to_delete[count($split_file_to_delete) - 1];
+    $file_path = $node->path .'/'. $file_name;
+    // Check if file exists in the node
+    if (file_exists($file_path)){
+      FileObject::deleteFile($node, $file_name);
+    }
+    else{
+      // Delete the file from static folder
+      $tmp_dir = $env->dir['tmp_files'] . '/' . $node->getData('tmp_files_dir');
+      if (is_dir($tmp_dir)){
+        $tmp_file_path = $tmp_dir . '/' . $file_name;
+        unlink($tmp_file_path);
+      }
+    }
     exit();
   }
 }
@@ -179,8 +192,8 @@ function file_page_init(Environment $env, array $vars) {
 
 function file_shadow_preview_img($env, $vars) {
 	$vars['shadow']->addTab('Preview', file_get_contents($env->getModulePath('file') . '/tpl/preview_img.inc'), 2);
-	$vars['shadow']->addButton('set_as_thumbnail', t('Imposta come miniatura'));
-	$vars['shadow']->addButton('delete_img', t('Eliminare'));
+	$vars['shadow']->addButton('set_as_thumbnail', t('Imposta come principale'));
+	$vars['shadow']->addButton('delete_img', t('Elimina'));
   $vars['shadow']->setTitle('[TEXT|tag=file-operations:Operazioni sulle immagini]');
 }
 

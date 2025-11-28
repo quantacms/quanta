@@ -65,9 +65,19 @@ class Image extends FileObject {
     // If width or height are not specified, get it from img directly. (Slow).
     if (empty($this->width) || empty($this->height)) {
       if (is_file($this->getRealPath())) {
-        $get_size = getimagesize($this->getRealPath());
-        $this->width = $get_size[0];
-        $this->height = $get_size[1];
+        $realpath = $this->getRealPath();
+        if ($realpath === false) {
+          error_log("Error: getRealPath() returned false for ". $this->getFileName() . ".");
+        } else {
+          error_log("Path: " . $realpath);
+    	}
+	$get_size = getimagesize($this->getRealPath());
+    	if ($get_size === false) {
+        	error_log("Error: getimagesize() failed for path: " . $realpath);
+    	} else {
+        	$this->width = $get_size[0];
+        	$this->height = $get_size[1];
+    	}
       }
     }
   }
@@ -232,11 +242,21 @@ class Image extends FileObject {
                 // the thumbnail we want is actually
                 // bigger than the original image
 
-                // Calculate the new height and width
-                // based on the scale
+                // Calculate aspect ratios
 
-                $img_new_width = floor($scale * $img_orig_width);
-                $img_new_height = floor($scale * $img_orig_height);
+                $target_aspect_ratio = $img_max_width / $img_max_height;
+                $original_aspect_ratio = $img_orig_width / $img_orig_height;
+
+                if ($original_aspect_ratio < $target_aspect_ratio) {
+                  // Taller image (narrower aspect ratio) - scale by width
+                  $img_new_width = $img_max_width;
+                  $img_new_height = floor($img_max_width / $original_aspect_ratio);
+                } else {
+                  // Wider or equal image - scale by height
+                  $img_new_height = $img_max_height;
+                  $img_new_width = floor($img_max_height * $original_aspect_ratio);
+                }
+
                 // Create a new temporary image using the
                 // imagecreatetruecolor function
 

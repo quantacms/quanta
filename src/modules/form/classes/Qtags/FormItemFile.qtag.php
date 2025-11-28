@@ -26,15 +26,20 @@ class FormItemFile extends FormItemString {
       $accept_values = ' accept="' . $accept_values . '"';
     }
 
-    $resolution = "";
+    $min_resolution = "";
+    $max_resolution = "";
 
-    if(!empty($this->getAttribute('resolution'))){
-      $resolution =$this->getAttribute('resolution');
+    if(!empty($this->getAttribute('min_resolution')) && $this->getAttribute("min_resolution") != FormItem::INPUT_EMPTY_VALUE){
+      $min_resolution =$this->getAttribute('min_resolution');
+      
+    }
+    if(!empty($this->getAttribute('max_resolution')) && $this->getAttribute("max_resolution") != FormItem::INPUT_EMPTY_VALUE){
+      $max_resolution =$this->getAttribute('max_resolution');
       
     }
 
     $rendered_icon = '<img class="upload-icon" src="/modules/file/assets/img/icons/upload-icon.png">';
-    $rendered_input = '<input type="file" name="' . $this->getName() . '" id="' . $this->getId() . '" ' .$isMultiple .' ' .$setAsThumbnail . ' ' . $accept_values . ' data-resolution="' . $resolution . '"';
+    $rendered_input = '<input type="file" name="' . $this->getName() . '" id="' . $this->getId() . '" ' .$isMultiple .' ' .$setAsThumbnail . ' ' . $accept_values . ' data-min_resolution="' . $min_resolution . '" data-max_resolution="' . $max_resolution . '"';
     $rendered_drop = '[TEXT|tag=drop-here-files:Drop here files]<a>[TEXT|tag=or-press-here:or press here]</a>';
     $rendered = '<input type="hidden" name="tmp_upload_dir" value="[ATTRIBUTE|name=tmp_files_dir]" />' . '<div class="upload-files"><div class="drop">';
     

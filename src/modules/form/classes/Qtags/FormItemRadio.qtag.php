@@ -9,6 +9,14 @@ class FormItemRadio extends FormItemString {
   public $type = 'radio';
   public $label_position = Label::LABEL_ASIDE;
 
+  public function render() {
+    $unchecked_value = $this->getAttribute('unchecked_value');
+    if(!empty($unchecked_value)){
+      $this->html_params['unchecked_value'] = $unchecked_value;
+    } 
+    return parent::render();
+  }
+
   /**
    * @return mixed|null
    */

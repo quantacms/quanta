@@ -13,6 +13,7 @@ class Node extends JSONDataContainer implements Cacheable {
   const NODE_ACTION_VIEW = 'node_view';
   const NODE_ACTION_EDIT = 'node_edit';
   const NODE_ACTION_DUPLICATE = 'node_duplicate';
+  const NODE_ACTION_CHANGE_AUTHOR = 'node_change_author';
   const NODE_ACTION_DELETE = 'node_delete';
   const NODE_ACTION_DELETE_FILE = 'file_delete';
   const NODE_STATUS_DRAFT = 'node-status-draft';
@@ -276,7 +277,6 @@ class Node extends JSONDataContainer implements Cacheable {
 
     $this->env->hook('node_build', $vars);
     $this->built = TRUE;
-    Cache::set($this->env, 'node', $this->cacheTag(), $this);
   }
 
   /**
@@ -373,7 +373,7 @@ class Node extends JSONDataContainer implements Cacheable {
   public function save() {
     // If path has not been set (i.e. new node) create it based on father node.
     if (empty($this->path)) {
-      $this->path = $this->getFather()->path . '/' . $this->getName();
+      $this->path = $this->env->nodePath($this->getFather()->getName()) . '/' . $this->getName();
     }
 
     $vars = array('node' => &$this, 'action' => $this->env->getData('action'));
@@ -568,7 +568,10 @@ class Node extends JSONDataContainer implements Cacheable {
    *   The teaser.
    */
   public function setTeaser($teaser) {
-    $this->teaser = strip_tags($teaser);
+    if (!empty($teaser)) {
+      $teaser = strip_tags($teaser);
+    }
+    $this->teaser = $teaser;
   }
 
   /**

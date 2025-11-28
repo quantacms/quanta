@@ -91,6 +91,7 @@ class Environment extends DataContainer {
     $this->dir['vendor'] = $this->dir['quanta'] . '/vendor';
     $this->dir['modules_core'] = $this->dir['src'] . '/modules';
     $this->dir['modules_custom'] = $this->dir['docroot'] . '/_modules';
+    $this->dir['db'] = $this->dir['docroot'] . '/db';
     $this->dir['users'] = $this->dir['docroot'] . '/db/_users';
     $this->dir['tpl'] = $this->dir['docroot'] . '/_tpl';
 	
@@ -615,11 +616,13 @@ class Environment extends DataContainer {
       $cache_exists = TRUE;
       //return $node_paths[$folder];
     } else {
-      $node_path_link = Cache::getStoredNodePath($this, $folder);
+      $node_path_link = Cache::getStoredNodePath($this, $folder, TRUE);
     }
 
+    //print '<br>' . $folder . ': ' . $node_path_link;
     $node_path = @readlink($node_path_link);
     if ($node_path == false) {
+      //print "NOT FOUND";
       // Use find to locate the node's directory in the file system.
       // TODO: run a sanity check that there is only one folder or throw error instead?
       $results = $this->findNodePath($folder);
