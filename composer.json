@@ -5,7 +5,7 @@
         "xdan/jodit": "3.1.92",
         "google/apiclient": "^2.15",
         "kreait/firebase-php": "^7.13",
-        "firebase/php-jwt": "^6.10",
+        "firebase/php-jwt": "^7.0.0",
         "endroid/qr-code": "^6.0",
         "stripe/stripe-php": "^17.3"
     },
