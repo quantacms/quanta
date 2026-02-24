@@ -42,7 +42,10 @@ class Job extends Node {
     // Check if the job was marked as completed by the hook
     if (isset($vars['completed']) && $vars['completed']) {
       $this->json->completed = time();
-      $this->json->logs[] = 'Job completed successfully: ' . (isset($vars['log']) ? $vars['log'] : 'No extra log provided');
+      $this->json->logs[] = array(
+        'timestamp' => time(),
+        'message' => 'Job completed successfully: ' . (isset($vars['log']) ? $vars['log'] : 'No extra log provided'),
+      );
       $this->save();
       
       // Move to _jobs_done
@@ -61,7 +64,10 @@ class Job extends Node {
       
       return true;
     } else {
-      $this->json->logs[] = 'Job failed: ' . (isset($vars['log']) ? $vars['log'] : 'Unknown error');
+      $this->json->logs[] = array(
+        'timestamp' => time(),
+        'message' => 'Job failed: ' . (isset($vars['log']) ? $vars['log'] : 'Unknown error'),
+      );
       $this->save();
       return false;
     }
