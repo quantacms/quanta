@@ -54,9 +54,7 @@ class Job extends Node {
         
         exec("mv \"$sourceFile\" \"$destinationFile\"", $output, $return);
         
-        if ($return === 0) {
-          // Log or notify if needed
-        } else {
+        if ($return != 0) {
           new Message($this->env, 'Warning: Could not move job ' . $this->getName() . ' to ' . self::DIR_DONE, Message::MESSAGE_WARNING);
         }
       }
