@@ -30,7 +30,7 @@ class JobsFactory {
       'title' => 'Job ' . $job_name,
       'type' => $type,
       'source' => $source,
-      'data' => $data,
+      'payload' => $data,
       'attempts' => array(),
       'completed' => NULL,
       'logs' => array()
