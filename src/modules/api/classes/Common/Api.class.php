@@ -497,4 +497,24 @@ class Api {
 
     return $result;
   }
+  /**
+   * Get the current API endpoint path, normalized with underscores.
+   *
+   * @param Environment $env
+   *   The Environment.
+   *
+   * @return string
+   *   The normalized API endpoint path.
+   */
+  public static function getEndpoint($env) {
+    $apiPosition = strpos($env->request_uri, '/api/');
+    if ($apiPosition === false) {
+      return '';
+    }
+    $path = substr($env->request_uri, $apiPosition + strlen('/api/'));
+    $path = rtrim($path, '/');
+    $path = str_replace('-', '_', $path);
+    $path = str_replace('/', '_', $path);
+    return $path;
+  }
 }
