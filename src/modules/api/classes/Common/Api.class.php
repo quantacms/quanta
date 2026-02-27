@@ -514,7 +514,6 @@ class Api {
     $path = substr($env->request_uri, $apiPosition + strlen('/api/'));
     $path = rtrim($path, '/');
     $path = str_replace('-', '_', $path);
-    $path = str_replace('/', '_', $path);
     return $path;
   }
 }

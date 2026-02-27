@@ -29,7 +29,7 @@ class Job extends Node {
     }
     
     // Record the attempt
-    $this->json->attempts[] = time();
+    $this->json->attempts[] = (string) time();
     $this->save();
     
     // Invoke the hook to run the job
@@ -46,6 +46,9 @@ class Job extends Node {
         'timestamp' => time(),
         'message' => 'Job completed successfully: ' . (isset($vars['log']) ? $vars['log'] : 'No extra log provided'),
       );
+      if(isset($vars['response'])){
+        $this->setAttributeJSON('response', $vars['response']);
+      }
       $this->save();
       
       // Move to _jobs_done

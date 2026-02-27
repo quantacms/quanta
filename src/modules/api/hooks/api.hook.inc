@@ -23,21 +23,60 @@ function api_boot(Environment $env, array $vars) {
 function api_check($env, $vars) {
     if (strpos($env->request_uri, '/api/') !== false) {
         $response = new \stdClass();
-        $path = Api::getEndpoint($env);
+        $full_path = Api::getEndpoint($env);
+        $path_parts = explode('/', $full_path);
+        
+        $api_parts = array();
+        $path_params = array();
+        
+        foreach ($path_parts as $part) {
+            if (is_numeric($part)) {
+                $path_params[] = $part;
+            } else {
+                $api_parts[] = $part;
+            }
+        }
+        
+        // The endpoint name is formed by concatenating non-numeric parts
+        $path = implode('_', $api_parts);
+        
         $error_code = null;
         $error_message = null;
         // Check the request method
         switch ($_SERVER['REQUEST_METHOD']) {
         case 'GET':
             $vars['api'] = $path;
+            $vars['path_parts'] = $path_params;
             $vars['data'] = (array) $env->query_params;
             $env->hook('api_get_' . $path, $vars);
             break;
 
         case 'POST':
             $vars['api'] = $path;
+            $vars['path_parts'] = $path_params;
             $vars['data'] = (array) $_POST;
             $env->hook('api_post_' . $path, $vars);
+            break;
+        
+        case 'DELETE':
+            $vars['api'] = $path;
+            $vars['path_parts'] = $path_params;
+            $vars['data'] = (array) $_DELETE;
+            $env->hook('api_delete_' . $path, $vars);
+            break;
+        
+        case 'PUT':
+            $vars['api'] = $path;
+            $vars['path_parts'] = $path_params;
+            $vars['data'] = (array) $_PUT;
+            $env->hook('api_put_' . $path, $vars);
+            break;
+        
+        case 'PATCH':
+            $vars['api'] = $path;
+            $vars['path_parts'] = $path_params;
+            $vars['data'] = (array) $_PATCH;
+            $env->hook('api_patch_' . $path, $vars);
             break;
 
         default:

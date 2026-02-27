@@ -24,7 +24,7 @@ class JobsFactory {
    *   The generated job node.
    */
   public static function queueJob(Environment $env, $type, $source, $data) {
-    $job_name = $type . '-' . time() . '-' . rand(1000, 9999);
+    $job_name = time() . '-' .  $type . '-' . rand(1000, 9999);
     
     $job_data = array(
       'title' => 'Job ' . $job_name,
@@ -62,7 +62,7 @@ class JobsFactory {
     foreach ($dirs as $dir) {      
       // Ignore hidden folders, 'data', or other non-node components
       if (substr($dir, 0, 1) != '.' && $dir != 'data') {
-        $job = new Job($env, $dir, Job::DIR_TODO);       
+        $job = new Job($env, $dir, Job::DIR_TODO); 
         self::runJob($job);
       }
     }
