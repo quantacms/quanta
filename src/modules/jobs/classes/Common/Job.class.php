@@ -9,6 +9,7 @@ class Job extends Node {
   
   const DIR_TODO = '_jobs_todo';
   const DIR_DONE = '_jobs_done';
+  const DIR_UNKNOWN = '_jobs_unknown';
   const DIR_JOBS = 'jobs';
   const TYPE_UNKNOWN = 'unknown';
   
@@ -36,11 +37,33 @@ class Job extends Node {
     $vars = array('job' => &$this);
     
     // Other modules can implement hook_job_run_[type] and set $vars['completed'] = true
-    $this->env->hook('job_run_' . $type, $vars); 
+    $hooked = $this->env->hook('job_run_' . $type, $vars);
     
+    if (!$hooked) {
+      $this->json->logs[] = array(
+        'timestamp' => time(),
+        'message' => 'Job failed: No hook available for job type ' . $type . '. Moved to unknown jobs.',
+      );
+      $this->save();
+      
+      // Move to _jobs_unknown
+      $unknown_father = NodeFactory::load($this->env, self::DIR_UNKNOWN);
+      if ($unknown_father->exists) {
+        $sourceFile = $this->path;
+        $destinationFile = $unknown_father->path . '/' . $this->getName();
+        
+        exec("mv \"$sourceFile\" \"$destinationFile\"", $output, $return);
+        
+        if ($return != 0) {
+          new Message($this->env, 'Warning: Could not move job ' . $this->getName() . ' to ' . self::DIR_UNKNOWN, Message::MESSAGE_WARNING);
+        }
+      }
+      
+      return false;
+    }
 
     // Check if the job was marked as completed by the hook
-    if (isset($vars['completed']) && $vars['completed']) {
+    if (isset($vars['completed']) && $vars['completed'] == true) {
       $this->json->completed = time();
       $this->json->logs[] = array(
         'timestamp' => time(),
