@@ -22,11 +22,13 @@ function jobs_doctor_setup($env, $vars) {
   $jobs_nodes = array(
     Job::DIR_TODO => array('title' => 'Jobs To Do', 'father' => Job::DIR_JOBS),
     Job::DIR_DONE => array('title' => 'Jobs Done', 'father' => Job::DIR_JOBS),
+    Job::DIR_UNKNOWN => array('title' => 'Jobs Unknown', 'father' => Job::DIR_JOBS),
   );
 
-  foreach ($jobs_nodes as $node_name => $nodedata) {
+  foreach ($jobs_nodes as $node_name => $node_data) {
     if (!is_dir($env->dir['docroot'] . '/' . Job::DIR_JOBS . '/' . $node_name)) {
-      NodeFactory::buildNode($env, $node_name, $nodedata['father'], $nodedata);
+      $node_data['skip_normalize'] = true;
+      NodeFactory::buildNode($env, $node_name, $node_data['father'], $node_data);
     }
   }
 
