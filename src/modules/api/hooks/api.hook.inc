@@ -24,24 +24,62 @@ function api_check($env, $vars) {
     if (strpos($env->request_uri, '/api/') !== false) {
         $response = new \stdClass();
         $full_path = Api::getEndpoint($env);
-        $path_parts = explode('/', $full_path);
-        
-        $api_parts = array();
-        $path_params = array();
-        
-        foreach ($path_parts as $part) {
-            if (is_numeric($part)) {
-                $path_params[] = $part;
-            } else {
-                $api_parts[] = $part;
+
+        // --- Route matching ---
+        // Collect routes registered by modules via the 'api_routes' hook.
+        // Each route is a pattern string
+        // NOTE: Api::getEndpoint() already converts hyphens to underscores,
+        // so all pattern segments must also use underscores.
+        // Non-placeholder segments form the hook name; placeholders are captured
+        // in order into $path_params.
+        $route_vars = ['routes' => [], 'full_path' => $full_path];
+        $env->hook('api_routes', $route_vars);
+        $registered_routes = $route_vars['routes'];
+
+        $path = null;
+        $path_params = [];
+
+        foreach ($registered_routes as $pattern) {
+            $matched = api_match_route($full_path, $pattern, $captured);
+            if ($matched) {
+                // Build hook name from non-placeholder segments
+                $pattern_parts = explode('/', trim($pattern, '/'));
+                $name_parts = [];
+                foreach ($pattern_parts as $seg) {
+                    if (strpos($seg, '{') === false) {
+                        // Api::getEndpoint already converted hyphens -> underscores
+                        $name_parts[] = $seg;
+                    }
+                }
+                // Drop leading version segment (e.g. '1') from hook name
+                if (!empty($name_parts) && is_numeric($name_parts[0])) {
+                    array_shift($name_parts);
+                }
+                $path = implode('_', $name_parts);
+                $path_params = $captured;
+                break;
             }
         }
-        
-        // The endpoint name is formed by concatenating non-numeric parts
-        $path = implode('_', $api_parts);
-        
+
+        // --- Fallback: original numeric-strip logic ---
+        if ($path === null) {
+            $path_parts_raw = explode('/', trim($full_path, '/'));
+            $api_parts  = [];
+            $path_params = [];
+            foreach ($path_parts_raw as $part) {
+                if (is_numeric($part)) {
+                    $path_params[] = $part;
+                } else {
+                    $api_parts[] = str_replace('-', '_', $part);
+                }
+            }
+            $path = implode('_', $api_parts);
+        }
+
         $error_code = null;
         $error_message = null;
+
+
         // Check the request method
         switch ($_SERVER['REQUEST_METHOD']) {
         case 'GET':
@@ -57,25 +95,28 @@ function api_check($env, $vars) {
             $vars['data'] = (array) $_POST;
             $env->hook('api_post_' . $path, $vars);
             break;
-        
+
         case 'DELETE':
             $vars['api'] = $path;
             $vars['path_parts'] = $path_params;
-            $vars['data'] = (array) $_DELETE;
+            $vars['data'] = [];
+            parse_str(file_get_contents('php://input'), $vars['data']);
             $env->hook('api_delete_' . $path, $vars);
             break;
-        
+
         case 'PUT':
             $vars['api'] = $path;
             $vars['path_parts'] = $path_params;
-            $vars['data'] = (array) $_PUT;
+            $vars['data'] = [];
+            parse_str(file_get_contents('php://input'), $vars['data']);
             $env->hook('api_put_' . $path, $vars);
             break;
-        
+
         case 'PATCH':
             $vars['api'] = $path;
             $vars['path_parts'] = $path_params;
-            $vars['data'] = (array) $_PATCH;
+            $vars['data'] = [];
+            parse_str(file_get_contents('php://input'), $vars['data']);
             $env->hook('api_patch_' . $path, $vars);
             break;
 
@@ -83,16 +124,52 @@ function api_check($env, $vars) {
             $error_code = 'unsupported_request_method';
             $error_message = 'Unsupported request method.';
             break;
-
         }
-    // If no function returns a response, this means that this function does not exist
-    $response->success = false;
-    $response->error_code = $error_code ? $error_code : 'api_not_found';
-    $response->error_message = $error_message ? $error_message : 'This API not found.';
-    $response_json = json_encode($response);
-    http_response_code(404);
-    exit($response_json);  
-    } 
+
+        // If no hook handled the request, return 404.
+        $response->success = false;
+        $response->error_code = $error_code ?? 'api_not_found';
+        $response->error_message = $error_message ?? 'This API not found.';
+        $response_json = json_encode($response);
+        http_response_code(404);
+        exit($response_json);
+    }
+}
+
+/**
+ * Match a URL path against a route pattern.
+ *
+ * Pattern segments wrapped in { } are treated as wildcards whose captured
+ * values are collected in $params in the order they appear.
+ *
+ * Example:
+ *   pattern: '1/{product_id}/pricing-categories'
+ *   path:    '1/tour-abc/pricing-categories'
+ *   → true, $params = ['tour-abc']
+ *
+ * @param string $path     The actual URL path (from Api::getEndpoint).
+ * @param string $pattern  The route pattern.
+ * @param array  $params   OUT – captured placeholder values, in order.
+ * @return bool
+ */
+function api_match_route($path, $pattern, &$params) {
+    $params = [];
+    $path_segs    = explode('/', trim($path, '/'));
+    $pattern_segs = explode('/', trim($pattern, '/'));
+
+    if (count($path_segs) !== count($pattern_segs)) {
+        return false;
+    }
+
+    foreach ($pattern_segs as $i => $seg) {
+        if (strpos($seg, '{') === 0 && substr($seg, -1) === '}') {
+            // Wildcard – capture value
+            $params[] = $path_segs[$i];
+        } elseif ($path_segs[$i] !== $seg) {
+            return false;
+        }
+    }
+    return true;
 }
 
 function api_generate_encrypted_secret($env, $vars){
