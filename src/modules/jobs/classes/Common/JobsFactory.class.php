@@ -32,12 +32,14 @@ class JobsFactory {
       'source' => $source,
       'payload' => $data,
       'attempts' => array(),
-      'completed' => NULL,
-      'logs' => array()
+      'completed' => NULL
     );
     
     // Create new node using NodeFactory inside _jobs_todo
     $job_node = NodeFactory::buildNode($env, $job_name, Job::DIR_TODO, $job_data);
+
+    // Create logs child for this job
+    NodeFactory::buildNode($env, $job_node->name . '-logs', $job_node->name);
     
     return new Job($env, $job_name, Job::DIR_TODO);
   }

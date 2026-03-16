@@ -25,9 +25,6 @@ class Job extends Node {
     if (!isset($this->json->attempts)) {
       $this->json->attempts = array();
     }
-    if (!isset($this->json->logs)) {
-      $this->json->logs = array();
-    }
     
     // Record the attempt
     $this->json->attempts[] = (string) time();
@@ -40,12 +37,13 @@ class Job extends Node {
     $hooked = $this->env->hook('job_run_' . $type, $vars);
     
     if (!$hooked) {
-      $this->json->logs[] = array(
+      $logs_data = array(
         'timestamp' => time(),
         'message' => 'Job failed: No hook available for job type ' . $type . '. Moved to unknown jobs.',
       );
-      $this->save();
-      
+      // Create logs child for this job
+      NodeFactory::buildNode($this->env, $this->name . '-log-' . time(), $this->name . '-logs', $logs_data);
+            
       // Move to _jobs_unknown
       $unknown_father = NodeFactory::load($this->env, self::DIR_UNKNOWN);
       if ($unknown_father->exists) {
@@ -65,10 +63,12 @@ class Job extends Node {
     // Check if the job was marked as completed by the hook
     if (isset($vars['completed']) && $vars['completed'] == true) {
       $this->json->completed = time();
-      $this->json->logs[] = array(
+      $logs_data = array(
         'timestamp' => time(),
         'message' => 'Job completed successfully: ' . (isset($vars['log']) ? $vars['log'] : 'No extra log provided'),
       );
+      // Create logs child for this job
+      NodeFactory::buildNode($this->env, $this->name . '-log-' . time(), $this->name . '-logs', $logs_data);
       if(isset($vars['response'])){
         $this->setAttributeJSON('response', $vars['response']);
       }
@@ -90,11 +90,12 @@ class Job extends Node {
       
       return true;
     } else {
-      $this->json->logs[] = array(
+      $logs_data = array(
         'timestamp' => time(),
         'message' => 'Job failed: ' . (isset($vars['log']) ? $vars['log'] : 'Unknown error'),
       );
-      $this->save();
+       // Create logs child for this job
+      NodeFactory::buildNode($this->env, $this->name . '-log-' . time(), $this->name . '-logs', $logs_data);
       return false;
     }
   }
