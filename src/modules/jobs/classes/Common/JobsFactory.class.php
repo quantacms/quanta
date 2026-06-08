@@ -23,7 +23,7 @@ class JobsFactory {
    * @return Job
    *   The generated job node.
    */
-  public static function queueJob(Environment $env, $type, $source, $data) {
+  public static function queueJob(Environment $env, $type, $source, $data, $target_node = '') {
     $job_name = time() . '-' .  $type . '-' . rand(1000, 9999);
     
     $job_data = array(
@@ -32,7 +32,8 @@ class JobsFactory {
       'source' => $source,
       'payload' => $data,
       'attempts' => array(),
-      'completed' => NULL
+      'completed' => NULL,
+      'target_node' => $target_node
     );
     
     // Create new node using NodeFactory inside _jobs_todo
