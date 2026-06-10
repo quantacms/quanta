@@ -138,6 +138,30 @@
     }
 
     /**
+     * Fast load a node from its path, bypassing hooks and access checks.
+     * Use with caution, only for performance-critical backoffice lists.
+     *
+     * @param Environment $env
+     *   The Environment.
+     * @param $path
+     *   The real system path of the node.
+     *
+     * @return Node
+     *   The built node object.
+     */
+    public static function fastLoadFromRealPath(Environment $env, $path, $language = NULL)
+    {
+      $node_name = basename($path);
+      if (empty($language)) {
+        $language = Localization::getLanguage($env);
+      }
+      $node = new Node($env, $node_name, NULL, $language, $path);
+      // Explicitly mark as not forbidden to bypass access hook
+      $node->forbidden = FALSE;
+      return $node;
+    }
+
+    /**
      * Create an empty node.
      *
      * @param $env
@@ -230,7 +254,8 @@
 
       $linked_ok = FALSE;
 
-      $from_node = NodeFactory::load($env, $source_node);
+      $from_node = new Node($env, $source_node);
+      
       $symlink_folder_node = NodeFactory::load($env, $symlink_folder);
 
       $create_link = FALSE;
