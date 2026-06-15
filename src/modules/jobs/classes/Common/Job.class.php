@@ -25,6 +25,34 @@ class Job extends Node {
     if (!isset($this->json->attempts)) {
       $this->json->attempts = array();
     }
+    $max_retries = $this->env->getData('JOB_MAX_RETRIES');
+    if (empty($max_retries)) {
+      $max_retries = 10;
+    }
+
+    if (count($this->json->attempts) >= $max_retries) {
+      $logs_data = array(
+        'timestamp' => time(),
+        'message' => 'Lavoro fallito: raggiunto il limite massimo di tentativi (' . $max_retries . '). Spostato tra i job falliti.',
+      );
+      // Create logs child for this job
+      NodeFactory::buildNode($this->env, $this->name . '-log-' . time(), $this->name . '-logs', $logs_data);
+            
+      // Move to _jobs_unknown
+      $unknown_father = NodeFactory::load($this->env, self::DIR_UNKNOWN);
+      if ($unknown_father->exists) {
+        $sourceFile = $this->path;
+        $destinationFile = $unknown_father->path . '/' . $this->getName();
+        
+        exec("mv \"$sourceFile\" \"$destinationFile\"", $output, $return);
+        
+        if ($return != 0) {
+          new Message($this->env, 'Warning: Could not move job ' . $this->getName() . ' to ' . self::DIR_UNKNOWN, Message::MESSAGE_WARNING);
+        }
+      }
+      
+      return false;
+    }
     
     // Record the attempt
     $this->json->attempts[] = (string) time();
