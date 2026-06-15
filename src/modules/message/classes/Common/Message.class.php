@@ -89,6 +89,12 @@ class Message {
           $_SESSION['messages'][] = serialize($this);
         }
       }
+      elseif($type == self::MESSAGE_TYPE_VALIDATION){
+         if (!isset($_SESSION['messages'])) {
+                $_SESSION['messages'] = [];
+            }
+          $_SESSION['messages'][] = serialize($this);
+      }
     }
   }
 
@@ -102,14 +108,13 @@ class Message {
    *   The messages.
    */
   public static function burnMessages($type = self::MESSAGE_TYPE_SCREEN, $for_shadow = false) {
-   
+    
     $output = $for_shadow ? [] : '';
     if (isset($_SESSION['messages'])) {
       foreach ($_SESSION['messages'] as $k => $mess) {
         $message = unserialize($mess);
         if ($message->type == $type) {
           if($for_shadow){
-            
             $output[$message->key] = $message->body;
           }
           else{
