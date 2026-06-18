@@ -13,6 +13,26 @@ function user_boot(Environment $env, array $vars) {
   // Create system directories for users and roles.
   $env->sysdir('users', 'db/_users');
   $env->sysdir('roles', 'db/_roles');
+  
+  // Cross-system SSO token login for iframe
+  if (isset($_GET['token']) && !empty($_GET['token'])) {
+      $token = $_GET['token'];
+      $decoded = \Quanta\Common\UserFactory::verifyToken($env, $token);
+      if ($decoded && isset($decoded['user_name'])) {
+          $user = new \Quanta\Common\User($env, $decoded['user_name']);
+          // Only login if not already logged in as this user
+          $current_user = \Quanta\Common\UserFactory::current($env);
+          if ($current_user->name !== $user->name) {
+              $user->logIn('', null, true); // force login
+              $user->rebuildSession();
+          }
+          
+          // Redirect to clean URL (remove token parameter)
+          $clean_url = preg_replace('/([?&])token=[^&]+(&|$)/', '$1', $_SERVER['REQUEST_URI']);
+          $clean_url = rtrim(rtrim($clean_url, '&'), '?'); // Remove trailing ? or &
+          \Quanta\Common\Api::redirect($clean_url);
+      }
+  }
 }
 
 /**
