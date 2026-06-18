@@ -450,6 +450,18 @@ class Environment extends DataContainer {
    * Start client session.
    */
   public function startSession() {
+    $protocol = $this->getProtocol();
+    $secure = ($protocol === 'https');
+
+    if (PHP_VERSION_ID >= 70300) {
+      session_set_cookie_params([
+        'samesite' => $secure ? 'None' : 'Lax', // None requires Secure=true
+        'secure' => $secure,
+      ]);
+    } else {
+      ini_set('session.cookie_samesite', $secure ? 'None' : 'Lax');
+      ini_set('session.cookie_secure', $secure ? '1' : '0');
+    }
     session_start();
   }
 
