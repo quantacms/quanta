@@ -314,9 +314,9 @@ class UserFactory {
     return ($user->json->password == UserFactory::passwordEncrypt($password));
   }
 
-  public static function generateToken(Environment $env, $user_name){
+  public static function generateToken(Environment $env, $user_name, $expiration_days = 30){
     $issuedAt = time();
-    $expiration = $issuedAt + (60 * 60 * 24 * 90); // Token valid for approximately 3 months
+    $expiration = $issuedAt + (60 * 60 * 24 * $expiration_days);
     $secret_key = $env->getData('JWT_SECRET_KEY');
     $payload = [
         'user_name' => $user_name,
