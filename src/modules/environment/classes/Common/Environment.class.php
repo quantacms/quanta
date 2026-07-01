@@ -574,14 +574,82 @@ class Environment extends DataContainer {
    *   The result of the node search.
    */
   private function findNodePath($folder) {
-    // TODO: cleaner way to exclude folders in _modules.
-    $findcmd = 'find ' . $this->dir['docroot'] . '/ -type d -name "' . $folder . '" -not -path */_modules* -not -path *.git*';
-    // TODO: sometimes getting empty folder. Why? Temporary fix.
     if (empty($folder)) {
       return NULL;
     }
+    
+    // FAST PATH: Try to resolve the node path using pure PHP without exec('find').
+    // Most nodes follow a naming pattern where child node names contain the parent name as a prefix.
+    $docroot = $this->dir['docroot'];
+    $known_bases = array(
+      $docroot . '/db/businesses',
+      $docroot . '/db',
+      $docroot . '/pages',
+      $docroot . '/backoffice',
+    );
+
+    foreach ($known_bases as $base) {
+      $found = $this->fastFindInDirectory($base, $folder, 4);
+      if ($found) {
+        return array($found);
+      }
+    }
+
+    // FALLBACK: If fast resolution fails, use the greedy UNIX find.
+    // Use pruning to avoid scanning heavy directories.
+    $findcmd = 'find ' . $this->dir['docroot'] . ' \( -name "_modules" -o -name ".git" -o -name "vendor" -o -name "node_modules" -o -name "files" -o -name "tmp" \) -prune -o -type d -name "' . $folder . '" -print';
     exec($findcmd, $results);
     return $results;
+  }
+
+  /**
+   * Recursively search for a directory name within a base directory using pure PHP.
+   * Highly optimized to only follow paths that could logically contain the target node.
+   * 
+   * @param string $base_dir The directory to search in
+   * @param string $target_name The directory name to find
+   * @param int $max_depth Maximum recursion depth
+   * @return string|false The full path if found, false otherwise
+   */
+  private function fastFindInDirectory($base_dir, $target_name, $max_depth) {
+    if ($max_depth <= 0 || !is_dir($base_dir)) {
+      return false;
+    }
+
+    // Check if target exists directly under this directory
+    $candidate = $base_dir . '/' . $target_name;
+    if (is_dir($candidate) || (is_link($candidate) && is_dir(@readlink($candidate)))) {
+      return $candidate;
+    }
+
+    // Scan subdirectories - but only follow dirs whose name could be a parent prefix
+    // of our target (optimization: if target is 'biz1-description', only enter 
+    // dirs like 'biz1')
+    $scan = @scandir($base_dir);
+    if ($scan === false) {
+      return false;
+    }
+
+    foreach ($scan as $entry) {
+      if ($entry === '.' || $entry === '..' || $entry[0] === '_' || $entry[0] === '.') {
+        continue;
+      }
+      
+      // We only recurse into a directory if its name is a prefix of our target name
+      // OR if we are at the top levels (like inside db/ or db/businesses/) where we should check children
+      $is_top_level = ($base_dir === $this->dir['docroot'] . '/db' || $base_dir === $this->dir['docroot'] . '/db/businesses');
+      
+      if ($is_top_level || strpos($target_name, $entry) === 0) {
+        if (is_dir($base_dir . '/' . $entry)) {
+          $found = $this->fastFindInDirectory($base_dir . '/' . $entry, $target_name, $max_depth - 1);
+          if ($found) {
+            return $found;
+          }
+        }
+      }
+    }
+
+    return false;
   }
 
   function getLastPathSegment($path) {
