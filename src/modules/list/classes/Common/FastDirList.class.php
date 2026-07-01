@@ -59,9 +59,12 @@ class FastDirList extends DirList {
         $this->setNode($node);
         $this->path = $resolved_path;
       } else {
-        // Fallback to normal NodeFactory::load() only if fast resolve failed
-        $this->setNode(NodeFactory::load($this->env, $path));
-        $this->path = $this->getNode()->path;
+        // The node path does not exist. Do NOT fallback to NodeFactory::load()
+        // as that would trigger exec('find'). Just create an empty node.
+        $this->path = NULL;
+        $empty_node = new Node($this->env, Node::NODE_NEW);
+        $empty_node->setName($path);
+        $this->setNode($empty_node);
       }
     }
 
