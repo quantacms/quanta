@@ -612,6 +612,8 @@ class Environment extends DataContainer {
    */
   public function nodePath($folder, $link = FALSE) {
     static $node_paths = array();
+    static $missing_nodes = array();
+    
     // Regular expression to match the last valid part of a URL path
     $pattern = '/(?:.*\/)?([^\/\?#\.]+)(?:\/[^\/\?#]*)?(?:[\?#]|$)/';
     //$pattern = '/(?:\/([^\/\?#]*[^\/\?#\.][^\/\?#]*))(?:[\?#]|$)/';
@@ -622,6 +624,12 @@ class Environment extends DataContainer {
     if ($folder == NULL) {
       return NULL;
     }
+    
+    // If we already searched for this node in the current request and didn't find it, don't search again.
+    if (isset($missing_nodes[$folder])) {
+      return FALSE;
+    }
+    
     // We use a static variable to lookup nodes paths only once.
     if (isset($node_paths[$folder])) {
       $node_path_link = $node_paths[$folder];
@@ -641,6 +649,7 @@ class Environment extends DataContainer {
       $found_folders = array();
 
       if (empty($results)) {
+        $missing_nodes[$folder] = TRUE;
         return FALSE;
       }
       // Check that there are not duplicate folders. Don't count symlinks.
@@ -651,6 +660,11 @@ class Environment extends DataContainer {
         } else {
           unset($results[$i]);
         }
+      }
+      
+      if (empty($found_folders)) {
+        $missing_nodes[$folder] = TRUE;
+        return FALSE;
       }
 
       if (count($found_folders) > 1) {
