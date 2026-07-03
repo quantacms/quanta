@@ -12,7 +12,36 @@ class Job extends Node {
   const DIR_UNKNOWN = '_jobs_unknown';
   const DIR_JOBS = 'jobs';
   const TYPE_UNKNOWN = 'unknown';
-  
+
+  /**
+   * Safely move a job folder, preventing race-condition nesting.
+   *
+   * Two concurrent workers (e.g. run_jobs cron + sync-gyg-availability cron)
+   * can finish the same job seconds apart. POSIX `mv src dest` silently moves
+   * src *inside* dest when dest is an existing directory, creating
+   * dest/<name>/<name>. Using `mv -T` treats dest as the exact target name,
+   * so the second mv fails instead of nesting.
+   *
+   * @param string $sourceFile      Absolute path of the job folder to move.
+   * @param string $destinationFile Absolute path of the intended destination.
+   *
+   * @return bool TRUE if the job ended up at the destination (moved or already there).
+   */
+  private function safeMove($sourceFile, $destinationFile) {
+    // Source already gone — another worker moved it first.
+    if (!is_dir($sourceFile)) {
+      return true;
+    }
+    // Destination already exists — another worker completed this job.
+    if (is_dir($destinationFile)) {
+      return true;
+    }
+    // -T treats destination as exact name, not parent directory (prevents nesting).
+    exec("mv -T \"$sourceFile\" \"$destinationFile\" 2>/dev/null", $output, $return);
+    // Success, or source is gone (another worker won the race).
+    return ($return == 0 || !is_dir($sourceFile));
+  }
+
   /**
    * Run the job.
    * 
@@ -44,9 +73,7 @@ class Job extends Node {
         $sourceFile = $this->path;
         $destinationFile = $unknown_father->path . '/' . $this->getName();
         
-        exec("mv \"$sourceFile\" \"$destinationFile\"", $output, $return);
-        
-        if ($return != 0) {
+        if (!$this->safeMove($sourceFile, $destinationFile)) {
           new Message($this->env, 'Warning: Could not move job ' . $this->getName() . ' to ' . self::DIR_UNKNOWN, Message::MESSAGE_WARNING);
         }
       }
@@ -78,9 +105,7 @@ class Job extends Node {
         $sourceFile = $this->path;
         $destinationFile = $unknown_father->path . '/' . $this->getName();
         
-        exec("mv \"$sourceFile\" \"$destinationFile\"", $output, $return);
-        
-        if ($return != 0) {
+        if (!$this->safeMove($sourceFile, $destinationFile)) {
           new Message($this->env, 'Warning: Could not move job ' . $this->getName() . ' to ' . self::DIR_UNKNOWN, Message::MESSAGE_WARNING);
         }
       }
@@ -109,9 +134,7 @@ class Job extends Node {
         $sourceFile = $this->path;
         $destinationFile = $done_father->path . '/' . $this->getName();
         
-        exec("mv \"$sourceFile\" \"$destinationFile\"", $output, $return);
-        
-        if ($return != 0) {
+        if (!$this->safeMove($sourceFile, $destinationFile)) {
           new Message($this->env, 'Warning: Could not move job ' . $this->getName() . ' to ' . self::DIR_DONE, Message::MESSAGE_WARNING);
         }
       }
