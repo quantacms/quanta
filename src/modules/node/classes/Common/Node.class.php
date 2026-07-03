@@ -384,6 +384,8 @@ class Node extends JSONDataContainer implements Cacheable {
     $this->updateJSON();
     // Save the node json (excluding some fields such as path.)
     $this->saveJSON(array('name', 'path', 'exists', 'father', 'data'));
+    // Clear the node path cache so it's not cached as missing.
+    $this->env->nodePath($this->getName(), FALSE, TRUE);
     $this->env->hook('node_after_save', $vars);
   }
 
