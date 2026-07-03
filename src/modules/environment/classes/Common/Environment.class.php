@@ -610,9 +610,20 @@ class Environment extends DataContainer {
    * @return mixed
    *   The path of the node.
    */
-  public function nodePath($folder, $link = FALSE) {
+  public function nodePath($folder, $link = FALSE, $clear_cache = FALSE) {
     static $node_paths = array();
     static $missing_nodes = array();
+
+    if ($clear_cache) {
+      if ($folder) {
+        unset($missing_nodes[$folder]);
+        unset($node_paths[$folder]);
+      } else {
+        $missing_nodes = array();
+        $node_paths = array();
+      }
+      return NULL;
+    }
     
     // Regular expression to match the last valid part of a URL path
     $pattern = '/(?:.*\/)?([^\/\?#\.]+)(?:\/[^\/\?#]*)?(?:[\?#]|$)/';
