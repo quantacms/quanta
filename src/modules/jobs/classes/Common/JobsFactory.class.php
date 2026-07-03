@@ -24,8 +24,9 @@ class JobsFactory {
    *   The generated job node.
    */
   public static function queueJob(Environment $env, $type, $source, $data, $target_node = '') {
-    $job_name = time() . '-' .  $type . '-' . rand(1000, 9999);
-    
+    $job_name = time() . '-' .  $type . '-' . substr(md5(uniqid('', true)), 0, 8);
+    $job_name = \Quanta\Common\Api::normalizePath($job_name);
+
     $job_data = array(
       'title' => 'Job ' . $job_name,
       'type' => $type,
@@ -66,6 +67,11 @@ class JobsFactory {
       // Ignore hidden folders, 'data', or other non-node components
       if (substr($dir, 0, 1) != '.' && $dir != 'data') {
         $job = new Job($env, $dir, Job::DIR_TODO); 
+        $type = isset($job->json->type) ? $job->json->type : '';
+        // Skip sync jobs as they are processed by a dedicated cron (processSyncQueue)
+        if ($type == 'hsw_sync_gyg_availability') {
+            continue;
+        }
         self::runJob($job);
       }
     }
