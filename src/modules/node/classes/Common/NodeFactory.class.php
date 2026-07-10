@@ -158,6 +158,8 @@ class NodeFactory
     $node = new Node($env, $node_name, NULL, $language, $path);
     // Explicitly mark as not forbidden to bypass access hook
     $node->forbidden = FALSE;
+    // Cache the node path to prevent expensive nodePath lookups later
+    Cache::storeNodePath($env, $path, true);
     return $node;
   }
 

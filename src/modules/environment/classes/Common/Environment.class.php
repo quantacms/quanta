@@ -485,6 +485,26 @@ class Environment extends DataContainer
   }
 
   /**
+   * Release the session lock.
+   *
+   * PHP's default file session handler holds an exclusive lock on the session
+   * file from session_start() until the request ends (or this is called).
+   * While the lock is held, any other request carrying the same session cookie
+   * (AJAX sub-requests, files piped through PHP, parallel tabs) blocks. The
+   * page render below is read-only w.r.t. the session, so we close it first to
+   * let concurrent requests from the same logged-in user run in parallel.
+   *
+   * After this call $_SESSION stays readable in memory; only further writes
+   * are no longer persisted, so it must run after all session writes (login,
+   * language negotiation, queued messages) have happened.
+   */
+  public function closeSession() {
+    if (session_status() === PHP_SESSION_ACTIVE) {
+      session_write_close();
+    }
+  }
+
+  /**
    * Get all included CSS / JS files.
    *
    * @return array
@@ -678,6 +698,15 @@ class Environment extends DataContainer
 
     //print '<br>' . $folder . ': ' . $node_path_link;
     $node_path = @readlink($node_path_link);
+
+    if ($node_path === '__MISSING__') {
+      $missing_nodes[$folder] = TRUE;
+      return FALSE;
+    }
+
+    if ($node_path !== false && !is_dir($node_path)) {
+      $node_path = false;
+    }
     // quanta_db extension (docs/files-db/api-contract.md §9): resolve cold
     // names via the derived index instead of exec(find). The result feeds
     // the same static + symlink caches below. $link searches (their callers
@@ -703,6 +732,7 @@ class Environment extends DataContainer
 
       if (empty($results)) {
         $missing_nodes[$folder] = TRUE;
+        $node_paths[$folder] = Cache::storeNodePath($this, '__MISSING__', true, $folder);
         return FALSE;
       }
       // Check that there are not duplicate folders. Don't count symlinks.
@@ -717,6 +747,7 @@ class Environment extends DataContainer
 
       if (empty($found_folders)) {
         $missing_nodes[$folder] = TRUE;
+        $node_paths[$folder] = Cache::storeNodePath($this, '__MISSING__', true, $folder);
         return FALSE;
       }
 
@@ -734,8 +765,8 @@ class Environment extends DataContainer
       }
     }
 
-    if (!$cache_exists) {
-      $node_paths[$folder] = Cache::storeNodePath($this, $node_path);
+    if (!$cache_exists || $node_path_link === false) {
+      $node_paths[$folder] = Cache::storeNodePath($this, $node_path, true, $folder);
     }
     return $node_path;
 
