@@ -50,9 +50,13 @@ class Cache extends DataContainer {
    */
   public static function set($env, $type, $item, $value) {
     // TODO: set lineage with name of nodes only...
-    $cache = $env->getData('cached', array());
-    $cache[$type][$item] = $value;
-    $env->setData('cached', $cache);
+    // Mutate the cache array in place. Pulling it out into a local variable and
+    // writing it back would copy-on-write duplicate the entire (growing) cache
+    // on every set, turning a list of N nodes into O(n^2) array churn.
+    if (!isset($env->data['cached'])) {
+      $env->data['cached'] = array();
+    }
+    $env->data['cached'][$type][$item] = $value;
   }
 
   /**
@@ -67,9 +71,11 @@ class Cache extends DataContainer {
    * @param null $nodepath
    *   A full path to a node
    */
-  public static function storeNodePath($env, $nodepath = NULL, $overwrite = false) {
-    $exp = explode('/', $nodepath);
-    $node_name = $exp[count($exp) - 1];
+  public static function storeNodePath($env, $nodepath = NULL, $overwrite = false, $node_name = NULL) {
+    if ($node_name == NULL) {
+      $exp = explode('/', $nodepath);
+      $node_name = $exp[count($exp) - 1];
+    }
 
     $cache_folder = Cache::nodePathFolder($env, $node_name);
     // Remove old link if existing.
@@ -102,7 +108,7 @@ class Cache extends DataContainer {
 
     $node_link = $cache_folder . '/' . $node_name;
 
-    if (!file_exists($node_link)) {
+    if (!is_link($node_link)) {
       return false;
     }
 
