@@ -1,0 +1,33 @@
+[package]
+name = "quanta_db"
+version = "0.1.0"
+edition = "2021"
+description = "Quanta files-DB PHP extension (contract v1) — fast indexed access to the JSON-per-folder node database"
+license = "MIT"
+
+[lib]
+name = "quanta_db"
+crate-type = ["cdylib"]
+
+# Standalone monitor (varnishstat-style). Does NOT link the cdylib/PHP; it
+# reuses the arena layout + path derivation via source include.
+[[bin]]
+name = "qdbstat"
+path = "src/bin/qdbstat.rs"
+
+# Real-time index watcher (inotify). Keeps the SQLite index authoritative so the
+# extension can skip the docroot walk on a miss. PHP-free (source include).
+[[bin]]
+name = "qdbwatch"
+path = "src/bin/qdbwatch.rs"
+
+[dependencies]
+ext-php-rs = "0.15"
+rusqlite = { version = "0.40", features = ["bundled"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+libc = "0.2"
+inotify = { version = "0.11", default-features = false }
+
+[profile.release]
+lto = true
+codegen-units = 1
