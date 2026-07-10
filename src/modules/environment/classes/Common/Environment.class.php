@@ -594,7 +594,6 @@ class Environment extends DataContainer {
    *   The result of the node search.
    */
   private function findNodePath($folder) {
-    print_r('find node path for: ' . $folder . ' -- ');
     // TODO: cleaner way to exclude folders in _modules.
     $findcmd = 'find ' . $this->dir['docroot'] . '/ -type d -name "' . $folder . '" -not -path */_modules* -not -path *.git*';
     // TODO: sometimes getting empty folder. Why? Temporary fix.
