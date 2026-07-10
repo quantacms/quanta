@@ -4,7 +4,7 @@ namespace Quanta\Common;
 /**
  * This class is used to check user access to node actions.
  */
-class NodeAccess extends Access implements \Quanta\Common\Cacheable  {
+class NodeAccess extends Access {
   /**
    * Check if an user can perform a certain action.
    *

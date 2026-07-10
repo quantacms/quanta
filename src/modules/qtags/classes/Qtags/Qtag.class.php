@@ -17,7 +17,7 @@ use Quanta\Common\Environment;
  * passing the related variables.
  *
  */
-class Qtag implements \Quanta\Common\Cacheable {
+class Qtag{
   /**
    * @var Environment $env
    *   The Environment.
