@@ -10,7 +10,8 @@ namespace Quanta\Common;
  * NodeFactory::load() and nodePath() calls, which use expensive exec('find ...')
  * commands for uncached nodes. Instead, it resolves paths directly from the filesystem.
  */
-class FastDirList extends DirList {
+class FastDirList extends DirList
+{
 
   /**
    * Override the constructor to bypass NodeFactory::load() for the parent node.
@@ -19,7 +20,8 @@ class FastDirList extends DirList {
    * With many list items (e.g. hundreds of booking status folders), this causes
    * hundreds of sequential shell 'find' commands, each taking seconds.
    */
-  public function __construct(&$env, $path, $tpl, $attr_arr = array(), $module = NULL) {
+  public function __construct(&$env, $path, $tpl, $attr_arr = array(), $module = NULL)
+  {
     $this->env = $env;
     if (!empty($tpl)) {
       $this->tpl = strtolower($tpl);
@@ -38,21 +40,18 @@ class FastDirList extends DirList {
     if ($path == self::LIST_ROOT) {
       $this->path = $env->dir['docroot'];
       $this->setNode(NULL);
-    }
-    elseif ($path == Node::NODE_NEW) {
+    } elseif ($path == Node::NODE_NEW) {
       $this->path = NULL;
       $this->setNode(NULL);
-    }
-    elseif ($path == NULL) {
+    } elseif ($path == NULL) {
       $this->setNode(NodeFactory::current($this->env));
       $this->path = $this->getNode()->path;
-    }
-    else {
+    } else {
       // FAST PATH: Try to resolve the node path without exec('find').
       // First try the nodePath cache (static + symlink cache) which is cheap.
       // If that fails, try to find the path by walking known parent structures.
       $resolved_path = $this->fastResolvePath($path);
-      
+
       if ($resolved_path && is_dir($resolved_path)) {
         // Create a lightweight node from the resolved path, bypassing hooks
         $node = NodeFactory::fastLoadFromRealPath($this->env, $resolved_path);
@@ -76,7 +75,7 @@ class FastDirList extends DirList {
     $this->setData('list_item_html_tag', !empty($this->getData('list_item_html_tag')) ? $this->getData('list_item_html_tag') : 'li');
 
     // Skip sortable setup (not needed for fast backend lists)
-    
+
     $lang = isset($attr_arr['language']) ? $attr_arr['language'] : null;
     $this->load($lang);
   }
@@ -93,7 +92,8 @@ class FastDirList extends DirList {
    * @param string $name The node name to resolve
    * @return string|false The resolved path or false
    */
-  private function fastResolvePath($name) {
+  private function fastResolvePath($name)
+  {
     // 1. Try the cache symlink directly (this is the cheap part of nodePath)
     $cached_link = Cache::getStoredNodePath($this->env, $name, TRUE);
     if ($cached_link) {
@@ -103,6 +103,15 @@ class FastDirList extends DirList {
       }
     }
 
+    // 1.5. quanta_db extension (docs/files-db/api-contract.md §9): resolve cold
+    // names via the derived index — authoritative and O(1), replacing the
+    // prefix-walk heuristic below (which only works for parent-prefixed names).
+    $ext_path = $this->quantaDbPath($name);
+    if ($ext_path !== NULL && is_dir($ext_path)) {
+      Cache::storeNodePath($this->env, $ext_path);
+      return $ext_path;
+    }
+
     // 2. Try to find the directory by walking the known directory tree structure.
     // Most booking/business nodes follow a naming pattern where child node names
     // contain the parent name as a prefix. E.g.:
@@ -110,7 +119,7 @@ class FastDirList extends DirList {
     //   'rome-bookings' is at 'rome/rome-bookings'
     // We can recursively resolve parent paths.
     $docroot = $this->env->dir['docroot'];
-    
+
     // Try direct known locations first
     $known_bases = array(
       $docroot . '/db/businesses',
@@ -136,6 +145,47 @@ class FastDirList extends DirList {
   }
 
   /**
+   * quanta_db extension shim: resolve a node name via the derived index,
+   * mapping the extension's root onto the current host's docroot. Mirrors
+   * Environment::quantaDbNodePath(). Returns NULL when the extension is
+   * absent, errors, or doesn't know the name — the caller then falls back to
+   * the legacy tree-walk.
+   *
+   * @param string $name
+   *   The node (folder) name.
+   *
+   * @return string|null
+   *   The node path under the current host's docroot, or NULL.
+   */
+  private function quantaDbPath($name)
+  {
+    static $ext_root = NULL;
+    if ($ext_root === NULL) {
+      $ext_root = class_exists('QuantaDb')
+        ? rtrim((string) (ini_get('quanta_db.root') ?: getenv('QUANTA_DB_ROOT')), '/')
+        : '';
+    }
+    if ($ext_root === '') {
+      return NULL;
+    }
+    try {
+      $path = \QuantaDb::path($name);
+    } catch (\Throwable $e) {
+      return NULL;
+    }
+    if ($path === NULL) {
+      return NULL;
+    }
+    // sites/<alias> hosts are symlinks to the canonical site dir the extension
+    // is rooted at; keep paths under the current host's docroot.
+    $docroot = $this->env->dir['docroot'];
+    if ($docroot !== $ext_root && strpos($path, $ext_root . '/') === 0) {
+      $path = $docroot . substr($path, strlen($ext_root));
+    }
+    return $path;
+  }
+
+  /**
    * Recursively search for a directory name within a base directory,
    * limited to a certain depth.
    * 
@@ -144,7 +194,8 @@ class FastDirList extends DirList {
    * @param int $max_depth Maximum recursion depth
    * @return string|false The full path if found, false otherwise
    */
-  private function findInDirectory($base_dir, $target_name, $max_depth) {
+  private function findInDirectory($base_dir, $target_name, $max_depth)
+  {
     if ($max_depth <= 0 || !is_dir($base_dir)) {
       return false;
     }
@@ -183,26 +234,27 @@ class FastDirList extends DirList {
   /**
    * Override the load method to use FastNodeLoading.
    */
-  public function load($lang = null) {
+  public function load($lang = null)
+  {
     // Use the already-resolved path from the node (set during construction)
     $parent_path = $this->path;
-    
+
     if (empty($parent_path) || !is_dir($parent_path)) {
       return;
     }
-    
+
     // Scan directory directly
     $scan = $this->env->scanDirectory($parent_path, array('type' => $this->scantype, 'exclude_dirs' => Environment::DIR_INACTIVE));
-    
+
     foreach ($scan as $dir) {
       if ($this->node->getName() == $dir && !$this->getData('list_father')) {
         continue;
       }
-      
+
       // Fast load bypassing hooks and environment path search
       $node_path = $parent_path . '/' . $dir;
       $node = NodeFactory::fastLoadFromRealPath($this->env, $node_path, $this->language);
-      
+
       if ($node->exists) {
         // Validate the item against list filters
         if ($this->validateListItem($node)) {
@@ -210,14 +262,15 @@ class FastDirList extends DirList {
         }
       }
     }
-    
+
     $this->loadAttributes();
   }
 
   /**
    * Override loadAttributes to be accessible from load().
    */
-  private function loadAttributes() {
+  private function loadAttributes()
+  {
     // Set the sort order.
     if (!empty($this->getData('sort'))) {
       $this->sort = $this->getData('sort');
