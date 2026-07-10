@@ -7,7 +7,8 @@ namespace Quanta\Common;
  * containing one or more data_xx.json files.
  * @see Node
  */
-abstract class JSONDataContainer extends DataContainer {
+abstract class JSONDataContainer extends DataContainer
+{
   public $name;
   public $path;
   public $jsonpath;
@@ -31,7 +32,8 @@ abstract class JSONDataContainer extends DataContainer {
    * @param array $ignore
    *   Attributes to ignore in the save process.
    */
-  protected function saveJSON(array $ignore = array()) {
+  protected function saveJSON(array $ignore = array())
+  {
     if (!is_dir($this->path)) {
       mkdir($this->path, 0755, TRUE) or die('Error. Cannot create dir: ' . $this->path);
     }
@@ -44,6 +46,24 @@ abstract class JSONDataContainer extends DataContainer {
     foreach ($ignore as $ignore_value) {
       if (isset($this->json->{$ignore_value})) {
         unset($this->json->{$ignore_value});
+      }
+    }
+
+    // quanta_db extension: locked, atomic, index-consistent write
+    // (docs/files-db/api-contract.md §9). The realpath guard makes sure the
+    // globally-unique name resolves to THIS container's folder; anything
+    // else (new node dirs, name mismatch, errors) uses the legacy write.
+    if (class_exists('QuantaDb') && is_dir($this->path)) {
+      try {
+        $qdb_path = \QuantaDb::path($this->name);
+        if ($qdb_path !== NULL && realpath($qdb_path) === realpath($this->path)) {
+          \QuantaDb::put($this->name, (array) json_decode(json_encode($this->json), TRUE), array(
+            'lang' => ($suffix == '') ? NULL : $language,
+          ));
+          return;
+        }
+      } catch (\Throwable $e) {
+        // Fall through to the legacy write.
       }
     }
 
@@ -60,7 +80,8 @@ abstract class JSONDataContainer extends DataContainer {
    * @return string
    *   The folder name of the JSON container.
    */
-  public function getName() {
+  public function getName()
+  {
     return $this->name;
   }
 
@@ -70,7 +91,8 @@ abstract class JSONDataContainer extends DataContainer {
    * @param string $name
    *   The folder name of the JSON container.
    */
-  public function setName($name) {
+  public function setName($name)
+  {
     $this->name = $name;
   }
 
@@ -80,7 +102,8 @@ abstract class JSONDataContainer extends DataContainer {
    * @return string
    *   The full path.
    */
-  public function getPath() {
+  public function getPath()
+  {
     return $this->path;
   }
 }

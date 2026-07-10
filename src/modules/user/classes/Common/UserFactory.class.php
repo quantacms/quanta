@@ -5,7 +5,8 @@ namespace Quanta\Common;
  * Class UserFactory
  * This factory class is used for loading users, etc.
  */
-class UserFactory {
+class UserFactory
+{
 
   /**
    * Load an user, by checking access and running hooks.
@@ -22,7 +23,8 @@ class UserFactory {
    * @return User
    *   The User.
    */
-  public static function load(Environment $env, $username, $language = NULL) {
+  public static function load(Environment $env, $username, $language = NULL)
+  {
     if (empty($language)) {
       $language = Localization::getLanguage($env);
     }
@@ -45,7 +47,8 @@ class UserFactory {
    * @return User
    *   The constructed user object.
    */
-  public static function buildUser(Environment $env, $name, array $vars = array()) {
+  public static function buildUser(Environment $env, $name, array $vars = array())
+  {
     $user = new User($env, \Quanta\Common\Node::NODE_NEW);
     $user->setName($name);
 
@@ -85,7 +88,26 @@ class UserFactory {
    * @return User
    *   The retrieved user object.
    */
-  public static function getUserFromField(Environment $env, $field, $value) {
+  public static function getUserFromField(Environment $env, $field, $value)
+  {
+    // quanta_db extension (docs/files-db/api-contract.md §Queries): resolve the
+    // user via the derived index instead of a recursive grep. Scoped to the
+    // direct children of '_users' (same scope as the grep on dir['users']).
+    // Equality-only `where` is a strict subset of the legacy case-insensitive
+    // grep, so an empty/failed result falls through to the grep below.
+    if (class_exists('QuantaDb')) {
+      try {
+        $names = \QuantaDb::find(
+          array('father' => '_users', 'where' => array($field => $value)),
+          array('return' => 'names', 'limit' => 1)
+        );
+        if (!empty($names)) {
+          return reset($names);
+        }
+      } catch (\Throwable $e) {
+        // Fall through to the legacy grep.
+      }
+    }
     // Build the search pattern, escaping properly for shell execution
     $searchPattern = escapeshellarg('"' . $field . '":"' . $value . '"');
     $directory = escapeshellarg($env->dir['users']);
@@ -97,16 +119,16 @@ class UserFactory {
 
     // Check if any results were found
     if (!empty($results)) {
-        // Process the last result
-        $explode = explode('/', array_pop($results));
-        if (count($explode) > 2) {
-            return $explode[count($explode) - 2];
-        }
+      // Process the last result
+      $explode = explode('/', array_pop($results));
+      if (count($explode) > 2) {
+        return $explode[count($explode) - 2];
+      }
     }
-    
+
     // Return NULL if no result
     return NULL;
-}
+  }
 
 
   /**
@@ -122,14 +144,15 @@ class UserFactory {
    * @return string
    *  A Json representation of the user.
    */
-  public static function requestAction(Environment $env, $action, FormState $form_state) {
+  public static function requestAction(Environment $env, $action, FormState $form_state)
+  {
 
     $response = new \stdClass();
 
     $user = new User($env, $form_state->getData('username'), '_users');
 
     $vars = array('user' => $user);
-  
+
     $form_items = $form_state->data;
 
     // Check if the current user is allowed to perform the requested action.
@@ -154,27 +177,27 @@ class UserFactory {
                 if (!empty($value)) {
                   $user->setLastName($value);
                 }
-              break;
+                break;
 
               case 'email':
                 if (!empty($value)) {
                   $user->setEmail($value);
                 }
-              break;
+                break;
 
               case 'edit_title':
                 if (!empty($value)) {
                   $user->setTitle($value);
                 }
-              break;
-              
+                break;
+
               default:
-                if(!in_array($key,\Quanta\Common\User::USER_IGNORE_FIELDS)){
+                if (!in_array($key, \Quanta\Common\User::USER_IGNORE_FIELDS)) {
                   $user->setAttributeJSON($key, $value);
                 }
                 break;
             }
-          } 
+          }
 
           // Hook user presave.
           $env->hook('user_presave', $vars);
@@ -186,13 +209,11 @@ class UserFactory {
           // If the newly built user object is valid, rebuild the session to keep it updated.
           if ($user->save()) {
             $user->rebuildSession();
-          }
-          else {
+          } else {
             die("ERROR");
           }
       }
-    }
-    else {
+    } else {
       // Access denied.
       $response->redirect = '/403';
     }
@@ -208,7 +229,8 @@ class UserFactory {
    * @param bool $reload
    * @return mixed|User
    */
-  static function current(Environment $env, $reload = FALSE) {
+  static function current(Environment $env, $reload = FALSE)
+  {
     static $user;
     // If user has been created already, don't redo the logic.
     if (!empty($user) && !$reload) {
@@ -219,17 +241,16 @@ class UserFactory {
     if (!isset($_SESSION['user'])) {
       $token = self::getBearerToken();
       if ($token) {
-          $decodedData = self::verifyToken($env, $token);
-          if ($decodedData && isset($decodedData['user_name'])) {
-              $user = new User($env, $decodedData['user_name']);
-          } else {
-              $user = new User($env, \Quanta\Common\User::USER_ANONYMOUS); // Invalid token or expired
-          }
+        $decodedData = self::verifyToken($env, $token);
+        if ($decodedData && isset($decodedData['user_name'])) {
+          $user = new User($env, $decodedData['user_name']);
+        } else {
+          $user = new User($env, \Quanta\Common\User::USER_ANONYMOUS); // Invalid token or expired
+        }
       } else {
-          $user = new User($env, \Quanta\Common\User::USER_ANONYMOUS); // No token provided
+        $user = new User($env, \Quanta\Common\User::USER_ANONYMOUS); // No token provided
       }
-    }
-    else {
+    } else {
       $user = unserialize($_SESSION['user']);
       // Sometimes there is a request to reload the user object.
       if ($reload) {
@@ -251,7 +272,8 @@ class UserFactory {
    *
    * @return bool|string
    */
-  public static function renderUserEditForm(Environment $env, $context) {
+  public static function renderUserEditForm(Environment $env, $context)
+  {
     $user_edit_form = file_get_contents($env->getModulePath('user') . '/tpl/user_edit.inc');
     return $user_edit_form;
   }
@@ -264,19 +286,21 @@ class UserFactory {
    *
    * @return string
    */
-  public static function renderLoginForm(Environment $env) {
+  public static function renderLoginForm(Environment $env)
+  {
     $login_form = file_get_contents($env->getModulePath('user') . '/tpl/user_login.inc');
     return $login_form;
   }
 
-   /**
+  /**
    * Renders a Login form.
    * @deprecated from next Quanta version.
    * TODO: refactor and move elsewhere.
    *
    * @return string
    */
-  public static function renderResetPasswordForm(Environment $env) {
+  public static function renderResetPasswordForm(Environment $env)
+  {
     $reset_form = file_get_contents($env->getModulePath('user') . '/tpl/user_reset_password.inc');
     return $reset_form;
   }
@@ -291,11 +315,12 @@ class UserFactory {
    * @return string
    *   The encrypted password.
    */
-  public static function passwordEncrypt($pass) {
+  public static function passwordEncrypt($pass)
+  {
     return substr((md5(substr($pass, 0, 5) . 'ABC' . substr($pass, 5, 2) . 'nginE')) . md5($pass), 0, 50);
   }
 
-    /**
+  /**
    * Check if the user entered a correct password.
    *
    * @param Node $user
@@ -306,7 +331,8 @@ class UserFactory {
    * @return bool
    *   Return true if the user/pass combination matches.
    */
-  public static function checkPassword($user,$password) {
+  public static function checkPassword($user, $password)
+  {
     if (!isset($user->json->password)) {
       return FALSE;
     }
@@ -314,37 +340,40 @@ class UserFactory {
     return ($user->json->password == UserFactory::passwordEncrypt($password));
   }
 
-  public static function generateToken(Environment $env, $user_name, $expiration_days = 30){
+  public static function generateToken(Environment $env, $user_name, $expiration_days = 30)
+  {
     $issuedAt = time();
     $expiration = $issuedAt + (60 * 60 * 24 * $expiration_days);
     $secret_key = $env->getData('JWT_SECRET_KEY');
     $payload = [
-        'user_name' => $user_name,
-        'iat' => $issuedAt,
-        'exp' => $expiration
+      'user_name' => $user_name,
+      'iat' => $issuedAt,
+      'exp' => $expiration
     ];
 
     return \Firebase\JWT\JWT::encode($payload, $secret_key, 'HS256');
   }
 
-  public static function verifyToken($env, $token){
+  public static function verifyToken($env, $token)
+  {
     $secret_key = $env->getData('JWT_SECRET_KEY');
     try {
-        $decoded = \Firebase\JWT\JWT::decode($token, new \Firebase\JWT\Key($secret_key, 'HS256'));
-        return (array) $decoded; // Returns payload as an array
+      $decoded = \Firebase\JWT\JWT::decode($token, new \Firebase\JWT\Key($secret_key, 'HS256'));
+      return (array) $decoded; // Returns payload as an array
     } catch (Exception $e) {
-        return null; // Invalid token
+      return null; // Invalid token
     }
   }
 
-  public static function getBearerToken() {
+  public static function getBearerToken()
+  {
     $headers = getallheaders();
     if (isset($headers['Authorization'])) {
-        $matches = [];
-        if (preg_match('/Bearer\s(\S+)/', $headers['Authorization'], $matches)) {
-            return $matches[1];
-        }
+      $matches = [];
+      if (preg_match('/Bearer\s(\S+)/', $headers['Authorization'], $matches)) {
+        return $matches[1];
+      }
     }
     return null;
-}
+  }
 }
