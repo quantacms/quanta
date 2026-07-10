@@ -52,6 +52,10 @@
   // Run the init hook.
   $env->hook('init', $vars);
 
+  // Release the session lock before the (read-only) page render, so concurrent
+  // requests from the same logged-in user don't serialize on the session file.
+  $env->closeSession();
+
   // Render the page.
   print $env->getData('page')->render();
 
