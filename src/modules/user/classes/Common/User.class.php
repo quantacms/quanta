@@ -282,6 +282,10 @@ class User extends Node {
     $this->updateJSON();
     // Save the node json (excluding some fields such as path.)
     $this->saveJSON($ignore);
+    // Clear the node path cache so it's not cached as missing.
+    $this->env->nodePath($this->getName(), FALSE, TRUE);
+    // Cache the new path to avoid expensive findNodePath lookups later.
+    Cache::storeNodePath($this->env, $this->path, true);
     $this->env->hook('user_after_save', $vars);
 
     // If the currently logged in user was modified, reload it in the session.
