@@ -1,4 +1,4 @@
-//! PHP-free so the standalone binaries (`qdbstat`, `qdbwatch`) can reuse it via
+//! PHP-free so the standalone binaries (`qdbstat`, `qdbd`) can reuse it via
 //! `#[path]` include. The `ext-php-rs` conversion (`DbError` -> `PhpException`)
 //! lives in `lib.rs`, the only PHP-aware place.
 
@@ -37,11 +37,5 @@ impl DbError {
 impl From<std::io::Error> for DbError {
     fn from(e: std::io::Error) -> Self {
         DbError::Io(e.to_string())
-    }
-}
-
-impl From<rusqlite::Error> for DbError {
-    fn from(e: rusqlite::Error) -> Self {
-        DbError::Io(format!("index: {e}"))
     }
 }

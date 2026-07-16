@@ -1,7 +1,8 @@
 <?php
 /**
- * Worker: rebuild a brand-new index (QUANTA_DB_INDEX_PATH points to a fresh
- * file via env) and answer queries from it. Prints JSON.
+ * Worker: a fresh process (empty per-process caches) triggers a full rebuild
+ * of the derived data from the files alone and answers queries from it.
+ * Prints JSON.
  */
 $r = QuantaDb::reindex();
 echo json_encode([
