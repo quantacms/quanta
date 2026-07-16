@@ -1,5 +1,5 @@
-//! Derived-data path computation, shared verbatim by the extension (`config.rs`)
-//! and the standalone `qdbstat` binary so both resolve the same per-root home.
+//! Derived-data path computation, shared verbatim by the extension and the
+//! standalone binaries (`qdbd`, `qdbstat`) so all resolve the same per-root home.
 //!
 //! `std::hash::DefaultHasher` uses fixed keys, so the same canonical root hashes
 //! to the same directory across processes and across the `.so`/bin boundary.
@@ -20,8 +20,24 @@ pub fn derive_base(root: &Path) -> io::Result<PathBuf> {
         .join(format!("{:016x}", h.finish())))
 }
 
-pub fn index_path(base: &Path) -> PathBuf {
-    base.join("index.sqlite")
+/// Home of the data segments. tmpfs when available so "all data in RAM" is
+/// literal; the `<base>` fallback still works (page-cache-backed) but incurs
+/// dirty-page writeback. Existence-only test: the daemon and every PHP worker
+/// must deterministically pick the SAME directory.
+pub fn shm_dir(base: &Path) -> PathBuf {
+    let dev_shm = Path::new("/dev/shm");
+    if dev_shm.is_dir() {
+        // Reuse the per-root hash segment of `base` for the tmpfs home.
+        if let Some(hash) = base.file_name() {
+            return dev_shm.join("quanta_db").join(hash);
+        }
+    }
+    base.join("shm")
+}
+
+/// The qdbd daemon's unix socket.
+pub fn socket_path(base: &Path) -> PathBuf {
+    base.join("qdbd.sock")
 }
 
 pub fn metrics_path(base: &Path) -> PathBuf {

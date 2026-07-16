@@ -25,7 +25,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 const SIZE: usize = 4096;
 /// "QDBSTAT\0" — layout sentinel; a reader that sees a different value bails.
 const MAGIC: u64 = 0x0054_4154_5342_4451;
-const VERSION: u32 = 3;
+const VERSION: u32 = 5;
 
 const REL: Ordering = Ordering::Relaxed;
 
@@ -74,6 +74,31 @@ pub struct Metrics {
     pub watch_events: AtomicU64,
     pub watch_resyncs: AtomicU64,
     pub authoritative_misses: AtomicU64, // misses answered without a walk
+
+    // v4: SHM data segment control plane + counters. `data_epoch` is the
+    // active segment number published by qdbd (0 = none); `gen_counter` is the
+    // shared node-generation allocator (survives daemon restarts within a pod,
+    // so long-lived workers' generation-keyed caches stay monotonic).
+    pub data_epoch: AtomicU64,
+    pub gen_counter: AtomicU64,
+    pub daemon_pid: AtomicU64,
+    pub uds_notifies: AtomicU64,
+    pub uds_failures: AtomicU64,
+    pub shm_hits: AtomicU64,    // node lookups served from the data segment
+    pub shm_remaps: AtomicU64,  // segment (re)mappings after an epoch flip
+    pub shm_invalid: AtomicU64, // lookups that failed validation -> fallback
+    pub fallback_reads: AtomicU64, // doc reads served in fallback mode
+
+    // v5: query volume by op kind (read/write/delete were already counted; the
+    // listing/relation ops were not) + peak (worst-seen) read/write latency.
+    pub children_ops: AtomicU64,
+    pub find_ops: AtomicU64,
+    pub count_ops: AtomicU64,
+    pub links_ops: AtomicU64,
+    pub link_ops: AtomicU64,
+    pub unlink_ops: AtomicU64,
+    pub read_ns_max: AtomicU64,
+    pub write_ns_max: AtomicU64,
 }
 
 const _: () = assert!(std::mem::size_of::<Metrics>() <= SIZE);
@@ -107,6 +132,23 @@ pub struct Snapshot {
     pub watch_events: u64,
     pub watch_resyncs: u64,
     pub authoritative_misses: u64,
+    pub data_epoch: u64,
+    pub gen_counter: u64,
+    pub daemon_pid: u64,
+    pub uds_notifies: u64,
+    pub uds_failures: u64,
+    pub shm_hits: u64,
+    pub shm_remaps: u64,
+    pub shm_invalid: u64,
+    pub fallback_reads: u64,
+    pub children_ops: u64,
+    pub find_ops: u64,
+    pub count_ops: u64,
+    pub links_ops: u64,
+    pub link_ops: u64,
+    pub unlink_ops: u64,
+    pub read_ns_max: u64,
+    pub write_ns_max: u64,
 }
 
 impl Metrics {
@@ -138,6 +180,23 @@ impl Metrics {
             watch_events: self.watch_events.load(REL),
             watch_resyncs: self.watch_resyncs.load(REL),
             authoritative_misses: self.authoritative_misses.load(REL),
+            data_epoch: self.data_epoch.load(REL),
+            gen_counter: self.gen_counter.load(REL),
+            daemon_pid: self.daemon_pid.load(REL),
+            uds_notifies: self.uds_notifies.load(REL),
+            uds_failures: self.uds_failures.load(REL),
+            shm_hits: self.shm_hits.load(REL),
+            shm_remaps: self.shm_remaps.load(REL),
+            shm_invalid: self.shm_invalid.load(REL),
+            fallback_reads: self.fallback_reads.load(REL),
+            children_ops: self.children_ops.load(REL),
+            find_ops: self.find_ops.load(REL),
+            count_ops: self.count_ops.load(REL),
+            links_ops: self.links_ops.load(REL),
+            link_ops: self.link_ops.load(REL),
+            unlink_ops: self.unlink_ops.load(REL),
+            read_ns_max: self.read_ns_max.load(REL),
+            write_ns_max: self.write_ns_max.load(REL),
         }
     }
 }
@@ -259,8 +318,10 @@ pub fn snapshot() -> Option<Snapshot> {
 
 pub fn record_read(elapsed: Duration) {
     if let Some(m) = arena() {
+        let ns = elapsed.as_nanos() as u64;
         m.reads.fetch_add(1, REL);
-        m.read_ns.fetch_add(elapsed.as_nanos() as u64, REL);
+        m.read_ns.fetch_add(ns, REL);
+        m.read_ns_max.fetch_max(ns, REL);
     }
 }
 
@@ -332,6 +393,76 @@ pub fn authoritative_miss() {
     }
 }
 
+// ---------------------------------------------------------------------------
+// SHM data segment control plane (written by qdbd, read by the extension)
+// ---------------------------------------------------------------------------
+
+/// The active data-segment epoch (0 = no segment published).
+pub fn data_epoch() -> u64 {
+    arena().map(|m| m.data_epoch.load(Ordering::Acquire)).unwrap_or(0)
+}
+
+/// Daemon: publish a new active segment. Release-ordered so a reader that
+/// observes the epoch also observes the fully-written segment file header.
+pub fn set_data_epoch(epoch: u64) {
+    if let Some(m) = arena() {
+        m.data_epoch.store(epoch, Ordering::Release);
+    }
+}
+
+/// Allocate the next node generation from the shared counter. Falls back to a
+/// process-local counter when the arena is unavailable (still monotonic within
+/// the process, which is all fallback mode needs).
+pub fn next_generation() -> u64 {
+    static LOCAL: AtomicU64 = AtomicU64::new(1);
+    match arena() {
+        Some(m) => m.gen_counter.fetch_add(1, REL) + 1,
+        None => LOCAL.fetch_add(1, REL) + 1,
+    }
+}
+
+pub fn set_daemon_pid(pid: u64) {
+    if let Some(m) = arena() {
+        m.daemon_pid.store(pid, REL);
+    }
+}
+
+pub fn uds_notify() {
+    if let Some(m) = arena() {
+        m.uds_notifies.fetch_add(1, REL);
+    }
+}
+
+pub fn uds_failure() {
+    if let Some(m) = arena() {
+        m.uds_failures.fetch_add(1, REL);
+    }
+}
+
+pub fn shm_hit() {
+    if let Some(m) = arena() {
+        m.shm_hits.fetch_add(1, REL);
+    }
+}
+
+pub fn shm_remap() {
+    if let Some(m) = arena() {
+        m.shm_remaps.fetch_add(1, REL);
+    }
+}
+
+pub fn shm_invalid() {
+    if let Some(m) = arena() {
+        m.shm_invalid.fetch_add(1, REL);
+    }
+}
+
+pub fn fallback_read() {
+    if let Some(m) = arena() {
+        m.fallback_reads.fetch_add(1, REL);
+    }
+}
+
 /// Watcher: publish a heartbeat (call ~every second).
 pub fn set_heartbeat() {
     if let Some(m) = arena() {
@@ -369,8 +500,10 @@ pub fn record_resync() {
 
 pub fn record_write(elapsed: Duration, bytes: u64) {
     if let Some(m) = arena() {
+        let ns = elapsed.as_nanos() as u64;
         m.writes.fetch_add(1, REL);
-        m.write_ns.fetch_add(elapsed.as_nanos() as u64, REL);
+        m.write_ns.fetch_add(ns, REL);
+        m.write_ns_max.fetch_max(ns, REL);
         m.bytes_written.fetch_add(bytes, REL);
     }
 }
@@ -403,6 +536,44 @@ pub fn io_error() {
 pub fn corrupt_json() {
     if let Some(m) = arena() {
         m.corrupt_json.fetch_add(1, REL);
+    }
+}
+
+// Query volume by op kind (v5). Reads/writes/deletes are counted elsewhere;
+// these cover the listing/relation queries so qdbstat can show the op mix.
+pub fn record_children() {
+    if let Some(m) = arena() {
+        m.children_ops.fetch_add(1, REL);
+    }
+}
+
+pub fn record_find() {
+    if let Some(m) = arena() {
+        m.find_ops.fetch_add(1, REL);
+    }
+}
+
+pub fn record_count() {
+    if let Some(m) = arena() {
+        m.count_ops.fetch_add(1, REL);
+    }
+}
+
+pub fn record_links() {
+    if let Some(m) = arena() {
+        m.links_ops.fetch_add(1, REL);
+    }
+}
+
+pub fn record_link() {
+    if let Some(m) = arena() {
+        m.link_ops.fetch_add(1, REL);
+    }
+}
+
+pub fn record_unlink() {
+    if let Some(m) = arena() {
+        m.unlink_ops.fetch_add(1, REL);
     }
 }
 

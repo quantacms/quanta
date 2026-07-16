@@ -5,8 +5,7 @@ namespace Quanta\Common;
  * Class Environment
  * This class represents an Environment with his directories etcetera.
  */
-class Environment extends DataContainer
-{
+class Environment extends DataContainer {
   const DIR_INACTIVE = '_';
   const DIR_ALL = 'all';
   const DIR_DIRS = 'dirs';
@@ -30,6 +29,8 @@ class Environment extends DataContainer
   private $modules_loaded = array();
   private $includes = array();
   private $context;
+  // Per hook-name cache of the module functions that implement it. See hook().
+  private $hook_implementations = array();
   /**
    * Environment constructor.
    *
@@ -42,8 +43,7 @@ class Environment extends DataContainer
    * @param string $docroot
    *   The current document root.
    */
-  public function __construct($host = NULL, $request_uri = NULL, $docroot = NULL)
-  {
+  public function __construct($host = NULL, $request_uri = NULL, $docroot = NULL) {
     if (empty($host)) {
       $full_host = strtolower($_SERVER['HTTP_HOST']);
       $host = explode(':', $full_host)[0];
@@ -53,7 +53,7 @@ class Environment extends DataContainer
       // Remove querystring to obtain request uri...
       $exp = explode('?', $_SERVER['REQUEST_URI']);
       $this->request_uri = (str_replace('/', '', $exp[0]) == '') ? '/home/' : $exp[0];
-      // Check if there is a query string
+       // Check if there is a query string
       if (isset($exp[1])) {
         // Parse the query string into an associative array
         // Now query_params is an array with key => value pairs from the query string
@@ -62,13 +62,14 @@ class Environment extends DataContainer
         // No query string present
         $this->query_params = [];
       }
-    } else {
+    }
+    else {
       $this->request_uri = $request_uri;
     }
     if ($this->request_uri != NULL) {
       $this->request = explode('/', $this->request_uri);
       if (empty($this->request[count($this->request) - 1])) {
-        unset($this->request[count($this->request) - 1]);
+        unset ($this->request[count($this->request) - 1]);
       }
       $this->request_path = $this->request[count($this->request) - 1];
     }
@@ -76,7 +77,7 @@ class Environment extends DataContainer
     if ($docroot == NULL) {
       $docroot = $_SERVER['DOCUMENT_ROOT'];
     }
-    $this->site_url = $this->getProtocol() . '://' . $this->host;
+    $this->site_url =  $this->getProtocol() . '://' . $this->host;
     // TODO: move request_uri in data.
     $this->setData('request_url', $this->site_url . $this->request_uri);
     $this->dir['quanta'] = $docroot;
@@ -95,7 +96,7 @@ class Environment extends DataContainer
     $this->dir['db'] = $this->dir['docroot'] . '/db';
     $this->dir['users'] = $this->dir['docroot'] . '/db/_users';
     $this->dir['tpl'] = $this->dir['docroot'] . '/_tpl';
-
+	
     // TODO: move to files module.
     $this->dir['tmp_files'] = $this->dir['tmp'] . '/files';
     $this->dir['log'] = $this->dir['tmp'] . '/log';
@@ -111,16 +112,14 @@ class Environment extends DataContainer
   /**
    * Get the current server protocol.
    */
-  public function getProtocol()
-  {
-    if (
-      isset($_SERVER['HTTPS']) &&
+  public function getProtocol() {
+    if (isset($_SERVER['HTTPS']) &&
       ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] == 1) ||
       isset($_SERVER['HTTP_X_FORWARDED_PROTO']) &&
-      $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https'
-    ) {
+      $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') {
       $protocol = 'https';
-    } else {
+    }
+    else {
       $protocol = 'http';
     }
 
@@ -131,8 +130,7 @@ class Environment extends DataContainer
    * Set the content for the shadow.
    * @param $context
    */
-  public function setContext($context)
-  {
+  public function setContext($context) {
     $this->context = $context;
   }
 
@@ -140,8 +138,7 @@ class Environment extends DataContainer
    * Get the context of the shadow.
    * @return mixed
    */
-  public function getContext()
-  {
+  public function getContext() {
     return $this->context;
   }
 
@@ -149,8 +146,7 @@ class Environment extends DataContainer
    * Get the context of the shadow.
    * @return mixed
    */
-  public function getBaseUrl()
-  {
+  public function getBaseUrl() {
     return (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] && !in_array(strtolower($_SERVER['HTTPS']), array('off', 'no')) ? 'https' : 'http') . '://' . $this->host;
   }
 
@@ -159,8 +155,7 @@ class Environment extends DataContainer
    *
    * @return string mixed
    */
-  public function getRequestedPath()
-  {
+  public function getRequestedPath() {
     return $this->request_path;
   }
 
@@ -173,8 +168,7 @@ class Environment extends DataContainer
    * @param $mod_type
    *   The type of modules being loaded (can be core or custom).
    */
-  private function loadModules($dir, $mod_type)
-  {
+  private function loadModules($dir, $mod_type) {
     $modules = $this->scanDirectory($dir, array('type' => self::DIR_MODULES));
     $this->setModules($mod_type, $modules);
   }
@@ -188,8 +182,7 @@ class Environment extends DataContainer
    * @param $modules
    *   The modules to load into the environment.
    */
-  public function setModules($mod_type, $modules)
-  {
+  public function setModules($mod_type, $modules) {
 
     $module_path = $mod_type == 'core' ? $this->dir['modules_core'] : $this->dir['modules_custom'];
 
@@ -210,8 +203,7 @@ class Environment extends DataContainer
    * @return mixed
    *   The module.
    */
-  public function getModule($module)
-  {
+  public function getModule($module) {
     return $this->modules[$module];
   }
 
@@ -224,19 +216,17 @@ class Environment extends DataContainer
    * @return mixed
    *   The module path.
    */
-  public function getModulePath($module)
-  {
+  public function getModulePath($module) {
     return $this->modules[$module]['path'];
   }
 
   /**
-   * Get all existing modules.
-   *
-   * @return array
-   *   The existing modules.
-   */
-  public function getModules()
-  {
+ * Get all existing modules.
+ *
+ * @return array
+ *   The existing modules.
+ */
+  public function getModules() {
     return $this->modules;
   }
 
@@ -246,11 +236,10 @@ class Environment extends DataContainer
    * @return array
    *   The modules already loaded in the environment.
    */
-  public function getLoadedModules($priority = null)
-  {
+  public function getLoadedModules($priority = null) {
     $modules_loaded = $this->modules_loaded;
-    if ($priority) {
-      if (isset($modules_loaded[$priority])) {
+    if($priority){
+      if(isset($modules_loaded[$priority])){
         $priority_module = $modules_loaded[$priority];
         // Remove priority module from its original position
         unset($modules_loaded[$priority]);
@@ -264,8 +253,7 @@ class Environment extends DataContainer
   /**
    * Run all loaded modules.
    */
-  public function mapClasses()
-  {
+  public function mapClasses() {
     // TODO: this is needed when the class map is not created yet (i.e. at very first install).
     if (!is_dir($this->dir['tmp'])) {
       mkdir($this->dir['tmp']);
@@ -298,8 +286,7 @@ class Environment extends DataContainer
   /**
    * Run all loaded modules.
    */
-  public function runModules()
-  {
+  public function runModules() {
     foreach ($this->modules as $module) {
       $this->runModule($module);
     }
@@ -311,8 +298,7 @@ class Environment extends DataContainer
    * @param $module
    *   The module to run before the depending one.
    */
-  public function dependsFrom($module)
-  {
+  public function dependsFrom($module) {
     $this->runModule($this->getModule($module));
   }
 
@@ -322,8 +308,7 @@ class Environment extends DataContainer
    *
    * @param $module
    */
-  public function runModule($module)
-  {
+  public function runModule($module) {
     $this->modules_loaded[$module['name']] = $module;
     // TODO: deprecate procedural hooks. Find an efficient OO approach.
     $includes = array('hook');
@@ -342,8 +327,7 @@ class Environment extends DataContainer
    * @param array $attributes
    * @return array
    */
-  public function scanDirectory($base_dir = '', $attributes = array())
-  {
+  public function scanDirectory($base_dir = '', $attributes = array()) {
     if (!is_dir($base_dir)) {
       return array();
     }
@@ -359,24 +343,26 @@ class Environment extends DataContainer
     foreach ($dirs as $k => $dir) {
       // Remove inactive if requested.
       if (substr($dir, 0, 1) == $attributes['exclude_dirs']) {
-        unset($dirs[$k]);
+        unset ($dirs[$k]);
       }
 
       if (isset($attributes['symlinks']) && $attributes['symlinks'] == 'no' && is_link($base_dir . '/' . $dir)) {
-        unset($dirs[$k]);
-      } else if (isset($attributes['symlinks']) && $attributes['symlinks'] == 'only' && !is_link($base_dir . '/' . $dir)) {
-        unset($dirs[$k]);
+        unset ($dirs[$k]);
+      }
+      else if (isset($attributes['symlinks']) && $attributes['symlinks'] == 'only' && !is_link($base_dir . '/' . $dir)) {
+        unset ($dirs[$k]);
       }
 
       if ($attributes['type'] == self::DIR_DIRS && !is_dir($base_dir . '/' . $dir)) {
-        unset($dirs[$k]);
-      } elseif ($attributes['type'] == self::DIR_FILES && !is_file($base_dir . '/' . $dir)) {
-        unset($dirs[$k]);
-      } elseif (
-        $attributes['type'] == self::DIR_MODULES &&
+        unset ($dirs[$k]);
+      }
+      elseif ($attributes['type'] == self::DIR_FILES && !is_file($base_dir . '/' . $dir)) {
+        unset ($dirs[$k]);
+      }
+      elseif ($attributes['type'] == self::DIR_MODULES &&
         (!is_dir($base_dir . '/' . $dir))
       ) {
-        unset($dirs[$k]);
+        unset ($dirs[$k]);
       }
     }
 
@@ -393,8 +379,7 @@ class Environment extends DataContainer
    * @param int $depth
    * @return array
    */
-  public function scanDirectoryDeep($base_dir, $dir, $dirs = array(), $attributes = array('exclude_dirs' => self::DIR_INACTIVE, 'type' => self::DIR_ALL, 'level' => 'leaf'), $depth = 0)
-  {
+  public function scanDirectoryDeep($base_dir, $dir, $dirs = array(), $attributes = array('exclude_dirs' => self::DIR_INACTIVE, 'type' => self::DIR_ALL, 'level' => 'leaf'), $depth = 0) {
     $scan = ($this->scanDirectory($base_dir . '/' . $dir, $attributes));
 
     $item = array(
@@ -404,7 +389,8 @@ class Environment extends DataContainer
     );
     if (count($scan) == 0 || ($depth != 0 && is_link($base_dir))) {
       $dirs[] = $item;
-    } else {
+    }
+    else {
       $i = 0;
       if ($attributes['level'] == 'tree') {
         $dirs[] = $item;
@@ -429,8 +415,7 @@ class Environment extends DataContainer
   /**
    * Load and run system modules, core and custom.
    */
-  public function load()
-  {
+  public function load() {
     $this->loadModules($this->dir['modules_core'], 'core');
     $this->loadModules($this->dir['modules_custom'], 'custom');
     $this->runModules();
@@ -449,16 +434,28 @@ class Environment extends DataContainer
    * @return bool
    *   Returns TRUE if any module was implementing the hook.
    */
-  public function hook($function, array &$vars = array())
-  {
+  public function hook($function, array &$vars = array()) {
     $env = &$this;
-    $hooked = FALSE;
-    foreach ($this->getLoadedModules('environment') as $module) {
-      $hook = __NAMESPACE__ . '\\' . $module['name'] . '_' . $function;
-      if (function_exists($hook)) {
-        $hook($env, $vars);
-        $hooked = TRUE;
+    // Resolve the implementing module functions once per hook name. The loaded
+    // modules and their procedural hooks are fixed after load() (which
+    // require_once's every <module>/hooks/<module>.hook.inc via runModules),
+    // and all hooks fire after that — so instead of rebuilding the function
+    // name and calling function_exists() across all ~44 modules on every call
+    // (this method tops the profiler), we cache the resolved implementer list.
+    if (!isset($this->hook_implementations[$function])) {
+      $impls = array();
+      foreach ($this->getLoadedModules('environment') as $module) {
+        $hook = __NAMESPACE__ . '\\' . $module['name'] . '_' . $function;
+        if (function_exists($hook)) {
+          $impls[] = $hook;
+        }
       }
+      $this->hook_implementations[$function] = $impls;
+    }
+    $hooked = FALSE;
+    foreach ($this->hook_implementations[$function] as $hook) {
+      $hook($env, $vars);
+      $hooked = TRUE;
     }
     return $hooked;
   }
@@ -467,8 +464,7 @@ class Environment extends DataContainer
   /**
    * Start client session.
    */
-  public function startSession()
-  {
+  public function startSession() {
     $protocol = $this->getProtocol();
     $secure = ($protocol === 'https');
 
@@ -510,8 +506,7 @@ class Environment extends DataContainer
    * @return array
    *   The included files.
    */
-  public function getIncludes()
-  {
+  public function getIncludes() {
     return $this->includes;
   }
 
@@ -524,8 +519,7 @@ class Environment extends DataContainer
    * @param null $type
    *   The type of the file.
    */
-  public function addInclude($include, $type = NULL)
-  {
+  public function addInclude($include, $type = NULL) {
     if ($type == NULL) {
       $ext = explode('.', $include);
       $type = $ext[count($ext) - 1];
@@ -536,8 +530,7 @@ class Environment extends DataContainer
   /**
    * Check if there are any queued actions in the request.
    */
-  public function checkActions()
-  {
+  public function checkActions() {
     if (!empty($this->request_json->action) && isset($this->request_json->action->value)) {
 
       $action_value = ($this->request_json->action->value);
@@ -546,7 +539,8 @@ class Environment extends DataContainer
 
         if (is_array($action_value)) {
           $action = array_pop($action_value);
-        } else {
+        }
+        else {
           $action = $action_value;
         }
 
@@ -563,8 +557,7 @@ class Environment extends DataContainer
    * @param $title
    * @return string
    */
-  public function getCandidatePath($title)
-  {
+  public function getCandidatePath($title) {
     $candidate_path = \Quanta\Common\Api::normalizePath($title);
 
     $i = 0;
@@ -574,8 +567,9 @@ class Environment extends DataContainer
       // to it until it's free.
       if (!$node->exists) {
         break;
-      } else {
-        $candidate_path = $candidate_path . '-' . time() . '-' . rand(1000, 9999);
+      }
+      else {
+        $candidate_path = $candidate_path . '-' . time() . '-' . rand(1000,9999);
       }
     }
     return $candidate_path;
@@ -590,8 +584,7 @@ class Environment extends DataContainer
    * @param string $system_dir
    * @return mixed
    */
-  public function sysdir($name, $folder, $system_dir = 'docroot')
-  {
+  public function sysdir($name, $folder, $system_dir = 'docroot') {
     $this->dir[$name] = $this->dir[$system_dir] . '/' . $folder;
     return $folder;
   }
@@ -602,8 +595,7 @@ class Environment extends DataContainer
    * @param $folder
    * @return mixed
    */
-  public function tmpdir($name, $folder)
-  {
+  public function tmpdir($name, $folder) {
     return $this->sysdir($name, $folder, 'tmp');
   }
 
@@ -616,8 +608,7 @@ class Environment extends DataContainer
    * @return mixed $results
    *   The result of the node search.
    */
-  private function findNodePath($folder)
-  {
+  private function findNodePath($folder) {
     // TODO: cleaner way to exclude folders in _modules.
     $findcmd = 'find ' . $this->dir['docroot'] . '/ -type d -name "' . $folder . '" -not -path */_modules* -not -path *.git*';
     // TODO: sometimes getting empty folder. Why? Temporary fix.
@@ -628,8 +619,7 @@ class Environment extends DataContainer
     return $results;
   }
 
-  function getLastPathSegment($path)
-  {
+  function getLastPathSegment($path) {
     // Regular expression to match the last valid part of a URL path excluding files
     $pattern = '/([^\/\?#]*[^\/\?#\.][^\/\?#]*|[^\/\?#]+)(?:[\?#]|$)/';
 
@@ -655,22 +645,19 @@ class Environment extends DataContainer
    * @return mixed
    *   The path of the node.
    */
-  public function nodePath($folder, $link = FALSE, $clear_cache = FALSE)
-  {
+  public function nodePath($folder, $link = FALSE, $clear_cache = FALSE) {
     static $node_paths = array();
     static $missing_nodes = array();
 
     if ($clear_cache) {
       if ($folder) {
-        unset($missing_nodes[$folder]);
-        unset($node_paths[$folder]);
+        unset($missing_nodes[$folder], $node_paths[$folder]);
       } else {
-        $missing_nodes = array();
-        $node_paths = array();
+        $missing_nodes = $node_paths = array();
       }
       return NULL;
     }
-
+    
     // Regular expression to match the last valid part of a URL path
     $pattern = '/(?:.*\/)?([^\/\?#\.]+)(?:\/[^\/\?#]*)?(?:[\?#]|$)/';
     //$pattern = '/(?:\/([^\/\?#]*[^\/\?#\.][^\/\?#]*))(?:[\?#]|$)/';
@@ -686,18 +673,25 @@ class Environment extends DataContainer
     if (isset($missing_nodes[$folder])) {
       return FALSE;
     }
-
+    
     // We use a static variable to lookup nodes paths only once.
     if (isset($node_paths[$folder])) {
       $node_path_link = $node_paths[$folder];
       $cache_exists = TRUE;
       //return $node_paths[$folder];
     } else {
-      $node_path_link = Cache::getStoredNodePath($this, $folder, TRUE);
+      // build=FALSE: this is the read side, so just compute the shard path and
+      // stat the symlink. Creating the tmp/cache/a/b/c dirs here would run
+      // is_dir/mkdir on every lookup (this method tops the profiler); the dirs
+      // are created lazily by storeNodePath() below when a path is actually cached.
+      $node_path_link = Cache::getStoredNodePath($this, $folder, FALSE);
     }
 
     //print '<br>' . $folder . ': ' . $node_path_link;
-    $node_path = @readlink($node_path_link);
+    // Remember what the shard symlink already points at, so we can avoid
+    // rewriting it below when it is already correct (the common warm case).
+    $stored_target = @readlink($node_path_link);
+    $node_path = $stored_target;
 
     if ($node_path === '__MISSING__') {
       $missing_nodes[$folder] = TRUE;
@@ -707,7 +701,8 @@ class Environment extends DataContainer
     if ($node_path !== false && !is_dir($node_path)) {
       $node_path = false;
     }
-    // quanta_db extension (docs/files-db/api-contract.md §9): resolve cold
+
+    // quanta_db extension (files-db/docs/api-contract.md §9): resolve cold
     // names via the derived index instead of exec(find). The result feeds
     // the same static + symlink caches below. $link searches (their callers
     // readlink() the result) use the legacy find. quantaDbNodePath() is
@@ -718,11 +713,13 @@ class Environment extends DataContainer
       $qdb = $this->quantaDbNodePath($folder);
       if (is_string($qdb)) {
         $node_path = $qdb;
-      } elseif ($qdb === FALSE) {
+      }
+      elseif ($qdb === FALSE) {
         $missing_nodes[$folder] = TRUE;
         return FALSE;
       }
     }
+
     if ($node_path == false) {
       //print "NOT FOUND";
       // Use find to locate the node's directory in the file system.
@@ -744,7 +741,7 @@ class Environment extends DataContainer
           unset($results[$i]);
         }
       }
-
+      
       if (empty($found_folders)) {
         $missing_nodes[$folder] = TRUE;
         $node_paths[$folder] = Cache::storeNodePath($this, '__MISSING__', true, $folder);
@@ -752,25 +749,29 @@ class Environment extends DataContainer
       }
 
       if (count($found_folders) > 1) {
-        new Message(
-          $this,
-          t(
-            'Warning: there is more than one folder named !folder: <br/>!folds<br>Check integrity!',
+        new Message($this,
+          t('Warning: there is more than one folder named !folder: <br/>!folds<br>Check integrity!',
             array(
               '!folder' => $folder,
               '!folds' => var_export($found_folders, 1),
             )
-          )
-        );
+          ));
       }
     }
 
-    if (!$cache_exists || $node_path_link === false) {
-      $node_paths[$folder] = Cache::storeNodePath($this, $node_path, true, $folder);
+    // Only (re)write the shard symlink when what's on disk isn't already
+    // pointing at $node_path. On a warm request the symlink almost always
+    // exists and is correct, so the old unconditional unlink+symlink (one per
+    // node, every request) was pure waste — it put storeNodePath at the top of
+    // the profiler. The stale case ($stored_target pointed at a now-deleted dir,
+    // so it was reset to false above and re-resolved) still rewrites correctly.
+    if ($stored_target !== $node_path) {
+      $node_path_link = Cache::storeNodePath($this, $node_path, true, $folder);
     }
+    $node_paths[$folder] = $node_path_link;
     return $node_path;
 
-  }
+    }
 
   /**
    * quanta_db extension shim: resolve a node name via the derived index.
@@ -788,8 +789,7 @@ class Environment extends DataContainer
    *
    * @return string|false|null
    */
-  private function quantaDbNodePath($folder)
-  {
+  private function quantaDbNodePath($folder) {
     static $ext_root = NULL;
     static $coherent = NULL;
     if ($ext_root === NULL) {
@@ -799,7 +799,8 @@ class Environment extends DataContainer
       // Resolved once per request: is the watcher-backed index authoritative?
       try {
         $coherent = ($ext_root !== '') && \QuantaDb::coherent();
-      } catch (\Throwable $e) {
+      }
+      catch (\Throwable $e) {
         $coherent = FALSE;
       }
     }
@@ -808,7 +809,8 @@ class Environment extends DataContainer
     }
     try {
       $path = \QuantaDb::path($folder);
-    } catch (\Throwable $e) {
+    }
+    catch (\Throwable $e) {
       return NULL;
     }
     if ($path === NULL) {
@@ -832,8 +834,7 @@ class Environment extends DataContainer
    * @return array
    *   The array containing system path(s) to the node.
    */
-  public function linkToNode($link)
-  {
+  public function linkToNode($link) {
     // Find the link target.
     $target = readlink($this->nodePath($link, true));
     // Return the node name the last part of the path of the node.
