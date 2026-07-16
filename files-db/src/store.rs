@@ -86,6 +86,51 @@ pub fn langs_of(node_path: &Path) -> Vec<String> {
     v
 }
 
+/// Enumerate a node dir exactly as `QuantaDb::children` sees it, BEFORE the
+/// type/hidden filters: every entry that is a directory (following symlinks),
+/// excluding dotfiles and the 'files'/'assets' payload dirs, `_`-hidden names
+/// INCLUDED (the caller filters). Sorted. This is deliberately NOT `skip_dir`:
+/// children may include `_modules` (hidden rule only) and out-of-root symlink
+/// targets — byte-parity with the legacy `read_dir` behavior is contractual.
+pub fn list_children(node_path: &Path) -> Vec<(String, bool)> {
+    let mut out = Vec::new();
+    let Ok(rd) = fs::read_dir(node_path) else {
+        return out;
+    };
+    for e in rd.flatten() {
+        let Ok(ft) = e.file_type() else { continue };
+        let name = e.file_name().to_string_lossy().to_string();
+        if name.starts_with('.') || name == "files" || name == "assets" {
+            continue;
+        }
+        let is_link = ft.is_symlink();
+        let is_dir = if is_link {
+            fs::metadata(e.path()).map(|m| m.is_dir()).unwrap_or(false)
+        } else {
+            ft.is_dir()
+        };
+        if !is_dir {
+            continue;
+        }
+        out.push((name, is_link));
+    }
+    out.sort();
+    out
+}
+
+/// A node's mtime: its data.json mtime, else the directory mtime.
+pub fn node_mtime(node_path: &Path) -> i64 {
+    stat_doc(node_path, "")
+        .map(|s| s.mtime)
+        .or_else(|| {
+            fs::metadata(node_path).ok().map(|md| {
+                use std::os::unix::fs::MetadataExt;
+                md.mtime()
+            })
+        })
+        .unwrap_or(0)
+}
+
 pub fn skip_dir(cfg: &Config, path: &Path, name: &str) -> bool {
     name.starts_with('.') || SKIP_DIRS.contains(&name) || cfg.is_derived_path(path)
 }
