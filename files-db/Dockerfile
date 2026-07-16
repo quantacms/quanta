@@ -20,13 +20,21 @@ COPY src ./src
 RUN --mount=type=cache,target=/opt/cargo/registry \
     --mount=type=cache,target=/ext/target \
     cargo build --release \
-    && install -D target/release/libquanta_db.so /out/quanta_db.so
+    && install -D target/release/libquanta_db.so /out/quanta_db.so \
+    && install -D target/release/qdbd /out/qdbd \
+    && install -D target/release/qdbstat /out/qdbstat
 
 FROM scratch AS artifact
 COPY --from=builder /out/quanta_db.so /quanta_db.so
+COPY --from=builder /out/qdbd /qdbd
+COPY --from=builder /out/qdbstat /qdbstat
 
 FROM php:8.2-apache AS test
 COPY --from=builder /out/quanta_db.so /usr/local/lib/php/extensions/quanta_db.so
+COPY --from=builder /out/qdbd /usr/local/bin/qdbd
+COPY --from=builder /out/qdbstat /usr/local/bin/qdbstat
 COPY tests /ext/tests
+# Runs the conformance suite in BOTH modes (fallback + a live qdbd per test).
 RUN php -n -d extension=/usr/local/lib/php/extensions/quanta_db.so -m | grep -qi quanta_db \
-    && QDB_EXT=/usr/local/lib/php/extensions/quanta_db.so sh /ext/tests/run-tests.sh
+    && QDB_EXT=/usr/local/lib/php/extensions/quanta_db.so QDBD_BIN=/usr/local/bin/qdbd \
+       sh /ext/tests/run-tests.sh

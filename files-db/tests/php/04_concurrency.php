@@ -2,8 +2,11 @@
 /** Contract §10 scenarios 2, 3, 4, 5, 12: multi-process concurrency. */
 require __DIR__ . '/_harness.php';
 
-$root = fresh_env();
+// Must precede fresh_env(): in daemon mode fresh_env() awaits coherence, which
+// resolves config (bound once per process, contract §6) — a later ini_set on
+// the timeout would be ignored.
 ini_set('quanta_db.lock_timeout_ms', '800');
+$root = fresh_env();
 seed_node($root, 'home', []);
 
 // --- Scenario 4: concurrent locked increments lose nothing. -----------------

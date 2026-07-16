@@ -15,7 +15,7 @@ eq(QuantaDbException::EXISTS, 3, 'const EXISTS');
 eq(QuantaDbException::BAD_ARGS, 4, 'const BAD_ARGS');
 eq(QuantaDbException::CORRUPT_JSON, 5, 'const CORRUPT_JSON');
 
-eq(QuantaDb::version(), 'ext/1.0', 'version string');
+eq(QuantaDb::version(), 'ext/1.1', 'version string');
 
 // Nodes seeded directly on the filesystem are found (index self-heal, §4.3).
 seed_node($root, 'home', ['title' => 'Home']);
@@ -73,10 +73,11 @@ eq(QuantaDb::path('missing-node'), null, 'path missing -> null');
 eq(QuantaDb::exists('missing-node'), false, 'exists missing -> false');
 eq(QuantaDb::meta('missing-node'), null, 'meta missing -> null');
 
-// Corrupt JSON -> CORRUPT_JSON.
+// Corrupt JSON -> CORRUPT_JSON. (Out-of-band write: in daemon mode the
+// corrupt-flagged record arrives via inotify, hence the eventual variant.)
 mkdir("$root/home/corrupt");
 file_put_contents("$root/home/corrupt/data.json", '{invalid');
-throws(fn() => QuantaDb::get('corrupt'), QuantaDbException::CORRUPT_JSON, 'corrupt data.json');
+throws_eventually(fn() => QuantaDb::get('corrupt'), QuantaDbException::CORRUPT_JSON, 'corrupt data.json');
 
 // update(): locked read-modify-write.
 QuantaDb::put('counter', ['n' => 0], ['father' => 'home']);
