@@ -522,6 +522,9 @@ impl Daemon {
         if node.abs_path(&self.cfg) != dir {
             return; // same-named node elsewhere
         }
+        if store::in_payload_subtree(&node.rel_path) {
+            return; // payload subtree: documents are never loaded (see model::load_node)
+        }
         // Skip no-ops (our own UDS-acked write fires an event too): the model
         // already carries this exact file state.
         let on_disk = store::stat_doc(dir, lang);
