@@ -128,6 +128,14 @@ pub fn load_node(cfg: &Config, name: &str, path: &Path, father: Option<String>) 
         .strip_prefix(&cfg.root)
         .map(|p| p.to_string_lossy().to_string())
         .unwrap_or_else(|_| path.to_string_lossy().to_string());
+    // Payload subtrees (assets/files) are indexed for path resolution but their
+    // documents are never read into memory — they hold static/binary payload,
+    // not node content (store::PAYLOAD_DIRS).
+    let docs = if store::in_payload_subtree(&rel_path) {
+        Vec::new()
+    } else {
+        load_docs(path)
+    };
     NodeModel {
         name: name.to_string(),
         rel_path,
@@ -136,7 +144,7 @@ pub fn load_node(cfg: &Config, name: &str, path: &Path, father: Option<String>) 
         mtime: store::node_mtime(path),
         children: store::list_children(path),
         inlinks: BTreeSet::new(),
-        docs: load_docs(path),
+        docs,
     }
 }
 

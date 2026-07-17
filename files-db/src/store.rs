@@ -11,11 +11,27 @@ pub struct FileStat {
     pub size: i64,
 }
 
-/// Directories that are never nodes, mirroring Quanta's scanDirectory()
-/// exclusions ('.git', 'assets', 'files') plus '_modules' — legacy
-/// Environment::findNodePath() excludes it from its `find`, and it holds
-/// module code, not nodes. '.'-prefixed dirs are skipped too.
-const SKIP_DIRS: [&str; 4] = ["files", "assets", ".git", "_modules"];
+/// Directories pruned from the walk entirely — never nodes, never indexed,
+/// never resolvable. Mirrors legacy `Environment::findNodePath()`, whose `find`
+/// excludes only `*/_modules*` and `*.git*` (`_modules` holds module code, not
+/// nodes). '.'-prefixed dirs are skipped too. NOTE: `assets`/`files` are
+/// deliberately NOT here — legacy find locates nodes inside them (e.g.
+/// `node=assets/img`), so they must stay path-resolvable; they are handled as
+/// [`PAYLOAD_DIRS`] instead (walked for structure, documents never read).
+const SKIP_DIRS: [&str; 2] = [".git", "_modules"];
+
+/// Payload directories: walked and indexed so their subtree resolves by name
+/// (parity with legacy `find`), but their documents are NEVER read into the
+/// daemon's memory — they hold static/binary payload (assets: css/img/js;
+/// files: uploads), not node content. Also kept out of children listings
+/// (`scanDirectory` parity, see [`list_children`]).
+pub const PAYLOAD_DIRS: [&str; 2] = ["assets", "files"];
+
+/// True when `rel_path` (root-relative, '/'-joined) is a payload dir or lives
+/// under one — used to suppress document loading for that whole subtree.
+pub fn in_payload_subtree(rel_path: &str) -> bool {
+    matches!(rel_path.split('/').next(), Some(seg) if PAYLOAD_DIRS.contains(&seg))
+}
 
 pub fn doc_file(lang: &str) -> String {
     if lang.is_empty() {
@@ -100,7 +116,7 @@ pub fn list_children(node_path: &Path) -> Vec<(String, bool)> {
     for e in rd.flatten() {
         let Ok(ft) = e.file_type() else { continue };
         let name = e.file_name().to_string_lossy().to_string();
-        if name.starts_with('.') || name == "files" || name == "assets" {
+        if name.starts_with('.') || PAYLOAD_DIRS.contains(&name.as_str()) {
             continue;
         }
         let is_link = ft.is_symlink();
