@@ -33,7 +33,9 @@ abstract class JSONDataContainer extends DataContainer {
    */
   protected function saveJSON(array $ignore = array()) {
     if (!is_dir($this->path)) {
-      mkdir($this->path, 0755, TRUE) or die('Error. Cannot create dir: ' . $this->path);
+      if (!@mkdir($this->path, 0755, TRUE)) {
+        throw new \Exception('Impossibile creare la directory: ' . $this->path . ' (Permesso negato o percorso non valido)');
+      }
     }
 
     $language = empty($this->getLanguage()) ? Localization::getLanguage($this->env) : $this->getLanguage();
@@ -48,7 +50,7 @@ abstract class JSONDataContainer extends DataContainer {
     }
 
     // quanta_db extension: locked, atomic, index-consistent write
-    // (files-db/docs/api-contract.md §9). The realpath guard makes sure the
+    // (docs/files-db/api-contract.md §9). The realpath guard makes sure the
     // globally-unique name resolves to THIS container's folder; anything
     // else (new node dirs, name mismatch, errors) uses the legacy write.
     if (class_exists('QuantaDb') && is_dir($this->path)) {
@@ -66,7 +68,10 @@ abstract class JSONDataContainer extends DataContainer {
       }
     }
 
-    $fh = fopen($jsonpath, 'w+');
+    $fh = @fopen($jsonpath, 'w+');
+    if ($fh === false) {
+      throw new \Exception('Impossibile scrivere il file: ' . $jsonpath . ' (Permesso negato o directory non scrivibile)');
+    }
     fwrite($fh, json_encode($this->json));
     fclose($fh);
 
