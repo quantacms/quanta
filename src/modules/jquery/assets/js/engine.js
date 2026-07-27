@@ -109,17 +109,31 @@ var actionError = function(err, exception) {
   
     });  
   }
-  else if (err?.responseJSON?.error_message){
+  else if (err?.responseJSON?.error_message || err?.responseJSON?.error){
+   var errorMsg = err.responseJSON.error_message || err.responseJSON.error;
    const shadowButtons = $('#shadow-buttons'); 
    if($('.validation-error').length > 0){
-    $('.validation-error').html(err.responseJSON.error_message);
+    $('.validation-error').html(errorMsg);
    }
-   else{
-    shadowButtons.parent().prepend(`<div style="font-size: 12px;" class="validation-error">${err.responseJSON.error_message}</div>`);
+   else if (shadowButtons.length > 0) {
+    shadowButtons.parent().prepend(`<div style="font-size: 12px;" class="validation-error">${errorMsg}</div>`);
+   }
+   else {
+    alert(errorMsg);
    }
   }
   else{
-    alert(exception);
+    var msg = '';
+    if (err && err.responseText) {
+      var temp = $('<div>').html(err.responseText).text().trim();
+      if (temp) {
+        msg = temp.length > 300 ? temp.substring(0, 300) + '...' : temp;
+      }
+    }
+    if (!msg) {
+      msg = exception === 'parsererror' ? 'Errore di risposta dal server (formato JSON non valido).' : (err?.statusText || 'Si è verificato un errore durante la richiesta.');
+    }
+    alert(msg);
   }
   // Stop form submission if there are empty required fields
   $('.shadow-submit').removeClass('shadow-submitted'); // Remove shadow-submitted class
