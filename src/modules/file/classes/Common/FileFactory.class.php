@@ -41,7 +41,9 @@ class FileFactory {
           header('Content-Type: ' . mime_content_type($file));
         }
         // TODO: support for xsendfile.
-        $mods = array_flip(apache_get_modules());
+        // apache_get_modules() only exists on the Apache SAPI — under php-fpm
+        // (the Docker image) calling it unguarded is a fatal error.
+        $mods = function_exists('apache_get_modules') ? array_flip(apache_get_modules()) : array();
         if (isset($mods['mod_xsendfile'])) {
           // readfile($file);
         }

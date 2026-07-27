@@ -128,7 +128,7 @@ docker build -t quanta-db quanta/files-db/
 docker build --target artifact -o quanta/files-db/dist quanta/files-db/
 ```
 
-Built against `php:8.2-apache` so the `.so` matches the production image ABI.
+Built against `php:8.2-fpm` so the `.so` matches the production image ABI.
 Load it with `extension=/path/to/quanta_db.so`.
 
 The conformance suite runs in **two modes** (see `tests/run-tests.sh`):
