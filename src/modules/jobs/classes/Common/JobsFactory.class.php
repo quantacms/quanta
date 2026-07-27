@@ -52,7 +52,7 @@ class JobsFactory {
    * @param Environment $env
    *   The Environment.
    */
-  public static function processQueue(Environment $env) {
+  public static function processQueue(Environment $env, $exclusion = []) {
     $todo_node = NodeFactory::load($env, Job::DIR_TODO);
 
     if (!$todo_node->exists) {
@@ -69,8 +69,8 @@ class JobsFactory {
         $job = new Job($env, $dir, Job::DIR_TODO); 
         $type = isset($job->json->type) ? $job->json->type : '';
         // Skip sync jobs as they are processed by a dedicated cron (processSyncQueue)
-        if ($type == 'hsw_sync_gyg_availability') {
-            continue;
+        if (in_array($type, $exclusion)) {
+          continue;
         }
         self::runJob($job);
       }
