@@ -69,6 +69,34 @@ __Composer__
 ### For Apache users:
 The __rewrite__ and __headers__ modules must be enabled.
 
+### With Docker:
+The image built from the `Dockerfile` at the repo root runs __nginx + php-fpm__
+(supervised by supervisord); the vhost, the php-fpm pool and the nginx cache
+zones live under `docker/`. `.htaccess` is not used there — its rewrite map is
+reproduced in `docker/nginx/quanta.conf`, so keep the two in sync when adding
+routes.
+
+The container entrypoint (`docker/docker-entrypoint.sh`) does the site setup
+before supervisord starts: the writable directories Quanta expects (`db/_users`,
+`db/_translations`, the jobs queue, `static/tmp/…`), the host-alias symlinks, the
+ownership fixes php-fpm needs, `doctor clear_cache` + `check`, PHP error display
+and the `quanta_db` kill switch. It is driven by environment variables:
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `QUANTA_DIR` | `/var/www/quanta` | Quanta source root |
+| `QUANTA_SITE` | `localhost` | canonical site directory under `sites/` |
+| `IS_PRODUCTION` | unset (dev) | `true`/`1` turns PHP error display off |
+| `QUANTA_DB_ENABLED` | `1` | `0`/`off` unloads `quanta_db.so` and runs the legacy filesystem paths |
+| `SITE_ALIASES` | empty | comma-separated extra hostnames symlinked to the site |
+
+This image is meant to be used as a base: an application image `FROM`s it and
+layers on its site code only. Such an image should **not** set its own
+`ENTRYPOINT` — doing so replaces all of the above, and also resets the inherited
+`CMD` to null. Application-specific start-up steps go in a `*.sh` dropped into
+`/docker-entrypoint.d/`, which the entrypoint sources (in glob order, as root,
+under `set -e`) after its own setup and before it execs the `CMD`.
+
 ### For Windows / XAMP users:
 As Quanta only runs on UNIX, in order to run Quanta on Windows, you will have to install a VM (VMware, VirtualBox, etc.) with your distribution of choice. 
 
