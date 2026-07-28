@@ -79,8 +79,8 @@ routes.
 The container entrypoint (`docker/docker-entrypoint.sh`) does the site setup
 before supervisord starts: the writable directories Quanta expects (`db/_users`,
 `db/_translations`, the jobs queue, `static/tmp/…`), the host-alias symlinks, the
-ownership fixes php-fpm needs, `doctor clear_cache` + `check`, PHP error display
-and the `quanta_db` kill switch. It is driven by environment variables:
+ownership fixes php-fpm needs, the CSS/JS bundles, the doctor passes, PHP error
+display and the `quanta_db` kill switch. It is driven by environment variables:
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
@@ -89,13 +89,31 @@ and the `quanta_db` kill switch. It is driven by environment variables:
 | `IS_PRODUCTION` | unset (dev) | `true`/`1` turns PHP error display off |
 | `QUANTA_DB_ENABLED` | `1` | `0`/`off` unloads `quanta_db.so` and runs the legacy filesystem paths |
 | `SITE_ALIASES` | empty | comma-separated extra hostnames symlinked to the site |
+| `QUANTA_ASSETS_DIR` | `/usr/local/share/quanta/assets` | where the image keeps the CSS/JS bundles |
+| `QUANTA_BOOT_CLEAR_CACHE` | `1` | run `doctor <site> clear_cache` on start (drops cached node paths and all thumbnails) |
+| `QUANTA_BOOT_CHECK` | `0` | run `doctor <site> check` on start (the broken-symlink repair pass) |
+
+The CSS/JS bundles are built when the **image** is built, not on every start:
+`quanta-build-assets` (`docker/build-assets.sh`) runs `doctor <site> check` and
+keeps `css.min.css` / `js.min.js` in `QUANTA_ASSETS_DIR`, and the entrypoint
+copies them into `static/tmp/<site>/files/` — the same place the CMS has always
+read them from. They are derived from the modules' assets, which the image
+already contains, so rebuilding them per container (into a volume every pod
+shares, while the others serve from it) was repeated work.
+
+Nothing in `src/` is involved in this, so a **native installation is unaffected**:
+`doctor <site> check` keeps aggregating and minifying into each site's own
+`static/tmp/<site>/files/`, which is also what a single source tree serving
+several hosts needs, as each host's `_modules` may add its own includes.
 
 This image is meant to be used as a base: an application image `FROM`s it and
 layers on its site code only. Such an image should **not** set its own
 `ENTRYPOINT` — doing so replaces all of the above, and also resets the inherited
 `CMD` to null. Application-specific start-up steps go in a `*.sh` dropped into
 `/docker-entrypoint.d/`, which the entrypoint sources (in glob order, as root,
-under `set -e`) after its own setup and before it execs the `CMD`.
+under `set -e`) after its own setup and before it execs the `CMD`. If its own
+modules add CSS/JS includes, it should also `RUN quanta-build-assets` after
+copying its site in, so those assets land in the bundle.
 
 ### For Windows / XAMP users:
 As Quanta only runs on UNIX, in order to run Quanta on Windows, you will have to install a VM (VMware, VirtualBox, etc.) with your distribution of choice. 
