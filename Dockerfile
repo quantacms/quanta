@@ -150,6 +150,7 @@ COPY docker/nginx/snippets/           /etc/nginx/snippets/
 COPY docker/php/zz-quanta.conf        /usr/local/etc/php-fpm.d/zz-quanta.conf
 COPY docker/supervisord.conf          /etc/supervisor/conf.d/quanta.conf
 COPY docker/qdbd-run.sh               /usr/local/bin/qdbd-run.sh
+COPY docker/build-assets.sh           /usr/local/bin/quanta-build-assets
 
 # Container entrypoint: the site-agnostic first-boot setup (writable dirs, host
 # aliases, ownership, doctor, the quanta_db kill switch) that every Quanta
@@ -162,6 +163,7 @@ COPY docker/docker-entrypoint.sh      /usr/local/bin/docker-entrypoint.sh
 # create the cache/runtime dirs nginx and php-fpm write to.
 RUN rm -f /etc/nginx/sites-enabled/default /etc/nginx/conf.d/default.conf.dpkg-dist \
     && chmod +x /usr/local/bin/qdbd-run.sh /usr/local/bin/docker-entrypoint.sh \
+                /usr/local/bin/quanta-build-assets \
     && mkdir -p /docker-entrypoint.d \
     && mkdir -p /var/cache/nginx/assets /var/cache/nginx/html /var/lib/nginx /run \
     && chown -R www-data:www-data /var/cache/nginx /var/lib/nginx /var/lib/php/sessions
@@ -182,6 +184,18 @@ RUN --mount=type=cache,target=/composer/cache \
 # so the tree must be owned by it.
 RUN mkdir -p /var/www/quanta/sites /var/www/quanta/static/tmp \
     && chown -R www-data:www-data /var/www/quanta/sites /var/www/quanta/static
+
+# Aggregate + minify the modules' CSS/JS now, instead of on every container
+# start. quanta-build-assets runs the CMS's own `doctor <site> check` and leaves
+# css.min.css / js.min.js in QUANTA_ASSETS_DIR; the entrypoint copies them into
+# the site's tmp dir at start, which is where the CMS reads them from (nothing in
+# the CMS changes — a native installation still builds them with doctor).
+#
+# NOTE for downstream application images: if your own modules add CSS/JS includes
+# (hook_load_includes), add `RUN quanta-build-assets` after copying your site in,
+# so those assets are in the bundle.
+ENV QUANTA_ASSETS_DIR=/usr/local/share/quanta/assets
+RUN quanta-build-assets
 
 WORKDIR /var/www/quanta
 
