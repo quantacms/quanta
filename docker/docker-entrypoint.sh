@@ -11,7 +11,8 @@
 #     qdbd and the extension share
 #   * host-alias symlinks so one site dir serves every name it is reached under
 #   * the ownership fixes php-fpm (www-data) needs on all of the above
-#   * `doctor <site> clear_cache` + `check`
+#   * the CSS/JS bundles the image built (see quanta-build-assets)
+#   * the doctor passes over the site's data (see QUANTA_BOOT_* below)
 #
 # Nothing here is application specific: everything is derived from QUANTA_SITE.
 # Downstream application images that need extra start-up steps drop a *.sh file
@@ -25,6 +26,11 @@
 #   QUANTA_DB_ENABLED  0/off/false/no → unload quanta_db.so and run the legacy
 #                      filesystem access paths           (default 1)
 #   SITE_ALIASES       comma-separated extra hostnames symlinked to the site
+#   QUANTA_ASSETS_DIR  image dir holding the CSS/JS bundles built at build time
+#                            (default /usr/local/share/quanta/assets)
+#   QUANTA_BOOT_CLEAR_CACHE
+#                      run `doctor <site> clear_cache` on start (default 1)
+#   QUANTA_BOOT_CHECK  run `doctor <site> check` on start      (default 0)
 #
 # Hooks:
 #   Every /docker-entrypoint.d/*.sh is **sourced** (not executed), in shell glob
@@ -38,6 +44,7 @@ set -e
 
 QUANTA_DIR="${QUANTA_DIR:-/var/www/quanta}"
 QUANTA_SITE="${QUANTA_SITE:-localhost}"
+QUANTA_ASSETS_DIR="${QUANTA_ASSETS_DIR:-/usr/local/share/quanta/assets}"
 SITE_DIR="$QUANTA_DIR/sites/$QUANTA_SITE"
 
 case "$IS_PRODUCTION" in
@@ -149,11 +156,69 @@ done
 # Clear old class map to force regeneration with the site's modules.
 rm -f "$QUANTA_DIR/static/tmp/$QUANTA_SITE/class_map.dat"
 
-# Run Quanta doctor to initialize the site.
-echo "Running Quanta doctor to initialize site '$QUANTA_SITE'..."
+# Install the CSS/JS bundles the image built (quanta-build-assets, see the
+# Dockerfile) into the site's tmp dir, which is where the CMS reads them from.
+# Aggregating and minifying them here — as `doctor check` used to do on every
+# start — is pure repeated work: they come from the modules' assets, which are
+# baked in. static/ is a volume, so the copy still has to happen per site.
+#
+# Skipped when the file is already the image's, so a plain restart writes
+# nothing at all; and done through a rename, so the php-fpm workers (which
+# inline css.min.css on every render) can never read a half-written file.
+if [ -d "$QUANTA_ASSETS_DIR" ]; then
+    for asset in css.min.css js.min.js; do
+        baked="$QUANTA_ASSETS_DIR/$asset"
+        live="$QUANTA_DIR/static/tmp/$QUANTA_SITE/files/$asset"
+        [ -f "$baked" ] || continue
+        if cmp -s "$baked" "$live"; then
+            continue
+        fi
+        cp "$baked" "$live.new.$$"
+        chown www-data:www-data "$live.new.$$"
+        mv -f "$live.new.$$" "$live"
+        echo "Installed $asset from the image."
+    done
+fi
+
+# Doctor passes over the site. Both work on the site's *data*, which lives in
+# volumes every pod shares, so neither can be baked into the image — but neither
+# is a requirement for serving traffic either, so both are switchable:
+#
+#   clear_cache  drops the cached node paths and every generated thumbnail, so a
+#                site whose content changed while the container was down comes up
+#                consistent. On by default. Note the thumbnails it deletes are
+#                also the ones the *other* running pods are serving, and they are
+#                regenerated one expensive request at a time.
+#   check        walks every symlink in the site and repairs the broken ones, and
+#                rebuilds the bundles installed above. That is a repair pass, not
+#                a start-up requirement: it costs seconds on a large site (it was
+#                ~80% of this script's runtime), every pod redoes the same work,
+#                and it writes to the shared volume while the running pods read
+#                from it. Off by default — run it on demand
+#                (`php doctor <site> check`) or from a scheduled job; set
+#                QUANTA_BOOT_CHECK=1 for the old start-up behaviour.
 cd "$QUANTA_DIR"
-php doctor "$QUANTA_SITE" clear_cache 2>&1 || true
-php doctor "$QUANTA_SITE" check 2>&1 || true
+case "${QUANTA_BOOT_CLEAR_CACHE:-1}" in
+    false|FALSE|0|off|no|OFF|NO)
+        echo "Skipping doctor clear_cache (QUANTA_BOOT_CLEAR_CACHE=$QUANTA_BOOT_CLEAR_CACHE)."
+        ;;
+    *)
+        echo "Running Quanta doctor (clear_cache) for site '$QUANTA_SITE'..."
+        php doctor "$QUANTA_SITE" clear_cache 2>&1 || true
+        ;;
+esac
+
+case "${QUANTA_BOOT_CHECK:-0}" in
+    true|TRUE|1|on|yes|ON|YES)
+        echo "Running Quanta doctor (check) for site '$QUANTA_SITE'..."
+        php doctor "$QUANTA_SITE" check 2>&1 || true
+        ;;
+esac
+
+# Doctor writes this file at the end of every run, and DoctorTimestamp (the ?<ts>
+# cache buster on the site's assets) is its mtime. With both passes above off it
+# would never be created on a fresh volume, so seed it here.
+touch "$QUANTA_DIR/static/tmp/$QUANTA_SITE/doctor_recipe.txt"
 
 # Derived-data dir for locks, trashbin and the metrics arena (the shared-memory
 # data segment itself lives on tmpfs, /dev/shm). Pre-create + chown so both qdbd
