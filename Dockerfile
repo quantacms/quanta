@@ -20,7 +20,9 @@
 #   * the container entrypoint ships here too (docker/docker-entrypoint.sh) and
 #     does the whole site setup — writable dirs, host aliases, ownership,
 #     doctor, the quanta_db kill switch. Do not replace it: add app-specific
-#     start-up steps as a *.sh in /docker-entrypoint.d/, which it sources.
+#     start-up steps as a *.sh in /docker-entrypoint.d/, which it sources;
+#   * an interactive `exec` into the container lands in a www-data shell (`root`
+#     switches back) — the processes themselves still run as root.
 #
 # Build (context MUST be this quanta/ directory so files-db/ is reachable):
 #
@@ -88,6 +90,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         rclone \
         nginx \
         supervisor \
+        gosu \
     && docker-php-ext-configure gd --with-jpeg --with-freetype --with-webp \
     && docker-php-ext-install -j"$(nproc)" gd curl zip calendar intl \
     && rm -rf /var/lib/apt/lists/*
@@ -158,6 +161,24 @@ COPY docker/build-assets.sh           /usr/local/bin/quanta-build-assets
 # should NOT replace it — they add their own start-up steps by copying a *.sh
 # into /docker-entrypoint.d/, which the entrypoint sources before the exec.
 COPY docker/docker-entrypoint.sh      /usr/local/bin/docker-entrypoint.sh
+
+# Interactive shells run as www-data. The container's processes stay root (nginx
+# binds :80), but `docker exec -it <c> bash` / `kubectl exec -it <pod> -- bash`
+# lands in a www-data shell — so a doctor/composer run typed by hand cannot
+# leave root-owned files in the site volume that the php-fpm workers can no
+# longer write. It is a child of the root shell the exec started, so `root`
+# (or Ctrl-D) gets root back; see docker/shell.bashrc for the whole story. Both
+# hooks are guarded, so non-interactive execs and scripts are unaffected.
+COPY docker/shell.bashrc              /etc/quanta/shell.bashrc
+RUN printf '%s\n' \
+        '' \
+        '# Quanta: interactive shells run as www-data (see the file).' \
+        '[ -r /etc/quanta/shell.bashrc ] && . /etc/quanta/shell.bashrc' \
+        >> /root/.bashrc \
+    && printf '%s\n' \
+        '# Quanta: same treatment for login shells (bash -l, su -).' \
+        '[ -r /etc/quanta/shell.bashrc ] && . /etc/quanta/shell.bashrc' \
+        > /etc/profile.d/00-quanta-shell.sh
 
 # Drop Debian's stock vhost (it would shadow ours on the default server) and
 # create the cache/runtime dirs nginx and php-fpm write to.
