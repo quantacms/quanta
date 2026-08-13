@@ -56,6 +56,15 @@ foreach (['lg-zone', 'xt-zone', 'lg-st-a', 'lg-st-b', 'xt-st-a', 'xt-st-b'] as $
     seed_node($root, "home/$c", []);
 }
 
+// Three document shapes for the Node::loadJSON bench (part 3). "tiny" is a
+// container node, "typical" is $bookingDoc, "fat" carries a body big enough
+// that copying it — rather than parsing it — dominates.
+seed_node($root, 'home/doc-tiny', ['title' => 'Tiny', 'status' => 'published', 'weight' => 3]);
+seed_node($root, 'home/doc-typical', $bookingDoc(1));
+seed_node($root, 'home/doc-fat', $bookingDoc(2) + [
+    'body' => str_repeat('Lorem ipsum dolor sit amet, consectetur adipiscing elit. ', 3600),
+]);
+
 // The deployed steady state for the extension: index built once.
 QuantaDb::reindex();
 
@@ -88,7 +97,10 @@ eq(
 // the source of truth; the extension detects the external change).
 $legacy->save('bk-0002', ['title' => 'Legacy rewrote this', 'status' => 'confirmed']);
 clearstatcache();
-eq(QuantaDb::get('bk-0002')['title'], 'Legacy rewrote this', 'ext sees legacy write');
+// Out-of-band write: synchronous in fallback mode, but in daemon mode it
+// reaches the index via inotify, so it gets the contract's staleness budget
+// like every other external mutation in the conformance suite.
+eq_eventually(fn() => QuantaDb::get('bk-0002')['title'], 'Legacy rewrote this', 'ext sees legacy write');
 QuantaDb::put('bk-0003', ['title' => 'Ext rewrote this', 'status' => 'pending']);
 clearstatcache();
 eq($legacy->get('bk-0003')['title'], 'Ext rewrote this', 'legacy sees ext write');
@@ -321,6 +333,103 @@ bench("relink: status change x$WRITES", $WRITES,
     }
 );
 
+/* ── Part 3: Node::loadJSON, variant by variant ────────────────────────── */
+/*
+ * This is the only bench that mirrors a real Quanta call site verbatim:
+ * Node::loadJSON (src/modules/node/classes/Common/Node.class.php). Every
+ * variant must produce the same stdClass, so the numbers are directly
+ * comparable — and directly comparable to the historical measurement that
+ * kept reads on the legacy path (~20us legacy vs ~55-120us for get()).
+ *
+ *   legacy  two is_file() stats + file_get_contents + json_decode
+ *   raw     getRaw() (SHM bytes, no syscall) + native json_decode
+ *   array   get()    (contract arrays, serde intermediate) + (object) cast
+ *   object  getObject() (pre-decoded image, no parse)
+ *
+ * The "+touch" rows read every field back afterwards. Property reads are
+ * where interned-key quality shows up: zend_std_read_property validates its
+ * inline cache by pointer identity against the compile-time interned name,
+ * so non-canonical keys silently fall back to a full hash lookup on every
+ * access. A read-only microbench cannot see that.
+ */
+
+$docProfiles = ['tiny' => 'doc-tiny', 'typical' => 'doc-typical', 'fat' => 'doc-fat'];
+$LOADS = (int) (getenv('QDB_BENCH_LOADS') ?: 2000);
+$hasObject = method_exists('QuantaDb', 'getObject');
+
+// Verbatim copy of the legacy branch of Node::loadJSON.
+$legacyLoad = static function (string $path, string $lang): object {
+    if (is_file($path . '/data_' . $lang . '.json')) {
+        $jsonpath = $path . '/data_' . $lang . '.json';
+    } elseif (is_file($path . '/data.json')) {
+        $jsonpath = $path . '/data.json';
+    } else {
+        return new stdClass;
+    }
+    return (object) json_decode(file_get_contents($jsonpath));
+};
+
+// Quanta reads with the neutral language, which is a named constant on the
+// PHP side ("language-neutral") but the empty string to the extension. The
+// legacy branch therefore always stats data_language-neutral.json and always
+// misses — one of the two syscalls the extension read removes.
+$NEUTRAL = 'language-neutral';
+
+$touch = static function (object $o): int {
+    $n = 0;
+    if (isset($o->title)) { $n += strlen((string) $o->title); }
+    if (isset($o->status)) { $n += strlen((string) $o->status); }
+    if (isset($o->customer->email)) { $n += strlen((string) $o->customer->email); }
+    if (isset($o->body)) { $n += strlen((string) $o->body); }
+    foreach ($o as $v) { $n++; }
+    return $n;
+};
+
+$loadRows = [];
+foreach ($docProfiles as $profile => $name) {
+    $path = QuantaDb::path($name);
+    $variants = [
+        'legacy' => static fn() => $legacyLoad($path, $NEUTRAL),
+        'raw'    => static fn() => (object) json_decode(QuantaDb::getRaw($name)),
+        'array'  => static fn() => (object) QuantaDb::get($name),
+    ];
+    if ($hasObject) {
+        $variants['object'] = static fn() => QuantaDb::getObject($name);
+    }
+
+    // Every variant must agree before any of them is timed. Compare with
+    // var_export, NOT json_encode: a string-keyed PHP array and a stdClass
+    // encode to the same JSON, so a round-trip cannot tell
+    // {"a":{"b":1}} decoded to nested objects from one decoded to nested
+    // arrays — which is exactly how the 'array' variant differs.
+    $reference = null;
+    foreach ($variants as $label => $fn) {
+        $got = $fn();
+        if ($reference === null) {
+            $reference = $got;
+            continue;
+        }
+        $same = var_export($got, true) === var_export($reference, true);
+        // 'array' is expected to differ on any document with nested structure:
+        // (object) get() converts the top level only. Recorded, not asserted.
+        if ($label === 'array' && !$same) {
+            echo "  note - loadJSON/$profile: (object) get() differs from json_decode "
+                . "(nested arrays vs objects) — this is why getObject() exists\n";
+            continue;
+        }
+        ok($same, "loadJSON/$profile: $label matches legacy shape");
+    }
+
+    foreach ($variants as $label => $fn) {
+        $loadRows[] = ["$profile/$label", $LOADS, ms(static function () use ($fn, $LOADS) {
+            for ($i = 0; $i < $LOADS; $i++) { $fn(); }
+        })];
+        $loadRows[] = ["$profile/$label +touch", $LOADS, ms(static function () use ($fn, $touch, $LOADS) {
+            for ($i = 0; $i < $LOADS; $i++) { $touch($fn()); }
+        })];
+    }
+}
+
 /* ── Report ────────────────────────────────────────────────────────────── */
 
 printf("%-32s %8s %12s %12s %12s %12s %9s\n",
@@ -332,6 +441,29 @@ foreach ($rows as [$label, $n, $lg, $xt]) {
 }
 echo "\nspeedup = legacy time / extension time (>1 means the extension is faster).\n";
 echo "Write benches trade speed for guarantees the legacy code lacks:\n";
-echo "atomic visibility, fsync durability, per-node locking, index consistency.\n\n";
+echo "atomic visibility, fsync durability, per-node locking, index consistency.\n";
+
+echo "\n== Node::loadJSON variants (same stdClass out of every one)\n\n";
+printf("%-32s %8s %12s %12s %9s\n", 'variant', 'ops', 'total ms', 'per op', 'vs legacy');
+echo str_repeat('-', 78) . "\n";
+$legacyBase = [];
+foreach ($loadRows as [$label, $n, $t]) {
+    // "tiny/legacy" and "tiny/legacy +touch" are the two baselines for "tiny".
+    [$profile, $rest] = explode('/', $label, 2);
+    $key = $profile . (str_ends_with($rest, '+touch') ? '/+touch' : '');
+    if (str_starts_with($rest, 'legacy')) {
+        $legacyBase[$key] = $t;
+    }
+    $base = $legacyBase[$key] ?? 0.0;
+    printf("%-32s %8d %12.1f %10.2fus %8s\n", $label, $n, $t, $t * 1000 / $n,
+        $base > 0 ? sprintf('%.2fx', $base / max($t, 1e-9)) : '-');
+}
+if (!$hasObject) {
+    echo "\n(QuantaDb::getObject() not present in this build — 'object' rows skipped.)\n";
+}
+echo "\nQDB_BENCH_LOADS=$LOADS. Sizing: QDB_BENCH_N, QDB_BENCH_COLD, QDB_BENCH_WRITES,\n";
+echo "QDB_BENCH_REPEAT. Toggle the pre-decoded image with -d quanta_db.image=0|1\n";
+echo "and zero-copy string zvals with -d quanta_db.zero_copy=0|1; results must be\n";
+echo "identical either way, only the timings change.\n\n";
 
 finish();

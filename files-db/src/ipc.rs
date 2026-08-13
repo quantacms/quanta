@@ -115,6 +115,36 @@ pub fn msg_relink(target: &str, from: &str, to: &str) -> Value {
     json!({"op": "relink", "target": target, "from": from, "to": to})
 }
 
+/// A node relocated from `from_rel` to `to_rel`, possibly under a new name.
+///
+/// Both paths are carried explicitly rather than looked up in the daemon's
+/// model: a directory rename also fires inotify MOVED_FROM/MOVED_TO, so by the
+/// time this message is handled the model may already have been updated and no
+/// longer knows where the node came from. The writer does.
+///
+/// `containers` names every node that symlinks to it — the extension re-pointed
+/// those links on disk, and only a rescan of the container's own directory can
+/// re-derive the edges.
+///
+/// `new_name` is carried for legibility in logs; the daemon does not consume it,
+/// since re-walking `to_rel` names the node from its directory anyway.
+pub fn msg_move(
+    name: &str,
+    new_name: &str,
+    from_rel: &str,
+    to_rel: &str,
+    containers: &[&str],
+) -> Value {
+    json!({
+        "op": "move",
+        "name": name,
+        "new_name": new_name,
+        "from_rel": from_rel,
+        "to_rel": to_rel,
+        "containers": containers,
+    })
+}
+
 pub fn msg_reindex(subtree: Option<&str>) -> Value {
     match subtree {
         Some(s) => json!({"op": "reindex", "subtree": s}),

@@ -82,6 +82,16 @@ pub fn write_doc(node_path: &Path, lang: &str, json: &str) -> Result<FileStat, D
     Ok(to_filestat(&md))
 }
 
+/// Drop one language's document. `false` when it was not there — an absent file
+/// is not an error, matching how the rest of the contract treats "not found".
+pub fn remove_doc(node_path: &Path, lang: &str) -> Result<bool, DbError> {
+    match fs::remove_file(node_path.join(doc_file(lang))) {
+        Ok(()) => Ok(true),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(false),
+        Err(e) => Err(e.into()),
+    }
+}
+
 /// Languages available for a node ('' = neutral data.json).
 pub fn langs_of(node_path: &Path) -> Vec<String> {
     let mut v = Vec::new();

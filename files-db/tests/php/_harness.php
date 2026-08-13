@@ -69,11 +69,28 @@ function throws(callable $fn, int $code, string $label): void
 function qdb_settle(callable $cond, float $budget = 2.0): bool
 {
     $deadline = microtime(true) + (qdb_daemon_mode() ? $budget : 0.0);
+    $last = null;
     while (true) {
-        if ($cond()) {
-            return true;
+        // A throw means "not settled yet", never "give up". Seeding a node with
+        // file_put_contents is O_TRUNC + write, so the daemon's inotify can read
+        // the file while it is still zero bytes and latch it as CORRUPT_JSON for
+        // a few ms until the closing event re-reads it. Letting that escape made
+        // any *_eventually assertion a coin flip (05_external_reindex was failing
+        // ~1 run in 6). The final assertion outside this loop still reports a
+        // genuinely stuck condition.
+        try {
+            if ($cond()) {
+                return true;
+            }
+            $last = null;
+        } catch (\Throwable $e) {
+            $last = $e;
         }
         if (microtime(true) >= $deadline) {
+            if ($last !== null) {
+                fwrite(STDERR, '    settle gave up with: ' . get_class($last)
+                    . ': ' . $last->getMessage() . "\n");
+            }
             return false;
         }
         usleep(20_000);

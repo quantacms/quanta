@@ -1,16 +1,17 @@
 <?php
 
 /**
- * quanta_db — Files-DB API stub (contract v1.1).
+ * quanta_db — Files-DB API stub (contract v1.3).
  *
- * Normative signatures for both implementations:
- *  - the PHP polyfill (_modules/quanta_db/), loaded when the extension is absent;
- *  - the native extension (this file doubles as its php-src-style .stub.php,
- *    from which arginfo is generated with gen_stub.php).
+ * Normative signatures for the native extension; this file doubles as its
+ * php-src-style .stub.php, from which arginfo is generated with gen_stub.php.
+ * (The contract also describes a pure-PHP polyfill under _modules/quanta_db/;
+ * that has never been shipped — see api-contract.md.)
  *
  * The API is a single class, QuantaDb, whose operations are static methods
- * (there are no procedural quanta_db_* functions). Full semantics:
- * docs/files-db/api-contract.md. This file must never be require()d at
+ * (there are no procedural quanta_db_* functions). Practical guide:
+ * files-db/docs/usage.md. Full normative semantics:
+ * files-db/docs/api-contract.md. This file must never be require()d at
  * runtime — it exists for IDEs, static analysis, and arginfo.
  *
  * Conventions repeated from the contract:
@@ -57,6 +58,24 @@ class QuantaDb
      * @param string|null $lang null = data.json, 'it' = data_it.json, …
      */
     public static function getRaw(string $name, ?string $lang = null): ?string {}
+
+    /**
+     * Data document as a stdClass — exactly what `(object) json_decode($raw)`
+     * produces, nested shapes included (JSON objects become stdClass, JSON
+     * arrays become lists). Null if the node/language file is absent.
+     *
+     * The reader behind Node::loadJSON(). `(object) get()` is NOT equivalent:
+     * that cast converts only the top level, leaving nested JSON objects as
+     * arrays, and Quanta reads them as objects
+     * ($node->json->permissions->{$permission}).
+     *
+     * Unlike every other reader here, the result is freshly allocated,
+     * unshared and fully MUTABLE — see contract §3. (Contract 1.2.)
+     *
+     * @param string      $name node basename
+     * @param string|null $lang null = data.json, 'it' = data_it.json, …
+     */
+    public static function getObject(string $name, ?string $lang = null): ?object {}
 
     /** Absolute directory path of the node, or null. Replaces Environment::nodePath(). */
     public static function path(string $name): ?string {}
@@ -122,6 +141,39 @@ class QuantaDb
      * @return array|null whatever $fn returned
      */
     public static function update(string $name, callable $fn, array $opts = []): ?array {}
+
+    /**
+     * put() for callers that already hold the serialized document. The bytes are
+     * stored VERBATIM — json_encode() escapes '/' and non-ASCII where the
+     * extension's own encoder does not, so this is how a document stays
+     * byte-stable across writers. $json must parse; if it does not, nothing is
+     * written and QuantaDbException::BAD_ARGS is thrown.
+     *
+     * @param array{lang?: ?string, father?: string} $opts
+     */
+    public static function putRaw(string $name, string $json, array $opts = []): bool {}
+
+    /**
+     * Remove one language's document (data.json / data_<lang>.json); the node
+     * stays. False when that file (or the node) was not there. A node with no
+     * documents still resolves via path()/exists(); get() returns null.
+     */
+    public static function deleteDoc(string $name, ?string $lang = null): bool {}
+
+    /**
+     * Relocate a node: new father, new name ($opts['name']), or both. The
+     * directory is renamed, so the whole subtree travels with it, and every
+     * inbound link is re-pointed (links hold absolute paths and would otherwise
+     * dangle). False when $name does not resolve; EXISTS when the destination
+     * is occupied or a rename would take a name already used in the tree;
+     * BAD_ARGS when the new father is inside the node's own subtree.
+     *
+     * Atomic per step, not end to end: a crash between the rename and the link
+     * re-pointing leaves dangling links that reindex() repairs.
+     *
+     * @param array{name?: string, if_exists?: 'error'|'replace'} $opts
+     */
+    public static function move(string $name, ?string $new_father = null, array $opts = []): bool {}
 
     /** Move the node dir to the trashbin, drop its index rows and inbound links. */
     public static function delete(string $name): bool {}

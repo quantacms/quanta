@@ -29,7 +29,10 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 /// "QDBDAT1\0" little-endian.
 const MAGIC: u64 = 0x0031_5441_4442_4451;
-pub const LAYOUT_VERSION: u32 = 1;
+/// Bumped to 2 when the per-language pre-decoded image was added. A reader
+/// built against a different layout rejects the segment in `SegmentReader::open`
+/// and degrades to fallback mode, so a daemon/extension version skew is safe.
+pub const LAYOUT_VERSION: u32 = 2;
 /// Fixed header block; slot directory starts right after it.
 pub const HEADER_SIZE: u64 = 4096;
 
@@ -41,11 +44,13 @@ pub const REC_TOMBSTONE: u16 = 1;
 /// Per-language flag: the doc file exists but does not parse. Readers must
 /// surface CORRUPT_JSON (contract §7), not "no document".
 pub const LANG_CORRUPT: u16 = 1;
+/// Per-language flag: a pre-decoded image (`image.rs`) accompanies the raw doc.
+pub const LANG_HAS_IMAGE: u16 = 2;
 
 /// Fixed-size record header preceding the variable section (see `encode_record`).
 pub const REC_FIXED: usize = 44;
 /// Fixed part of one language-table entry (lang/doc bytes follow all entries).
-pub const LANG_FIXED: usize = 24;
+pub const LANG_FIXED: usize = 32;
 
 // ---------------------------------------------------------------------------
 // Header
@@ -77,6 +82,9 @@ pub struct SegHeader {
     pub doc_bytes: AtomicU64,
     pub root_hash: u64,
     pub daemon_pid: u64,
+    /// Live pre-decoded image bytes (diagnostics, qdbstat). Appended after
+    /// `daemon_pid` per the append-only rule above.
+    pub img_bytes: AtomicU64,
 }
 
 const _: () = assert!(std::mem::size_of::<SegHeader>() <= HEADER_SIZE as usize);
@@ -137,6 +145,9 @@ pub struct LangDoc<'a> {
     pub corrupt: bool,
     pub doc_mtime: i64,
     pub doc_size: i64,
+    /// Pre-decoded image (`image::encode`), or empty when none was built
+    /// (images disabled, document too large, or it failed to encode).
+    pub image: &'a [u8],
 }
 
 /// Borrowed view of everything a record stores; the daemon's model produces it.
@@ -186,8 +197,16 @@ fn put_i64(buf: &mut Vec<u8>, v: i64) {
 ///      children: child_count x (u16 [bit15=is_link | len]) then name bytes
 ///      inlinks:  inlink_count x (u16 len) then name bytes
 ///      langs:    lang_count x {u16 lang_len, u16 flags, u32 doc_len,
-///                              i64 doc_mtime, i64 doc_size}
+///                              i64 doc_mtime, i64 doc_size,
+///                              u32 img_off, u32 img_len}
 ///                then per lang: lang bytes | doc bytes
+///                then, 8-aligned: the pre-decoded images
+///
+/// `img_off` is an offset from the START OF THIS RECORD (0 = no image), not a
+/// position in the doc byte stream. Images are placed last and individually
+/// 8-aligned so that — because records themselves start at 8-aligned arena
+/// offsets — every `zend_string` inside an image is 8-aligned in the mapping,
+/// which is what lets the extension point PHP zvals straight at it.
 pub fn encode_record(r: &RecordInput, tombstone: bool) -> Vec<u8> {
     let mut buf = Vec::with_capacity(256);
     let father = r.father.unwrap_or("");
@@ -224,16 +243,36 @@ pub fn encode_record(r: &RecordInput, tombstone: bool) -> Vec<u8> {
     for name in r.inlinks {
         buf.extend_from_slice(name.as_bytes());
     }
+    let lang_tab = buf.len();
     for l in r.langs {
         put_u16(&mut buf, l.lang.len() as u16);
-        put_u16(&mut buf, if l.corrupt { LANG_CORRUPT } else { 0 });
+        let mut flags = if l.corrupt { LANG_CORRUPT } else { 0 };
+        if !l.image.is_empty() {
+            flags |= LANG_HAS_IMAGE;
+        }
+        put_u16(&mut buf, flags);
         put_u32(&mut buf, l.doc.len() as u32);
         put_i64(&mut buf, l.doc_mtime);
         put_i64(&mut buf, l.doc_size);
+        put_u32(&mut buf, 0); // img_off, patched below
+        put_u32(&mut buf, l.image.len() as u32);
     }
     for l in r.langs {
         buf.extend_from_slice(l.lang.as_bytes());
         buf.extend_from_slice(l.doc);
+    }
+    // Images last, each 8-aligned within the record (see the layout note).
+    for (i, l) in r.langs.iter().enumerate() {
+        if l.image.is_empty() {
+            continue;
+        }
+        while buf.len() % 8 != 0 {
+            buf.push(0);
+        }
+        let img_off = buf.len() as u32;
+        let e = lang_tab + i * LANG_FIXED;
+        buf[e + 24..e + 28].copy_from_slice(&img_off.to_le_bytes());
+        buf.extend_from_slice(l.image);
     }
     while buf.len() % 8 != 0 {
         buf.push(0);
@@ -301,6 +340,8 @@ pub struct LangView<'a> {
     pub doc: &'a [u8],
     pub doc_mtime: i64,
     pub doc_size: i64,
+    /// Pre-decoded image bytes, empty when the record carries none.
+    pub img: &'a [u8],
 }
 
 impl<'a> RecordView<'a> {
@@ -351,6 +392,24 @@ impl<'a> RecordView<'a> {
         }
         if off > bytes.len() {
             return None;
+        }
+        // Images sit after the doc payloads at record-relative offsets. Verify
+        // each one is inside the record and 8-aligned — the extension hands
+        // addresses inside these bytes to the Zend engine, so an unaligned or
+        // out-of-bounds image must be rejected here, before any reader sees it.
+        for i in 0..v.lang_count {
+            let e = lang_tab + i * LANG_FIXED;
+            let img_off = rd_u32(bytes, e + 24) as usize;
+            let img_len = rd_u32(bytes, e + 28) as usize;
+            if img_len == 0 {
+                continue;
+            }
+            if img_off % 8 != 0 || img_off < off {
+                return None;
+            }
+            if img_off.checked_add(img_len)? > bytes.len() {
+                return None;
+            }
         }
         Some(v)
     }
@@ -444,12 +503,21 @@ impl<'a> RecordView<'a> {
             data += lang_len;
             let doc = &self.bytes[data..data + doc_len];
             data += doc_len;
+            // Bounds already validated in parse().
+            let img_off = rd_u32(self.bytes, e + 24) as usize;
+            let img_len = rd_u32(self.bytes, e + 28) as usize;
+            let img = if img_len == 0 {
+                &[][..]
+            } else {
+                &self.bytes[img_off..img_off + img_len]
+            };
             out.push(LangView {
                 lang,
                 flags,
                 doc,
                 doc_mtime: rd_i64(self.bytes, e + 8),
                 doc_size: rd_i64(self.bytes, e + 16),
+                img,
             });
         }
         out
@@ -464,6 +532,21 @@ impl<'a> RecordView<'a> {
                     return Err(());
                 }
                 return Ok(Some(l.doc));
+            }
+        }
+        Ok(None)
+    }
+
+    /// The pre-decoded image for `lang`, when the record carries one.
+    /// Mirrors [`doc`]: `Err(())` = corrupt, `Ok(None)` = no image available
+    /// (absent language, images disabled, or the document was not imaged).
+    pub fn image(&self, lang: &str) -> Result<Option<&'a [u8]>, ()> {
+        for l in self.langs() {
+            if l.lang == lang {
+                if l.flags & LANG_CORRUPT != 0 {
+                    return Err(());
+                }
+                return Ok((l.flags & LANG_HAS_IMAGE != 0 && !l.img.is_empty()).then_some(l.img));
             }
         }
         Ok(None)
@@ -876,11 +959,12 @@ impl SegmentWriter {
         self.used_slots * 2 >= self.slot_count || dead > (used / 4).max(4 << 20)
     }
 
-    pub fn set_counts(&self, nodes: u64, links: u64, doc_bytes: u64) {
+    pub fn set_counts(&self, nodes: u64, links: u64, doc_bytes: u64, img_bytes: u64) {
         let h = self.header();
         h.node_count.store(nodes, REL);
         h.link_count.store(links, REL);
         h.doc_bytes.store(doc_bytes, REL);
+        h.img_bytes.store(img_bytes, REL);
     }
 }
 
@@ -938,8 +1022,8 @@ mod tests {
         let inlinks = vec!["cont1".to_string(), "cont2".to_string()];
         let doc = br#"{"title":"Home"}"#;
         let langs = vec![
-            LangDoc { lang: "", doc, corrupt: false, doc_mtime: 111, doc_size: doc.len() as i64 },
-            LangDoc { lang: "it", doc: b"", corrupt: true, doc_mtime: 222, doc_size: 3 },
+            LangDoc { lang: "", doc, corrupt: false, doc_mtime: 111, doc_size: doc.len() as i64, image: &[] },
+            LangDoc { lang: "it", doc: b"", corrupt: true, doc_mtime: 222, doc_size: 3, image: &[] },
         ];
         let input = mk_input("home", "home", None, 7, &children, &inlinks, &langs);
         let bytes = encode_record(&input, false);
@@ -966,10 +1050,90 @@ mod tests {
     }
 
     #[test]
+    fn record_carries_per_language_images() {
+        // Images must survive the record round trip, stay 8-aligned relative to
+        // the record start (records themselves are 8-aligned in the arena, so
+        // that is what makes every zend_string inside them aligned in the
+        // mapping), and be reported per language.
+        let img_a: Vec<u8> = (0..40u8).collect();
+        let img_b: Vec<u8> = (0..24u8).map(|b| b + 100).collect();
+        let langs = vec![
+            LangDoc {
+                lang: "",
+                doc: b"{\"a\":1}",
+                corrupt: false,
+                doc_mtime: 1,
+                doc_size: 7,
+                image: &img_a,
+            },
+            LangDoc {
+                lang: "en",
+                doc: b"{\"b\":22}",
+                corrupt: false,
+                doc_mtime: 2,
+                doc_size: 8,
+                image: &img_b,
+            },
+            // A language with a document but deliberately no image.
+            LangDoc {
+                lang: "de",
+                doc: b"{}",
+                corrupt: false,
+                doc_mtime: 3,
+                doc_size: 2,
+                image: &[],
+            },
+        ];
+        let input = mk_input("n", "home/n", Some("home"), 5, &[], &[], &langs);
+        let bytes = encode_record(&input, false);
+        assert_eq!(bytes.len() % 8, 0);
+
+        let rec = RecordView::parse(&bytes).expect("parses");
+        assert_eq!(rec.image("").unwrap(), Some(&img_a[..]));
+        assert_eq!(rec.image("en").unwrap(), Some(&img_b[..]));
+        assert_eq!(rec.image("de").unwrap(), None, "no image for 'de'");
+        assert_eq!(rec.image("fr").unwrap(), None, "absent language");
+        // Documents still readable alongside their images.
+        assert_eq!(rec.doc("").unwrap(), Some(&b"{\"a\":1}"[..]));
+        assert_eq!(rec.doc("en").unwrap(), Some(&b"{\"b\":22}"[..]));
+
+        for l in rec.langs() {
+            if l.img.is_empty() {
+                continue;
+            }
+            let off = l.img.as_ptr() as usize - bytes.as_ptr() as usize;
+            assert_eq!(off % 8, 0, "image must be 8-aligned within the record");
+        }
+
+        // Truncation anywhere must be rejected, never read out of bounds.
+        for cut in 0..bytes.len() {
+            let _ = RecordView::parse(&bytes[..cut]);
+        }
+    }
+
+    #[test]
+    fn corrupt_language_reports_no_image() {
+        let img: Vec<u8> = (0..16u8).collect();
+        let langs = vec![LangDoc {
+            lang: "",
+            doc: b"",
+            corrupt: true,
+            doc_mtime: 1,
+            doc_size: 5,
+            image: &img,
+        }];
+        let input = mk_input("c", "home/c", Some("home"), 1, &[], &[], &langs);
+        let bytes = encode_record(&input, false);
+        let rec = RecordView::parse(&bytes).expect("parses");
+        assert!(rec.image("").is_err(), "corrupt language must report corrupt");
+        assert!(rec.doc("").is_err());
+    }
+
+    #[test]
     fn truncated_record_never_panics() {
         let children: Vec<(String, bool)> = vec![("x".into(), false)];
         let langs =
-            vec![LangDoc { lang: "", doc: b"{}", corrupt: false, doc_mtime: 0, doc_size: 2 }];
+            vec![LangDoc { lang: "", doc: b"{}", corrupt: false, doc_mtime: 0, doc_size: 2, image: &[] }];
         let input = mk_input("n", "n", Some("f"), 1, &children, &[], &langs);
         let bytes = encode_record(&input, false);
         for cut in 0..bytes.len() {
@@ -990,12 +1154,11 @@ mod tests {
                 doc: doc.as_bytes(),
                 corrupt: false,
                 doc_mtime: i,
-                doc_size: doc.len() as i64,
-            }];
+                doc_size: doc.len() as i64, image: &[] }];
             let input = mk_input(&name, &rel, Some("home"), i as u64 + 1, &[], &[], &langs);
             w.upsert(&name, &encode_record(&input, false)).unwrap();
         }
-        w.set_counts(500, 0, 0);
+        w.set_counts(500, 0, 0, 0);
         w.publish_ready();
 
         let r = SegmentReader::open(&dir, 1, 42).unwrap();
@@ -1016,8 +1179,7 @@ mod tests {
             doc,
             corrupt: false,
             doc_mtime: 9,
-            doc_size: doc.len() as i64,
-        }];
+            doc_size: doc.len() as i64, image: &[] }];
         let input = mk_input("node-7", "home/node-7", Some("home"), 999, &[], &[], &langs);
         w.upsert("node-7", &encode_record(&input, false)).unwrap();
         w.tombstone("node-9", 1000).unwrap();
@@ -1057,8 +1219,7 @@ mod tests {
                 doc: json.as_bytes(),
                 corrupt: false,
                 doc_mtime: 0,
-                doc_size: json.len() as i64,
-            }];
+                doc_size: json.len() as i64, image: &[] }];
             let input = mk_input(&name, &name, None, 1, &[], &[], &langs);
             match w.upsert(&name, &encode_record(&input, false)) {
                 Ok(()) => {}
@@ -1089,8 +1250,7 @@ mod tests {
                 doc: json.as_bytes(),
                 corrupt: false,
                 doc_mtime: 0,
-                doc_size: json.len() as i64,
-            }];
+                doc_size: json.len() as i64, image: &[] }];
             let input = mk_input(&name, &name, None, 1, &[], &[], &langs);
             w.upsert(&name, &encode_record(&input, false)).unwrap();
         }
@@ -1131,8 +1291,7 @@ mod tests {
                     doc: json.as_bytes(),
                     corrupt: false,
                     doc_mtime: 0,
-                    doc_size: json.len() as i64,
-                }];
+                    doc_size: json.len() as i64, image: &[] }];
                 let input = mk_input(&name, &name, None, round + 1, &[], &[], &langs);
                 if w.upsert(&name, &encode_record(&input, false)).is_err() {
                     break; // arena filled — enough churn happened either way
