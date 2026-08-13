@@ -98,15 +98,21 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # quanta_db: fast, concurrency-safe access to the files DB. Root is the
 # canonical site dir (host aliases are symlinks to it). The qdbd daemon holds
 # the whole tree in a shared-memory segment (tmpfs, /dev/shm) that the
-# extension maps read-only; locks and trashbin default under /tmp/quanta_db —
-# all derived, per-pod, and rebuildable at any time with QuantaDb::reindex()
-# (files stay the source of truth). The PHP shims (and the extension's own
-# fallback mode) degrade to legacy behavior if the daemon is down or this ini
-# is removed.
+# extension maps read-only; locks default under /tmp/quanta_db — all derived,
+# per-pod, and rebuildable at any time with QuantaDb::reindex() (files stay the
+# source of truth). The PHP shims (and the extension's own fallback mode)
+# degrade to legacy behavior if the daemon is down or this ini is removed.
+#
+# trashbin_dir is the exception to "derived data lives under /tmp": it is pointed
+# at the location Quanta's own Node::delete() uses (Environment->dir['trashbin'])
+# so a site adopting QuantaDb::delete() finds deleted nodes where it already
+# expects them, not on pod-local storage. Re-pointed for a non-default
+# QUANTA_SITE by docker-entrypoint.sh.
 COPY --from=qdb-builder /out/quanta_db.so /usr/local/lib/php/extensions/quanta_db.so
 RUN { \
     echo 'extension=/usr/local/lib/php/extensions/quanta_db.so'; \
     echo 'quanta_db.root=/var/www/quanta/sites/localhost'; \
+    echo 'quanta_db.trashbin_dir=/var/www/quanta/static/tmp/localhost/trashbin'; \
     } > /usr/local/etc/php/conf.d/quanta-db.ini
 
 # qdbstat: varnishstat-style live monitor. Reads the per-pod shared-memory

@@ -79,6 +79,58 @@ throws(
 wait_worker($holder);
 eq(QuantaDb::get('lockee')['x'], 0, 'holder update won, timed-out write not applied');
 
+// --- move() under concurrent readers: never observed half-applied. ----------
+// A move is the only operation that invalidates a whole subtree's paths at
+// once, so the thing to prove is that a reader either sees the old location or
+// the new one — and that the node stays resolvable throughout.
+seed_node($root, 'home/left', []);
+seed_node($root, 'home/right', []);
+QuantaDb::put('shuttle', ['v' => 1], ['father' => 'left']);
+QuantaDb::put('shuttlekid', ['v' => 2], ['father' => 'shuttle']);
+$mover = spawn_worker('move_loop.php', ['shuttle', 'left', 'right', 60]);
+$seen = 0;
+$lost = 0;
+$run = 0;
+$max_run = 0;
+$stray = 0;
+while (worker_running($mover)) {
+    $p = QuantaDb::path('shuttle');
+    if ($p === null) {
+        $lost++;
+        $max_run = max($max_run, ++$run);
+        continue;
+    }
+    $run = 0;
+    $seen++;
+    if (!str_ends_with($p, '/left/shuttle') && !str_ends_with($p, '/right/shuttle')) {
+        $stray++;
+    }
+}
+[$code, , $err] = wait_worker($mover);
+eq($code, 0, 'move worker exited cleanly' . ($code ? " ($err)" : ''));
+ok($seen > 20, "reader observed many relocations ($seen reads)");
+eq($stray, 0, 'node was never at a third location');
+
+// What "never disappeared" means differs by mode, and the difference is the
+// contract's, not the test's.
+if (qdb_daemon_mode()) {
+    // The index is authoritative: a null here is a *definitive* absence that
+    // callers act on (Environment::nodePath skips its legacy find on one). So
+    // the daemon must never publish a window where the node is neither at its
+    // old location nor its new one.
+    eq($lost, 0, 'authoritative index never reported the node absent mid-move');
+} else {
+    // No daemon, so coherent() is false and a null only means "the fast path
+    // doesn't know" — the caller still falls back to its own lookup. A miss is
+    // legitimate here: the self-heal walk can race a rename and genuinely fail
+    // to see the node. What must NOT happen is that verdict latching in the
+    // negative cache and blinding this worker for the whole TTL.
+    ok($max_run < 50, "absent verdict never latched (longest run $max_run of $lost)");
+}
+eq(QuantaDb::get('shuttlekid'), ['v' => 2], 'descendant survived the shuttling');
+ok(str_contains((string) QuantaDb::path('shuttlekid'), '/shuttle/shuttlekid'), 'descendant still under its father');
+eq(QuantaDb::stats()['shm_invalid'] ?? 0, 0, 'no invalid segment reads during the moves');
+
 // --- Scenario 12: kill -9 while holding the lock leaves the node writable. --
 $ready = $GLOBALS['__qdb_base'] . '/ready2';
 $holder = spawn_worker('hold_lock.php', ['lockee', 10000, $ready]);

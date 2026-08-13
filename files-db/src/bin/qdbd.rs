@@ -34,6 +34,10 @@ mod shm;
 mod config;
 #[path = "../store.rs"]
 mod store;
+#[path = "../php_abi.rs"]
+mod php_abi;
+#[path = "../image.rs"]
+mod image;
 #[path = "../model.rs"]
 mod model;
 #[path = "../ipc.rs"]
@@ -153,6 +157,7 @@ struct Daemon {
     model: Model,
     writer: SegmentWriter,
     doc_bytes: u64,
+    img_bytes: u64,
     inotify: Inotify,
     watches: HashMap<WatchDescriptor, PathBuf>,
     degraded: bool,
@@ -225,6 +230,7 @@ impl Daemon {
             self.model.nodes.len() as u64,
             self.model.links.len() as u64,
             self.doc_bytes,
+            self.img_bytes,
         );
         w.publish_ready();
         self.writer = w;
@@ -283,6 +289,7 @@ impl Daemon {
             self.model.nodes.len() as u64,
             self.model.links.len() as u64,
             self.doc_bytes,
+            self.img_bytes,
         );
     }
 
@@ -325,9 +332,11 @@ impl Daemon {
         let gen = node.generation;
         if let Some(old) = self.model.nodes.get(name) {
             self.doc_bytes = self.doc_bytes.saturating_sub(old.doc_bytes());
+            self.img_bytes = self.img_bytes.saturating_sub(old.img_bytes());
             node.inlinks = old.inlinks.clone();
         }
         self.doc_bytes += node.doc_bytes();
+        self.img_bytes += node.img_bytes();
         self.model.nodes.insert(name.to_string(), node);
         self.publish_node(name);
         self.refresh_father_of(father);
@@ -344,6 +353,18 @@ impl Daemon {
         let Some(node) = self.model.nodes.get(name) else { return };
         let base_rel = node.rel_path.clone();
         let father = node.father.clone();
+        self.prune_rel(&base_rel);
+        self.refresh_father_of(father);
+    }
+
+    /// Drop every row still filed under the `base_rel` path prefix, plus the
+    /// link edges touching them and the watches beneath it.
+    ///
+    /// Keyed on a path prefix rather than on a name because `move` needs it that
+    /// way: once the subtree has been republished at its new location, what has
+    /// to go is whatever is *still* filed under the old path — which for a plain
+    /// move is nothing at all, since every row was overwritten in place.
+    fn prune_rel(&mut self, base_rel: &str) {
         let prefix = format!("{base_rel}/");
         let victims: Vec<String> = self
             .model
@@ -352,6 +373,9 @@ impl Daemon {
             .filter(|(_, m)| m.rel_path == base_rel || m.rel_path.starts_with(&prefix))
             .map(|(n, _)| n.clone())
             .collect();
+        if victims.is_empty() {
+            return;
+        }
         let victim_set: HashSet<&String> = victims.iter().collect();
         // Counterparts of removed edges need republishing (inlinks/children).
         let mut affected: HashSet<String> = HashSet::new();
@@ -370,6 +394,7 @@ impl Daemon {
         for v in &victims {
             if let Some(m) = self.model.nodes.remove(v) {
                 self.doc_bytes = self.doc_bytes.saturating_sub(m.doc_bytes());
+                self.img_bytes = self.img_bytes.saturating_sub(m.img_bytes());
             }
         }
         self.model.rebuild_inlinks();
@@ -382,12 +407,11 @@ impl Daemon {
                 self.publish_node(&a); // inlinks may have changed even if children didn't
             }
         }
-        self.refresh_father_of(father);
         self.watches.retain(|_, p| {
             p.strip_prefix(&self.cfg.root)
                 .map(|rel| {
                     let rel = rel.to_string_lossy();
-                    !(rel == base_rel.as_str() || rel.starts_with(&prefix))
+                    !(rel == base_rel || rel.starts_with(&prefix))
                 })
                 .unwrap_or(true)
         });
@@ -474,6 +498,16 @@ impl Daemon {
 
     /// A directory appeared: load its whole subtree into model + segment.
     fn on_dir_added(&mut self, path: &Path) {
+        // Watch BEFORE reading. inotify queues events from the moment a watch
+        // exists, so anything written while we walk is delivered afterwards
+        // instead of being lost. Reading first left a window in which a node
+        // created externally (mkdir + file_put_contents, i.e. open(O_TRUNC) then
+        // write) could be read at zero bytes, latched as LANG_CORRUPT, and then
+        // never re-read because its CLOSE_WRITE landed before the watch existed
+        // — leaving a valid node throwing CORRUPT_JSON on every read until the
+        // next reconcile (--resync-secs, default 60). A redundant event from
+        // watching early is free: on_doc_event's stat check drops no-ops.
+        self.add_watches(path);
         let mut nodes = Vec::new();
         let mut links = Vec::new();
         store::walk(&self.cfg, path, &mut nodes, &mut links);
@@ -487,10 +521,40 @@ impl Daemon {
         for (c, t) in links {
             self.apply_link(&c, &t, true);
         }
-        self.add_watches(path);
     }
 
     /// A directory vanished (delete or moved away).
+    /// Settle the MOVED_FROM events of one inotify batch.
+    ///
+    /// A MOVED_FROM says the directory went *somewhere*; DELETE says it is gone.
+    /// Treating them alike turned every in-tree rename into a delete followed by
+    /// an add, and a lookup landing between the two got an **authoritative**
+    /// "no such node" — for a node that existed the whole time, which callers
+    /// act on (`Environment::nodePath` skips its legacy `find` on exactly that
+    /// answer). Deferring to the end of the batch fixes it: the matching
+    /// MOVED_TO comes from the same `rename()` and normally lands in the same
+    /// read, so by now it has already re-pointed the model. What is still
+    /// unaccounted for here genuinely left the tree.
+    fn settle_moved_away(&mut self, paths: &[PathBuf]) {
+        for path in paths {
+            let Some(name) = path.file_name().map(|s| s.to_string_lossy().to_string()) else {
+                continue;
+            };
+            let stale = self
+                .model
+                .nodes
+                .get(&name)
+                .map(|m| m.abs_path(&self.cfg) == *path)
+                .unwrap_or(false);
+            if stale && !path.exists() {
+                self.apply_delete(&name);
+            }
+            // A re-watched directory carries its new path under the same
+            // descriptor, so this only drops entries that really are stale.
+            self.watches.retain(|_, p| !p.starts_with(path));
+        }
+    }
+
     fn on_dir_removed(&mut self, path: &Path) {
         if let Some(name) = path.file_name().map(|s| s.to_string_lossy().to_string()) {
             // Only meaningful if the model's node for this NAME lived at this
@@ -569,6 +633,7 @@ impl Daemon {
         for name in gone {
             if let Some(m) = self.model.nodes.remove(&name) {
                 self.doc_bytes = self.doc_bytes.saturating_sub(m.doc_bytes());
+                self.img_bytes = self.img_bytes.saturating_sub(m.img_bytes());
             }
             self.tombstone_node(&name);
         }
@@ -604,8 +669,10 @@ impl Daemon {
                 node.generation = metrics::next_generation();
                 if let Some(old) = self.model.nodes.get(&wn.name) {
                     self.doc_bytes = self.doc_bytes.saturating_sub(old.doc_bytes());
+                    self.img_bytes = self.img_bytes.saturating_sub(old.img_bytes());
                 }
                 self.doc_bytes += node.doc_bytes();
+                self.img_bytes += node.img_bytes();
                 self.model.nodes.insert(wn.name.clone(), node);
                 changed.insert(wn.name.clone());
             }
@@ -636,6 +703,7 @@ impl Daemon {
     fn full_rebuild(&mut self) -> Result<(usize, usize), String> {
         self.model = model::build_from_disk(&self.cfg, metrics::next_generation);
         self.doc_bytes = self.model.doc_bytes();
+        self.img_bytes = self.model.img_bytes();
         self.publish_full().map_err(|e| e.to_string())?;
         self.watches.retain(|_, p| p.exists());
         if !self.degraded {
@@ -654,7 +722,14 @@ impl Daemon {
             None => store::fs_search(&self.cfg, name)
                 .ok_or_else(|| format!("subtree node '{name}' not found"))?,
         };
-        let (wnodes, wlinks) = model::walk_dedup(&self.cfg, &base);
+        self.reindex_at(&base)
+    }
+
+    /// The body of a subtree reindex against an explicit directory. `move` needs
+    /// this form: the node it has to re-read sits at a path the model does not
+    /// know yet, so there is nothing to resolve the base from.
+    fn reindex_at(&mut self, base: &Path) -> Result<(usize, usize), String> {
+        let (wnodes, wlinks) = model::walk_dedup(&self.cfg, base);
         let counts = (wnodes.len(), wlinks.len());
         let walked: HashSet<String> = wnodes.iter().map(|n| n.name.clone()).collect();
 
@@ -677,6 +752,7 @@ impl Daemon {
         for g in gone {
             if let Some(m) = self.model.nodes.remove(&g) {
                 self.doc_bytes = self.doc_bytes.saturating_sub(m.doc_bytes());
+                self.img_bytes = self.img_bytes.saturating_sub(m.img_bytes());
             }
             self.tombstone_node(&g);
         }
@@ -731,6 +807,60 @@ impl Daemon {
                 self.apply_link(&get("from"), &target, false);
                 self.apply_link(&get("to"), &target, true);
                 json!({"ok": true, "epoch": self.writer.epoch})
+            }
+            "move" => {
+                let to = self.cfg.root.join(get("to_rel"));
+                // Both ends come from the message, never from the model: the
+                // directory rename also fires inotify MOVED_FROM/MOVED_TO, so
+                // the model may already have been re-pointed at the new
+                // location by the time this arrives. Reading the "old" path
+                // from it would then name the *new* one — and pruning that
+                // would delete the node this very request just published.
+                let old_rel = get("from_rel");
+                let old_father = store::father_of(&self.cfg, &self.cfg.root.join(&old_rel));
+                // Publish the new location FIRST, then clear the old one. A
+                // plain move keeps every name, so each slot flips straight from
+                // the old record to the new one and a reader probing mid-move
+                // sees one or the other. Deleting first would tombstone the
+                // whole subtree for the length of the re-walk, and a lookup
+                // landing in that window gets an *authoritative* absence — the
+                // caller would take it as proof the node is gone.
+                match self.reindex_at(&to) {
+                    Ok(_) => {
+                        // Whatever is still filed under the old path did not
+                        // travel: it was deleted, or (on a rename) is the old
+                        // name, whose row nothing overwrote. For a plain move
+                        // this matches nothing, because every row was rewritten
+                        // in place above. (reindex_at has already pruned stale
+                        // rows under the destination, which covers content
+                        // `if_exists=replace` displaced.)
+                        if !old_rel.is_empty() {
+                            self.prune_rel(&old_rel);
+                        }
+                        // An inbound edge lives in the container's directory, so
+                        // only a rescan there re-derives it — needed because the
+                        // extension re-pointed (and possibly renamed) each link
+                        // on disk, and because prune_rel may have dropped edges.
+                        let dirs: Vec<PathBuf> = req
+                            .get("containers")
+                            .and_then(Value::as_array)
+                            .map(|a| {
+                                a.iter()
+                                    .filter_map(Value::as_str)
+                                    .filter_map(|c| {
+                                        self.model.nodes.get(c).map(|n| n.abs_path(&self.cfg))
+                                    })
+                                    .collect()
+                            })
+                            .unwrap_or_default();
+                        for dir in dirs {
+                            self.rescan_membership(&dir);
+                        }
+                        self.refresh_father_of(old_father);
+                        json!({"ok": true, "epoch": self.writer.epoch})
+                    }
+                    Err(e) => json!({"ok": false, "error": e}),
+                }
             }
             "reindex" => {
                 let started = Instant::now();
@@ -850,6 +980,7 @@ fn main() {
         model: Model::default(),
         writer: placeholder,
         doc_bytes: 0,
+        img_bytes: 0,
         inotify,
         watches: HashMap::new(),
         degraded: false,
@@ -863,6 +994,7 @@ fn main() {
     let started = Instant::now();
     d.model = model::build_from_disk(&d.cfg, metrics::next_generation);
     d.doc_bytes = d.model.doc_bytes();
+    d.img_bytes = d.model.img_bytes();
     if let Err(e) = d.publish_full() {
         eprintln!("qdbd: cannot publish initial segment: {e}");
         std::process::exit(1);
@@ -888,10 +1020,12 @@ fn main() {
     metrics::set_coherent(true);
 
     println!(
-        "qdbd: serving {} from shm ({} nodes, {} docs bytes, {} dir watches, epoch {}, {:.2}s{})",
+        "qdbd: serving {} from shm ({} nodes, {} doc bytes, {} image bytes, \
+         {} dir watches, epoch {}, {:.2}s{})",
         d.cfg.root.display(),
         d.model.nodes.len(),
         d.doc_bytes,
+        d.img_bytes,
         d.watches.len(),
         d.writer.epoch,
         started.elapsed().as_secs_f64(),
@@ -923,6 +1057,7 @@ fn main() {
         if r > 0 {
             // Inotify events.
             if pfds[0].revents & libc::POLLIN != 0 {
+                let mut moved_away: Vec<PathBuf> = Vec::new();
                 let evs: Vec<Ev> = match d.inotify.read_events(&mut buffer) {
                     Ok(events) => events
                         .map(|e| Ev {
@@ -959,7 +1094,15 @@ fn main() {
                             if d.verbose {
                                 eprintln!("qdbd: + {}", path.display());
                             }
-                        } else if ev.mask.intersects(EventMask::DELETE | EventMask::MOVED_FROM) {
+                        } else if ev.mask.contains(EventMask::MOVED_FROM) {
+                            // Went somewhere — settled after the batch, once
+                            // the matching MOVED_TO has had its say.
+                            moved_away.push(path.clone());
+                            metrics::record_watch_event();
+                            if d.verbose {
+                                eprintln!("qdbd: > {}", path.display());
+                            }
+                        } else if ev.mask.contains(EventMask::DELETE) {
                             d.on_dir_removed(&path);
                             metrics::record_watch_event();
                             if d.verbose {
@@ -993,6 +1136,7 @@ fn main() {
                         metrics::record_watch_event();
                     }
                 }
+                d.settle_moved_away(&moved_away);
             }
 
             // New clients.

@@ -1,5 +1,5 @@
-//! quanta_db — PHP extension implementing the Files-DB API contract v1.1
-//! (docs/files-db/api-contract.md). The JSON files stay the source of truth;
+//! quanta_db — PHP extension implementing the Files-DB API contract v1.3
+//! (files-db/docs/api-contract.md). The JSON files stay the source of truth;
 //! everything else is derived, rebuildable data.
 //!
 //! Primary mode: the `qdbd` daemon holds the whole tree (paths, children,
@@ -17,11 +17,13 @@
 mod cache;
 mod config;
 mod error;
+mod image;
 mod ipc;
 mod lock;
 mod metrics;
 mod model;
 mod paths;
+mod php_abi;
 mod shm;
 mod store;
 
@@ -36,7 +38,8 @@ use std::time::{Duration, Instant};
 use ext_php_rs::exception::PhpException;
 use ext_php_rs::flags::IniEntryPermission;
 use ext_php_rs::prelude::*;
-use ext_php_rs::types::{ArrayKey, ZendHashTable, Zval};
+use ext_php_rs::convert::IntoZval;
+use ext_php_rs::types::{ArrayKey, ZendHashTable, ZendObject, ZendStr, Zval};
 use ext_php_rs::zend::{ce, ClassEntry, IniEntryDef};
 use serde_json::Value;
 
@@ -44,7 +47,7 @@ use config::{Config, VerifyReads};
 use error::DbError;
 use shm::Lookup;
 
-const CONTRACT_VERSION: &str = "1.1";
+const CONTRACT_VERSION: &str = "1.3";
 
 type PhpResult<T> = Result<T, PhpException>;
 
@@ -165,6 +168,98 @@ fn json_to_zval(v: &Value) -> Result<Zval, DbError> {
     Ok(z)
 }
 
+/// Materialize a decoded document exactly as `json_decode($raw)` does: JSON
+/// objects become `stdClass`, JSON arrays become PHP lists.
+///
+/// This is NOT interchangeable with [`json_to_zval`], and casting that
+/// function's result with `(object)` is not a substitute: the cast only
+/// converts the top level, so a nested `{"permissions":{"node_view":"..."}}`
+/// would come back with `permissions` as an *array*, and Quanta reads it as
+/// `$node->json->permissions->{$permission}` (Node::loadPermissions,
+/// access.hook.inc). The shapes must match all the way down.
+///
+/// `json_encode()` cannot tell the two apart — a string-keyed PHP array encodes
+/// as a JSON object — so shape parity has to be asserted with var_export()
+/// or a recursive walk, never a JSON round-trip.
+/// The document root, cast the way `(object) json_decode($raw)` casts it.
+///
+/// Only the ROOT differs from [`json_to_object_zval`]: PHP's `(object)` cast
+/// turns a top-level JSON array into a stdClass with "0", "1", … properties and
+/// a top-level scalar into one with a `scalar` property, while anything nested
+/// keeps its natural shape. Real node documents are always objects, but
+/// `Node::loadJSON` assigns this straight to `$node->json` where the legacy
+/// read assigned `(object) json_decode(...)`, so the odd roots have to agree
+/// too or the extension is not a drop-in.
+fn json_root_to_object_zval(v: &Value) -> Result<Zval, DbError> {
+    match v {
+        Value::Object(_) => json_to_object_zval(v),
+        Value::Null => {
+            // (object) null === new stdClass
+            let mut z = Zval::new();
+            ZendObject::new_stdclass()
+                .set_zval(&mut z, false)
+                .map_err(|e| DbError::Io(format!("object conversion: {e}")))?;
+            Ok(z)
+        }
+        Value::Array(items) => {
+            let mut obj = ZendObject::new_stdclass();
+            for (i, item) in items.iter().enumerate() {
+                obj.set_property(&i.to_string(), json_to_object_zval(item)?)
+                    .map_err(|e| DbError::Io(format!("object property '{i}': {e}")))?;
+            }
+            let mut z = Zval::new();
+            obj.set_zval(&mut z, false)
+                .map_err(|e| DbError::Io(format!("object conversion: {e}")))?;
+            Ok(z)
+        }
+        scalar => {
+            let mut obj = ZendObject::new_stdclass();
+            obj.set_property("scalar", json_to_object_zval(scalar)?)
+                .map_err(|e| DbError::Io(format!("object property 'scalar': {e}")))?;
+            let mut z = Zval::new();
+            obj.set_zval(&mut z, false)
+                .map_err(|e| DbError::Io(format!("object conversion: {e}")))?;
+            Ok(z)
+        }
+    }
+}
+
+fn json_to_object_zval(v: &Value) -> Result<Zval, DbError> {
+    let mut z = Zval::new();
+    match v {
+        Value::Object(map) => {
+            let mut obj = ZendObject::new_stdclass();
+            for (k, val) in map {
+                obj.set_property(k, json_to_object_zval(val)?)
+                    .map_err(|e| DbError::Io(format!("object property '{k}': {e}")))?;
+            }
+            obj.set_zval(&mut z, false)
+                .map_err(|e| DbError::Io(format!("object conversion: {e}")))?;
+        }
+        Value::Array(items) => {
+            let mut ht = ZendHashTable::with_capacity(items.len() as u32);
+            for item in items {
+                ht.push(json_to_object_zval(item)?)
+                    .map_err(|e| DbError::Io(format!("array conversion: {e}")))?;
+            }
+            z.set_hashtable(ht);
+        }
+        Value::Null => z.set_null(),
+        Value::Bool(b) => z.set_bool(*b),
+        Value::Number(n) => {
+            if let Some(i) = n.as_i64() {
+                z.set_long(i);
+            } else {
+                z.set_double(n.as_f64().unwrap_or(0.0));
+            }
+        }
+        Value::String(s) => z
+            .set_string(s, false)
+            .map_err(|e| DbError::Io(format!("string conversion: {e}")))?,
+    }
+    Ok(z)
+}
+
 fn key_to_string(k: &ArrayKey) -> String {
     match k {
         ArrayKey::Long(l) => l.to_string(),
@@ -242,6 +337,185 @@ fn strings_to_zval(items: &[String]) -> Result<Zval, DbError> {
     }
     let mut z = Zval::new();
     z.set_hashtable(ht);
+    Ok(z)
+}
+
+// ---------------------------------------------------------------------------
+// Pre-decoded image materialization (contract §3 `getObject`)
+// ---------------------------------------------------------------------------
+
+/// Set at MINIT: does the PHP we are loaded into match the ABI the image
+/// assumes? False disables the image path entirely (reads still work, they just
+/// parse the raw bytes). Never fails MINIT — the extension must keep serving.
+static IMAGE_ABI_OK: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// How many distinct segment epochs one request may pin. `qdbd` compacts
+/// whenever dead bytes pass a threshold, so a long write-heavy request can see
+/// several flips; past this cap we stop handing out pointers into the mapping
+/// and copy instead, so a compaction storm cannot pin unbounded memory.
+const MAX_PINNED_EPOCHS: usize = 4;
+
+thread_local! {
+    /// Segment mappings that must stay alive because live PHP zvals point into
+    /// them. Drained in `post_deactivate` — see `request_cleanup`.
+    static PINNED: RefCell<Vec<Rc<shm::SegmentReader>>> = const { RefCell::new(Vec::new()) };
+
+}
+
+/// Keep `seg` mapped until the end of the request. Returns false when the pin
+/// cap is reached, meaning the caller must copy rather than point.
+fn pin_segment(seg: &Rc<shm::SegmentReader>) -> bool {
+    PINNED.with(|p| {
+        let mut v = p.borrow_mut();
+        if v.iter().any(|s| Rc::ptr_eq(s, seg)) {
+            return true;
+        }
+        if v.len() >= MAX_PINNED_EPOCHS {
+            metrics::seg_pin_max();
+            return false;
+        }
+        v.push(seg.clone());
+        metrics::seg_pin();
+        true
+    })
+}
+
+/// Release everything held for the request. MUST run after the executor has
+/// been shut down, i.e. from `post_deactivate` rather than RSHUTDOWN: module
+/// RSHUTDOWN runs BEFORE `zend_deactivate()` destroys the object store, and
+/// freeing the mapping there would leave `zend_hash_destroy` reading
+/// `GC_FLAGS(key)` out of unmapped memory while tearing down objects that still
+/// point into it.
+fn request_cleanup() {
+    PINNED.with(|p| p.borrow_mut().clear());
+}
+
+/// Canonical interned `zend_string` for an object key.
+///
+/// Keys must be strings PHP itself interned: `zend_std_read_property` validates
+/// its inline property cache by POINTER identity against the compile-time
+/// interned name, so handing it our own SHM-resident string would silently
+/// defeat that cache on every `$node->json->title` in the codebase.
+///
+/// Deliberately NOT memoised by image offset. Offsets are image-relative, so
+/// two different nodes' images collide on the same small offsets within one
+/// epoch, and a memo keyed that way hands one node another node's property
+/// names — silent data corruption, not a crash. PHP's interned table already
+/// dedupes by content, which is the only key that is actually unique.
+fn interned_key(bytes: &[u8]) -> Result<*mut ext_php_rs::ffi::zend_string, DbError> {
+    let init = unsafe { ext_php_rs::ffi::zend_string_init_interned }
+        .ok_or_else(|| DbError::Io("zend_string_init_interned unavailable".into()))?;
+    // permanent = false: request-lifetime interning is enough, and it keeps
+    // these out of the permanent table, which is never freed.
+    let p = unsafe { init(bytes.as_ptr().cast(), bytes.len(), false) };
+    if p.is_null() {
+        return Err(DbError::Io("interning key failed".into()));
+    }
+    Ok(p)
+}
+
+/// Build a string zval from an image string entry.
+///
+/// Zero-copy: the image already holds a complete `zend_string` (header + bytes
+/// + NUL, 8-aligned, non-zero precomputed hash, flagged interned), and a
+/// `zend_string` contains no internal pointers — so it is valid at whatever
+/// address this process mapped the segment at. Pointing a zval straight at it
+/// costs no allocation and no copy, at any document size.
+///
+/// The mapping must outlive the zval, which `pin_segment` guarantees for the
+/// rest of the request. When the pin cap is hit (or zero-copy is off), fall
+/// back to copying the bytes into a request-owned string.
+unsafe fn image_string_zval(bytes: &[u8], shm_ptr: Option<*mut u8>) -> Zval {
+    let mut z = Zval::new();
+    match shm_ptr {
+        Some(p) => {
+            // Interned strings are never refcounted and `zend_string_release`
+            // on them is a no-op, so PHP will neither free nor mutate this.
+            z.set_zend_string(unsafe {
+                ext_php_rs::boxed::ZBox::from_raw(p.cast::<ext_php_rs::types::ZendStr>())
+            });
+        }
+        None => {
+            z.set_zend_string(ZendStr::new(bytes, false));
+        }
+    }
+    z
+}
+
+/// Walk the image into zvals. `objects` selects `getObject` shape (JSON objects
+/// become stdClass) over `get` shape (associative arrays).
+fn materialize(
+    img: &image::Image,
+    base: Option<*mut u8>,
+    off: u32,
+    depth: u32,
+    objects: bool,
+) -> Result<Zval, DbError> {
+    if depth > image::MAX_DEPTH {
+        return Err(DbError::CorruptJson("image nested too deeply".into()));
+    }
+    let node = img
+        .node(off)
+        .ok_or_else(|| DbError::CorruptJson("invalid image node".into()))?;
+    let mut z = Zval::new();
+    match node {
+        image::Node::Null => z.set_null(),
+        image::Node::Bool(b) => z.set_bool(b),
+        image::Node::Long(i) => z.set_long(i),
+        image::Node::Double(d) => z.set_double(d),
+        image::Node::Str { off: so, bytes } => {
+            let ptr = base.map(|b| unsafe { b.add(so as usize) });
+            z = unsafe { image_string_zval(bytes, ptr) };
+        }
+        image::Node::List { count, table } => {
+            let mut ht = ZendHashTable::with_capacity(count);
+            for i in 0..count {
+                let eo = img
+                    .list_elem(table, i)
+                    .ok_or_else(|| DbError::CorruptJson("invalid image list".into()))?;
+                ht.push(materialize(img, base, eo, depth + 1, objects)?)
+                    .map_err(|e| DbError::Io(format!("array conversion: {e}")))?;
+            }
+            z.set_hashtable(ht);
+        }
+        image::Node::Map { count, table } => {
+            // One presized table, keys canonically interned by PHP. Interning
+            // matters beyond allocation: zend_std_read_property validates its
+            // inline property cache by pointer identity against the
+            // compile-time interned name, so a non-canonical key silently
+            // forces a full hash lookup on every `$node->json->x` in the app.
+            let mut ht = ZendHashTable::with_capacity(count);
+            for i in 0..count {
+                let (ko, vo) = img
+                    .map_pair(table, i)
+                    .ok_or_else(|| DbError::CorruptJson("invalid image map".into()))?;
+                let kb = img
+                    .string_bytes(ko)
+                    .ok_or_else(|| DbError::CorruptJson("invalid image key".into()))?;
+                let key = interned_key(kb)?;
+                let val = materialize(img, base, vo, depth + 1, objects)?;
+                // SAFETY: `key` is a live interned zend_string owned by the
+                // engine's interned table; insert only borrows it.
+                ht.insert(ArrayKey::ZendString(unsafe { &*key }), val)
+                    .map_err(|e| DbError::Io(format!("array conversion: {e}")))?;
+            }
+            if objects {
+                // stdClass declares no properties, so `properties` is exactly
+                // the dynamic-property table — this is what the engine would
+                // have built lazily in rebuild_object_properties().
+                let obj = ZendObject::new_stdclass();
+                let raw = obj.into_raw();
+                unsafe {
+                    (*raw).properties = ht.into_raw();
+                    z.set_object(&mut *raw);
+                    // set_object incremented the refcount; drop our own.
+                    ext_php_rs::ffi::ext_php_rs_zend_object_release(raw);
+                }
+            } else {
+                z.set_hashtable(ht);
+            }
+        }
+    }
     Ok(z)
 }
 
@@ -408,6 +682,15 @@ fn notify_daemon(cfg: &Config, msg: serde_json::Value) -> Option<serde_json::Val
 // Core node resolution / document loading (contract §4)
 // ---------------------------------------------------------------------------
 
+/// Root-relative path as the daemon names nodes over the socket. A path outside
+/// the root cannot be made relative, so it is passed through whole and the
+/// daemon rejects it — better than silently addressing the wrong node.
+fn rel_of(cfg: &Config, path: &Path) -> String {
+    path.strip_prefix(&cfg.root)
+        .map(|p| p.to_string_lossy().to_string())
+        .unwrap_or_else(|_| path.to_string_lossy().to_string())
+}
+
 fn row_from_snap(cfg: &Config, name: &str, e: &cache::SnapEntry) -> NodeRow {
     let _ = cfg;
     NodeRow {
@@ -449,14 +732,21 @@ fn resolve_node(cfg: &Config, name: &str) -> Result<Option<NodeRow>, DbError> {
 }
 
 fn resolve_fallback(cfg: &Config, name: &str) -> Result<Option<NodeRow>, DbError> {
-    if let Some(e) = cache::snap_lookup(cfg, name) {
-        if e.path.is_dir() {
-            return Ok(Some(row_from_snap(cfg, name, &e)));
-        }
-    }
+    // Distinguish "the snapshot never knew this name" from "the snapshot knew
+    // it but the path is stale". The second is positive evidence that the node
+    // moved, which makes it the one case where a negative verdict must not be
+    // cached — see below.
+    let known_but_stale = match cache::snap_lookup(cfg, name) {
+        Some(e) if e.path.is_dir() => return Ok(Some(row_from_snap(cfg, name, &e))),
+        Some(_) => true,
+        None => false,
+    };
     // Snapshot miss or a stale path (external create/move/delete). Recently
     // proven absent? Skip the walk (TTL-bounded, contract §4.3 allows it).
-    if cfg.neg_cache_ms > 0 && cache::neg_fresh(name, Duration::from_millis(cfg.neg_cache_ms)) {
+    if !known_but_stale
+        && cfg.neg_cache_ms > 0
+        && cache::neg_fresh(name, Duration::from_millis(cfg.neg_cache_ms))
+    {
         return Ok(None);
     }
     // Self-heal: one fresh walk, then answer from it.
@@ -468,7 +758,12 @@ fn resolve_fallback(cfg: &Config, name: &str) -> Result<Option<NodeRow>, DbError
         }
     }
     metrics::node_miss();
-    if cfg.neg_cache_ms > 0 {
+    // Never cache "absent" for a name the snapshot had at a now-stale path. The
+    // rebuild above walks a tree that another process may be renaming inside,
+    // so it can miss a node that genuinely exists — and caching that verdict
+    // would blind this worker to the node for the whole TTL. A name the
+    // snapshot never held has no such evidence behind it, so it still caches.
+    if cfg.neg_cache_ms > 0 && !known_but_stale {
         cache::neg_insert(name);
     }
     Ok(None)
@@ -493,6 +788,159 @@ fn resolve_subtree_dir(cfg: &Config, name: &str) -> Result<Option<PathBuf>, DbEr
         }
     }
     Ok(store::fs_search(cfg, name))
+}
+
+/// One document served straight from the pre-decoded image, with no JSON parse
+/// at all. Returns `Ok(None)` when there is no usable image for this document
+/// (images off, oversize, ABI mismatch, damaged image) so the caller can fall
+/// back to the raw bytes + parse cache.
+fn with_shm_image<T>(
+    cfg: &Config,
+    name: &str,
+    lang: &str,
+    build: impl FnOnce(&image::Image, Option<*mut u8>) -> Result<T, DbError>,
+) -> Result<Option<ShmDoc<T>>, DbError> {
+    use std::sync::atomic::Ordering as AtomicOrdering;
+    if !cfg.image || !IMAGE_ABI_OK.load(AtomicOrdering::Relaxed) {
+        return Ok(None);
+    }
+    let Some(seg) = seg_current(cfg) else {
+        return Ok(None);
+    };
+    let Lookup::Found(rec) = seg.lookup(name) else {
+        return Ok(None);
+    };
+    if rec.is_tombstone() {
+        return Ok(None);
+    }
+    let img_bytes = match rec.image(lang) {
+        // A corrupt document has no image; let the raw path raise CORRUPT_JSON
+        // so the error text and metrics stay in one place.
+        Err(()) => return Ok(None),
+        Ok(None) => {
+            metrics::img_absent();
+            return Ok(None);
+        }
+        Ok(Some(b)) => b,
+    };
+    let Some(img) = image::Image::open(img_bytes) else {
+        metrics::img_invalid();
+        return Ok(None);
+    };
+    // Zero-copy needs the mapping to outlive the zvals; if we cannot pin it
+    // (cap reached) or it is disabled, materialize by copying instead.
+    let base = if cfg.zero_copy && pin_segment(&seg) {
+        Some(img_bytes.as_ptr().cast_mut())
+    } else {
+        None
+    };
+    // An image serve IS a segment serve — `img_serves` sub-classifies it as
+    // "needed no parsing", the way `raw_writes` sub-classifies `writes`. Both
+    // counters must move, or the served-from breakdown (index / file /
+    // fallback) loses every read the image answers, which since v1.2 is most
+    // of them: it reported 0% shm on a pod serving everything from shm.
+    metrics::index_serve();
+    metrics::img_serve();
+    build(&img, base).map(|v| Some(ShmDoc::Served(v)))
+}
+
+/// Outcome of a single-probe document lookup in the segment.
+enum ShmDoc<T> {
+    /// Served from shared memory.
+    Served(T),
+    /// The segment is authoritative: this node has no such document.
+    Absent,
+    /// No usable segment (fallback mode, or a record that failed validation).
+    /// The caller must resolve the node and read the file.
+    Unavailable,
+}
+
+/// One hash probe, then hand the document's SHM bytes to `f`. The segment `Rc`
+/// is held for the whole body, so the record view stays mapped throughout.
+///
+/// This is the single entry point for every SHM-backed read (`get`, `getRaw`,
+/// `getObject`). Going through `resolve_node` first would probe twice and build
+/// an absolute path `String` that a shared-memory read never looks at — the
+/// path is only needed on the fallback path, so it is only built there.
+fn with_shm_doc<T>(
+    cfg: &Config,
+    name: &str,
+    lang: &str,
+    f: impl FnOnce(&[u8], i64) -> Result<T, DbError>,
+) -> Result<ShmDoc<T>, DbError> {
+    let Some(seg) = seg_current(cfg) else {
+        return Ok(ShmDoc::Unavailable);
+    };
+    match seg.lookup(name) {
+        Lookup::Found(rec) if !rec.is_tombstone() => {
+            metrics::shm_hit();
+            match rec.doc(lang) {
+                Err(()) => {
+                    metrics::corrupt_json();
+                    Err(DbError::CorruptJson(format!(
+                        "invalid JSON in {}/{}",
+                        rec.rel_path(),
+                        store::doc_file(lang)
+                    )))
+                }
+                Ok(None) => Ok(ShmDoc::Absent),
+                Ok(Some(bytes)) => {
+                    metrics::index_serve();
+                    f(bytes, rec.generation as i64).map(ShmDoc::Served)
+                }
+            }
+        }
+        // A miss or a tombstone is a definitive absence while the daemon is
+        // coherent — no filesystem walk, no file read.
+        Lookup::Found(_) | Lookup::Absent => {
+            metrics::authoritative_miss();
+            Ok(ShmDoc::Absent)
+        }
+        Lookup::Invalid => {
+            metrics::shm_invalid(); // never trust a failed validation
+            Ok(ShmDoc::Unavailable)
+        }
+    }
+}
+
+/// As [`with_shm_doc`], but does not raise on a document flagged corrupt —
+/// `getRaw()` reports stored bytes rather than decoding, so a broken document
+/// is data, not an error.
+///
+/// NOTE: the daemon does not keep the bytes of a corrupt document
+/// (`model::load_docs` stores an empty `raw` for it), so in SHM mode this
+/// yields an empty string for one; only fallback mode reads the real bytes off
+/// disk. Preserved as-is — callers use `getRaw()` for valid documents, and
+/// changing it would mean storing known-bad payloads in shared memory.
+fn with_shm_doc_raw<T>(
+    cfg: &Config,
+    name: &str,
+    lang: &str,
+    f: impl FnOnce(&[u8]) -> T,
+) -> Result<ShmDoc<T>, DbError> {
+    let Some(seg) = seg_current(cfg) else {
+        return Ok(ShmDoc::Unavailable);
+    };
+    match seg.lookup(name) {
+        Lookup::Found(rec) if !rec.is_tombstone() => {
+            metrics::shm_hit();
+            match rec.langs().into_iter().find(|l| l.lang == lang) {
+                Some(l) => {
+                    metrics::index_serve();
+                    Ok(ShmDoc::Served(f(l.doc)))
+                }
+                None => Ok(ShmDoc::Absent),
+            }
+        }
+        Lookup::Found(_) | Lookup::Absent => {
+            metrics::authoritative_miss();
+            Ok(ShmDoc::Absent)
+        }
+        Lookup::Invalid => {
+            metrics::shm_invalid();
+            Ok(ShmDoc::Unavailable)
+        }
+    }
 }
 
 /// Load one document. SHM mode: bytes straight from the record, decoded via
@@ -531,6 +979,14 @@ fn load_doc_inner(cfg: &Config, row: &NodeRow, lang: &str) -> Result<Option<Rc<V
         // Absent/tombstoned in SHM while the row resolved a moment ago: a
         // racing delete. Fall through to the file — source of truth.
     }
+    load_doc_file(cfg, row, lang)
+}
+
+/// Read + decode a document straight from the file. Deliberately UNCACHED:
+/// mtime+size cannot validate same-second writes (contract scenario 5), and the
+/// files are the source of truth.
+fn load_doc_file(cfg: &Config, row: &NodeRow, lang: &str) -> Result<Option<Rc<Value>>, DbError> {
+    let _ = cfg;
     let node_path = Path::new(&row.path);
     let Some((raw, _fstat)) =
         store::read_doc(node_path, lang).inspect_err(|_| metrics::io_error())?
@@ -562,31 +1018,69 @@ fn parse_cached(name: &str, lang: &str, raw: &[u8], generation: i64) -> Result<R
     Ok(rc)
 }
 
-/// The raw JSON bytes of one document, no decoding. SHM mode serves the exact
-/// stored file bytes (even corrupt ones); fallback reads the file directly.
-fn load_raw(cfg: &Config, row: &NodeRow, lang: &str) -> Result<Option<String>, DbError> {
-    if let Some(seg) = seg_current(cfg) {
-        if let Lookup::Found(rec) = seg.lookup(&row.name) {
-            if !rec.is_tombstone() {
-                for l in rec.langs() {
-                    if l.lang == lang {
-                        metrics::index_serve();
-                        return Ok(Some(String::from_utf8_lossy(l.doc).into_owned()));
+/// One document, decoded, resolved by NAME in a single hash probe.
+///
+/// The SHM path never builds the node's absolute path — that string is only
+/// needed to open a file, which only the fallback branch does. Reserving it for
+/// that branch is why this exists alongside [`load_doc`], which callers holding
+/// a [`NodeRow`] already (find, update) keep using.
+fn load_doc_by_name(cfg: &Config, name: &str, lang: &str) -> Result<Option<Rc<Value>>, DbError> {
+    let started = Instant::now();
+    let r = (|| {
+        ensure_valid_name(name)?;
+        match with_shm_doc(cfg, name, lang, |bytes, generation| {
+            parse_cached(name, lang, bytes, generation)
+        })? {
+            ShmDoc::Served(doc) => Ok(Some(doc)),
+            ShmDoc::Absent => Ok(None),
+            ShmDoc::Unavailable => match resolve_node(cfg, name)? {
+                Some(row) => load_doc_file(cfg, &row, lang),
+                None => Ok(None),
+            },
+        }
+    })();
+    metrics::record_read(started.elapsed());
+    r
+}
+
+/// The raw JSON bytes of one document, resolved by NAME in a single hash probe.
+/// SHM mode serves the exact stored bytes with one copy into a `zend_string`
+/// and no UTF-8 revalidation — the daemon already read the file as UTF-8, and
+/// re-scanning a large `body` here was pure overhead.
+fn load_raw_by_name(cfg: &Config, name: &str, lang: &str) -> Result<Option<Zval>, DbError> {
+    let started = Instant::now();
+    let r = (|| {
+        ensure_valid_name(name)?;
+        // getRaw() serves the stored bytes verbatim, INCLUDING a corrupt
+        // document — it is the escape hatch for inspecting one. So the corrupt
+        // flag must not turn into an exception here the way it does for get().
+        let served = with_shm_doc_raw(cfg, name, lang, |bytes| {
+            let mut z = Zval::new();
+            z.set_zend_string(ZendStr::new(bytes, false));
+            z
+        })?;
+        match served {
+            ShmDoc::Served(z) => Ok(Some(z)),
+            ShmDoc::Absent => Ok(None),
+            ShmDoc::Unavailable => match resolve_node(cfg, name)? {
+                Some(row) => match store::read_doc(Path::new(&row.path), lang)
+                    .inspect_err(|_| metrics::io_error())?
+                {
+                    Some((raw, _)) => {
+                        metrics::file_read(raw.len() as u64);
+                        metrics::fallback_read();
+                        let mut z = Zval::new();
+                        z.set_zend_string(ZendStr::new(raw.as_bytes(), false));
+                        Ok(Some(z))
                     }
-                }
-                return Ok(None);
-            }
+                    None => Ok(None),
+                },
+                None => Ok(None),
+            },
         }
-    }
-    let node_path = Path::new(&row.path);
-    match store::read_doc(node_path, lang).inspect_err(|_| metrics::io_error())? {
-        Some((raw, _)) => {
-            metrics::file_read(raw.len() as u64);
-            metrics::fallback_read();
-            Ok(Some(raw))
-        }
-        None => Ok(None),
-    }
+    })();
+    metrics::record_read(started.elapsed());
+    r
 }
 
 /// Container names holding a symlink to `target` (sorted). SHM: from the
@@ -604,11 +1098,18 @@ fn links_of(cfg: &Config, target: &str) -> Result<Vec<String>, DbError> {
     Ok(cache::snap_links_of(cfg, target))
 }
 
-/// Write path shared by put/update. Caller must hold the node lock.
+/// Write path shared by put/putRaw/update. Caller must hold the node lock.
+///
+/// `raw` is what lands on disk, byte for byte — `putRaw` exists precisely so a
+/// caller can control those bytes, so nothing here may re-serialize them.
+/// `parsed` is the same document already decoded; it only seeds the parse cache,
+/// and every caller has it already (either it built `raw` from it, or it had to
+/// parse `raw` to validate it).
 fn put_inner(
     cfg: &Config,
     name: &str,
-    value: &Value,
+    raw: &str,
+    parsed: Value,
     lang: &str,
     father: Option<&str>,
 ) -> Result<(), DbError> {
@@ -646,16 +1147,11 @@ fn put_inner(
             new_path
         }
     };
-    let raw = serde_json::to_string(value).map_err(|e| DbError::Io(e.to_string()))?;
-    store::write_doc(&path, lang, &raw)?;
+    store::write_doc(&path, lang, raw)?;
     let father_db = store::father_of(cfg, &path);
 
     // Push to the daemon (single SHM writer); its ack means "published".
-    let rel = path
-        .strip_prefix(&cfg.root)
-        .map(|p| p.to_string_lossy().to_string())
-        .unwrap_or_else(|_| path.to_string_lossy().to_string());
-    let ack = notify_daemon(cfg, ipc::msg_upsert(name, &rel));
+    let ack = notify_daemon(cfg, ipc::msg_upsert(name, &rel_of(cfg, &path)));
 
     cache::invalidate(name);
     // The create-intent resolve above proved the name absent and neg-cached it;
@@ -668,9 +1164,7 @@ fn put_inner(
     };
     // Seed the parse cache: the writer's own next read skips re-parsing.
     if ack.is_some() {
-        if let Ok(parsed) = serde_json::from_str::<Value>(&raw) {
-            cache::put(name, lang, generation, Rc::new(parsed));
-        }
+        cache::put(name, lang, generation, Rc::new(parsed));
     }
     metrics::record_write(started.elapsed(), raw.len() as u64);
     Ok(())
@@ -1083,6 +1577,45 @@ pub struct QuantaDb;
 
 /// Returns true when the caller asked for 'error' behavior on link/unlink.
 /// Free helper (not a PHP method) shared by link()/unlink() below.
+/// `p` with a `from` prefix rewritten to `to`; identity when `p` is elsewhere.
+/// Equal paths strip to an empty remainder, so `to.join("")` yields `to`.
+fn relocate(p: &Path, from: &Path, to: &Path) -> PathBuf {
+    match p.strip_prefix(from) {
+        Ok(rest) => to.join(rest),
+        Err(_) => p.to_path_buf(),
+    }
+}
+
+/// Re-point one container's symlink at a node that has moved. Writes a
+/// temporary link and renames it over the target, so a concurrent reader of the
+/// container sees either the old link or the new one — never a missing member.
+///
+/// Best effort by design: a failure here leaves a dangling link that `reindex()`
+/// repairs, which is strictly better than unwinding a rename that already
+/// succeeded.
+fn repoint_link(container_dir: &Path, old_name: &str, new_name: &str, target: &Path) {
+    let old_link = container_dir.join(old_name);
+    let is_link = fs::symlink_metadata(&old_link)
+        .map(|m| m.file_type().is_symlink())
+        .unwrap_or(false);
+    if !is_link {
+        return; // a real directory of that name is not ours to touch
+    }
+    let tmp = container_dir.join(format!(".{new_name}.tmp.{}", std::process::id()));
+    let _ = fs::remove_file(&tmp);
+    if std::os::unix::fs::symlink(target, &tmp).is_err() {
+        return;
+    }
+    let new_link = container_dir.join(new_name);
+    if fs::rename(&tmp, &new_link).is_err() {
+        let _ = fs::remove_file(&tmp);
+        return;
+    }
+    if new_link != old_link {
+        let _ = fs::remove_file(&old_link);
+    }
+}
+
 fn link_flag(opts: Option<&ZendHashTable>, key: &'static str) -> Result<bool, DbError> {
     let r = Reader::new(opts, &["if_exists", "if_not_exists"], "opts")?;
     match r.str_opt(key)?.as_deref() {
@@ -1098,11 +1631,47 @@ impl QuantaDb {
 pub fn get(name: String, lang: Option<String>) -> PhpResult<Zval> {
     let cfg = config()?;
     let lang = normalize_lang(lang)?;
-    let Some(row) = resolve_node(cfg, &name)? else {
-        return Ok(null_zval());
-    };
-    match load_doc(cfg, &row, &lang)? {
+    ensure_valid_name(&name)?;
+    if let Some(ShmDoc::Served(z)) = with_shm_image(cfg, &name, &lang, |img, base| {
+        materialize(img, base, img.root, 0, false)
+    })? {
+        return Ok(z);
+    }
+    match load_doc_by_name(cfg, &name, &lang)? {
         Some(doc) => Ok(json_to_zval(&doc)?),
+        None => Ok(null_zval()),
+    }
+}
+
+/// The node's data document as a `stdClass`, or null — the exact value
+/// `(object) json_decode($raw)` produces, nested shapes included, with no file
+/// read and no JSON parse (the decoded document is cached per process and
+/// validated by the node's generation).
+///
+/// Unlike every other reader on this class, the returned value is a freshly
+/// allocated, unshared, fully MUTABLE object: two calls return two independent
+/// objects. Quanta's `$node->json` is written to, appended to and unset all
+/// over the codebase, so this is the deliberate exception to the contract's
+/// "arrays at the boundary, treat results as immutable" rule (§1.2).
+pub fn get_object(name: String, lang: Option<String>) -> PhpResult<Zval> {
+    let cfg = config()?;
+    let lang = normalize_lang(lang)?;
+    ensure_valid_name(&name)?;
+    // The image path only serves object roots directly; PHP's `(object)` cast
+    // rules for array/scalar roots stay in one place (json_root_to_object_zval).
+    if let Some(ShmDoc::Served(z)) = with_shm_image(cfg, &name, &lang, |img, base| {
+        if img.root_is_map() {
+            materialize(img, base, img.root, 0, true).map(Some)
+        } else {
+            Ok(None)
+        }
+    })? {
+        if let Some(z) = z {
+            return Ok(z);
+        }
+    }
+    match load_doc_by_name(cfg, &name, &lang)? {
+        Some(doc) => Ok(json_root_to_object_zval(&doc)?),
         None => Ok(null_zval()),
     }
 }
@@ -1110,13 +1679,13 @@ pub fn get(name: String, lang: Option<String>) -> PhpResult<Zval> {
 /// The raw JSON document as a string (SHM bytes verbatim), or null. Lets hot
 /// call sites pair a zero-syscall read with PHP's native json_decode instead
 /// of paying the Rust-side array construction. Contract 1.1 addition.
-pub fn get_raw(name: String, lang: Option<String>) -> PhpResult<Option<String>> {
+pub fn get_raw(name: String, lang: Option<String>) -> PhpResult<Zval> {
     let cfg = config()?;
     let lang = normalize_lang(lang)?;
-    let Some(row) = resolve_node(cfg, &name)? else {
-        return Ok(None);
-    };
-    Ok(load_raw(cfg, &row, &lang)?)
+    match load_raw_by_name(cfg, &name, &lang)? {
+        Some(z) => Ok(z),
+        None => Ok(null_zval()),
+    }
 }
 
 pub fn path(name: String) -> PhpResult<Option<String>> {
@@ -1191,8 +1760,54 @@ pub fn put(
     let lang = normalize_lang(r.str_opt("lang")?)?;
     let father = r.str_opt("father")?;
     let value = table_to_json(data)?;
+    let raw = serde_json::to_string(&value).map_err(|e| DbError::Io(e.to_string()))?;
     let _lk = lock::acquire(cfg, &name)?;
-    put_inner(cfg, &name, &value, &lang, father.as_deref())?;
+    put_inner(cfg, &name, &raw, value, &lang, father.as_deref())?;
+    Ok(true)
+}
+
+/// `put` for callers that already hold the serialized document. The bytes are
+/// stored verbatim, which is the point: PHP's `json_encode` escapes `/` and
+/// non-ASCII (`http:\/\/a`, `città`) while `serde_json` does neither, so
+/// round-tripping a document through `put` rewrites it. `putRaw` lets a caller
+/// keep byte stability across writers.
+pub fn put_raw(name: String, json: String, opts: Option<&ZendHashTable>) -> PhpResult<bool> {
+    let cfg = config()?;
+    ensure_valid_name(&name)?;
+    let r = Reader::new(opts, &["lang", "father"], "opts")?;
+    let lang = normalize_lang(r.str_opt("lang")?)?;
+    let father = r.str_opt("father")?;
+    // Validate before writing, never after: the daemon latches an unparsable
+    // document as LANG_CORRUPT and every later read of the node then throws.
+    // Bad input is BAD_ARGS — CORRUPT_JSON means the *stored* file is bad.
+    let parsed: Value = serde_json::from_str(&json)
+        .map_err(|e| DbError::BadArgs(format!("putRaw payload is not valid JSON: {e}")))?;
+    let _lk = lock::acquire(cfg, &name)?;
+    put_inner(cfg, &name, &json, parsed, &lang, father.as_deref())?;
+    metrics::record_raw_write();
+    Ok(true)
+}
+
+/// Remove one language's document from a node that itself stays. A node with no
+/// documents at all is a legal state (`model::load_docs` simply finds none), so
+/// this notifies with an *upsert*: the daemon re-reads the directory and the
+/// language list corrects itself.
+pub fn delete_doc(name: String, lang: Option<String>) -> PhpResult<bool> {
+    let cfg = config()?;
+    ensure_valid_name(&name)?;
+    let lang = normalize_lang(lang)?;
+    let _lk = lock::acquire(cfg, &name)?;
+    let Some(row) = resolve_node(cfg, &name)? else {
+        return Ok(false);
+    };
+    let path = PathBuf::from(&row.path);
+    if !store::remove_doc(&path, &lang)? {
+        return Ok(false);
+    }
+    let rel = rel_of(cfg, &path);
+    notify_daemon(cfg, ipc::msg_upsert(&name, &rel));
+    cache::invalidate(&name);
+    metrics::record_doc_delete();
     Ok(true)
 }
 
@@ -1231,7 +1846,8 @@ pub fn update(
         ))
         .into());
     }
-    put_inner(cfg, &name, &value, &lang, None)?;
+    let raw = serde_json::to_string(&value).map_err(|e| DbError::Io(e.to_string()))?;
+    put_inner(cfg, &name, &raw, value, &lang, None)?;
     Ok(ret)
 }
 
@@ -1369,6 +1985,125 @@ pub fn relink(
     Ok(true)
 }
 
+/// Relocate a node: a new father, a new name, or both. The directory is
+/// renamed, so descendants travel with it, and every inbound symlink is
+/// re-pointed — links are stored as absolute paths (see `link`), so without
+/// that step every container membership of the node would dangle.
+///
+/// Not atomic end to end. The rename is atomic and each link re-point is
+/// atomic, but a crash between them leaves dangling links that `reindex()`
+/// repairs. Contract §3 states this limit rather than implying more.
+#[php(name = "move")]
+pub fn move_node(
+    name: String,
+    new_father: Option<String>,
+    opts: Option<&ZendHashTable>,
+) -> PhpResult<bool> {
+    let cfg = config()?;
+    ensure_valid_name(&name)?;
+    let r = Reader::new(opts, &["name", "if_exists"], "opts")?;
+    let new_name = match r.str_opt("name")? {
+        Some(n) => {
+            ensure_valid_name(&n)?;
+            n
+        }
+        None => name.clone(),
+    };
+    let replace = match r.str_opt("if_exists")?.as_deref() {
+        None | Some("error") => false,
+        Some("replace") => true,
+        Some(other) => {
+            return Err(DbError::BadArgs(format!("invalid if_exists value '{other}'")).into())
+        }
+    };
+
+    let _lk = lock::acquire(cfg, &name)?;
+    let Some(row) = resolve_node(cfg, &name)? else {
+        return Ok(false);
+    };
+    let old_path = PathBuf::from(&row.path);
+
+    // Destination directory: the named father, or the node's current parent
+    // when only the name is changing.
+    let father_dir = match &new_father {
+        Some(f) => {
+            ensure_valid_name(f)?;
+            let f_row = resolve_node(cfg, f)?
+                .ok_or_else(|| DbError::BadArgs(format!("father node '{f}' not found")))?;
+            PathBuf::from(f_row.path)
+        }
+        None => old_path
+            .parent()
+            .ok_or_else(|| DbError::BadArgs(format!("node '{name}' has no parent directory")))?
+            .to_path_buf(),
+    };
+    let new_path = father_dir.join(&new_name);
+    if new_path == old_path {
+        return Ok(true); // already where it was asked to be
+    }
+    // Moving a node beneath itself would detach the whole subtree from the root.
+    if father_dir.starts_with(&old_path) {
+        return Err(DbError::BadArgs(format!("cannot move '{name}' into its own subtree")).into());
+    }
+    // Names are the global key, so a rename onto a name used anywhere else in
+    // the tree would make both nodes unresolvable.
+    if new_name != name && resolve_node(cfg, &new_name)?.is_some() {
+        return Err(DbError::Exists(format!("node '{new_name}' already exists")).into());
+    }
+    if new_path.symlink_metadata().is_ok() {
+        if !replace {
+            return Err(
+                DbError::Exists(format!("'{}' already exists", new_path.display())).into(),
+            );
+        }
+        // Trash rather than delete: the destination is recoverable, unlike the
+        // `rm -rf` the legacy job mover used for the same situation.
+        store::move_to_trash(cfg, &new_path)?;
+    }
+
+    // Resolve the containers BEFORE the rename — one of them may itself live
+    // inside the moving subtree, in which case its directory relocates too and
+    // its post-rename path can only be derived from the old one.
+    let containers: Vec<(String, PathBuf)> = links_of(cfg, &name)?
+        .into_iter()
+        .filter_map(|c| {
+            resolve_node(cfg, &c)
+                .ok()
+                .flatten()
+                .map(|cr| (c, PathBuf::from(cr.path)))
+        })
+        .collect();
+
+    fs::rename(&old_path, &new_path).map_err(DbError::from)?;
+
+    for (_, cpath) in &containers {
+        let cdir = relocate(cpath, &old_path, &new_path);
+        repoint_link(&cdir, &name, &new_name, &new_path);
+    }
+
+    let container_names: Vec<&str> = containers.iter().map(|(c, _)| c.as_str()).collect();
+    notify_daemon(
+        cfg,
+        ipc::msg_move(
+            &name,
+            &new_name,
+            &rel_of(cfg, &old_path),
+            &rel_of(cfg, &new_path),
+            &container_names,
+        ),
+    );
+
+    cache::invalidate(&name);
+    cache::invalidate(&new_name);
+    cache::neg_remove(&new_name);
+    // Every descendant's cached path just changed. The walk snapshot is only
+    // consulted in fallback mode, and dropping it is both cheaper and safer than
+    // trying to rewrite a subtree's worth of entries in place.
+    cache::snap_invalidate();
+    metrics::record_move();
+    Ok(true)
+}
+
 pub fn reindex(subtree: Option<String>) -> PhpResult<Zval> {
     let cfg = config()?;
     let started = Instant::now();
@@ -1462,6 +2197,25 @@ pub fn stats() -> PhpResult<Zval> {
             VerifyReads::Never => "never",
         },
     )?;
+    // Why the pre-decoded image path is or is not being used. "abi-mismatch"
+    // means the MINIT guard rejected this PHP build: reads still work, they
+    // just parse the raw bytes.
+    ins_str(
+        &mut ht,
+        "image",
+        if !cfg.image {
+            "off"
+        } else if IMAGE_ABI_OK.load(std::sync::atomic::Ordering::Relaxed) {
+            "on"
+        } else {
+            "abi-mismatch"
+        },
+    )?;
+    ins_str(
+        &mut ht,
+        "zero_copy",
+        if cfg.zero_copy { "on" } else { "off" },
+    )?;
     let mut ins_long = |k: &'static str, v: i64| -> Result<(), DbError> {
         let mut z = Zval::new();
         z.set_long(v);
@@ -1478,6 +2232,7 @@ pub fn stats() -> PhpResult<Zval> {
         ins_long("shm_size", h.seg_size as i64)?;
         ins_long("shm_dead_bytes", h.dead_bytes.load(Relaxed) as i64)?;
         ins_long("doc_bytes", h.doc_bytes.load(Relaxed) as i64)?;
+        ins_long("img_bytes", h.img_bytes.load(Relaxed) as i64)?;
     }
     // Live counters from the shared-memory arena (absent when metrics are off).
     if let Some(s) = metrics::snapshot() {
@@ -1487,6 +2242,11 @@ pub fn stats() -> PhpResult<Zval> {
             ht.insert(ArrayKey::Str(k), z)
                 .map_err(|e| DbError::Io(format!("array conversion: {e}")))
         };
+        ins_cnt("img_serves", s.img_serves)?;
+        ins_cnt("img_absent", s.img_absent)?;
+        ins_cnt("img_invalid", s.img_invalid)?;
+        ins_cnt("seg_pins", s.seg_pins)?;
+        ins_cnt("seg_pin_max", s.seg_pin_max)?;
         ins_cnt("reads", s.reads)?;
         ins_cnt("read_ns", s.read_ns)?;
         ins_cnt("cache_hits", s.cache_hits)?;
@@ -1528,6 +2288,9 @@ pub fn stats() -> PhpResult<Zval> {
         ins_cnt("unlink_ops", s.unlink_ops)?;
         ins_cnt("read_ns_max", s.read_ns_max)?;
         ins_cnt("write_ns_max", s.write_ns_max)?;
+        ins_cnt("moves", s.moves)?;
+        ins_cnt("doc_deletes", s.doc_deletes)?;
+        ins_cnt("raw_writes", s.raw_writes)?;
     }
     let mut out = Zval::new();
     out.set_hashtable(ht);
@@ -1555,7 +2318,79 @@ pub fn version() -> String {
 // Module registration
 // ---------------------------------------------------------------------------
 
+/// Does the PHP we are loaded into match the ABI `php_abi.rs` encodes?
+///
+/// The image hands the engine ready-made `zend_string`s out of shared memory,
+/// so a layout or hash mismatch is not a wrong answer — it is a crash. This
+/// runs once at MINIT and, on any doubt, disables the image path (reads still
+/// work by parsing the raw bytes). It never fails MINIT: the extension must
+/// keep serving even on a PHP build we do not recognise.
+fn check_php_abi() -> bool {
+    use ext_php_rs::ffi::{zend_refcounted_h, zend_string, GC_IMMUTABLE};
+    use std::mem::{offset_of, size_of};
+
+    let layout_ok = size_of::<zend_refcounted_h>() == 8
+        && offset_of!(zend_string, gc) == php_abi::ZS_OFF_GC
+        && offset_of!(zend_string, h) == php_abi::ZS_OFF_H
+        && offset_of!(zend_string, len) == php_abi::ZS_OFF_LEN
+        && offset_of!(zend_string, val) == php_abi::ZS_OFF_VAL
+        && GC_IMMUTABLE == php_abi::GC_IMMUTABLE
+        && unsafe { ext_php_rs::ffi::zend_string_init_interned }.is_some();
+
+    layout_ok && hash_selftest()
+}
+
+/// Ask the real engine to hash a corpus and compare against our port.
+///
+/// This is the check that actually earns its keep: `zend_inline_hash_func`
+/// depends on the target's `char` signedness and ORs in the top bit, and both
+/// mistakes fail *silently* — a wrong hash makes a key that `foreach` can see
+/// but `array_key_exists()` denies. Building a string with `h = 0` and letting
+/// PHP fill it in compares us against the exact binary we are loaded into.
+fn hash_selftest() -> bool {
+    let mut corpus: Vec<Vec<u8>> = Vec::new();
+    for len in 0..18usize {
+        corpus.push((0..len).map(|i| b'a' + (i % 26) as u8).collect());
+        corpus.push((0..len).map(|i| 0x80u8.wrapping_add(i as u8)).collect());
+    }
+    corpus.push(b"title".to_vec());
+    corpus.push(b"a\0b".to_vec());
+
+    for bytes in corpus {
+        // A fresh (non-interned) string starts with h == 0. `zend_string_hash_val`
+        // is a static inline (not an exported symbol), so force the engine to
+        // compute and cache the hash the same way any array write would: insert
+        // the string as a hash-table key, then read `h` back out of it.
+        let zs = ZendStr::new(&bytes, false);
+        let raw = zs.into_raw();
+        let engine = unsafe {
+            let mut ht = ZendHashTable::new();
+            let ok = ht.insert(ArrayKey::ZendString(&*raw), ()).is_ok();
+            let h = (*raw).h;
+            drop(ht);
+            if !ok {
+                ext_php_rs::ffi::ext_php_rs_zend_string_release(raw);
+                return false;
+            }
+            h
+        };
+        unsafe { ext_php_rs::ffi::ext_php_rs_zend_string_release(raw) };
+        if engine == 0 || engine != php_abi::djbx33a(&bytes) {
+            return false;
+        }
+    }
+    true
+}
+
+/// Runs after `zend_deactivate()` has torn the executor down, which is the only
+/// point at which no live zval can still point into a pinned mapping.
+extern "C" fn post_deactivate() -> i32 {
+    request_cleanup();
+    0
+}
+
 fn startup(_ty: i32, module_number: i32) -> i32 {
+    IMAGE_ABI_OK.store(check_php_abi(), std::sync::atomic::Ordering::Relaxed);
     let entries = vec![
         IniEntryDef::new(
             "quanta_db.root".into(),
@@ -1619,6 +2454,17 @@ fn startup(_ty: i32, module_number: i32) -> i32 {
             String::new(),
             &IniEntryPermission::All,
         ),
+        IniEntryDef::new("quanta_db.image".into(), String::new(), &IniEntryPermission::All),
+        IniEntryDef::new(
+            "quanta_db.image_max_doc_kb".into(),
+            "256".into(),
+            &IniEntryPermission::All,
+        ),
+        IniEntryDef::new(
+            "quanta_db.zero_copy".into(),
+            String::new(),
+            &IniEntryPermission::All,
+        ),
     ];
     IniEntryDef::register(entries, module_number);
     0
@@ -1630,4 +2476,5 @@ pub fn get_module(module: ModuleBuilder) -> ModuleBuilder {
     module
         .class::<QuantaDbException>()
         .class::<QuantaDb>()
+        .post_deactivate_function(post_deactivate)
 }

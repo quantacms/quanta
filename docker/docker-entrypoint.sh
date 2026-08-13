@@ -80,10 +80,13 @@ esac
 # The image bakes the canonical site dir into quanta-db.ini (quanta_db.root, read
 # by the extension) and QUANTA_DB_ROOT (read by qdbd and qdbstat) at the default
 # site name. Re-point both when the site is named something else, so extension,
-# daemon and this script all agree on one site dir.
+# daemon and this script all agree on one site dir. The trashbin is per-site too
+# (Environment->dir['trashbin'] = static/tmp/<site>/trashbin), so it moves with it.
 if [ "$QUANTA_SITE" != "localhost" ]; then
     if [ -f /usr/local/etc/php/conf.d/quanta-db.ini ]; then
         sed -i "s#^quanta_db.root=.*#quanta_db.root=$SITE_DIR#" \
+            /usr/local/etc/php/conf.d/quanta-db.ini
+        sed -i "s#^quanta_db.trashbin_dir=.*#quanta_db.trashbin_dir=$QUANTA_DIR/static/tmp/$QUANTA_SITE/trashbin#" \
             /usr/local/etc/php/conf.d/quanta-db.ini
     fi
     export QUANTA_DB_ROOT="$SITE_DIR"
