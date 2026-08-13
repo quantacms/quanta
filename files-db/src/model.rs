@@ -21,6 +21,16 @@ pub struct DocModel {
     pub corrupt: bool,
     pub mtime: i64,
     pub size: i64,
+    /// Pre-decoded image (`image::encode`), built ONCE here when the document
+    /// is read and carried for the life of this model entry. Empty when images
+    /// are disabled, the document is over `image_max_doc`, or it would not
+    /// encode.
+    ///
+    /// It must never be rebuilt in `encode()`: that runs on every republish,
+    /// and `apply_link`, `refresh_children` and `publish_full` republish
+    /// constantly — re-imaging there would make a link change cost a full
+    /// re-encode of every document in the tree.
+    pub image: Vec<u8>,
 }
 
 pub struct NodeModel {
@@ -45,6 +55,10 @@ impl NodeModel {
         self.docs.iter().map(|d| d.raw.len() as u64).sum()
     }
 
+    pub fn img_bytes(&self) -> u64 {
+        self.docs.iter().map(|d| d.image.len() as u64).sum()
+    }
+
     /// Serialize into the on-segment record format.
     pub fn encode(&self) -> Vec<u8> {
         let inlinks: Vec<String> = self.inlinks.iter().cloned().collect();
@@ -57,6 +71,7 @@ impl NodeModel {
                 corrupt: d.corrupt,
                 doc_mtime: d.mtime,
                 doc_size: d.size,
+                image: &d.image,
             })
             .collect();
         shm::encode_record(
@@ -87,6 +102,10 @@ impl Model {
         self.nodes.values().map(NodeModel::doc_bytes).sum()
     }
 
+    pub fn img_bytes(&self) -> u64 {
+        self.nodes.values().map(NodeModel::img_bytes).sum()
+    }
+
     /// Recompute every node's inlink set from the link edges.
     pub fn rebuild_inlinks(&mut self) {
         for n in self.nodes.values_mut() {
@@ -103,17 +122,28 @@ impl Model {
 /// Read one node's docs (every `data*.json`). Corrupt files are kept as
 /// corrupt-flagged entries so readers can throw CORRUPT_JSON (contract §7),
 /// while `langs` listings still show the language.
-pub fn load_docs(path: &Path) -> Vec<DocModel> {
+///
+/// The parse here is not new work: this function has always parsed every
+/// document just to set `corrupt`, then thrown the result away. Building the
+/// pre-decoded image reuses that `Value`, so the only added cost is the encode
+/// itself — no extra I/O and no second parse.
+pub fn load_docs(cfg: &Config, path: &Path) -> Vec<DocModel> {
     let mut docs = Vec::new();
     for lang in store::langs_of(path) {
         if let Ok(Some((raw, fstat))) = store::read_doc(path, &lang) {
-            let corrupt = serde_json::from_str::<Value>(&raw).is_err();
+            let parsed = serde_json::from_str::<Value>(&raw);
+            let corrupt = parsed.is_err();
+            let image = match &parsed {
+                Ok(v) if cfg.image && raw.len() <= cfg.image_max_doc => crate::image::encode(v),
+                _ => Vec::new(),
+            };
             docs.push(DocModel {
                 lang,
                 raw: if corrupt { Vec::new() } else { raw.into_bytes() },
                 corrupt,
                 mtime: fstat.mtime,
                 size: fstat.size,
+                image,
             });
         }
     }
@@ -134,7 +164,7 @@ pub fn load_node(cfg: &Config, name: &str, path: &Path, father: Option<String>) 
     let docs = if store::in_payload_subtree(&rel_path) {
         Vec::new()
     } else {
-        load_docs(path)
+        load_docs(cfg, path)
     };
     NodeModel {
         name: name.to_string(),

@@ -26,8 +26,27 @@ const NEG_MAX_ENTRIES: usize = 8192;
 /// it. Short: fallback mode is a degraded state, not the design point.
 const SNAP_TTL: Duration = Duration::from_secs(2);
 
+/// One parse-cache entry. Keyed by the hashes of (name, lang) so a lookup costs
+/// no allocation — the previous `HashMap<(String, String), _>` built two owned
+/// `String`s on every read just to ask the question. The names are kept in the
+/// entry and re-checked on a hit, so a hash collision is a miss, never a wrong
+/// document.
+struct DocEntry {
+    name: String,
+    lang: String,
+    generation: i64,
+    value: Rc<Value>,
+}
+
+fn doc_key(name: &str, lang: &str) -> (u64, u64) {
+    (
+        crate::shm::fnv1a(name.as_bytes()),
+        crate::shm::fnv1a(lang.as_bytes()),
+    )
+}
+
 thread_local! {
-    static DOCS: RefCell<HashMap<(String, String), (i64, Rc<Value>)>> =
+    static DOCS: RefCell<HashMap<(u64, u64), DocEntry>> =
         RefCell::new(HashMap::new());
 
     /// Negative cache: names proven absent (snapshot miss + a fruitless
@@ -57,11 +76,12 @@ thread_local! {
 pub fn get(name: &str, lang: &str, generation: i64) -> Option<Rc<Value>> {
     let hit = DOCS.with(|c| {
         c.borrow()
-            .get(&(name.to_string(), lang.to_string()))
-            .filter(|(g, _)| *g == generation)
-            .map(|(_, v)| v.clone())
+            .get(&doc_key(name, lang))
+            // A stale generation counts as a miss (contract §4): the entry is
+            // unusable. The name/lang re-check makes a hash collision a miss.
+            .filter(|e| e.generation == generation && e.name == name && e.lang == lang)
+            .map(|e| e.value.clone())
     });
-    // A stale generation counts as a miss (contract §4): the entry is unusable.
     if hit.is_some() {
         crate::metrics::cache_hit();
     } else {
@@ -76,13 +96,21 @@ pub fn put(name: &str, lang: &str, generation: i64, value: Rc<Value>) {
         if map.len() >= MAX_ENTRIES {
             map.clear();
         }
-        map.insert((name.to_string(), lang.to_string()), (generation, value));
+        map.insert(
+            doc_key(name, lang),
+            DocEntry {
+                name: name.to_string(),
+                lang: lang.to_string(),
+                generation,
+                value,
+            },
+        );
     });
 }
 
 pub fn invalidate(name: &str) {
     DOCS.with(|c| {
-        c.borrow_mut().retain(|(n, _), _| n != name);
+        c.borrow_mut().retain(|_, e| e.name != name);
     });
 }
 

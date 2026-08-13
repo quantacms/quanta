@@ -19,6 +19,13 @@ define("CLASS_MAP_FILE", $env->dir['tmp'] . '/class_map.dat');
 spl_autoload_register(function($class_name) {
     static $class_map;
     $split = explode('\\', $class_name);
+    // Quanta's map is keyed Vendor\Namespace\Class. Anything shallower is not
+    // ours — a global class like an extension's, or a two-part vendor class —
+    // and reading $split[1]/$split[2] for it emitted "Undefined array key"
+    // warnings straight into the response body.
+    if (count($split) < 3) {
+      return;
+    }
     if (!$class_map) {
       $class_map = unserialize(file_get_contents(CLASS_MAP_FILE));
     }

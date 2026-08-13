@@ -200,16 +200,11 @@
       // quanta_db extension: unlink + index row removal in one step
       // (files-db/docs/api-contract.md §9). On any error, fall through to
       // the legacy path, which emits the user-facing Messages.
-      if (class_exists('QuantaDb')) {
-        try {
-          \QuantaDb::unlink($symlink_name, $symlink_folder, array(
-            'if_not_exists' => $if_not_exists === 'error' ? 'error' : 'ignore',
-          ));
-          return;
-        }
-        catch (\Throwable $e) {
-          // Legacy fallback below.
-        }
+      $unlinked = $env->db()->unlink($symlink_name, $symlink_folder, array(
+        'if_not_exists' => $if_not_exists === 'error' ? 'error' : 'ignore',
+      ));
+      if ($unlinked !== NULL) {
+        return;
       }
 
       $symlink_folder_node = NodeFactory::load($env, $symlink_folder);
@@ -274,14 +269,12 @@
       // (files-db/docs/api-contract.md §9). Custom symlink names and the
       // 'override' mode stay on the legacy path; on any error, fall through
       // to the legacy code, which emits the user-facing Messages.
-      if (class_exists('QuantaDb') && $symlink_name === $source_node && $if_exists !== 'override') {
-        try {
-          return \QuantaDb::link($source_node, $symlink_folder, array(
-            'if_exists' => $if_exists === 'error' ? 'error' : 'ignore',
-          ));
-        }
-        catch (\Throwable $e) {
-          // Legacy fallback below.
+      if ($symlink_name === $source_node && $if_exists !== 'override') {
+        $linked = $env->db()->link($source_node, $symlink_folder, array(
+          'if_exists' => $if_exists === 'error' ? 'error' : 'ignore',
+        ));
+        if ($linked !== NULL) {
+          return $linked;
         }
       }
 
