@@ -77,11 +77,11 @@ eq($r['nodes'], 6, 'reindex tolerates corrupt doc');
 // --- stats()/version() shape. ------------------------------------------------
 $s = QuantaDb::stats();
 eq($s['implementation'], 'ext', 'stats.implementation');
-eq($s['contract'], '1.1', 'stats.contract');
+eq($s['contract'], '1.3', 'stats.contract');
 eq($s['verify_reads'], 'always', 'stats.verify_reads default');
 eq($s['mode'], qdb_daemon_mode() ? 'shm' : 'fallback', 'stats.mode matches run mode');
 ok($s['nodes'] >= 6, 'stats.nodes populated');
 ok(str_ends_with($s['root'], '/root'), 'stats.root');
-eq(QuantaDb::version(), 'ext/1.1', 'version()');
+eq(QuantaDb::version(), 'ext/1.3', 'version()');
 
 finish();

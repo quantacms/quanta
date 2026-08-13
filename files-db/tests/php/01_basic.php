@@ -15,7 +15,7 @@ eq(QuantaDbException::EXISTS, 3, 'const EXISTS');
 eq(QuantaDbException::BAD_ARGS, 4, 'const BAD_ARGS');
 eq(QuantaDbException::CORRUPT_JSON, 5, 'const CORRUPT_JSON');
 
-eq(QuantaDb::version(), 'ext/1.1', 'version string');
+eq(QuantaDb::version(), 'ext/1.3', 'version string');
 
 // Nodes seeded directly on the filesystem are found (index self-heal, §4.3).
 seed_node($root, 'home', ['title' => 'Home']);

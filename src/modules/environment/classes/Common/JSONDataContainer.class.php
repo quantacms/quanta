@@ -50,21 +50,18 @@ abstract class JSONDataContainer extends DataContainer {
     }
 
     // quanta_db extension: locked, atomic, index-consistent write
-    // (docs/files-db/api-contract.md §9). The realpath guard makes sure the
+    // (files-db/docs/api-contract.md §9). The realpath guard makes sure the
     // globally-unique name resolves to THIS container's folder; anything
     // else (new node dirs, name mismatch, errors) uses the legacy write.
-    if (class_exists('QuantaDb') && is_dir($this->path)) {
-      try {
-        $qdb_path = \QuantaDb::path($this->name);
-        if ($qdb_path !== NULL && realpath($qdb_path) === realpath($this->path)) {
-          \QuantaDb::put($this->name, (array) json_decode(json_encode($this->json), TRUE), array(
-            'lang' => ($suffix == '') ? NULL : $language,
-          ));
+    if (is_dir($this->path)) {
+      $qdb_path = $this->env->db()->path($this->name);
+      if (is_string($qdb_path) && realpath($qdb_path) === realpath($this->path)) {
+        $written = $this->env->db()->put($this->name, (array) json_decode(json_encode($this->json), TRUE), array(
+          'lang' => ($suffix == '') ? NULL : $language,
+        ));
+        if ($written) {
           return;
         }
-      }
-      catch (\Throwable $e) {
-        // Fall through to the legacy write.
       }
     }
 

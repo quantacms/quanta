@@ -1,20 +1,39 @@
-# Files-DB API Contract — `quanta_db` (v1.1)
+# Files-DB API Contract — `quanta_db` (v1.3)
 
 Status: DRAFT — normative once the first implementation ships.
-Contract version: `1.1`. Implementations report it via `QuantaDb::version()`.
+Contract version: `1.3`. Implementations report it via `QuantaDb::version()`.
 
 This document defines the single API through which Quanta code accesses
 the file-based node database. It is written so that two implementations can
 coexist and be swapped freely:
 
-- **Polyfill** — pure PHP (`_modules/quanta_db/`), always available. Uses an
-  SQLite index + `flock` + atomic renames.
+- **Polyfill** — pure PHP (`_modules/quanta_db/`), using an SQLite index +
+  `flock` + atomic renames. **Not shipped.** No such module exists in the repo;
+  the dual-implementation framing below (including the dispatch rule in §8 and
+  the parity requirements) is the design this contract was written against, not
+  a description of code you can run today. Everything stated about the
+  *extension* is normative and implemented.
 - **Extension** — native (Rust Zend extension), loaded via `php.ini`. A
   companion daemon (`qdbd`) loads the whole tree into a shared-memory segment
   that the extension maps read-only, keeps it authoritative with an inotify
   watcher + periodic reconcile, and receives write notifications over a unix
   socket; when the daemon is down the extension serves from a per-process walk
   snapshot. There is no SQLite in the extension.
+
+**v1.3 additions:** `QuantaDb::putRaw()` (write pre-serialized bytes verbatim),
+`QuantaDb::deleteDoc()` (drop one language's document, keep the node), and
+`QuantaDb::move()` (relocate a node to a new father and/or a new name) — which
+together close the write surface: every mutation a caller can make to a node is
+now expressible through the API, with no reason to reach for the filesystem and
+wait for the watcher to notice. Node move/rename accordingly leaves the §11
+non-goals. New counters `moves`, `doc_deletes`, `raw_writes` in `stats()`
+(metrics layout 7). No v1.2 signature changes.
+
+**v1.2 additions:** `QuantaDb::getObject()` (stdClass read, the reader behind
+`Node::loadJSON`); config keys `quanta_db.image`, `quanta_db.image_max_doc_kb`,
+`quanta_db.zero_copy`; the segment gained a per-language pre-decoded document
+image (segment layout 2 — a daemon/extension version skew is detected and
+degrades to fallback rather than misreading). No v1.1 signature changes.
 
 **v1.1 additions:** `QuantaDb::getRaw()` (raw-JSON-string read); config keys
 `quanta_db.shm_dir`, `quanta_db.socket_path`, `quanta_db.write_ack_timeout_ms`,
@@ -89,9 +108,38 @@ Returns the **raw JSON document as a string** (the exact stored bytes), or
 `null` if the node or language file does not exist. Semantically
 `get()` equals `json_decode(getRaw(), true)`; `getRaw()` exists so a hot call
 site can pair a zero-syscall read (from shared memory, in the extension) with
-PHP's native `json_decode`, which is faster than the implementation building
-the array itself for all but trivially small documents. Same not-found and
-`CORRUPT_JSON` semantics as `get()`.
+PHP's native `json_decode`. Same not-found and `CORRUPT_JSON` semantics as
+`get()`.
+
+Note the pairing is only a win when the document is decoded once per process:
+an implementation that caches the decoded document (the extension does, keyed
+by the node's generation) serves `get()`/`getObject()` without re-parsing,
+while `getRaw() + json_decode()` re-parses on every call. On a 205 KB document
+that is ~119 µs versus ~3 µs.
+
+```php
+QuantaDb::getObject(string $name, ?string $lang = null): ?object   // v1.2
+```
+Returns the data document as a **`stdClass`** — exactly the value
+`(object) json_decode($raw)` produces, nested shapes included: JSON objects
+become `stdClass`, JSON arrays become PHP lists, and a non-object root is cast
+the way PHP's `(object)` cast casts it. Same not-found and `CORRUPT_JSON`
+semantics as `get()`.
+
+This exists because `(object) get()` is **not** equivalent: the cast converts
+only the top level, leaving nested JSON objects as PHP arrays, and Quanta reads
+them as objects (`$node->json->permissions->{$permission}`). Note that
+`json_encode()` cannot distinguish the two shapes — a string-keyed PHP array
+encodes as a JSON object — so conformance tests must compare with
+`var_export()` or a recursive walk, never a JSON round-trip.
+
+**Mutability (deliberate exception to §1.2).** The value returned by
+`getObject()` is freshly allocated, unshared and fully mutable: callers may
+write, append to, and `unset()` its properties at any depth, and two calls
+return two independent objects. `Node::loadJSON` assigns it to `$node->json`,
+which the codebase mutates in many places (`access.hook.inc`, `file.hook.inc`,
+`Job::attempt()`, `Node::setAttributeJSON`/`removeAttributeJSON`). Every other
+reader on this class keeps the "treat results as immutable" rule.
 
 ```php
 QuantaDb::path(string $name): ?string
@@ -158,12 +206,75 @@ Replaces the node's data document wholesale (same semantics as `saveJSON()`).
   (atomic `mkdir`) or throws `QuantaDbException` with code `EXISTS` if the
   name is already taken anywhere in the tree. This is the name-reservation
   primitive replacing `getCandidatePath()`'s check-then-act loop. To update
-  an existing node, call `put` without `father` (moving nodes is out of
-  scope in v1).
+  an existing node, call `put` without `father`; `put` never relocates a node,
+  which is `move`'s job.
 
 Durability sequence (normative): serialize → write `data.json.tmp.<pid>` →
 `rename()` over `data.json` → bump generation in index → release lock.
 Readers can never observe a partial document.
+
+```php
+QuantaDb::putRaw(string $name, string $json, array $opts = []): bool   // v1.3
+```
+`put` for a caller that already holds the serialized document. `$opts` and the
+durability sequence are `put`'s, with two normative differences:
+
+- **The bytes are stored verbatim.** An implementation MUST NOT re-serialize
+  them. This is the whole purpose: PHP's `json_encode` escapes `/` and
+  non-ASCII (`http:\/\/a`, `città`) and other encoders do not, so a
+  document that round-trips through `put` comes back byte-different even though
+  it is value-identical. `putRaw` is how a caller keeps a document stable on
+  disk across writers — which matters when the files are under version control,
+  compared, or written by a mix of legacy and API code.
+- **`$json` MUST be validated as parsable before anything is written**, and
+  MUST raise `BAD_ARGS` when it is not. `CORRUPT_JSON` is reserved for a
+  *stored* document that does not parse; a caller passing garbage is a caller
+  error. Writing it unchecked would poison the node: an unparsable document is
+  latched as corrupt and every later read of that node throws.
+
+```php
+QuantaDb::deleteDoc(string $name, ?string $lang = null): bool   // v1.3
+```
+Removes one language's document (`data.json` / `data_<lang>.json`) and leaves
+the node itself in place. Returns `false` when that language file was not
+there, or when the node does not exist — never an exception, per §7.
+
+A node with no documents at all is a legal state: it still resolves through
+`path()`, `exists()` and `children()`, and `get()` on it returns `null`. This is
+the operation for repairing a node that carries both a neutral and a
+translated document when only one is correct; use it with `putRaw` (write the
+survivor first, delete the other second) so an interruption leaves a duplicate
+rather than nothing.
+
+```php
+QuantaDb::move(string $name, ?string $new_father = null, array $opts = []): bool   // v1.3
+```
+Relocates a node: under a new father, under a new name, or both. `$opts`:
+- `name`: the node's new name. Omitted, the name is unchanged; passing only
+  `name` renames in place.
+- `if_exists`: `'error'` (default) | `'replace'`. `'replace'` moves whatever
+  occupies the destination path to the trashbin first — recoverable, unlike a
+  recursive delete.
+
+Returns `false` when `$name` does not resolve. Raises `EXISTS` when the
+destination path is occupied (and `if_exists` is `'error'`), or when a rename
+would take a name already used anywhere in the tree — names are the global key,
+so a duplicate makes both nodes unresolvable. Raises `BAD_ARGS` when the
+destination father is inside the node's own subtree, which would detach the
+subtree from the root.
+
+Normative behaviour:
+- The node's directory is **renamed**, so its whole subtree travels with it and
+  every descendant's path changes. Documents are not rewritten.
+- **Every inbound link MUST be re-pointed.** Links are stored as symlinks
+  holding an absolute path (§3 `link`), so a bare rename leaves every container
+  membership of the node dangling. When the name changes, the link's own
+  filename changes with it (a link is always named after its target).
+- **Atomicity is per step, not end to end.** The directory rename is atomic and
+  each link re-point is atomic (write a temporary link, `rename()` it over the
+  old one), so a concurrent reader sees the node at exactly one location and
+  in exactly its containers. A crash *between* those steps leaves dangling
+  links, which `reindex()` repairs. Implementations MUST NOT claim more.
 
 ```php
 QuantaDb::update(string $name, callable $fn, array $opts = []): ?array
@@ -199,7 +310,7 @@ booking in zero or two status folders.
 ```php
 QuantaDb::reindex(?string $subtree = null): array   // ['nodes'=>int,'links'=>int,'seconds'=>float]
 QuantaDb::stats(): array                            // impl-defined; MUST include 'implementation','contract','nodes'
-QuantaDb::version(): string                         // e.g. 'polyfill/1.1' or 'ext/1.1'
+QuantaDb::version(): string                         // e.g. 'polyfill/1.3' or 'ext/1.3'
 ```
 `reindex` drops and rebuilds derived data from the filesystem (whole tree or
 one subtree). Safe to run at any time, including concurrently with traffic.
@@ -299,8 +410,11 @@ polyfill (`QUANTA_DB_*`), highest-precedence first: ini → env → default.
 | `quanta_db.lock_timeout_ms` | `5000` | Per-node lock wait budget |
 | `quanta_db.write_ack_timeout_ms` | `250` | Extension: budget for a `qdbd` write ack before poisoning coherence and returning (the write is already durable on disk) |
 | `quanta_db.shm_size_mb` | `64` | Extension: initial per-epoch data-segment budget (sparse on tmpfs; grown by compaction) |
-| `quanta_db.verify_reads` | `always` (polyfill) / effectively `watch` when `qdbd` coherent (extension) | §4.2 |
+| `quanta_db.verify_reads` | `always` | §4.2. Only `never` selects the other branch; every other value means `always`. **`watch` is a described mode, not a settable value** — it is what the extension effectively does whenever `qdbd` is coherent. In the extension this key is currently **inert**: it is parsed and reported by `stats()`, but no code path reads it |
 | `quanta_db.neg_cache_ms` | `30000` | Fallback-mode TTL for the per-process known-absent cache |
+| `quanta_db.image` | `on` | Build the pre-decoded document image alongside the raw JSON, so a read needs no `json_decode` at all. `off` falls back to parsing (correct, slower) |
+| `quanta_db.image_max_doc_kb` | `256` | Documents above this are not imaged (the image roughly doubles a document's segment footprint) |
+| `quanta_db.zero_copy` | `on` | Point PHP string zvals straight at the mapping instead of copying. `off` is the kill switch — see the zero-copy note in README |
 
 ## 7. Errors
 
@@ -343,7 +457,7 @@ treats missing nodes today.
 |---|---|
 | `Environment::nodePath()` (symlink cache + `exec find`) | `QuantaDb::path()` |
 | `JSONDataContainer::saveJSON()` (`fopen 'w+'`) | `QuantaDb::put()` |
-| `Node::loadJSON()` | `QuantaDb::get()` (via meta for `jsonpath`) |
+| `Node::loadJSON()` (`is_file` ×2 + `file_get_contents` + `json_decode`) | `QuantaDb::getObject()` — **wired** |
 | `Environment::scanDirectory()` in `ListObject` / `DirList` / `FastDirList` | `QuantaDb::children()` |
 | `NodeFactory::linkNodes/unlinkNodes` | `QuantaDb::link()` / `QuantaDb::unlink()` |
 | `BookingFactory::changeBookingStatus()` | `QuantaDb::relink()` |
@@ -351,11 +465,42 @@ treats missing nodes today.
 | `Environment::getCandidatePath()` retry loop | `QuantaDb::put(..., ['father'=>…])` + `EXISTS` |
 | `Node::getCategories()` (`exec find -samefile`) | `QuantaDb::links()` |
 | `Node::delete()` (`exec mv`) | `QuantaDb::delete()` |
+| `Job::safeMove()` (`exec mv -T`) | `QuantaDb::move()` |
+| `integrity` hook's `data.json` ↔ `data_<lang>.json` `rename`/`unlink` | `QuantaDb::putRaw()` + `QuantaDb::deleteDoc()` |
 | `doctor` module | `QuantaDb::reindex()` / `QuantaDb::stats()` |
 
-Quanta is vendored; these touch points change inside `quanta/` and must be
-re-applied when Quanta is re-vendored (see README "Updating Quanta") — keep
-each shim a one-line delegation so the diff stays trivial.
+This table is a map of what each API method *replaces*, not a claim about what
+is wired. As of v1.3 only the rows marked **wired** are called from Quanta
+itself; the rest of the surface exists so a site can adopt it deliberately, at
+its own pace, without the extension reaching into code it does not own.
+
+Quanta is vendored; any touch point that does get wired changes inside
+`quanta/` and must be re-applied when Quanta is re-vendored (see README
+"Updating Quanta") — keep each shim a one-line delegation so the diff stays
+trivial.
+
+### Adopting the write API
+
+The read path can be adopted invisibly, because a document is a document
+whichever way it was fetched. The write path cannot: routing a mutation through
+the API changes *when* the index learns about it (immediately, on the ack,
+rather than whenever the watcher notices) and *what else* happens with it
+(locking, atomic publish, inbound links maintained, trashbin). Two consequences
+a caller must decide about before switching a call site over:
+
+- **`EXISTS` becomes reachable.** `put(..., ['father' => …])` refuses a name
+  already used anywhere in the tree, where a bare `mkdir` would happily create a
+  second node with a duplicate name. That is the contract enforcing what Quanta
+  has always assumed, but on an existing tree it can surface duplicates that
+  were previously silent. Audit with `find(['name_prefix' => ''])` or
+  `reindex()` before adopting, and decide whether a duplicate should be a
+  user-visible error or a fall-back-to-legacy.
+- **Failure has to mean something.** Every method either succeeds, returns
+  `false`/`null` for "not found", or throws one of §7's five codes. A caller
+  that wraps the API in `try { … } catch (\Throwable) { legacy(); }` keeps
+  today's behaviour exactly, at the cost of silently taking the slow path;
+  a caller that lets `EXISTS` through gets the enforcement. Both are
+  legitimate — the contract does not choose.
 
 ## 10. Conformance suite
 
@@ -374,10 +519,22 @@ contract. Minimum scenarios:
 10. reindex() after wiping derived data restores answers 1–9.
 11. Index-miss self-heal: node created by legacy code (plain mkdir+file) is found.
 12. Lock timeout raises `LOCK_TIMEOUT`; crashed-holder recovery (kill -9 during update) leaves node writable.
+13. putRaw(): `getRaw()` returns the supplied bytes unchanged, including escapes another encoder would rewrite; the same document through `put()` decodes equal but is not byte-equal. Invalid JSON raises `BAD_ARGS` and leaves the stored document untouched.
+14. deleteDoc(): removes one language, siblings and `meta()['langs']` follow; a node stripped of every document still resolves via `path()`/`exists()` while `get()` returns `null`; a second call returns `false`.
+15. move(): both fathers' `children()` agree afterwards; every descendant's `path()` follows; an inbound link still resolves to a directory at the new location (and is renamed with the target); into-own-subtree raises `BAD_ARGS`; an occupied destination raises `EXISTS` and `if_exists='replace'` trashes it; a rename onto a taken name raises `EXISTS`.
+16. move() under concurrent readers: a reader looping over `path()` during a shuttle between two fathers never sees the node absent and never sees a third location.
 
 ## 11. Non-goals in v1 (explicit)
 
-- Node move/rename between fathers; language fallback; multi-root;
-  range/prefix `where` operators; transactions spanning multiple nodes
-  (beyond `relink`); the lazy shm "view object" class (extension v2);
-  replacing the files as source of truth (never).
+- Language fallback; multi-root; range/prefix `where` operators; transactions
+  spanning multiple nodes (beyond `relink` and a single `move`); the lazy shm
+  "view object" class (extension v2); replacing the files as source of truth
+  (never).
+- Payload files (uploads, images, attachments living inside a node directory).
+  They are walked for structure but never indexed, so there is no API to write
+  or remove one; that stays ordinary filesystem work.
+- A hard delete, and any trashbin management (listing, purging, restoring).
+  `delete` and `move`'s `if_exists='replace'` only ever move content aside.
+
+*(Node move/rename between fathers was a v1 non-goal; `move()` delivers it in
+v1.3.)*

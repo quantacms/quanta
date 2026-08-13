@@ -25,7 +25,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 const SIZE: usize = 4096;
 /// "QDBSTAT\0" — layout sentinel; a reader that sees a different value bails.
 const MAGIC: u64 = 0x0054_4154_5342_4451;
-const VERSION: u32 = 5;
+const VERSION: u32 = 7;
 
 const REL: Ordering = Ordering::Relaxed;
 
@@ -99,6 +99,25 @@ pub struct Metrics {
     pub unlink_ops: AtomicU64,
     pub read_ns_max: AtomicU64,
     pub write_ns_max: AtomicU64,
+    // -- v6: pre-decoded image path (append only, never reorder) ------------
+    /// Documents served from the pre-decoded image (no JSON parse at all).
+    pub img_serves: AtomicU64,
+    /// Reads where the record carried no image (images off, oversize, corrupt).
+    pub img_absent: AtomicU64,
+    /// Images that failed validation — always a fallback, never a fault.
+    pub img_invalid: AtomicU64,
+    /// Segment mappings pinned for a request so zvals may point into them.
+    pub seg_pins: AtomicU64,
+    /// Requests that hit the pin cap and fell back to copying.
+    pub seg_pin_max: AtomicU64,
+    // -- v7: the rest of the write surface (append only, never reorder) -----
+    /// Node relocations (`move`): new father and/or new name.
+    pub moves: AtomicU64,
+    /// Single-language document removals (`deleteDoc`) that removed a file.
+    pub doc_deletes: AtomicU64,
+    /// Writes that stored caller-supplied bytes verbatim (`putRaw`). Counted in
+    /// `writes` too — this is the subset that skipped re-serialization.
+    pub raw_writes: AtomicU64,
 }
 
 const _: () = assert!(std::mem::size_of::<Metrics>() <= SIZE);
@@ -149,6 +168,14 @@ pub struct Snapshot {
     pub unlink_ops: u64,
     pub read_ns_max: u64,
     pub write_ns_max: u64,
+    pub img_serves: u64,
+    pub img_absent: u64,
+    pub img_invalid: u64,
+    pub seg_pins: u64,
+    pub seg_pin_max: u64,
+    pub moves: u64,
+    pub doc_deletes: u64,
+    pub raw_writes: u64,
 }
 
 impl Metrics {
@@ -197,6 +224,14 @@ impl Metrics {
             unlink_ops: self.unlink_ops.load(REL),
             read_ns_max: self.read_ns_max.load(REL),
             write_ns_max: self.write_ns_max.load(REL),
+            img_serves: self.img_serves.load(REL),
+            img_absent: self.img_absent.load(REL),
+            img_invalid: self.img_invalid.load(REL),
+            seg_pins: self.seg_pins.load(REL),
+            seg_pin_max: self.seg_pin_max.load(REL),
+            moves: self.moves.load(REL),
+            doc_deletes: self.doc_deletes.load(REL),
+            raw_writes: self.raw_writes.load(REL),
         }
     }
 }
@@ -451,6 +486,36 @@ pub fn shm_remap() {
     }
 }
 
+pub fn img_serve() {
+    if let Some(m) = arena() {
+        m.img_serves.fetch_add(1, REL);
+    }
+}
+
+pub fn img_absent() {
+    if let Some(m) = arena() {
+        m.img_absent.fetch_add(1, REL);
+    }
+}
+
+pub fn img_invalid() {
+    if let Some(m) = arena() {
+        m.img_invalid.fetch_add(1, REL);
+    }
+}
+
+pub fn seg_pin() {
+    if let Some(m) = arena() {
+        m.seg_pins.fetch_add(1, REL);
+    }
+}
+
+pub fn seg_pin_max() {
+    if let Some(m) = arena() {
+        m.seg_pin_max.fetch_add(1, REL);
+    }
+}
+
 pub fn shm_invalid() {
     if let Some(m) = arena() {
         m.shm_invalid.fetch_add(1, REL);
@@ -574,6 +639,25 @@ pub fn record_link() {
 pub fn record_unlink() {
     if let Some(m) = arena() {
         m.unlink_ops.fetch_add(1, REL);
+    }
+}
+
+// The rest of the write surface (v7).
+pub fn record_move() {
+    if let Some(m) = arena() {
+        m.moves.fetch_add(1, REL);
+    }
+}
+
+pub fn record_doc_delete() {
+    if let Some(m) = arena() {
+        m.doc_deletes.fetch_add(1, REL);
+    }
+}
+
+pub fn record_raw_write() {
+    if let Some(m) = arena() {
+        m.raw_writes.fetch_add(1, REL);
     }
 }
 

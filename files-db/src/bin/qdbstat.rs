@@ -130,6 +130,7 @@ struct SegStats {
     nodes: u64,
     links: u64,
     doc_bytes: u64,
+    img_bytes: u64,
     arena_used: u64,
     dead_bytes: u64,
     seg_size: u64,
@@ -150,6 +151,7 @@ fn seg_stats(dir: &Path, epoch: u64) -> SegStats {
                 nodes: h.node_count.load(Relaxed),
                 links: h.link_count.load(Relaxed),
                 doc_bytes: h.doc_bytes.load(Relaxed),
+                img_bytes: h.img_bytes.load(Relaxed),
                 arena_used: h.arena_next.load(Relaxed),
                 dead_bytes: h.dead_bytes.load(Relaxed),
                 seg_size: h.seg_size,
@@ -325,12 +327,26 @@ fn verdict(s: &Snapshot, seg: &SegStats, arena_ok: bool) -> Health {
     } else {
         0.0
     };
+    // Fallback reads are counted as a SHARE, not as a total. Every pod serves a
+    // few from the per-process walk in the seconds between php-fpm accepting
+    // traffic and qdbd publishing its first segment, and these counters are
+    // cumulative for the life of the pod — so `> 0` pinned a perfectly healthy
+    // pod to DEGRADED forever, which is exactly the false alarm that teaches
+    // people to ignore the dashboard. An episode that is actually happening
+    // now climbs this share quickly; `!coherent` above already catches a
+    // daemon that is down.
+    let reads_total = s.index_serves + s.file_reads + s.fallback_reads;
+    let fallback_frac = if reads_total > 0 {
+        s.fallback_reads as f64 / reads_total as f64
+    } else {
+        0.0
+    };
     let warn = s.io_errors > 0
         || s.corrupt_json > 0
         || s.lock_timeouts > 0
         || s.shm_invalid > 0
         || s.uds_failures > 0
-        || s.fallback_reads > 0
+        || fallback_frac > 0.01
         || seg_frac > 0.85
         || hb_age >= 3;
     if warn {
@@ -472,6 +488,25 @@ fn render(
                 human_bytes(avg_doc),
             ),
         );
+        // Pre-decoded images: what lets a read skip json_decode entirely.
+        // Zero here with a healthy daemon means every read is paying a parse.
+        row(
+            &mut o,
+            "images",
+            &if seg.img_bytes > 0 {
+                format!(
+                    "{}  ({:.0}% of doc bytes)",
+                    human_bytes(seg.img_bytes),
+                    if seg.doc_bytes > 0 {
+                        seg.img_bytes as f64 * 100.0 / seg.doc_bytes as f64
+                    } else {
+                        0.0
+                    },
+                )
+            } else {
+                paint(col, C_YELLOW, "none — reads fall back to parsing raw JSON").to_string()
+            },
+        );
         let frac = if seg.seg_size > 0 {
             seg.arena_used as f64 / seg.seg_size as f64
         } else {
@@ -517,6 +552,26 @@ fn render(
             idx_frac * 100.0,
             s.file_reads,
             paint(col, if s.fallback_reads > 0 { C_YELLOW } else { C_DIM }, &s.fallback_reads.to_string()),
+        ),
+    );
+    // Of the reads served from shared memory, how many skipped JSON parsing
+    // entirely by using the pre-decoded image.
+    let img_total = s.img_serves + s.img_absent;
+    let img_frac = if img_total > 0 { s.img_serves as f64 / img_total as f64 } else { 0.0 };
+    row(
+        &mut o,
+        "no-parse",
+        &format!(
+            "[{}] {:.0}% from image   no-image {}   invalid {}{}",
+            paint(col, if s.img_invalid > 0 { C_YELLOW } else { C_GREEN }, &bar(img_frac, 16)),
+            img_frac * 100.0,
+            s.img_absent,
+            paint(col, if s.img_invalid > 0 { C_YELLOW } else { C_DIM }, &s.img_invalid.to_string()),
+            if s.seg_pin_max > 0 {
+                format!("   pin-cap {}", s.seg_pin_max)
+            } else {
+                String::new()
+            },
         ),
     );
     row(
@@ -584,6 +639,19 @@ fn render(
             thousands(s.writes),
             s.deletes,
             human_bytes(s.bytes_written),
+        ),
+    );
+    // The rest of the write surface. `raw` is a subset of `writes` (documents
+    // stored byte-for-byte as the caller supplied them); moves and doc-deletes
+    // are their own operations and are not counted as writes.
+    row(
+        &mut o,
+        "shape",
+        &format!(
+            "raw {}   moves {}   doc-deletes {}",
+            thousands(s.raw_writes),
+            s.moves,
+            s.doc_deletes,
         ),
     );
     row(
@@ -709,6 +777,7 @@ fn to_json(s: &Snapshot, seg: &SegStats, arena_ok: bool) -> String {
             "nodes": seg.nodes,
             "links": seg.links,
             "doc_bytes": seg.doc_bytes,
+            "img_bytes": seg.img_bytes,
             "arena_used": seg.arena_used,
             "dead_bytes": seg.dead_bytes,
             "seg_size": seg.seg_size,

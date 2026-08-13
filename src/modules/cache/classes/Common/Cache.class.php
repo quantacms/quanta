@@ -78,18 +78,31 @@ class Cache extends DataContainer {
     }
 
     $cache_folder = Cache::nodePathFolder($env, $node_name);
-    // Remove old link if existing.
-    if (is_link($cache_folder . '/' . $node_name)) {
-      if ($overwrite) {
-        unlink($cache_folder . '/' . $node_name);
-      }
-      else {
-        return $cache_folder . '/' . $node_name;
-      }
-    }
-    symlink($nodepath, $cache_folder . '/' . $node_name) or die("NO SYM");
+    $link = $cache_folder . '/' . $node_name;
 
-    return $cache_folder . '/' . $node_name;
+    // Keep an existing link unless we were asked to replace it.
+    if (is_link($link) && !$overwrite) {
+      return $link;
+    }
+
+    // Publish the link atomically: create it under a unique temporary name and
+    // rename() it into place, which replaces whatever is there in one step.
+    // The old unlink()+symlink() pair left a window in which a concurrent
+    // worker's symlink() failed with EEXIST — and it died mid-render, so on a
+    // cold cache under 5-way concurrency 4 of 5 requests returned a truncated
+    // body with HTTP 200.
+    $tmp = $link . '.tmp.' . getmypid() . '.' . mt_rand();
+    if (!@symlink($nodepath, $tmp)) {
+      // A full disk, a read-only cache dir, a shard folder that could not be
+      // created: this cache is an optimisation, so a missing entry costs the
+      // next lookup a search and nothing more. It must never fail a request.
+      return $link;
+    }
+    if (!@rename($tmp, $link)) {
+      @unlink($tmp);
+    }
+
+    return $link;
   }
 
   /**
@@ -138,7 +151,8 @@ class Cache extends DataContainer {
       $cache_folder = $cache_folder . '/' . $char;
 
       if ($build && !is_dir($cache_folder)) {
-        mkdir($cache_folder, 0755, TRUE);
+        // Concurrent workers build the same shard; losing the race is normal.
+        @mkdir($cache_folder, 0755, TRUE);
       }
     }
     return $cache_folder;

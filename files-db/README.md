@@ -1,36 +1,47 @@
 # quanta_db — Files-DB PHP extension (Rust)
 
-Native PHP extension implementing the **Files-DB API contract v1.1**
-(`docs/files-db/api-contract.md`). It provides fast, concurrency-safe access to
-Quanta's JSON-per-folder node database.
+Native PHP extension providing fast, concurrency-safe access to Quanta's
+JSON-per-folder node database, plus a companion daemon (`qdbd`) and a monitor
+(`qdbstat`).
 
-- **Files stay the source of truth.** A companion daemon (`qdbd`) loads the
-  whole node tree — paths, fathers, children, links, and raw JSON documents —
-  into a **shared-memory data segment** that every PHP worker maps read-only.
-  While the daemon is healthy each read is a hash probe into that segment with
-  **no filesystem access and no SQLite**. Everything derived is rebuildable with
-  `QuantaDb::reindex()`, so there is **no data migration**.
-- **Writes are safe**: tmp-file + atomic `rename()` (readers never see a partial
-  document), per-node `flock` (crash of the holder auto-releases), `mkdir` as
-  atomic name reservation, `rename()` of symlinks for atomic status changes
-  (`QuantaDb::relink`). Each write is pushed to `qdbd` over a unix socket; the
-  daemon acks only after publishing to shared memory, so reads-your-writes holds
-  across processes (contract §4.1).
-- **Reads are fast**: name→path resolution is a shared-memory lookup instead of
-  `find` over the docroot; document bytes come straight from the segment
-  (`getRaw()` returns them as a string for PHP-side `json_decode`); `find`/`count`
-  scan the in-memory records instead of recursive directory scans.
-- **Fallback, never wedged**: if `qdbd` is down, stale, or still starting, the
-  extension detects the missing heartbeat and serves from a per-process
-  filesystem walk snapshot + direct file reads — exactly the legacy behavior,
-  minus the daemon. The app is always correct; the daemon only removes work.
+**Documentation:**
 
-## API — class `QuantaDb` (static methods)
+| | |
+|---|---|
+| [**docs/usage.md**](docs/usage.md) | How to call it from PHP — every method, options, errors, recipes, how Quanta wires it in. **Start here.** |
+| [**docs/how-it-works.md**](docs/how-it-works.md) | Internals — architecture, segment layout, the read/write paths, the daemon, coherence. |
+| [docs/api-contract.md](docs/api-contract.md) | The normative, versioned specification (v1.3). |
+| [docs/quanta_db.stub.php](docs/quanta_db.stub.php) | Signatures for IDEs and static analysis. |
 
-See `docs/files-db/quanta_db.stub.php` for the full signatures:
-`QuantaDb::get/getRaw/path/exists/meta/children/links/find/count/put/update/
-delete/link/unlink/relink/reindex/stats/coherent/version` + the
-`QuantaDbException` class.
+In one paragraph: `qdbd` loads the whole node tree — paths, fathers, children,
+links, and the JSON documents themselves — into a **shared-memory segment** that
+every PHP worker maps read-only, so a lookup is a hash probe rather than an
+`exec(find)`. Writes go to disk first (flock + fsync + atomic rename), then to
+the daemon, which acks only after publishing, giving read-your-writes across
+processes. Files stay the source of truth; everything in shared memory is
+derived and rebuildable, so there is **no data migration**. If the daemon is
+down, the extension falls back to a filesystem walk and the app is simply back
+to the legacy profile.
+
+## API
+
+Class `QuantaDb`, all static:
+
+```
+get  getObject  getRaw  path  exists  meta  children  links  find  count
+put  putRaw  update  delete  deleteDoc  move  link  unlink  relink
+reindex  stats  coherent  version
+```
+
+plus `QuantaDbException` (`IO`, `LOCK_TIMEOUT`, `EXISTS`, `BAD_ARGS`,
+`CORRUPT_JSON`). "Not found" is never an exception.
+
+Since v1.3 the write side is complete: create (`put` with `father`), replace
+(`put`/`putRaw`), read-modify-write (`update`), drop one translation
+(`deleteDoc`), relocate or rename (`move`), delete (`delete`), and the link
+operations. There is no node mutation left that has to be done by hand — see
+"Adopting the write API" in the contract for what changes when a call site
+switches over, and §11 for the payload-file exception.
 
 ## Configuration (php.ini, env fallback `QUANTA_DB_*`)
 
@@ -40,71 +51,39 @@ delete/link/unlink/relink/reindex/stats/coherent/version` + the
 | `quanta_db.shm_dir` | `/dev/shm/quanta_db/<hash>` | Data segments (`data.<epoch>.shm`); tmpfs preferred, falls back to `<tmp>/quanta_db/<hash>` |
 | `quanta_db.socket_path` | `<tmp>/quanta_db/<hash>/qdbd.sock` | `qdbd` write-notification socket |
 | `quanta_db.lock_dir` | `<tmp>/quanta_db/<hash>/locks` | Per-node lock files |
-| `quanta_db.trashbin_dir` | `<tmp>/quanta_db/<hash>/trashbin` | `QuantaDb::delete` destination |
+| `quanta_db.trashbin_dir` | `<tmp>/quanta_db/<hash>/trashbin` | Destination for `QuantaDb::delete` and for whatever `move(..., ['if_exists'=>'replace'])` displaces. **Set this**: the default is pod-local derived storage, whereas a Quanta site expects deleted nodes under `static/tmp/<site>/trashbin` (`Environment->dir['trashbin']`) — the layout below it (`<ts>/<name>`) is already identical. The Docker image points it there |
 | `quanta_db.lock_timeout_ms` | `5000` | Lock wait budget |
 | `quanta_db.write_ack_timeout_ms` | `250` | Budget for a `qdbd` write ack before poisoning coherence and returning (the write is already on disk) |
 | `quanta_db.shm_size_mb` | `64` | Initial per-epoch segment budget (sparse on tmpfs; grown by compaction) |
-| `quanta_db.verify_reads` | `always` | Fallback-mode only: `always` stats files on read; `never` trusts the snapshot |
+| `quanta_db.verify_reads` | `always` | Only `never` selects the other branch. Currently inert: parsed and reported by `stats()`, but read by no code path |
 | `quanta_db.neg_cache_ms` | `30000` | Fallback-mode TTL for the per-process known-absent cache; `0` disables |
+| `quanta_db.image` | `on` | Build the pre-decoded document image alongside the raw JSON, so a read needs no `json_decode` at all. `off` falls back to parsing (correct, slower) |
+| `quanta_db.image_max_doc_kb` | `256` | Documents above this are not imaged (the image roughly doubles a document's segment footprint) |
+| `quanta_db.zero_copy` | `on` | Point PHP string zvals straight at the mapping instead of copying. `off` is the kill switch |
 | `quanta_db.metrics` | `on` | Shared-memory control plane + counters (heartbeat, active epoch, `qdbstat`); `off` forces permanent fallback |
 | `quanta_db.metrics_path` | `<tmp>/quanta_db/<hash>/metrics.shm` | Control/counter arena (`MAP_SHARED`) |
 
 Config is resolved once per PHP process at first use (`ini_set` before the first
 call — including `QuantaDb::coherent()` — works; after it, it doesn't).
 
-## The daemon — `qdbd`
+Note `QUANTA_DB_ENABLED` and `QUANTA_DB_DAEMON` are **container-level** switches
+handled by the entrypoint and the supervisord wrapper, not extension settings —
+see [docs/usage.md §3](docs/usage.md#container-level-switches-not-extension-settings).
 
-`qdbd` is a per-pod process (started by the entrypoint unless
-`QUANTA_DB_DAEMON=off`) and the **single writer** of the shared-memory segment:
-
-1. **Boot**: add inotify watches (watch-before-scan), walk the docroot reading
-   every document, project the tree into a fresh segment, and publish its epoch
-   + a coherence heartbeat into `metrics.shm`.
-2. **Serve**: a poll loop over {inotify, the unix-socket listener, clients}.
-   - API writes arrive over the socket → the daemon re-reads the affected node
-     from disk (files are the truth), publishes to shared memory, then acks.
-   - Out-of-band changes (legacy writers, another replica on a shared volume)
-     arrive via inotify — directory create/delete/move **and** `data*.json`
-     content events — republishing affected records within its latency. A
-     presence+drift **reconcile** runs on a timer (default 60 s) as a safety
-     net; an inotify queue overflow forces an immediate resync; hitting the
-     kernel watch limit (`fs.inotify.max_user_watches`) degrades to
-     reconcile-only.
-3. **Growth**: records are immutable and appended; an update swaps a slot to the
-   new record atomically. When the arena fills or dead bytes pile up, the daemon
-   writes a fresh segment file (next epoch) from its in-RAM model and flips the
-   published epoch — readers remap on their next call and the predecessor file
-   is kept until the following compaction so an in-flight reader never faults.
-
-While the heartbeat is fresh the extension treats the segment as authoritative:
-a lookup miss is a *definitive absence*, answered with no walk
-(`QuantaDb::coherent()` returns true, and the Quanta `nodePath` shim skips its
-legacy `find` for such names). On a stale/missing heartbeat the extension flips
-to fallback and the shim resumes its legacy `find` — the pre-daemon behavior.
+## Running the daemon and the monitor
 
 ```bash
-qdbd                 # started by the entrypoint (unless QUANTA_DB_DAEMON=off)
+qdbd                 # started by supervisord (unless QUANTA_DB_DAEMON=off)
 qdbd --once          # load + publish one snapshot, print status, exit
 qdbd -v              # log every applied event
-qdbstat --once       # shows the daemon line: COHERENT / STALE / none
+
+qdbstat              # live dashboard, auto-refreshing (default 1s)
+qdbstat --once       # one snapshot and exit
+qdbstat --json       # one JSON snapshot (for scripting)
+qdbstat -n 2         # refresh every 2s
 ```
 
-## Monitoring — `qdbstat` (varnishstat-style)
-
-Every worker bumps atomic counters in a small `MAP_SHARED` arena
-(`metrics.shm`); `qdbstat` maps it read-only and reports live op rates, cache
-hit ratio, average access time, lock contention, daemon coherence + active
-epoch, and — from the data segment — node/link cardinality, document bytes, and
-arena usage. Counters are also exposed in `QuantaDb::stats()`.
-
-```bash
-qdbstat            # live, auto-refreshing (default 1s); Ctrl-C to quit
-qdbstat --once     # one snapshot and exit
-qdbstat --json     # one JSON snapshot (for scripting)
-qdbstat -n 2       # refresh every 2s
-```
-
-It locates the arena + segment by deriving the same per-root data dir the
+`qdbstat` locates the arena + segment by deriving the same per-root data dir the
 extension uses, so it needs the data root: `--root <path>` or `$QUANTA_DB_ROOT`
 (set in the app image), or explicit `--shm` / `--data-dir` overrides. The app
 image ships it at `/usr/local/bin/qdbstat`:
@@ -115,8 +94,6 @@ kubectl exec <pod> -- qdbstat --once
 
 **Per-pod:** the arena + segment live under the pod's tmp/tmpfs dirs, so
 `qdbstat` reports the pod it runs in — there is no cluster-aggregated view.
-When `quanta_db.metrics=off` the control plane is never created and the
-extension runs in permanent fallback mode.
 
 ## Build & test (Docker)
 
@@ -150,10 +127,10 @@ docker run --rm quanta-db sh /ext/tests/run-bench.sh
 # sizing: -e QDB_BENCH_N=1000 -e QDB_BENCH_WRITES=500 ...
 ```
 
-The extension's decisive win is **path resolution** (a shared-memory lookup vs
-`exec find` over the docroot) and **write coordination** (atomic put + lock);
-writes pay the deliberate durability cost (fsync + atomic rename + lock). CMS
-traffic is overwhelmingly reads.
+Always check `stats()['mode']` is `shm` before trusting a benchmark — a run
+without a daemon measures fallback mode and tells you nothing about the fast
+path. See [docs/how-it-works.md §14](docs/how-it-works.md#14-performance) for the
+measured numbers and the cautionary tale behind that warning.
 
 ### Demo page
 
@@ -184,10 +161,12 @@ docker exec -e QDB_EXT=/target/release/libquanta_db.so \
 
 ## Semantics notes (beyond the contract)
 
-- Directory names `files`, `assets`, `.git`, `_modules` and `.`-prefixed dirs
-  are never treated as nodes (mirrors Quanta's `scanDirectory()` and
-  `findNodePath()` exclusions); the configured shm/socket/lock/trashbin dirs are
-  skipped if placed inside the root.
+- **Directory classes.** `.git`, `_modules` and `.`-prefixed directories are
+  never treated as nodes. `assets` and `files` are *payload directories*: they
+  are walked and indexed (so they resolve by name — legacy `find` locates
+  `assets/img`), but their documents are never loaded and they are hidden from
+  `children()`. The configured shm/socket/lock/trashbin dirs are skipped if
+  placed inside the root. Regression guard: `tests/php/09_payload_dirs.php`.
 - With a coherent daemon a lookup miss is a definitive absence (the daemon's
   inotify/reconcile already reflects any out-of-band create). In **fallback
   mode** a miss triggers a self-heal walk of the root (~ms, tree-size
@@ -201,14 +180,44 @@ docker exec -e QDB_EXT=/target/release/libquanta_db.so \
   convention); `find()` criteria do not hide them. The daemon stores the exact
   `read_dir` child list (including out-of-root symlink targets), so daemon-mode
   `children()`/`links()` are byte-identical to the filesystem.
-- `getRaw()` returns the raw JSON string; the extension's read win is serving
-  those bytes from shared memory with no syscall, leaving the decode to PHP's
-  fast native `json_decode`.
+- `getRaw()` returns the raw JSON string, served from shared memory with no
+  syscall. Note it re-parses on every call, so it is *not* the fast read:
+  `get()`/`getObject()` reuse a generation-keyed parse cache and, when the
+  record carries a pre-decoded image, skip parsing entirely.
 - Duplicate node names: first directory found wins (legacy behavior is a
   warning); keep names globally unique as Quanta requires.
 
+### Document reads: the pre-decoded image and zero-copy
+
+`qdbd` already parses every `data*.json` (to detect corruption), so it also
+stores a **pre-decoded image** of it in the record: a flat, tagged, pointer-free
+encoding whose strings are ready-made `zend_string`s — correct PHP 8.2 header,
+8-aligned, with the precomputed non-zero DJBX33A hash. A read walks that image
+straight into zvals: no tokenizing, no number parsing, no UTF-8 revalidation,
+and (with `quanta_db.zero_copy=on`) no string allocation or copying at all.
+
+Measured on `php:8.2-fpm` against a live daemon (`tests/bench/probe.php`,
+20 000 iterations), per `Node::loadJSON`-equivalent read:
+
+| document | legacy `fgc`+`json_decode` | image off | image on | image + zero-copy |
+|---|---|---|---|---|
+| 48 B | 6.53 µs | 0.36 µs | 0.25 µs | **0.24 µs** (27×) |
+| 437 B | 7.19 µs | 0.64 µs | 0.48 µs | **0.44 µs** (16×) |
+| 205 KB | 129.6 µs | 3.22 µs | 3.03 µs | **0.46 µs** (279×) |
+
+Three safety properties guard it, because this hands the Zend engine pointers
+into a read-only shared mapping: a **MINIT ABI check + live hash self-test**
+(mismatch disables the image path and `stats()['image']` reads `abi-mismatch`;
+MINIT never fails), **segment pinning** released in `post_deactivate` and capped
+at 4 epochs per request, and the **`zero_copy` / `image` kill switches** (the
+conformance suite runs all four combinations and results are byte-identical).
+Full explanation in
+[docs/how-it-works.md §6](docs/how-it-works.md#6-the-pre-decoded-image).
+
 ## Non-goals in v1
 
-Node move/rename, language fallback (stays in `NodeFactory`), multi-root per
-process, range/prefix `where` operators, and a cluster-aggregated `qdbstat`
-view (the segment + arena are per-pod).
+Language fallback (stays in `NodeFactory`), multi-root per process, range/prefix
+`where` operators, an API for payload files, trashbin management, and a
+cluster-aggregated `qdbstat` view (the segment + arena are per-pod).
+
+*(Node move/rename was a v1 non-goal; `move()` delivered it in v1.3.)*

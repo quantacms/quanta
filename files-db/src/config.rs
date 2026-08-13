@@ -40,6 +40,19 @@ pub struct Config {
     /// fallback mode.
     pub metrics: bool,
     pub metrics_path: PathBuf,
+    /// Build the pre-decoded document image (`image.rs`) alongside the raw
+    /// JSON in each record. Off falls every read back to parsing the raw bytes
+    /// (via the per-process parse cache) — correct, just slower.
+    pub image: bool,
+    /// Documents larger than this are not imaged. The image roughly doubles a
+    /// document's footprint in the segment, and a very large body is dominated
+    /// by moving bytes rather than by parsing, so the trade stops paying.
+    pub image_max_doc: usize,
+    /// Point PHP string zvals directly at the mapping instead of copying the
+    /// bytes into request memory. Off is the safe, slightly slower path; it is
+    /// also the kill switch if a PHP upgrade ever breaks the interned-string
+    /// invariants the zero-copy path relies on.
+    pub zero_copy: bool,
 }
 
 impl Config {
@@ -126,6 +139,19 @@ pub fn build_with(ini_get: impl Fn(&str) -> Option<String>) -> Result<Config, St
     let metrics_path = setting("quanta_db.metrics_path", "QUANTA_DB_METRICS_PATH")
         .map(PathBuf::from)
         .unwrap_or_else(|| paths::metrics_path(&base));
+    // Images and zero-copy are on unless explicitly disabled (off/0/false/no).
+    let image = !matches!(
+        setting("quanta_db.image", "QUANTA_DB_IMAGE").as_deref(),
+        Some("off" | "0" | "false" | "no")
+    );
+    let image_max_doc = setting("quanta_db.image_max_doc_kb", "QUANTA_DB_IMAGE_MAX_DOC_KB")
+        .and_then(|s| s.parse::<usize>().ok())
+        .unwrap_or(256)
+        .saturating_mul(1024);
+    let zero_copy = !matches!(
+        setting("quanta_db.zero_copy", "QUANTA_DB_ZERO_COPY").as_deref(),
+        Some("off" | "0" | "false" | "no")
+    );
 
     Ok(Config {
         root,
@@ -141,5 +167,8 @@ pub fn build_with(ini_get: impl Fn(&str) -> Option<String>) -> Result<Config, St
         neg_cache_ms,
         metrics,
         metrics_path,
+        image,
+        image_max_doc,
+        zero_copy,
     })
 }
