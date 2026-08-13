@@ -91,19 +91,12 @@ class UserFactory {
     // direct children of '_users' (same scope as the grep on dir['users']).
     // Equality-only `where` is a strict subset of the legacy case-insensitive
     // grep, so an empty/failed result falls through to the grep below.
-    if (class_exists('QuantaDb')) {
-      try {
-        $names = \QuantaDb::find(
-          array('father' => '_users', 'where' => array($field => $value)),
-          array('return' => 'names', 'limit' => 1)
-        );
-        if (!empty($names)) {
-          return reset($names);
-        }
-      }
-      catch (\Throwable $e) {
-        // Fall through to the legacy grep.
-      }
+    $names = $env->db()->find(
+      array('father' => '_users', 'where' => array($field => $value)),
+      array('return' => 'names', 'limit' => 1)
+    );
+    if (!empty($names)) {
+      return reset($names);
     }
 
     // Build the search pattern, escaping properly for shell execution

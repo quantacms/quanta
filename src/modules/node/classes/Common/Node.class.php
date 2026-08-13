@@ -100,16 +100,98 @@ class Node extends JSONDataContainer implements Cacheable {
    * TODO: move standard part into JSONDataContainer.
    */
   public function loadJSON() {
-    // NOTE: reads are intentionally NOT routed through the quanta_db extension.
-    // Benchmarked on-pod, QuantaDb::get() is ~2-4x SLOWER than the direct file
-    // read below for these nodes: data.json files are tiny and already hot in the
-    // OS page cache (file_get_contents ~20us), while the extension adds an FFI
-    // crossing + a verify_reads stat + rebuilding the PHP value tree from a serde
-    // intermediate (~55-120us). loadJSON is the single hottest function on admin
-    // list pages (excimer: ~26% of render self-time when wired through the ext),
-    // so we keep the cheap path. The extension still backs node *path* resolution
-    // (Environment::nodePath, avoiding exec find) and *writes*
-    // (JSONDataContainer::saveJSON) — those are its real wins, not reads.
+    // The quanta_db extension serves node documents out of the daemon's
+    // shared-memory segment: no stat, no file read, and no json_decode — the
+    // extension keeps a per-process parse cache keyed by the node's generation,
+    // so a document is decoded at most once per worker per change.
+    //
+    // getObject() (not get()) is the right call here: it reproduces
+    // json_decode's shape all the way down, where get() returns the contract's
+    // nested ARRAYS. Quanta reads nested documents as objects — see
+    // loadPermissions() below ($this->json->permissions->{$permission}) and
+    // access.hook.inc — so a plain (object) cast of get() would only fix the
+    // top level. json_encode() cannot detect that difference; parity has to be
+    // checked with var_export().
+    //
+    // HISTORY — this call site previously carried a note that QuantaDb::get()
+    // was "~2-4x SLOWER" than the file read. That measurement was taken with
+    // the benchmark running in FALLBACK mode (tests/run-bench.sh never set
+    // QDB_MODE, and qdb_daemon_mode() defaults to false), i.e. with no daemon
+    // and no shared memory at all — so it compared two ways of reading the same
+    // file, one of them through an FFI boundary. Measured against a live daemon
+    // (tests/bench/probe.php on php:8.2-fpm):
+    //
+    //   document      legacy fgc+json_decode   QuantaDb::getObject()
+    //   48 B                       6.53 us                 0.24 us    27x
+    //   437 B                      7.19 us                 0.44 us    16x
+    //   205 KB                   129.61 us                 0.46 us   279x
+    //
+    // Most of the legacy cost is the syscalls (~6.3 us of the 6.53 us on a tiny
+    // document); the rest is json_decode, which the daemon's pre-decoded
+    // document image removes entirely. The 205 KB row is flat because the
+    // extension points PHP's string zvals straight at the shared mapping
+    // instead of copying the body (files-db/README.md, "Document reads").
+    //
+    // Re-measure before changing this: loadJSON is the hottest function on
+    // admin list pages (~26% of render self-time).
+    //
+    // The legacy read below stays the unconditional fallback: extension absent,
+    // daemon down, name/path disagreement, or a corrupt document all land there.
+    static $qdb = NULL;
+    if ($qdb === NULL) {
+      // No autoload — see FilesDb::available().
+      $qdb = class_exists('QuantaDb', FALSE) && method_exists('QuantaDb', 'getObject');
+    }
+
+    $language = $this->getLanguage();
+    // Quanta's neutral language is a named constant; the extension's is the
+    // empty string. saveJSON() does the same mapping (JSONDataContainer::42).
+    $suffix = ($language == \Quanta\Common\Localization::LANGUAGE_NEUTRAL) ? '' : ('_' . $language);
+
+    if ($qdb && !empty($this->name) && !empty($this->path)) {
+      try {
+        // The extension resolves a globally-unique NAME, but this container may
+        // have been built from an explicit path (NodeFactory::loadFromRealPath /
+        // fastLoadFromRealPath), so make sure the two agree before trusting it.
+        // String compare first: $this->path almost always came from
+        // Environment::nodePath() -> QuantaDb::path(), so realpath() (two
+        // syscall-heavy resolutions that would eat the entire win) is only the
+        // tie-breaker.
+        $qdb_path = $this->env->quantaDbPathFor($this->name);
+        if (is_string($qdb_path)
+            && ($qdb_path === $this->path || realpath($qdb_path) === realpath($this->path))) {
+
+          $json = \QuantaDb::getObject($this->name, $suffix === '' ? NULL : $language);
+          $used = $suffix;
+          // Same order as the legacy read: language file first, then neutral.
+          if ($json === NULL && $suffix !== '') {
+            $json = \QuantaDb::getObject($this->name, NULL);
+            $used = '';
+          }
+          if ($json !== NULL) {
+            // Kept for BC: $this->jsonpath is written here and read nowhere else
+            // (saveJSON recomputes its own local $jsonpath).
+            $this->jsonpath = $this->path . '/data' . $used . '.json';
+            $this->json = $json;
+            $this->applyJsonFields();
+            return;
+          }
+          // No document in either language. Only trust that as "empty node"
+          // while the index is authoritative — same 3-state rule as
+          // FilesDb::path().
+          if ($this->env->db()->coherent()) {
+            $this->json = new \stdClass;
+            return;
+          }
+        }
+      }
+      catch (\Throwable $e) {
+        // Load-bearing, not decoration: a torn or invalid document makes the
+        // extension throw CORRUPT_JSON, whereas the legacy read below silently
+        // yields an empty object ((object) json_decode('{bad') == new stdClass).
+        // Falling through preserves the historical behaviour exactly.
+      }
+    }
 
     // Legacy read. Look for a language version.
     if (is_file($this->path . '/data_' . $this->getLanguage() . '.json')) {
@@ -506,6 +588,23 @@ class Node extends JSONDataContainer implements Cacheable {
    * Delete this node by adding a __ prefix to the folder.
    */
   public function delete() {
+    // Route through the node database when it can take it: the move happens
+    // under the node's lock and the index learns of it on the ack, rather than
+    // an unlocked `mv` the watcher notices some time later. Both land the node
+    // in the same trashbin root — quanta_db.trashbin_dir is pointed at
+    // $env->dir['trashbin'] — so recovery works the way it always did.
+    if ($this->env->db()->delete($this->getName())) {
+      $vars = array('node' => &$this);
+      $this->env->hook('node_delete', $vars);
+      new Message($this->env,
+        t('User deleted this node: !node.', array('!node' => $this->getName())),
+        \Quanta\Common\Message::MESSAGE_GENERIC,
+        \Quanta\Common\Message::MESSAGE_TYPE_LOG,
+        'node'
+      );
+      return;
+    }
+
      // Define the destination folder path
      $destinationFolder = $this->env->dir['trashbin'] . '/' . time();
  
