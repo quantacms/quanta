@@ -669,6 +669,16 @@ class Environment extends DataContainer {
       return NULL;
     }
 
+    // A name starting with '-' is always a caller bug: it is "$x . '-suffix'"
+    // with $x empty. No node can be named that way, but the lookup below still
+    // pays for it — profiling a single cold page render found 67 of 168
+    // findNodePath() calls were misses like this ('-description', '-shifts'),
+    // about 2.1s of a 5.5s request, since exec(find) walks the whole docroot
+    // whether or not it matches. Refuse them here, for every caller at once.
+    if (substr($folder, 0, 1) == '-') {
+      return FALSE;
+    }
+
     // If we already searched for this node in the current request and didn't find it, don't search again.
     if (isset($missing_nodes[$folder])) {
       return FALSE;
