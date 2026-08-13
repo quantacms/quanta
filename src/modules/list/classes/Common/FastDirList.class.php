@@ -145,11 +145,9 @@ class FastDirList extends DirList {
   }
 
   /**
-   * quanta_db extension shim: resolve a node name via the derived index,
-   * mapping the extension's root onto the current host's docroot. Mirrors
-   * Environment::quantaDbNodePath(). Returns NULL when the extension is
-   * absent, errors, or doesn't know the name — the caller then falls back to
-   * the legacy tree-walk.
+   * Resolve a node name through the node database. Returns NULL when it has
+   * no path to offer — the extension is absent, errored, or does not know the
+   * name — and the caller then falls back to the legacy tree-walk.
    *
    * @param string $name
    *   The node (folder) name.
@@ -158,31 +156,10 @@ class FastDirList extends DirList {
    *   The node path under the current host's docroot, or NULL.
    */
   private function quantaDbPath($name) {
-    static $ext_root = NULL;
-    if ($ext_root === NULL) {
-      $ext_root = class_exists('QuantaDb')
-        ? rtrim((string) (ini_get('quanta_db.root') ?: getenv('QUANTA_DB_ROOT')), '/')
-        : '';
-    }
-    if ($ext_root === '') {
-      return NULL;
-    }
-    try {
-      $path = \QuantaDb::path($name);
-    }
-    catch (\Throwable $e) {
-      return NULL;
-    }
-    if ($path === NULL) {
-      return NULL;
-    }
-    // sites/<alias> hosts are symlinks to the canonical site dir the extension
-    // is rooted at; keep paths under the current host's docroot.
-    $docroot = $this->env->dir['docroot'];
-    if ($docroot !== $ext_root && strpos($path, $ext_root . '/') === 0) {
-      $path = $docroot . substr($path, strlen($ext_root));
-    }
-    return $path;
+    $path = $this->env->db()->path($name);
+    // A definitive absence (FALSE) is as useless to this caller as "unsure":
+    // either way it has nothing to return but the legacy walk's answer.
+    return is_string($path) ? $path : NULL;
   }
 
   /**

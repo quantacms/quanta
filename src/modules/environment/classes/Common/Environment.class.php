@@ -31,6 +31,32 @@ class Environment extends DataContainer {
   private $context;
   // Per hook-name cache of the module functions that implement it. See hook().
   private $hook_implementations = array();
+  // The node database accessor. See db().
+  private $files_db = NULL;
+
+  /**
+   * The node database.
+   *
+   * Every access to the file-based node tree that could go through the
+   * quanta_db extension goes through here, so the choice between the
+   * extension and the legacy filesystem code is made in exactly one place.
+   *
+   * @return FilesDb
+   *   The accessor for this Environment.
+   */
+  public function db() {
+    if ($this->files_db === NULL) {
+      // The autoloader reads a class map that is only rebuilt when it is
+      // missing (boot.php), so a deploy that adds this class to an existing
+      // site would not find it until the cache is cleared. Load it directly.
+      if (!class_exists('\Quanta\Common\FilesDb', FALSE)) {
+        require_once __DIR__ . '/FilesDb.class.php';
+      }
+      $this->files_db = new FilesDb($this);
+    }
+    return $this->files_db;
+  }
+
   /**
    * Environment constructor.
    *
@@ -715,12 +741,12 @@ class Environment extends DataContainer {
     // quanta_db extension (files-db/docs/api-contract.md §9): resolve cold
     // names via the derived index instead of exec(find). The result feeds
     // the same static + symlink caches below. $link searches (their callers
-    // readlink() the result) use the legacy find. quantaDbNodePath() is
+    // readlink() the result) use the legacy find. db()->path() is
     // 3-state: a path string (found); FALSE (the watcher-backed index is
     // authoritative and the node truly does not exist — skip the legacy find);
     // or NULL (extension absent/unsure — fall through to the legacy find).
     if ($node_path == false && !$link) {
-      $qdb = $this->quantaDbNodePath($folder);
+      $qdb = $this->db()->path($folder);
       if (is_string($qdb)) {
         $node_path = $qdb;
       }
@@ -784,55 +810,24 @@ class Environment extends DataContainer {
     }
 
   /**
-   * quanta_db extension shim: resolve a node name via the derived index.
+   * Resolve a node name through the node database.
    *
-   * 3-state result so the caller can tell a definitive absence from "unsure":
-   *   - string : the node path (found).
-   *   - FALSE  : the node does NOT exist AND a live watcher keeps the index
-   *              authoritative (\QuantaDb::coherent()), so the legacy `find`
-   *              can be skipped safely.
-   *   - NULL   : the extension is missing, errored, or the index is not
-   *              currently authoritative — fall back to the legacy lookup.
+   * Call sites that already hold a container's $path use this to check that the
+   * globally-unique node NAME really resolves to that folder before trusting
+   * the extension for it — a Node can be constructed with an explicit path
+   * (NodeFactory::loadFromRealPath / fastLoadFromRealPath). Going through here
+   * rather than calling \QuantaDb::path() directly keeps the sites/<alias>
+   * docroot rewrite in one place; comparing against a raw extension path would
+   * spuriously miss on alias hosts.
    *
-   * @param string $folder
-   *   The node (folder) name.
+   * @param string $name
+   *   The node name.
    *
    * @return string|false|null
+   *   Path, FALSE (definitively absent), or NULL (unsure — use the legacy path).
    */
-  private function quantaDbNodePath($folder) {
-    static $ext_root = NULL;
-    static $coherent = NULL;
-    if ($ext_root === NULL) {
-      $ext_root = class_exists('QuantaDb')
-        ? rtrim((string) (ini_get('quanta_db.root') ?: getenv('QUANTA_DB_ROOT')), '/')
-        : '';
-      // Resolved once per request: is the watcher-backed index authoritative?
-      try {
-        $coherent = ($ext_root !== '') && \QuantaDb::coherent();
-      }
-      catch (\Throwable $e) {
-        $coherent = FALSE;
-      }
-    }
-    if ($ext_root === '') {
-      return NULL;
-    }
-    try {
-      $path = \QuantaDb::path($folder);
-    }
-    catch (\Throwable $e) {
-      return NULL;
-    }
-    if ($path === NULL) {
-      // Authoritative index ⇒ a null lookup is a definitive absence.
-      return $coherent ? FALSE : NULL;
-    }
-    // sites/<alias> hosts are symlinks to the canonical site dir the
-    // extension is rooted at; keep paths under the current host's docroot.
-    if ($this->dir['docroot'] !== $ext_root && strpos($path, $ext_root . '/') === 0) {
-      $path = $this->dir['docroot'] . substr($path, strlen($ext_root));
-    }
-    return $path;
+  public function quantaDbPathFor($name) {
+    return $this->db()->path($name);
   }
 
   /**
