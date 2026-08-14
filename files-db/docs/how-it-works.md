@@ -828,6 +828,19 @@ renders a varnishstat-style dashboard: a health verdict (Healthy / Degraded /
 Fallback / Unknown) over sections for Daemon, Storage, Reads, Lookups, Queries,
 Writes and Health. `QuantaDb::stats()` exposes the same counters to PHP.
 
+Every counter feeding that verdict is cumulative for the life of the pod, so
+none of them may be graded with `> 0`: a single blip during the seconds between
+php-fpm accepting traffic and the daemon publishing its first segment would
+otherwise pin a long-since healthy pod to DEGRADED forever, which is how a
+dashboard teaches people to ignore it. Counters on a high-volume path are graded
+as a **share** of that path (`fallback_reads` against all reads), which decays on
+its own. `uds_failures` cannot be: its denominator is notify *attempts*, and a
+pod serving 100k reads may make only a handful of writes, so one failure against
+eight notifies reads as 11% and never decays. It is graded on **recency**
+(`uds_failure_unix`, a 60 s window) instead — which loses nothing, because every
+notify failure poisons coherence at the call site, so an episode that is still
+live already shows as the stronger FALLBACK verdict.
+
 Counters are per-pod — the arena and segment live in the pod's tmpfs — and reset
 when the extension is redeployed. There is no cluster-aggregated view.
 

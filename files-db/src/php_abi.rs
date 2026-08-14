@@ -1,4 +1,4 @@
-//! PHP 8.2 ABI facts the pre-decoded document image depends on.
+//! PHP ABI facts the pre-decoded document image depends on.
 //!
 //! PHP-free on purpose (std only), exactly like `shm.rs` and `metrics.rs`, so
 //! `qdbd` — which does not link PHP — can *write* structures the extension
@@ -7,8 +7,12 @@
 //! (see `check_php_abi` in lib.rs); a mismatch disables the image path rather
 //! than corrupting anything.
 //!
-//! Everything below was verified against `php:8.2-fpm`
-//! (`/usr/local/include/php/Zend/zend_types.h`, `zend_string.h`).
+//! Everything below was verified against `php:8.5-fpm`
+//! (`/usr/local/include/php/Zend/zend_types.h`, `zend_string.h`). The layout and
+//! the flag values are byte-for-byte identical from 8.2 through 8.5, which is
+//! what lets one set of constants cover the whole range — but that is a fact
+//! about those releases, not a guarantee, so `check_php_abi` in lib.rs re-checks
+//! it against the headers the extension was actually compiled with.
 
 // ---------------------------------------------------------------------------
 // zend_string
@@ -34,7 +38,8 @@ pub const IS_STRING: u32 = 6;
 pub const GC_NOT_COLLECTABLE: u32 = 1 << 4;
 /// `GC_IMMUTABLE` = 1<<6, aliased by `IS_STR_INTERNED`.
 pub const GC_IMMUTABLE: u32 = 1 << 6;
-/// `GC_FLAGS_SHIFT` — 0 on 8.2, i.e. flags live in the low bits of type_info.
+/// `GC_FLAGS_SHIFT` — 0 on 8.2 through 8.5, i.e. flags live in the low bits of
+/// type_info.
 pub const GC_FLAGS_SHIFT: u32 = 0;
 
 /// `GC_STRING` = `IS_STRING | (GC_NOT_COLLECTABLE << GC_FLAGS_SHIFT)` = 22.
