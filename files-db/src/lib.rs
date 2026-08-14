@@ -2276,6 +2276,7 @@ pub fn stats() -> PhpResult<Zval> {
         ins_cnt("daemon_pid", s.daemon_pid)?;
         ins_cnt("uds_notifies", s.uds_notifies)?;
         ins_cnt("uds_failures", s.uds_failures)?;
+        ins_cnt("uds_failure_unix", s.uds_failure_unix)?;
         ins_cnt("shm_hits", s.shm_hits)?;
         ins_cnt("shm_remaps", s.shm_remaps)?;
         ins_cnt("shm_invalid", s.shm_invalid)?;
