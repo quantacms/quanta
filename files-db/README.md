@@ -105,8 +105,14 @@ docker build -t quanta-db quanta/files-db/
 docker build --target artifact -o quanta/files-db/dist quanta/files-db/
 ```
 
-Built against `php:8.2-fpm` so the `.so` matches the production image ABI.
+Built against `php:8.5-fpm` so the `.so` matches the production image ABI.
 Load it with `extension=/path/to/quanta_db.so`.
+
+Both this Dockerfile and the root one take a `PHP_VERSION` build arg (default
+`8.5`) and must be kept in step — PHP refuses to load a module built against a
+different minor. Note that **8.5 is the ceiling of `ext-php-rs 0.15`**: its build
+script rejects any Zend API newer than `20250925`, so moving to PHP 8.6 means
+upgrading the crate first, not just bumping the arg.
 
 The conformance suite runs in **two modes** (see `tests/run-tests.sh`):
 `fallback` (no daemon) and `daemon` (a `qdbd` is spawned per test root and the
@@ -191,7 +197,7 @@ docker exec -e QDB_EXT=/target/release/libquanta_db.so \
 
 `qdbd` already parses every `data*.json` (to detect corruption), so it also
 stores a **pre-decoded image** of it in the record: a flat, tagged, pointer-free
-encoding whose strings are ready-made `zend_string`s — correct PHP 8.2 header,
+encoding whose strings are ready-made `zend_string`s — correct PHP header,
 8-aligned, with the precomputed non-zero DJBX33A hash. A read walks that image
 straight into zvals: no tokenizing, no number parsing, no UTF-8 revalidation,
 and (with `quanta_db.zero_copy=on`) no string allocation or copying at all.
