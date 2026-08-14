@@ -234,6 +234,16 @@ fn thousands(n: u64) -> String {
     out
 }
 
+/// Compact age for a past event: `45s`, `12m`, `3h`, `2d`.
+fn short_age(secs: u64) -> String {
+    match secs {
+        0..=99 => format!("{secs}s"),
+        100..=5_999 => format!("{}m", secs / 60),
+        6_000..=172_799 => format!("{}h", secs / 3_600),
+        _ => format!("{}d", secs / 86_400),
+    }
+}
+
 /// Unicode meter, `filled`/`total` cells for `frac` in [0,1].
 fn bar(frac: f64, width: usize) -> String {
     let frac = if frac.is_finite() { frac.clamp(0.0, 1.0) } else { 0.0 };
@@ -303,13 +313,37 @@ impl Health {
     }
 }
 
-/// Seconds since the daemon's last heartbeat, and whether the index is coherent.
-fn coherence(s: &Snapshot) -> (u64, bool) {
-    let now = std::time::SystemTime::now()
+/// How long a failed daemon notify keeps the pod DEGRADED. Long enough that a
+/// daemon flapping on the write path never clears between episodes, short
+/// enough that one healed blip does not outlive the incident it belongs to.
+const UDS_WARN_SECS: u64 = 60;
+
+/// Unix seconds now, or 0 if the clock predates the epoch.
+fn now_unix() -> u64 {
+    std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .map(|d| d.as_secs())
-        .unwrap_or(0);
-    let hb_age = now.saturating_sub(s.watch_heartbeat_unix);
+        .unwrap_or(0)
+}
+
+/// Whether a notify failure is recent enough to still count against health.
+///
+/// `uds_failures` is cumulative for the life of the pod, so `> 0` graded a
+/// single startup-window blip as DEGRADED forever — the same false alarm the
+/// share treatment fixed for `fallback_reads`. A share does not work here: the
+/// denominator is notify *attempts*, and a pod that serves 100k reads may make
+/// only a handful of writes, so one failure against 8 notifies reads as 11%
+/// and never decays. Recency is what "is this happening now" means for an
+/// event this rare. Nothing is lost by letting it age out: every failure
+/// poisons coherence in `notify_daemon`, so a live episode is already the
+/// stronger FALLBACK verdict above, and its aftermath shows in `fallback_frac`.
+fn uds_recent(s: &Snapshot) -> bool {
+    s.uds_failure_unix > 0 && now_unix().saturating_sub(s.uds_failure_unix) < UDS_WARN_SECS
+}
+
+/// Seconds since the daemon's last heartbeat, and whether the index is coherent.
+fn coherence(s: &Snapshot) -> (u64, bool) {
+    let hb_age = now_unix().saturating_sub(s.watch_heartbeat_unix);
     let coherent = s.watch_coherent == 1 && s.watch_heartbeat_unix > 0 && hb_age <= 5;
     (hb_age, coherent)
 }
@@ -345,7 +379,7 @@ fn verdict(s: &Snapshot, seg: &SegStats, arena_ok: bool) -> Health {
         || s.corrupt_json > 0
         || s.lock_timeouts > 0
         || s.shm_invalid > 0
-        || s.uds_failures > 0
+        || uds_recent(s)
         || fallback_frac > 0.01
         || seg_frac > 0.85
         || hb_age >= 3;
@@ -693,17 +727,27 @@ fn render(
             flag(true, s.corrupt_json, "json 0", &format!("json {}", s.corrupt_json)),
         ),
     );
-    let uds_bad = s.uds_failures > 0;
+    // The age is the whole point of the row: a failure count with no "when"
+    // cannot be told apart from one that healed an hour ago.
+    let failed = if s.uds_failures > 0 && s.uds_failure_unix > 0 {
+        format!(
+            "{} failed ({} ago)",
+            s.uds_failures,
+            short_age(now_unix().saturating_sub(s.uds_failure_unix))
+        )
+    } else {
+        format!("{} failed", s.uds_failures)
+    };
     row(
         &mut o,
         "daemon-notify",
         &format!(
             "{} notified   {}",
             thousands(s.uds_notifies),
-            if uds_bad {
-                paint(col, C_YELLOW, &format!("{} failed", s.uds_failures))
+            if uds_recent(s) {
+                paint(col, C_YELLOW, &failed)
             } else {
-                format!("{} failed", s.uds_failures)
+                failed
             },
         ),
     );
@@ -803,6 +847,8 @@ fn to_json(s: &Snapshot, seg: &SegStats, arena_ok: bool) -> String {
         "daemon_pid": s.daemon_pid,
         "uds_notifies": s.uds_notifies,
         "uds_failures": s.uds_failures,
+        "uds_failure_unix": s.uds_failure_unix,
+        "uds_recent": uds_recent(s),
         "watch_coherent": s.watch_coherent,
         "watch_heartbeat_unix": s.watch_heartbeat_unix,
         "watch_epoch": s.watch_epoch,
@@ -871,5 +917,122 @@ fn main() {
         let _ = std::io::stdout().flush();
         prev = Some((s, now));
         std::thread::sleep(interval);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Tests
+// ---------------------------------------------------------------------------
+
+#[cfg(test)]
+mod verdict_tests {
+    use super::*;
+
+    /// A pod whose daemon is coherent and whose counters are all clean.
+    fn healthy_snapshot() -> Snapshot {
+        Snapshot {
+            watch_coherent: 1,
+            watch_heartbeat_unix: now_unix(),
+            index_serves: 100_000,
+            reads: 100_000,
+            ..Default::default()
+        }
+    }
+
+    fn seg(used: u64, size: u64) -> SegStats {
+        SegStats { ok: true, arena_used: used, seg_size: size, ..Default::default() }
+    }
+
+    #[test]
+    fn clean_pod_is_healthy() {
+        let s = healthy_snapshot();
+        assert!(verdict(&s, &seg(160, 320), true) == Health::Healthy);
+    }
+
+    /// The regression this rule was rewritten for: one notify failure early in
+    /// the pod's life used to pin it to DEGRADED for as long as it ran.
+    #[test]
+    fn healed_notify_failure_ages_out() {
+        let mut s = healthy_snapshot();
+        s.uds_failures = 1;
+        s.uds_failure_unix = now_unix() - (UDS_WARN_SECS + 1);
+        assert!(verdict(&s, &seg(160, 320), true) == Health::Healthy);
+    }
+
+    #[test]
+    fn recent_notify_failure_degrades() {
+        let mut s = healthy_snapshot();
+        s.uds_failures = 1;
+        s.uds_failure_unix = now_unix();
+        assert!(verdict(&s, &seg(160, 320), true) == Health::Degraded);
+    }
+
+    /// A daemon flapping on the write path keeps landing failures inside the
+    /// window, so the warning never clears between episodes.
+    #[test]
+    fn flapping_daemon_stays_degraded() {
+        let mut s = healthy_snapshot();
+        s.uds_failures = 12;
+        s.uds_failure_unix = now_unix() - (UDS_WARN_SECS / 2);
+        assert!(verdict(&s, &seg(160, 320), true) == Health::Degraded);
+    }
+
+    /// A failure poisons coherence at the call site, so while the episode is
+    /// live the pod reads as FALLBACK — a stronger verdict than DEGRADED.
+    #[test]
+    fn live_episode_outranks_degraded() {
+        let mut s = healthy_snapshot();
+        s.watch_coherent = 0;
+        s.uds_failures = 1;
+        s.uds_failure_unix = now_unix();
+        assert!(verdict(&s, &seg(160, 320), true) == Health::Fallback);
+    }
+
+    /// Recency must not resurrect a counter that never fired: a zero timestamp
+    /// is "never", not "at the epoch".
+    #[test]
+    fn never_failed_is_not_recent() {
+        let s = healthy_snapshot();
+        assert!(!uds_recent(&s));
+    }
+
+    /// The other warn triggers must survive the rewrite untouched.
+    #[test]
+    fn unrelated_triggers_still_degrade() {
+        let mut s = healthy_snapshot();
+        s.io_errors = 1;
+        assert!(verdict(&s, &seg(160, 320), true) == Health::Degraded);
+
+        let mut s = healthy_snapshot();
+        s.fallback_reads = 5_000;
+        assert!(verdict(&s, &seg(160, 320), true) == Health::Degraded);
+
+        let s = healthy_snapshot();
+        assert!(verdict(&s, &seg(300, 320), true) == Health::Degraded);
+    }
+
+    /// The pod this was found on: one notify failed 23 minutes into a 100k-read
+    /// life and the banner had read DEGRADED ever since. It now reads HEALTHY,
+    /// and the row still carries the failure so the history is not hidden.
+    #[test]
+    fn render_reports_healed_failure_without_alarm() {
+        let mut s = healthy_snapshot();
+        s.uds_notifies = 8;
+        s.uds_failures = 1;
+        s.uds_failure_unix = now_unix() - 1_400;
+        let out = render(&s, &seg(160, 320), None, true, false);
+        assert!(out.contains("HEALTHY"), "banner should clear:\n{out}");
+        assert!(out.contains("8 notified   1 failed (23m ago)"), "row:\n{out}");
+    }
+
+    #[test]
+    fn render_flags_failure_that_is_still_happening() {
+        let mut s = healthy_snapshot();
+        s.uds_notifies = 8;
+        s.uds_failures = 1;
+        s.uds_failure_unix = now_unix();
+        let out = render(&s, &seg(160, 320), None, true, false);
+        assert!(out.contains("DEGRADED"), "banner should warn:\n{out}");
+        assert!(out.contains("1 failed (0s ago)"), "row:\n{out}");
     }
 }

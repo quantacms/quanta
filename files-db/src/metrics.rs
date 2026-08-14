@@ -25,7 +25,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 const SIZE: usize = 4096;
 /// "QDBSTAT\0" — layout sentinel; a reader that sees a different value bails.
 const MAGIC: u64 = 0x0054_4154_5342_4451;
-const VERSION: u32 = 7;
+const VERSION: u32 = 8;
 
 const REL: Ordering = Ordering::Relaxed;
 
@@ -118,6 +118,14 @@ pub struct Metrics {
     /// Writes that stored caller-supplied bytes verbatim (`putRaw`). Counted in
     /// `writes` too — this is the subset that skipped re-serialization.
     pub raw_writes: AtomicU64,
+    // -- v8: recency for the notify-failure signal (append only) ------------
+    /// Unix seconds of the most recent failed daemon notify (0 = never).
+    /// `uds_failures` counts episodes for the life of the pod, which cannot say
+    /// whether one is still happening; graded on its own it pins a long-since
+    /// healed pod to DEGRADED forever. Unlike the read counters it also cannot
+    /// be graded as a share — its denominator is notify *attempts*, a handful
+    /// of writes rather than 100k reads — so `qdbstat` grades it on *when*.
+    pub uds_failure_unix: AtomicU64,
 }
 
 const _: () = assert!(std::mem::size_of::<Metrics>() <= SIZE);
@@ -176,6 +184,7 @@ pub struct Snapshot {
     pub moves: u64,
     pub doc_deletes: u64,
     pub raw_writes: u64,
+    pub uds_failure_unix: u64,
 }
 
 impl Metrics {
@@ -232,6 +241,7 @@ impl Metrics {
             moves: self.moves.load(REL),
             doc_deletes: self.doc_deletes.load(REL),
             raw_writes: self.raw_writes.load(REL),
+            uds_failure_unix: self.uds_failure_unix.load(REL),
         }
     }
 }
@@ -471,6 +481,7 @@ pub fn uds_notify() {
 pub fn uds_failure() {
     if let Some(m) = arena() {
         m.uds_failures.fetch_add(1, REL);
+        m.uds_failure_unix.store(now_unix(), REL);
     }
 }
 
