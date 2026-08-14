@@ -63,7 +63,7 @@ Quanta can only be installed on any UNIX-based OS (Linux, OSx, etc.).
 
 ### General Requisites:
 __Apache 2.4+__ or __Nginx 1.15+__
-__PHP 5.6+__ (7 strongly advised!) including libraries: __GD__, __CURL__
+__PHP 8.5+__ including libraries: __GD__, __CURL__
 __Composer__
 
 ### For Apache users:
