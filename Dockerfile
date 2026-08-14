@@ -26,18 +26,26 @@
 #
 # Build (context MUST be this quanta/ directory so files-db/ is reachable):
 #
-#     DOCKER_BUILDKIT=1 docker build -t quanta-cms-base:php8.2 quanta/
+#     DOCKER_BUILDKIT=1 docker build -t quanta-cms-base:php8.5 quanta/
 #
-# Built against php:8.2-fpm so the compiled .so matches the production ABI
+# Built against php:8.5-fpm so the compiled .so matches the production ABI
 # (non-thread-safe). Bump PHP_VERSION here and the app image inherits it.
+#
+# 8.5 is also the ceiling of ext-php-rs 0.15 (files-db/Cargo.toml): its build
+# script rejects any PHP whose Zend API is newer than 20250925, so PHP 8.6 needs
+# a crate upgrade first, not just a bump here.
 
-ARG PHP_VERSION=8.2
+ARG PHP_VERSION=8.5
 
 # ── Stage 1: qdb-builder — compile the native files-DB extension (Rust) ───────
 # Kept in the same base image FROM so the cdylib links against the exact PHP ABI
 # the runtime uses. build-essential/clang/pkg-config are only needed here and
 # never reach the final image.
 FROM php:${PHP_VERSION}-fpm AS qdb-builder
+
+# Re-declared so the cache-mount id below can interpolate it (a global ARG is
+# only visible to FROM lines until a stage opts back in).
+ARG PHP_VERSION
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates curl build-essential clang libclang-dev pkg-config git \
@@ -57,8 +65,17 @@ COPY files-db/src ./src
 # the crate's [profile.release]. The registry and target dirs are BuildKit cache
 # mounts, so incremental rebuilds reuse compiled deps. Symbols are stripped from
 # the artifacts to keep the runtime image small.
+#
+# The target dir cache is keyed by PHP_VERSION, and that is load-bearing.
+# ext-php-rs's build script declares rerun-if-changed on its own sources and
+# rerun-if-env-changed on PHP/PHP_CONFIG/PATH — but NOT on the PHP headers it
+# generates bindings from. Across a PHP bump every one of those inputs is
+# byte-identical, so cargo considers the cached build script fresh and relinks
+# the previous version's bindings. The result is a .so stamped with the OLD
+# ZEND_MODULE_API_NO, which the new PHP then refuses to load ("Module compiled
+# with module API=..."). Separate cache namespaces make that impossible.
 RUN --mount=type=cache,target=/opt/cargo/registry \
-    --mount=type=cache,target=/qdb/target \
+    --mount=type=cache,target=/qdb/target,id=qdb-target-${PHP_VERSION} \
     cargo build --release --locked \
     && install -D target/release/libquanta_db.so /out/quanta_db.so \
     && install -D target/release/qdbstat        /out/qdbstat \
