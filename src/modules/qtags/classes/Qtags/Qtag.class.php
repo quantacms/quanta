@@ -100,37 +100,34 @@ class Qtag implements \Quanta\Common\Cacheable {
     // so that when a Qtag has the very same type, attributes, target
     // it's not loaded two times.
     // TODO: support a reload attribute like in node caching to force reload in some cases.
-    $cached = \Quanta\Common\Cache::get($this->env, 'qtag', $this->cacheTag());
+    //
+    // Computed once here and handed to load(), which needs the same key for its
+    // Cache::set: cacheTag() json_encodes tag, attributes and target on every
+    // call, so it is well worth not paying for twice.
+    $cache_tag = $this->cacheTag();
+    $cached = \Quanta\Common\Cache::get($this->env, 'qtag', $cache_tag);
     if ($cached) {
       $this->html = $cached->html;
       $this->env->setData(STATS_QTAG_LOADED_CACHE, ($this->env->getData(STATS_QTAG_LOADED_CACHE, 0) + 1));
     }
 
     else {
-      if (isset($qtag->attributes['cache'])) {
-        $qtag_cache_dir = $this->env->dir['cache'] . '/' . $this->cacheTag();
-        $qtag_cache_file = $this->env->dir['cache'] . '/' . $this->cacheTag() . '/data.json';
-
-        if (is_file($qtag_cache_file)) {
-          $json = json_decode(file_get_contents($qtag_cache_file));
-          $this->html = $json->html;
-        }
-        else {
-          mkdir($qtag_cache_dir);
-          $this->load();
-          $fop = fopen($qtag_cache_file, "w+");
-          fwrite($fop, json_encode(array('html' => $this->html)));
-          fclose($fop);
-        }
-      }
-      else {
-        $this->load();
-        $this->env->setData(STATS_QTAG_LOADED, ($this->env->getData(STATS_QTAG_LOADED, 0) + 1));
-      }
+      // NOTE: an on-disk cache branch used to sit here, guarded on a variable
+      // this method never assigns -- so it never ran. Deleted rather than
+      // repaired: it kept rendered HTML forever, keyed on tag + attributes +
+      // target alone, while a rendered Qtag also depends on the user's access
+      // rights, the language, the node data it read and sometimes the clock.
+      $this->load($cache_tag);
+      $this->env->setData(STATS_QTAG_LOADED, ($this->env->getData(STATS_QTAG_LOADED, 0) + 1));
     }
   }
   
-  public function load() {
+  /**
+   * @param string|null $cache_tag
+   *   The cache key preload() already computed for this Qtag. NULL means
+   *   "compute it yourself" -- __toString() and any external caller.
+   */
+  public function load($cache_tag = NULL) {
     // A Qtag is accessible by default.
     $this->setAccess(TRUE);
 
@@ -180,7 +177,12 @@ class Qtag implements \Quanta\Common\Cacheable {
         $this->html = Api::string_normalize($this->html);
       }
 
-      \Quanta\Common\Cache::set($this->env, 'qtag', $this->cacheTag(), $this);
+      // Store under the key preload() actually looked up with. Some qtags
+      // mutate their own attributes or target inside render() (Thumbnail, Form,
+      // CategoryToggle), so recomputing it here would store them under a key no
+      // later preload() could ask for.
+      \Quanta\Common\Cache::set($this->env, 'qtag',
+        $cache_tag !== NULL ? $cache_tag : $this->cacheTag(), $this);
 
     }
   }
