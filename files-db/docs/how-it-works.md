@@ -605,7 +605,7 @@ immediately, not 60 seconds later.
 | `Q_OVERFLOW` | full `reconcile()`, reset the resync timer |
 | `IGNORED` | drop the watch descriptor |
 | dir `CREATE` / `MOVED_TO` | watch the new dir **first**, then walk and upsert the subtree |
-| dir `MOVED_FROM` | **deferred** — see below |
+| dir `MOVED_FROM` | **deferred** — end of batch, then a grace period; see below |
 | dir `DELETE` | remove the node and its subtree |
 | `data*.json` write/move/delete | re-read that document (no-op if `mtime`+`size` are unchanged) |
 | other create/delete/move | rescan the directory's membership — probably a symlink change |
@@ -621,8 +621,20 @@ into delete-then-add — and a lookup landing in that gap gets an **authoritativ
 answer (`Environment::nodePath` skips its legacy `find` on exactly that verdict),
 so the node briefly vanishes from the site. Deferring until the end of the event
 batch lets the matching `MOVED_TO` — same `rename()`, normally the same `read()`
-— re-point the model first; whatever is still unaccounted for genuinely left the
-tree.
+— re-point the model first.
+
+*Normally* is not *always*, and the gap between the two is the whole problem.
+The kernel queues `MOVED_FROM` and `MOVED_TO` one after the other rather than as
+a pair, so a daemon that drains the queue in between gets a batch holding only
+the `MOVED_FROM` — and end-of-batch is then just as wrong as immediate, because
+the old path is already gone and the model still points at it. So a `MOVED_FROM`
+that nothing has accounted for by the end of its batch is *held* (50 ms,
+`MOVED_GRACE`) rather than acted on, and re-checked against the model when the
+grace runs out; by then the counterpart event or the writer's own UDS `move` has
+re-pointed the node, and there is nothing to do. What is still filed at a path
+that no longer exists genuinely left the tree. The poll timeout shortens to the
+grace while anything is held, so an idle loop does not keep a departed node
+alive for its full second.
 
 ### Reconcile
 
