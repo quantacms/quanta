@@ -85,11 +85,16 @@ eq(QuantaDb::get('lockee')['x'], 0, 'holder update won, timed-out write not appl
 // A move is the only operation that invalidates a whole subtree's paths at
 // once, so the thing to prove is that a reader either sees the old location or
 // the new one — and that the node stays resolvable throughout.
+// The loop is long on purpose: the daemon settles a rename it could not pair
+// inside one inotify read after a grace period, so a wrong verdict there is only
+// reachable while moves are still in flight when the grace expires. Sixty moves
+// finish first on a fast machine and the whole class of bug goes unobserved —
+// which is exactly how one shipped, failing only on a loaded CI runner.
 seed_node($root, 'home/left', []);
 seed_node($root, 'home/right', []);
 QuantaDb::put('shuttle', ['v' => 1], ['father' => 'left']);
 QuantaDb::put('shuttlekid', ['v' => 2], ['father' => 'shuttle']);
-$mover = spawn_worker('move_loop.php', ['shuttle', 'left', 'right', 60]);
+$mover = spawn_worker('move_loop.php', ['shuttle', 'left', 'right', 1000]);
 $seen = 0;
 $lost = 0;
 $run = 0;
