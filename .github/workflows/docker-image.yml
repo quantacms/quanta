@@ -1,11 +1,28 @@
 name: Build and push Docker image
 
-# Builds the Quanta CMS base image (Dockerfile at the repo root) and pushes it
-# to the GitHub Container Registry (ghcr.io/quantacms/quanta).
+# Builds the Quanta CMS base image (Dockerfile at the repo root), TESTS it, and
+# pushes it to the GitHub Container Registry (ghcr.io/quantacms/quanta).
 #
 # The build context is the repo root so files-db/ is reachable for the Rust
-# extension stage. Pull requests build only (to validate the Dockerfile);
-# pushes to master, version tags, and manual runs also push the image.
+# extension stage. Pull requests build and test only; pushes to master, version
+# tags, and manual runs also push the image.
+#
+# The image is built once with load:true, both test suites run against that
+# exact image, and only then is it pushed — so a red suite cannot publish a
+# tag. The push step rebuilds from the same GHA layer cache, which is a cache
+# hit for every layer, so it costs a push and not a second Rust compile.
+#
+# Two suites run, and they answer different questions:
+#
+#   files-db/tests/run-tests.sh        does the EXTENSION obey the contract?
+#                                      (fallback + daemon modes)
+#   files-db/tests/run-quanta-tests.sh does QUANTA behave the same with the
+#                                      extension and without it?
+#                                      (noext + fallback + daemon modes)
+#
+# The second is the one that guards the shim: every call site wired to the node
+# database keeps a legacy path, and the suite pins both branches to the same
+# observable behaviour. See files-db/tests/quanta/_bootstrap.php.
 
 on:
   push:
@@ -63,12 +80,46 @@ jobs:
             type=sha,format=long
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Build and push
+      # Build into the local docker daemon so the suites below run against the
+      # very image that will be pushed.
+      - name: Build image for testing
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
+          load: true
+          tags: quanta-ci:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+
+      # The image drops files-db/ from the web root (see the Dockerfile), so the
+      # suites are mounted in from the checkout rather than read out of it. The
+      # entrypoint is bypassed: it does first-boot site setup and starts
+      # supervisord, neither of which a test run wants.
+      - name: files-db contract conformance (fallback + daemon)
+        run: |
+          docker run --rm --entrypoint sh \
+            -v "$PWD/files-db/tests:/tests:ro" \
+            quanta-ci:test \
+            -c 'QDB_EXT=/usr/local/lib/php/extensions/quanta_db.so sh /tests/run-tests.sh'
+
+      - name: Quanta call-site parity (noext + fallback + daemon)
+        run: |
+          docker run --rm --entrypoint sh \
+            -v "$PWD/files-db/tests:/tests:ro" \
+            quanta-ci:test \
+            -c 'QUANTA_ROOT=/var/www/quanta sh /tests/run-quanta-tests.sh'
+
+      # Every layer is a cache hit from the build above, so this is a push, not
+      # a rebuild.
+      - name: Push image
+        if: github.event_name != 'pull_request'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
