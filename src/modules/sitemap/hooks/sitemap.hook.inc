@@ -26,7 +26,15 @@ function sitemap_boot(Environment $env, array $vars) {
     $already_done = array();
     foreach ($site_pages as $item) {
       $node = NodeFactory::load($env, $item['name']);
-      $modtime = (file_exists($item['path'] . '/data.json') ? filemtime($item['path'] . '/data.json') : filemtime($item['path']));
+      // meta()['mtime'] is the node's modification time as the index tracks it,
+      // which saves a stat per page on a walk of the whole site.
+      $meta = $env->db()->meta($item['name']);
+      if (is_array($meta) && !empty($meta['mtime'])) {
+        $modtime = $meta['mtime'];
+      }
+      else {
+        $modtime = (file_exists($item['path'] . '/data.json') ? filemtime($item['path'] . '/data.json') : filemtime($item['path']));
+      }
 
       if (!($node->isPublished()) || isset($already_done[$item['name']]) || $node->getAttributeJSON('sitemap_exclude')) {
         continue;

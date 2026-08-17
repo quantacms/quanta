@@ -120,6 +120,43 @@ suite waits for coherence). Both must stay green. Rust unit tests
 (`cargo test`) cover the segment layout, reader/writer, tombstones, compaction,
 and a reader-under-churn torn-read stress test.
 
+### Quanta call-site parity tests
+
+The conformance suite proves the *extension* obeys the contract.
+`tests/run-quanta-tests.sh` proves *Quanta* obeys itself: every call site wired
+to the node database keeps its original code as a fallback, and the two
+branches must be indistinguishable from the outside. It boots a real
+`Environment` against a throwaway site and runs the same assertions in **three**
+modes — `noext` (the `.so` is not loaded at all), `fallback`, and `daemon`:
+
+```bash
+docker run --rm --entrypoint sh -v "$PWD/files-db/tests:/tests:ro" \
+    <quanta-image> -c 'sh /tests/run-quanta-tests.sh'
+# QDB_MODES="noext fallback"  to restrict
+```
+
+It needs a real checkout (`src/` + `vendor/`), so it runs inside the image
+rather than from a bare source tree. `noext` mode is produced the same way
+`QUANTA_DB_ENABLED=0` does it — a copy of `conf.d` without `quanta-db.ini`, so
+every *other* PHP extension stays loaded.
+
+Assertions that only hold with the extension use `ok_ext()`/`eq_ext()`, and
+ones that need an authoritative index use `ok_daemon()`; both report as
+**skipped** rather than passing, so the output shows what each mode actually
+proved. The sharpest discriminator is `written_by_extension()`: `json_encode`
+escapes `/` and non-ASCII and the extension's serializer does not, so the bytes
+on disk say which writer produced a document.
+
+Parity alone cannot catch a shim that quietly stopped using the extension —
+both branches would still agree. `tests/quanta/06_wired.php` closes that from
+the other side with the live counters from `QuantaDb::stats()`: it asserts that
+`DirList` moves `children_ops`, `Job::safeMove` moves `moves`, `saveJSON` moves
+`writes`, the integrity repair moves `raw_writes` + `doc_deletes`, and that a
+node load leaves `file_reads` where it was. Un-wire any call site and that file
+goes red while the parity files stay green.
+
+Both suites gate the image push in `.github/workflows/docker-image.yml`.
+
 ### Legacy parity tests + benchmark
 
 `tests/bench/legacy.php` re-implements the legacy access patterns verbatim

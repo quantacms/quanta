@@ -60,8 +60,10 @@ class JobsFactory {
       return;
     }
     
-    // Scan the _jobs_todo directory for sub-folders (which are nodes)
-    $dirs = $env->scanDirectory($todo_node->path, array('type' => Environment::DIR_DIRS));
+    // The _jobs_todo children (which are nodes), from the index when it can
+    // answer. DIR_DIRS is expressible against it; the '.' and 'data' guard
+    // below is kept because the legacy scan can still run underneath.
+    $dirs = $env->scanNodeDirectory($todo_node->path, Job::DIR_TODO, array('type' => Environment::DIR_DIRS));
     
     foreach ($dirs as $dir) {      
       // Ignore hidden folders, 'data', or other non-node components

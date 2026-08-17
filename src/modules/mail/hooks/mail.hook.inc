@@ -13,7 +13,10 @@ function mail_init(Environment $env, array $vars) {
   $env->sysdir('mailqueue', '_mailqueue');
   // Get the mails to queue.
   // TODO: don't check all emails at every page load. Use CRON instead?
-  $mail_nodes = ($env->scanDirectory($env->dir['mailqueue'], array(
+  // _mailqueue is a node, so its children come from the index. This runs on
+  // every page load (see the TODO above), which is exactly why it should not
+  // be a directory scan.
+  $mail_nodes = ($env->scanNodeDirectory($env->dir['mailqueue'], '_mailqueue', array(
     'exclude_dirs' => \Quanta\Common\Environment::DIR_INACTIVE,
     'type' => \Quanta\Common\Environment::DIR_DIRS,
     )));

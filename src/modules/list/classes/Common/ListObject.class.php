@@ -238,7 +238,12 @@ abstract class ListObject extends DataContainer {
       ));
     }
     else {
-      $list_nodes = $this->env->scanDirectory($this->path, array(
+      // Ask the index for this node's children rather than scanning its
+      // directory. Every list in the system comes through here, so this is
+      // the scan that matters most; it stays a scan whenever the attribute
+      // combination is not expressible against the index (DIR_ALL, DIR_FILES)
+      // or the list has no node to name (LIST_ROOT, NODE_NEW).
+      $list_nodes = $this->env->scanNodeDirectory($this->path, $this->getListNodeName(), array(
         'exclude_tree' => $this->exclude_tree,
         'exclude_dirs' => \Quanta\Common\Environment::DIR_INACTIVE,
         'type' => $this->scantype,
@@ -495,6 +500,20 @@ abstract class ListObject extends DataContainer {
    */
   public function getNode() {
     return $this->node;
+  }
+
+  /**
+   * The node name this list is listing, when it has one.
+   *
+   * LIST_ROOT and NODE_NEW lists carry no node, so they have no name to put to
+   * the index and stay on the directory scan.
+   *
+   * @return string|null
+   *   The node name, or NULL.
+   */
+  protected function getListNodeName() {
+    $node = $this->getNode();
+    return ($node == NULL) ? NULL : $node->getName();
   }
 
   /**

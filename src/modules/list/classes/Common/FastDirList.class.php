@@ -218,8 +218,10 @@ class FastDirList extends DirList {
       return;
     }
     
-    // Scan directory directly
-    $scan = $this->env->scanDirectory($parent_path, array('type' => $this->scantype, 'exclude_dirs' => Environment::DIR_INACTIVE));
+    // Children from the index when the name resolves to this path, otherwise
+    // the same directory scan. The nodes below are still built from real
+    // paths, so this only replaces the listing, not the loading.
+    $scan = $this->env->scanNodeDirectory($parent_path, $this->getListNodeName(), array('type' => $this->scantype, 'exclude_dirs' => Environment::DIR_INACTIVE));
     
     foreach ($scan as $dir) {
       if ($this->node->getName() == $dir && !$this->getData('list_father')) {
