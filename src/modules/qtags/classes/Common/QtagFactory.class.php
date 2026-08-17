@@ -29,8 +29,10 @@ class QtagFactory {
    *
    */
   public static function checkCodeTags(Environment &$env, $html, array $options = array(), $regex_options = 's') {
-    $check_tags = array();	  
+    $check_tags = array();
     $replacing = array();
+    // Markup of every Qtag string already handled in this pass -- see the loop.
+    $seen = array();
     // Find all qtags using regular expressions (both { and [ bracket types are valid for now).
     $regexs = array();
     $qtag_delimiters = isset($options['qtag_delimiters']) ? $options['qtag_delimiters'] : array('[]', '{}');
@@ -45,6 +47,21 @@ class QtagFactory {
       preg_match_all($regex, $html, $matches);
       // Cycle all the matched Qtags.
       foreach ($matches[0] as $tag_full) {
+        // preg_match_all returns every occurrence, and a page repeats the same
+        // markup constantly. A Qtag's markup is its entire input, so
+        // occurrences 2..N only recompute a value $replacing already holds,
+        // into the same slot -- and the single str_replace below applies that
+        // one entry page-wide anyway. Skipping them here rather than leaving
+        // them to Qtag::preload()'s cache is what makes them free: that cache
+        // can only answer once the object is built and its key serialized.
+        //
+        // Keyed on the full markup, because the runlast / showtag / highlight
+        // branches below decide per string: identical strings take identical
+        // branches, so the first one settles it for all of them.
+        if (isset($seen[$tag_full])) {
+          continue;
+        }
+        $seen[$tag_full] = TRUE;
         // Parse each Qtag.
         $qtag = QtagFactory::parseQTag($env, $tag_full, $delimiters);
         // Replace the Qtag in the HTML only if it's a valid Qtag.
@@ -64,7 +81,7 @@ class QtagFactory {
           }
           // Replace the Qtag with its rendered HTML.
           else {
-	    $qtag->preload();	  
+	    $qtag->preload();
 	    $replacing[$tag_full] = $qtag->getHtml();
           }
         }
