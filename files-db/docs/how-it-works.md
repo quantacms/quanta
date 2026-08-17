@@ -626,15 +626,36 @@ batch lets the matching `MOVED_TO` — same `rename()`, normally the same `read(
 *Normally* is not *always*, and the gap between the two is the whole problem.
 The kernel queues `MOVED_FROM` and `MOVED_TO` one after the other rather than as
 a pair, so a daemon that drains the queue in between gets a batch holding only
-the `MOVED_FROM` — and end-of-batch is then just as wrong as immediate, because
-the old path is already gone and the model still points at it. So a `MOVED_FROM`
-that nothing has accounted for by the end of its batch is *held* (50 ms,
-`MOVED_GRACE`) rather than acted on, and re-checked against the model when the
-grace runs out; by then the counterpart event or the writer's own UDS `move` has
-re-pointed the node, and there is nothing to do. What is still filed at a path
-that no longer exists genuinely left the tree. The poll timeout shortens to the
-grace while anything is held, so an idle loop does not keep a departed node
-alive for its full second.
+the `MOVED_FROM` — and end-of-batch is then just as wrong as immediate. Such a
+leftover is *held* (50 ms, `MOVED_GRACE`) rather than acted on, and settled when
+the grace runs out. The poll timeout shortens to the grace while anything is
+held, so an idle loop does not keep a departed node alive for its full second.
+
+**What settles it is the rename cookie, not the model.** The tempting test — the
+model still files the node at this path and the path is gone — proves only that
+the model is *stale about this node*, and that is not the same claim. A node
+being moved every few hundred microseconds is stale by that definition
+continuously, in the window between the `rename()` and the writer's UDS `move`;
+asking the question later does not make it sharper, it just lands the delete on a
+*different* in-flight rename. Both halves of one `rename()` carry the same
+cookie, which is precisely the pairing the kernel offers:
+
+```
+  MOVED_FROM(cookie C) with no MOVED_TO(cookie C) in this read
+        |
+        +-- hold (path, C) for MOVED_GRACE
+        |
+        +-- a later read brings MOVED_TO(cookie C)  -> the node only changed
+        |   place; on_dir_added has already filed it at its new path. Nothing
+        |   to do, whatever the model happened to say meanwhile.
+        |
+        +-- the grace expires with C still unpaired -> the rename put the
+            directory outside the watched tree (or into a skipped subtree).
+            That is a departure: drop the node and its subtree.
+```
+
+A destination that `skip_dir` rejects is deliberately *not* recorded as an
+arrival — moving a node into a payload subtree does take it out of the index.
 
 ### Reconcile
 
