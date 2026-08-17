@@ -46,9 +46,7 @@ $raw_it = json_encode(array('title' => 'Only IT', 'url' => 'http://a/b', 'city' 
 $promoted_dir = "$db/home/things/promoted";
 mkdir($promoted_dir, 0777, TRUE);
 file_put_contents("$promoted_dir/data_it.json", $raw_it);
-if (qdb_daemon_mode()) {
-    settle(fn() => \QuantaDb::path('promoted') !== NULL);
-}
+settle_langs('promoted', array('it'));
 
 $promoted = NodeFactory::load($env, 'promoted');
 (INTEGRITY_CHECK)($promoted, $env);
@@ -70,9 +68,9 @@ $multi_dir = "$db/home/things/multi";
 mkdir($multi_dir, 0777, TRUE);
 file_put_contents("$multi_dir/data_de.json", json_encode(array('title' => 'Multi DE')));
 file_put_contents("$multi_dir/data_it.json", json_encode(array('title' => 'Multi IT')));
-if (qdb_daemon_mode()) {
-    settle(fn() => \QuantaDb::path('multi') !== NULL);
-}
+// Both translations, not just the node: the collapse below decides from the
+// language list, so a half-seen node quietly leaves one behind.
+settle_langs('multi', array('de', 'it'));
 
 $multi = NodeFactory::load($env, 'multi');
 (INTEGRITY_CHECK)($multi, $env);
