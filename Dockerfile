@@ -166,6 +166,17 @@ RUN { \
     } > /usr/local/etc/php/conf.d/sessions.ini \
     && mkdir -p /var/lib/php/sessions
 
+# Opcache: the base php image ships no php.ini, so this ran on bare defaults.
+# validate_timestamps=0 -- all PHP here is immutable (only db/, static/, jobs/
+# and sessions are mounts). Editing PHP in a running pod now needs a php-fpm
+# reload: kill -USR2 <master>.
+# interned_strings_buffer=32 -- the 8 MB default measured 100% full at 58k
+# strings, so PHP had stopped interning. Costs ~24 MB shared memory.
+RUN { \
+    echo 'opcache.validate_timestamps = 0'; \
+    echo 'opcache.interned_strings_buffer = 32'; \
+    } > /usr/local/etc/php/conf.d/opcache.ini
+
 # Web tier: nginx (vhost + cache zones) in front of php-fpm over a unix socket,
 # both supervised by supervisord. quanta.conf reproduces the .htaccess rewrite
 # map and adds the fastcgi caches for node media and anonymous HTML; the
