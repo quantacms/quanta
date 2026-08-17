@@ -89,6 +89,13 @@ fn watch_mask() -> WatchMask {
         | WatchMask::ONLYDIR
 }
 
+/// How long an unmatched MOVED_FROM is held before it counts as a departure.
+/// It only has to outlast the gap between the two events of one `rename()`
+/// (microseconds), so this is generous; the cost of overshooting is that a node
+/// deleted out of band keeps answering for that much longer, which the tree walk
+/// behind `--resync-secs` already tolerates on a far coarser scale.
+const MOVED_GRACE: Duration = Duration::from_millis(50);
+
 static STOP: AtomicBool = AtomicBool::new(false);
 
 extern "C" fn on_signal(_sig: libc::c_int) {
@@ -160,6 +167,9 @@ struct Daemon {
     img_bytes: u64,
     inotify: Inotify,
     watches: HashMap<WatchDescriptor, PathBuf>,
+    /// MOVED_FROMs still waiting for their counterpart — see
+    /// [`Daemon::settle_moved_away`].
+    moved_pending: Vec<(PathBuf, Instant)>,
     degraded: bool,
     verbose: bool,
 }
@@ -531,27 +541,66 @@ impl Daemon {
     /// an add, and a lookup landing between the two got an **authoritative**
     /// "no such node" — for a node that existed the whole time, which callers
     /// act on (`Environment::nodePath` skips its legacy `find` on exactly that
-    /// answer). Deferring to the end of the batch fixes it: the matching
-    /// MOVED_TO comes from the same `rename()` and normally lands in the same
-    /// read, so by now it has already re-pointed the model. What is still
-    /// unaccounted for here genuinely left the tree.
+    /// answer). Deferring to the end of the batch covers the common case: the
+    /// matching MOVED_TO comes from the same `rename()` and usually lands in the
+    /// same read, so by then it has already re-pointed the model.
+    ///
+    /// It does not cover all of them. The kernel queues the two events one after
+    /// the other, not as a pair, so a reader can drain the queue in between and
+    /// get a batch holding only the MOVED_FROM — after which the old path is
+    /// gone, the model still points at it, and the node looks departed. That is
+    /// the same wrong tombstone one read later, so an unmatched MOVED_FROM is
+    /// held for [`MOVED_GRACE`] instead of acted on ([`Self::settle_pending_moves`]).
     fn settle_moved_away(&mut self, paths: &[PathBuf]) {
         for path in paths {
-            let Some(name) = path.file_name().map(|s| s.to_string_lossy().to_string()) else {
-                continue;
-            };
-            let stale = self
-                .model
-                .nodes
-                .get(&name)
-                .map(|m| m.abs_path(&self.cfg) == *path)
-                .unwrap_or(false);
-            if stale && !path.exists() {
-                self.apply_delete(&name);
+            if self.moved_away_for_good(path) {
+                self.moved_pending.push((path.clone(), Instant::now()));
             }
             // A re-watched directory carries its new path under the same
             // descriptor, so this only drops entries that really are stale.
             self.watches.retain(|_, p| !p.starts_with(path));
+        }
+    }
+
+    /// Does the model still file a node at `path`, with nothing on disk there?
+    /// Only then is a MOVED_FROM evidence that the node left the tree.
+    fn moved_away_for_good(&self, path: &Path) -> bool {
+        let Some(name) = path.file_name().map(|s| s.to_string_lossy().to_string()) else {
+            return false;
+        };
+        self.model
+            .nodes
+            .get(&name)
+            .map(|m| m.abs_path(&self.cfg) == *path)
+            .unwrap_or(false)
+            && !path.exists()
+    }
+
+    /// Apply the held MOVED_FROMs whose grace has run out. Re-checked against
+    /// the *current* model: by now the counterpart event (or the writer's own
+    /// UDS `move`) has normally re-pointed the node, which leaves nothing to do.
+    fn settle_pending_moves(&mut self) {
+        if self.moved_pending.is_empty() {
+            return;
+        }
+        let mut due: Vec<PathBuf> = Vec::new();
+        self.moved_pending.retain(|(path, since)| {
+            if since.elapsed() < MOVED_GRACE {
+                return true;
+            }
+            due.push(path.clone());
+            false
+        });
+        for path in due {
+            if !self.moved_away_for_good(&path) {
+                continue;
+            }
+            if let Some(name) = path.file_name().map(|s| s.to_string_lossy().to_string()) {
+                if self.verbose {
+                    eprintln!("qdbd: - {} (moved out of the tree)", path.display());
+                }
+                self.apply_delete(&name);
+            }
         }
     }
 
@@ -983,6 +1032,7 @@ fn main() {
         img_bytes: 0,
         inotify,
         watches: HashMap::new(),
+        moved_pending: Vec::new(),
         degraded: false,
         verbose: args.verbose,
     };
@@ -1045,14 +1095,21 @@ fn main() {
 
     while !STOP.load(Ordering::SeqCst) {
         // Wait up to 1s for inotify or socket traffic; the timeout also paces
-        // the heartbeat + periodic reconcile.
+        // the heartbeat + periodic reconcile. A held MOVED_FROM shortens it to
+        // its grace, so a node that really did leave the tree is not kept alive
+        // by an otherwise idle loop.
         let mut pfds: Vec<libc::pollfd> = Vec::with_capacity(2 + clients.len());
         pfds.push(libc::pollfd { fd: ifd, events: libc::POLLIN, revents: 0 });
         pfds.push(libc::pollfd { fd: lfd, events: libc::POLLIN, revents: 0 });
         for c in &clients {
             pfds.push(libc::pollfd { fd: c.as_raw_fd(), events: libc::POLLIN, revents: 0 });
         }
-        let r = unsafe { libc::poll(pfds.as_mut_ptr(), pfds.len() as libc::nfds_t, 1000) };
+        let wait_ms = if d.moved_pending.is_empty() {
+            1000
+        } else {
+            MOVED_GRACE.as_millis() as libc::c_int
+        };
+        let r = unsafe { libc::poll(pfds.as_mut_ptr(), pfds.len() as libc::nfds_t, wait_ms) };
 
         if r > 0 {
             // Inotify events.
@@ -1172,6 +1229,10 @@ fn main() {
                 clients.remove(i);
             }
         }
+
+        // After the socket, so a writer's own `move` ack has had its say on the
+        // node before an unmatched MOVED_FROM is allowed to bury it.
+        d.settle_pending_moves();
 
         metrics::set_heartbeat();
         metrics::set_coherent(true); // re-assert after an extension poison
