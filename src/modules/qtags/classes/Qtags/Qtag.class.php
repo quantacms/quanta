@@ -117,7 +117,6 @@ class Qtag implements \Quanta\Common\Cacheable {
       // repaired: it kept rendered HTML forever, keyed on tag + attributes +
       // target alone, while a rendered Qtag also depends on the user's access
       // rights, the language, the node data it read and sometimes the clock.
-      // See docs/qtag-cache-plan.md before reintroducing anything like it.
       $this->load($cache_tag);
       $this->env->setData(STATS_QTAG_LOADED, ($this->env->getData(STATS_QTAG_LOADED, 0) + 1));
     }
