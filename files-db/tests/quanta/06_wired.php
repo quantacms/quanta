@@ -145,9 +145,9 @@ grew($c, 'deletes', 'Node::delete used delete(), not exec(mv)');
 $repair_dir = "$db/home/businesses/acme/acme-repair";
 mkdir($repair_dir, 0777, TRUE);
 file_put_contents("$repair_dir/data_it.json", json_encode(array('title' => 'Repair')));
-if (qdb_daemon_mode()) {
-    settle(fn() => \QuantaDb::path('acme-repair') !== NULL);
-}
+// The repair below only fires if the index has read the translation — waiting
+// on the node alone makes both assertions a coin flip.
+settle_langs('acme-repair', array('it'));
 $env->nodePath('acme-repair');
 $c = counters();
 \Quanta\Common\integrity_check_node(NodeFactory::load($env, 'acme-repair'), $env);
