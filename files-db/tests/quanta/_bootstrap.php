@@ -219,6 +219,38 @@ function settle(callable $cond, float $budget = 3.0): bool
     }
 }
 
+/**
+ * Wait until the daemon has observed exactly $langs for $name ('' = neutral).
+ *
+ * A node's directory is indexed before the documents inside it: the daemon
+ * watches a new dir, then walks it, and any data*.json written after that walk
+ * arrives as its own event. So `path($name) !== NULL` says the node is there,
+ * not that the documents a test just wrote next to it are — and a call site
+ * whose decision depends on the language list (integrity's collapse) will act
+ * on a short list and leave a translation behind. Seed with this instead
+ * whenever the test writes documents out of band and then reads the index.
+ */
+function settle_langs(string $name, array $langs): bool
+{
+    if (!qdb_daemon_mode()) {
+        return TRUE;
+    }
+    sort($langs);
+    $seen = function () use ($name) {
+        $meta = \QuantaDb::meta($name);
+        $langs = $meta === NULL ? array() : $meta['langs'];
+        sort($langs);
+        return $langs;
+    };
+    $settled = settle(fn() => $seen() === $langs);
+    if (!$settled) {
+        fwrite(STDERR, "    daemon never observed langs ["
+            . implode(',', $langs) . "] for $name (saw ["
+            . implode(',', $seen()) . "])\n");
+    }
+    return $settled;
+}
+
 function ok_eventually(callable $fn, string $label): void
 {
     settle(fn() => (bool) $fn());
@@ -390,8 +422,20 @@ function seed(string $db, string $relpath, array $data = array(), ?string $lang 
     $file = 'data' . ($lang === NULL ? '' : "_$lang") . '.json';
     file_put_contents("$dir/$file", json_encode($data));
     if (qdb_daemon_mode()) {
+        // Wait for the DOCUMENT, not just the node: the dir is indexed before
+        // the file written into it (see settle_langs()), so settling on path()
+        // alone hands the test a node whose document the index has not read yet.
         $name = basename($relpath);
-        settle(fn() => \QuantaDb::path($name) !== NULL);
+        $settled = settle(function () use ($name, $relpath, $lang, $data) {
+            $path = \QuantaDb::path($name);
+            return $path !== NULL
+                && str_ends_with($path, "/$relpath")
+                && \QuantaDb::get($name, $lang) === $data;
+        });
+        if (!$settled) {
+            fwrite(STDERR, "    seed($relpath"
+                . ($lang === NULL ? '' : ", $lang") . ") not observed by the daemon\n");
+        }
     }
     return $dir;
 }
