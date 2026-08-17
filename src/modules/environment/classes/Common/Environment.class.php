@@ -396,6 +396,41 @@ class Environment extends DataContainer {
   }
 
   /**
+   * List a NODE's children, by name, preferring the index over a scan.
+   *
+   * scanDirectory() takes a path and reads the filesystem. When the caller
+   * knows the node NAME that path belongs to, the same question can be put to
+   * the node database instead — db()->children() answers it from the index and
+   * degrades to this very scan when it cannot (see FilesDb::children() for
+   * which attribute combinations are expressible).
+   *
+   * The name must be checked against the path first: names are the index's
+   * key, but a caller can hold a path that was never resolved from one
+   * (NodeFactory::loadFromRealPath), and must not be told about a different
+   * directory that happens to share the basename.
+   *
+   * @param string $path
+   *   The directory to list.
+   * @param string|null $name
+   *   The node name that directory belongs to, if known.
+   * @param array $attributes
+   *   scanDirectory() attributes.
+   *
+   * @return array
+   *   Child names.
+   */
+  public function scanNodeDirectory($path, $name, $attributes = array()) {
+    if (!empty($name) && $this->db()->resolvesTo($name, $path)) {
+      return $this->db()->children($name, $attributes);
+    }
+    // array_values(): scanDirectory() leaves holes in the keys where it
+    // unset() entries, while children() returns a list. Both paths out of this
+    // method must be the same shape or a caller's ===, [0] or json_encode()
+    // would depend on which one answered. See FilesDb::children().
+    return array_values($this->scanDirectory($path, $attributes));
+  }
+
+  /**
    * Get all dirs inside a given dir, at a leaf level.
    *
    * @param $base_dir
@@ -406,7 +441,10 @@ class Environment extends DataContainer {
    * @return array
    */
   public function scanDirectoryDeep($base_dir, $dir, $dirs = array(), $attributes = array('exclude_dirs' => self::DIR_INACTIVE, 'type' => self::DIR_ALL, 'level' => 'leaf'), $depth = 0) {
-    $scan = ($this->scanDirectory($base_dir . '/' . $dir, $attributes));
+    // $dir is the node name at every level below the first: the recursion
+    // below passes the child's name down as $dir. At depth 0 it is '' (the
+    // caller only has a path), so the root level alone stays on the scan.
+    $scan = ($this->scanNodeDirectory($base_dir . '/' . $dir, $dir, $attributes));
 
     $item = array(
       'path' => $base_dir . '/' . $dir,
@@ -588,10 +626,19 @@ class Environment extends DataContainer {
 
     $i = 0;
     while (TRUE) {
-      $node = new Node($this, $candidate_path);
+      // db()->exists() is the same question the Node below answers, minus
+      // building a Node — which resolves the path, reads the document and runs
+      // the node_open hooks just to look at ->exists. It is 3-state: TRUE/FALSE
+      // when the index is authoritative, NULL when it cannot say, and only the
+      // NULL case pays for the Node.
+      $exists = $this->db()->exists($candidate_path);
+      if ($exists === NULL) {
+        $node = new Node($this, $candidate_path);
+        $exists = $node->exists;
+      }
       // If the candidate path already exists, add a progressive number
       // to it until it's free.
-      if (!$node->exists) {
+      if (!$exists) {
         break;
       }
       else {

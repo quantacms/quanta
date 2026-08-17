@@ -193,6 +193,40 @@ class FilesDb {
   }
 
   /**
+   * Whether a node name really resolves to a given directory.
+   *
+   * The index is keyed by the globally-unique node NAME, but a container can
+   * be built from an explicit path (NodeFactory::loadFromRealPath /
+   * fastLoadFromRealPath), and a caller holding such a path must not have its
+   * question answered about a different directory that happens to share the
+   * basename. Call sites that already have a $path use this before trusting
+   * any name-keyed lookup — the same check Node::loadJSON and
+   * JSONDataContainer::saveJSON make inline.
+   *
+   * String compare first: the path almost always came from
+   * Environment::nodePath() and is already identical, so realpath() (two
+   * syscall-heavy resolutions) is only the tie-breaker.
+   *
+   * @param string $name
+   *   The node name.
+   * @param string $path
+   *   The directory the caller believes the node lives in.
+   *
+   * @return bool
+   *   TRUE when the index agrees the two are the same node.
+   */
+  public function resolvesTo($name, $path) {
+    if (empty($name) || empty($path)) {
+      return FALSE;
+    }
+    $resolved = $this->path($name);
+    if (!is_string($resolved)) {
+      return FALSE;
+    }
+    return $resolved === $path || realpath($resolved) === realpath($path);
+  }
+
+  /**
    * Map an extension path onto the current host's docroot.
    *
    * sites/<alias> hosts are symlinks to the canonical site directory the
@@ -425,14 +459,21 @@ class FilesDb {
    * The index only answers about NODES, so it can serve this question only
    * when the caller is asking about nodes:
    *
-   *   - 'symlinks' => 'no'   → real child directories
-   *   - 'symlinks' => 'only' → symlinked members
-   *   - DIR_DIRS             → both, which is what scanDirectory returns for it
+   *   - DIR_DIRS + 'symlinks' => 'no'   → real child directories
+   *   - DIR_DIRS or DIR_ALL, 'only'     → symlinked members
+   *   - DIR_DIRS                        → both, which is what scanDirectory
+   *                                       returns for it
    *
    * DIR_ALL and DIR_FILES also return the plain files sitting in the node
    * directory (tpl.html, data.json, uploads), which are deliberately not
    * indexed, so they stay on the legacy scan. So does any exclude_dirs other
    * than Quanta's '_' convention, which the index has no way to express.
+   *
+   * Note 'symlinks' alone is NOT enough to make the question node-only: with
+   * the default DIR_ALL, 'no' means "everything that is not a symlink", which
+   * includes data.json and every upload. Only 'only' is safe on its own, since
+   * a plain file is never a symlinked member. The parity suite pins this
+   * (files-db/tests/quanta/01_shim_reads.php).
    *
    * @param string $father
    *   The father node's name.
@@ -440,7 +481,7 @@ class FilesDb {
    *   scanDirectory() attributes.
    *
    * @return array
-   *   Child node names.
+   *   Child node names, as a list.
    */
   public function children($father, $attributes = array()) {
     $type = isset($attributes['type']) ? $attributes['type'] : Environment::DIR_ALL;
@@ -450,13 +491,13 @@ class FilesDb {
       : Environment::DIR_INACTIVE;
 
     $ext_type = NULL;
-    if ($symlinks === 'no') {
+    if ($symlinks === 'no' && $type === Environment::DIR_DIRS) {
       $ext_type = 'dirs';
     }
-    elseif ($symlinks === 'only') {
+    elseif ($symlinks === 'only' && $type !== Environment::DIR_FILES) {
       $ext_type = 'links';
     }
-    elseif ($type === Environment::DIR_DIRS) {
+    elseif ($symlinks === NULL && $type === Environment::DIR_DIRS) {
       $ext_type = 'all';
     }
 
@@ -479,7 +520,13 @@ class FilesDb {
     if (!$path) {
       return array();
     }
-    return $this->env->scanDirectory($path, $attributes);
+    // array_values(): scanDirectory() unset()s entries out of a scandir()
+    // result, so it hands back holes in the keys while the extension returns a
+    // list. Both branches of this method must be the same shape — a caller
+    // comparing with ===, taking [0], or json_encode()ing the result (which
+    // turns a gappy array into an OBJECT) would otherwise behave differently
+    // depending on whether the extension happened to answer.
+    return array_values($this->env->scanDirectory($path, $attributes));
   }
 
   /**
