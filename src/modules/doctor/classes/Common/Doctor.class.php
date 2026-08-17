@@ -197,6 +197,18 @@ class Doctor extends DataContainer {
    */
   public function checkBrokenLinks() {
     $path = is_link($this->env->dir['docroot']) ? ($this->env->dir['sites'] . '/' . readlink($this->env->dir['docroot'])) : $this->env->dir['docroot'];
+
+    // Rebuild the derived index from the files first. It is the repair tool for
+    // exactly what this command hunts — dangling symlinks left behind by a
+    // crash mid-move — and it is safe to run under traffic
+    // (files-db/docs/api-contract.md §Maintenance). The find sweep below still
+    // runs afterwards: reindex() drops dangling links from the index, while
+    // only the sweep re-points the ones whose target moved.
+    $rebuilt = $this->env->db()->reindex();
+    if ($rebuilt !== NULL) {
+      $this->ok("Rebuilt the node index: " . $rebuilt['nodes'] . " nodes, " . $rebuilt['links'] . " links.");
+    }
+
     $this->op("Searching for all symlinks in " . $path . "...");
     flush();
     $symlinks_find_cmd = "find " . $path . " -type l";

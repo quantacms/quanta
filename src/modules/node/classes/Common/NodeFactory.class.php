@@ -266,15 +266,37 @@
       $if_exists = isset($vars['if_exists']) ? $vars['if_exists'] : 'error';
 
       // quanta_db extension: symlink + index row in one step
-      // (files-db/docs/api-contract.md §9). Custom symlink names and the
-      // 'override' mode stay on the legacy path; on any error, fall through
+      // (files-db/docs/api-contract.md §9). Custom symlink names stay on the
+      // legacy path — a link is always named after its target there, so the
+      // contract has no way to express one — and on any error we fall through
       // to the legacy code, which emits the user-facing Messages.
-      if ($symlink_name === $source_node && $if_exists !== 'override') {
-        $linked = $env->db()->link($source_node, $symlink_folder, array(
-          'if_exists' => $if_exists === 'error' ? 'error' : 'ignore',
-        ));
-        if ($linked !== NULL) {
-          return $linked;
+      if ($symlink_name === $source_node) {
+        if ($if_exists === 'override') {
+          // Override means "make this link exist and point at the source",
+          // which is how Doctor::checkBrokenLinks repairs a dangling one. It
+          // has to be a real unlink + link: link(if_exists => 'ignore') would
+          // see the broken entry, call it present and leave it broken.
+          // Dropping the link first is also safe if the link below cannot be
+          // served — the legacy code then finds no link and creates it.
+          $unlinked = $env->db()->unlink($source_node, $symlink_folder, array(
+            'if_not_exists' => 'ignore',
+          ));
+          if ($unlinked !== NULL) {
+            $linked = $env->db()->link($source_node, $symlink_folder, array(
+              'if_exists' => 'ignore',
+            ));
+            if ($linked !== NULL) {
+              return $linked;
+            }
+          }
+        }
+        else {
+          $linked = $env->db()->link($source_node, $symlink_folder, array(
+            'if_exists' => $if_exists === 'error' ? 'error' : 'ignore',
+          ));
+          if ($linked !== NULL) {
+            return $linked;
+          }
         }
       }
 
@@ -672,7 +694,9 @@
         case
         Node::NODE_ACTION_DELETE:
           // Check if the node not exists in this language get the default language
-          if (!empty($language) && !is_file($node->path . '/data_' . $language . '.json')) {
+          // (hasTranslation() asks the index for the node's languages and keeps
+          // the same stat as its fallback).
+          if (!empty($language) && !$node->hasTranslation($language)) {
             $node = new Node($env, $node_name, $father, Localization::getFallbackLanguage($env), $path);
           }
           // Check that the current user has the right to delete the node.
@@ -767,23 +791,29 @@
     {
       $exclude = explode(',', $exclude);
       $new_node = self::createNode($env, $source_node, $new_node_name, $father, $language, $overrides, $exclude);
-      // Check if the node have multiple language files
-      $language_files = glob($source_node->path . '/data_*.json');
-      if (count($language_files)) {
-        foreach ($language_files as $language_file) {
-          if ($language_file == $language) {
-            continue;
-          }
+      // Check if the node have multiple language files.
+      // meta()['langs'] reports the languages directly, so no filename parsing:
+      // the '' entry is the neutral document, which the data_*.json glob below
+      // never matched either. It is also exact where the glob's \w+ was not —
+      // that pattern reads 'pt-br' as 'br' and then duplicates a language the
+      // source does not have.
+      $language_codes = array_values(array_filter($env->db()->langs($source_node->getName())));
+      if (empty($language_codes)) {
+        foreach ((array) glob($source_node->path . '/data_*.json') as $language_file) {
           // Extract the language code from the file name
           preg_match('/data_(\w+)\.json/', basename($language_file), $matches);
-          $lang = $matches[1] ?? null;
-          $data_array = [];
-          if ($lang) {
-            // Load the description node
-            $source_desc_node = NodeFactory::load($env, $source_node->getName(), $lang);
-            self::createNode($env, $source_desc_node, $new_node_name, $father, $lang, $overrides);
+          if (!empty($matches[1])) {
+            $language_codes[] = $matches[1];
           }
         }
+      }
+      foreach ($language_codes as $lang) {
+        // NOTE: $language is deliberately not skipped here. The guard this
+        // replaced compared a full file path against a language code, so it
+        // never fired, and createNode() for $language is idempotent.
+        // Load the description node
+        $source_desc_node = NodeFactory::load($env, $source_node->getName(), $lang);
+        self::createNode($env, $source_desc_node, $new_node_name, $father, $lang, $overrides);
       }
       // Copy all other files (e.g., images, etc.) except `data*.json`
       $all_files = glob($source_node->path . '/*'); // Get all files in the directory

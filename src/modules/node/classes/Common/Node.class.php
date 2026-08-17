@@ -145,8 +145,11 @@ class Node extends JSONDataContainer implements Cacheable {
 
     $language = $this->getLanguage();
     // Quanta's neutral language is a named constant; the extension's is the
-    // empty string. saveJSON() does the same mapping (JSONDataContainer::42).
-    $suffix = ($language == \Quanta\Common\Localization::LANGUAGE_NEUTRAL) ? '' : ('_' . $language);
+    // empty string. saveJSON() does the same mapping, and both treat an EMPTY
+    // language as neutral — otherwise the two implementations disagree about
+    // which file a call names ('data.json' vs 'data_.json').
+    $suffix = (empty($language) || $language == \Quanta\Common\Localization::LANGUAGE_NEUTRAL)
+      ? '' : ('_' . $language);
 
     if ($qdb && !empty($this->name) && !empty($this->path)) {
       try {
@@ -193,9 +196,11 @@ class Node extends JSONDataContainer implements Cacheable {
       }
     }
 
-    // Legacy read. Look for a language version.
-    if (is_file($this->path . '/data_' . $this->getLanguage() . '.json')) {
-      $this->jsonpath = ($this->path . '/data_' . $this->getLanguage() . '.json');
+    // Legacy read. Look for a language version. $suffix is '' for both the
+    // neutral constant and an empty language, so this collapses to the neutral
+    // branch instead of stat-ing a 'data_.json' that no writer produces.
+    if ($suffix !== '' && is_file($this->path . '/data' . $suffix . '.json')) {
+      $this->jsonpath = ($this->path . '/data' . $suffix . '.json');
     } // Look for a language neutral version.
     elseif (is_file($this->path . '/data.json')) {
       $this->jsonpath = ($this->path . '/data.json');
@@ -400,6 +405,14 @@ class Node extends JSONDataContainer implements Cacheable {
    * @return bool
    */
   public function hasChildren() {
+    // DIR_DIRS is "real subdirectories + symlinked members", which is exactly
+    // what the is_dir() filter in the legacy scan below selected.
+    if ($this->env->db()->resolvesTo($this->getName(), $this->path)) {
+      return !empty($this->env->db()->children($this->getName(), array(
+        'type' => \Quanta\Common\Environment::DIR_DIRS,
+      )));
+    }
+
     $scan = $this->env->scanDirectory($this->path);
     foreach ($scan as $dir) {
       if (is_dir($this->path . '/' . $dir)) {
@@ -425,7 +438,18 @@ class Node extends JSONDataContainer implements Cacheable {
    *   TRUE if the node has that child.
    */
   public function hasChild($name) {
-    return (empty($name) ? FALSE : is_dir($this->path . '/' . $name));
+    if (empty($name)) {
+      return FALSE;
+    }
+    // exclude_dirs '' keeps '_'-prefixed children in the answer: is_dir() below
+    // never hid them, and callers ask about names like '_jobs_todo'.
+    if ($this->env->db()->resolvesTo($this->getName(), $this->path)) {
+      return in_array($name, $this->env->db()->children($this->getName(), array(
+        'type' => \Quanta\Common\Environment::DIR_DIRS,
+        'exclude_dirs' => '',
+      )), TRUE);
+    }
+    return is_dir($this->path . '/' . $name);
   }
 
   /**
@@ -989,6 +1013,35 @@ class Node extends JSONDataContainer implements Cacheable {
     else {
       $root = $this->env->dir['docroot'];
     }
+
+    // Unscoped, this is exactly links(): the containers holding a symlink to
+    // this node (files-db/docs/api-contract.md §9). The legacy `find -L …
+    // -samefile` below also matches the node's own directory — with -L a
+    // symlink has the target's inode, so the real directory is a hit too and
+    // its parent lands in the result. links() reports only real containers, so
+    // the father is re-added here to keep the answer identical.
+    //
+    // The $node-scoped call stays on find: limiting containers to one subtree
+    // is not something links() can express.
+    if ($node == NULL) {
+      $containers = $this->env->db()->links($this->getName());
+      if ($containers !== NULL) {
+        // The parent directory's basename, which is what the legacy
+        // $exp[count($exp) - 2] below extracts from the node's own path. Taken
+        // raw rather than through getFather(), both to avoid building a Node
+        // and because buildFather() rewrites the docroot to 'home' while the
+        // find result does not.
+        $parent = basename(dirname($this->path));
+        if ($parent !== '' && $parent !== '.') {
+          $containers[] = $parent;
+        }
+        foreach (array_unique($containers) as $container) {
+          $categories[] = NodeFactory::load($this->env, $container);
+        }
+        return $categories;
+      }
+    }
+
     // Run a find command to search for all symlinks refering to this node.
     $cmd = 'find -L ' . $root . ' -samefile ' . $this->path;
     exec($cmd, $categories_url);
@@ -1031,6 +1084,14 @@ class Node extends JSONDataContainer implements Cacheable {
    *   True if the translation exists in that language.
    */
   public function hasTranslation($language) {
+    // NodeFactory::load() asks this for every node it loads, so the stat it
+    // replaces is on the hottest path in the system. meta()['langs'] reports
+    // the neutral document as '', which is never a $language here
+    // (LANGUAGE_NEUTRAL is the string 'language-neutral'), but an empty
+    // argument would collide with it — that stays on the legacy stat.
+    if (!empty($language) && $this->env->db()->resolvesTo($this->getName(), $this->path)) {
+      return in_array($language, $this->env->db()->langs($this->getName()), TRUE);
+    }
     return is_file($this->path . '/data_' . $language . '.json');
   }
 

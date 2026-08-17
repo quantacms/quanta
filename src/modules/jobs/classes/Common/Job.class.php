@@ -25,10 +25,12 @@ class Job extends Node {
    * @param string $sourceFile              Absolute path of the job folder to move.
    * @param string $destinationFile         Absolute path of the intended destination.
    * @param bool   $removeDuplicateIfExist  If true and destination directory exists, remove source directory to prevent duplicate folder integrity warnings.
+   * @param Environment|null $env           Environment, to route the move through the node database.
+   * @param string|null $name               The job's node name, required with $env.
    *
    * @return bool TRUE if the job ended up at the destination (moved or already there).
    */
-  public static function safeMove($sourceFile, $destinationFile, $removeDuplicateIfExist = false) {
+  public static function safeMove($sourceFile, $destinationFile, $removeDuplicateIfExist = false, $env = NULL, $name = NULL) {
     // Source already gone — another worker moved it first.
     if (!is_dir($sourceFile)) {
       return true;
@@ -39,11 +41,32 @@ class Job extends Node {
         $real_source = realpath($sourceFile);
         $real_dest = realpath($destinationFile);
         if ($real_source && $real_dest && $real_source !== $real_dest && is_dir($real_dest)) {
+          // Stays a hard delete: the contract has no hard delete and no
+          // trashbin management (api-contract.md §11), and this runs on every
+          // duplicate a job cron produces — trashing them would only move the
+          // churn somewhere that never gets emptied.
           exec("rm -rf " . escapeshellarg($real_source));
         }
       }
       return true;
     }
+
+    // quanta_db extension: move under the node's lock, with every inbound
+    // symlink re-pointed (files-db/docs/api-contract.md §9). A bare `mv` leaves
+    // each container membership of the job dangling, and the index does not
+    // learn of the move until the watcher notices. The destination is checked
+    // to be a plain rename into a new father — that is all the call sites do —
+    // and an occupied destination was already handled above, so the contract's
+    // default if_exists => 'error' cannot fire here.
+    if ($env !== NULL && !empty($name)
+        && basename($destinationFile) === $name
+        && $env->db()->resolvesTo($name, $sourceFile)) {
+      $moved = $env->db()->move($name, basename(dirname($destinationFile)));
+      if ($moved) {
+        return true;
+      }
+    }
+
     // -T treats destination as exact name, not parent directory (prevents nesting).
     exec("mv -T " . escapeshellarg($sourceFile) . " " . escapeshellarg($destinationFile) . " 2>/dev/null", $output, $return);
     // Success, or source is gone (another worker won the race).
@@ -87,7 +110,7 @@ class Job extends Node {
         $sourceFile = $this->path;
         $destinationFile = $unknown_father->path . '/' . $this->getName();
         
-        if (!$this->safeMove($sourceFile, $destinationFile, true)) {
+        if (!$this->safeMove($sourceFile, $destinationFile, true, $this->env, $this->getName())) {
           new Message($this->env, 'Warning: Could not move job ' . $this->getName() . ' to ' . self::DIR_UNKNOWN, Message::MESSAGE_WARNING);
         }
       }
@@ -123,7 +146,7 @@ class Job extends Node {
         $sourceFile = $this->path;
         $destinationFile = $unknown_father->path . '/' . $this->getName();
         
-        if (!$this->safeMove($sourceFile, $destinationFile, true)) {
+        if (!$this->safeMove($sourceFile, $destinationFile, true, $this->env, $this->getName())) {
           new Message($this->env, 'Warning: Could not move job ' . $this->getName() . ' to ' . self::DIR_UNKNOWN, Message::MESSAGE_WARNING);
         }
       }
@@ -156,7 +179,7 @@ class Job extends Node {
         $sourceFile = $this->path;
         $destinationFile = $done_father->path . '/' . $this->getName();
         
-        if (!$this->safeMove($sourceFile, $destinationFile, true)) {
+        if (!$this->safeMove($sourceFile, $destinationFile, true, $this->env, $this->getName())) {
           new Message($this->env, 'Warning: Could not move job ' . $this->getName() . ' to ' . self::DIR_DONE, Message::MESSAGE_WARNING);
         }
       }
