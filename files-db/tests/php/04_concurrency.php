@@ -52,14 +52,16 @@ eq([$final['a'], $final['b']], [399, 399], 'final document consistent');
 // --- Scenario 2: read-your-writes across processes. -------------------------
 QuantaDb::put('rw', ['v' => 'first'], ['father' => 'home']);
 QuantaDb::put('rw', ['v' => 'second']);
-[$code, $out] = wait_worker(spawn_worker('get_once.php', ['rw']));
+$w = spawn_worker('get_once.php', ['rw']);
+[$code, $out] = wait_worker($w);
 eq($code, 0, 'get worker exited cleanly');
 eq(json_decode($out, true)['v'], 'second', 'other process sees the last write');
 
 // --- Scenario 5: two same-second writes both observed cross-process. --------
 QuantaDb::put('fast', ['x' => 1], ['father' => 'home']);
 QuantaDb::put('fast', ['x' => 2]);
-[, $out] = wait_worker(spawn_worker('get_once.php', ['fast']));
+$w = spawn_worker('get_once.php', ['fast']);
+[, $out] = wait_worker($w);
 eq(json_decode($out, true)['x'], 2, 'generation (not mtime) invalidates');
 
 // --- Lock timeout raises LOCK_TIMEOUT. ---------------------------------------
