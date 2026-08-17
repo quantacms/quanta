@@ -6,9 +6,6 @@ namespace Quanta\Qtags;
  */
 
 class Text extends Qtag {
-  public function build () {
-    $this->attributes['cache'] = 'disk';
-  }
   /**
    * Render the Qtag.
    *
