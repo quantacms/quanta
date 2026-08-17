@@ -34,6 +34,19 @@ exec('rm -rf ' . escapeshellarg("$root/home/ext1"));
 eq_eventually(fn() => QuantaDb::get('ext1'), null, 'externally deleted node -> null');
 eq(QuantaDb::exists('ext1'), false, 'exists false after external delete');
 
+// External move OUT of the tree: also a delete, and the only evidence for it is
+// a rename whose other half never lands inside the tree. The daemon tells the
+// two apart by the rename cookie, so pin both directions: a departure must be
+// noticed, and the in-tree rename above must not be mistaken for one.
+$outside = $GLOBALS['__qdb_base'] . '/outside';
+mkdir($outside, 0777, true);
+seed_node($root, 'home/leaver', ['v' => 'bye']);
+rename("$root/home/leaver", "$outside/leaver");
+eq_eventually(fn() => QuantaDb::path('leaver'), null, 'node renamed out of the tree -> null');
+eq(QuantaDb::exists('leaver'), false, 'exists false after leaving the tree');
+ok(str_ends_with((string) QuantaDb::path('ext2'), '/home/sub/ext2'),
+    'the in-tree move was not swept up with it');
+
 // --- Build a small tree for reindex checks. ---------------------------------
 QuantaDb::put('ext3', ['v' => 3], ['father' => 'sub'], );
 QuantaDb::put('cont', [], ['father' => 'home']);

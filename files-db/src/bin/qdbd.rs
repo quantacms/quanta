@@ -146,6 +146,9 @@ fn parse_args() -> Result<Args, String> {
 struct Ev {
     wd: WatchDescriptor,
     mask: EventMask,
+    /// Ties a MOVED_FROM to the MOVED_TO of the same `rename()`; 0 for the
+    /// events that are not half of a rename.
+    cookie: u32,
     name: Option<String>,
 }
 
@@ -167,9 +170,12 @@ struct Daemon {
     img_bytes: u64,
     inotify: Inotify,
     watches: HashMap<WatchDescriptor, PathBuf>,
-    /// MOVED_FROMs still waiting for their counterpart — see
-    /// [`Daemon::settle_moved_away`].
-    moved_pending: Vec<(PathBuf, Instant)>,
+    /// MOVED_FROMs still waiting for their counterpart: (old path, rename
+    /// cookie, when it was held) — see [`Daemon::settle_moved_away`].
+    moved_pending: Vec<(PathBuf, u32, Instant)>,
+    /// Cookies of the dir MOVED_TOs seen so far, so a rename whose two halves
+    /// land in different reads still pairs up.
+    moved_arrivals: HashMap<u32, Instant>,
     degraded: bool,
     verbose: bool,
 }
@@ -547,14 +553,23 @@ impl Daemon {
     ///
     /// It does not cover all of them. The kernel queues the two events one after
     /// the other, not as a pair, so a reader can drain the queue in between and
-    /// get a batch holding only the MOVED_FROM — after which the old path is
-    /// gone, the model still points at it, and the node looks departed. That is
-    /// the same wrong tombstone one read later, so an unmatched MOVED_FROM is
-    /// held for [`MOVED_GRACE`] instead of acted on ([`Self::settle_pending_moves`]).
-    fn settle_moved_away(&mut self, paths: &[PathBuf]) {
-        for path in paths {
-            if self.moved_away_for_good(path) {
-                self.moved_pending.push((path.clone(), Instant::now()));
+    /// get a batch holding only the MOVED_FROM.
+    ///
+    /// What settles such a leftover is the rename **cookie**, not the model. The
+    /// tempting test — the model still files the node here and the path is gone
+    /// — proves only that the model is *stale about this node*, never that the
+    /// node left the tree, and the two are indistinguishable from a snapshot: a
+    /// node being moved every few hundred microseconds is permanently "stale"
+    /// between the `rename()` and the writer's UDS `move`. Asking that question
+    /// later just lands the delete on a *different* in-flight rename. The cookie
+    /// ties the departure to one specific `rename()`: if that rename's MOVED_TO
+    /// landed anywhere in the watched tree, the node is still here and
+    /// [`Self::on_dir_added`] has already filed it at its new path. Only a
+    /// rename whose other half never arrives took the node out of the tree.
+    fn settle_moved_away(&mut self, moved: &[(PathBuf, u32)]) {
+        for (path, cookie) in moved {
+            if self.moved_arrivals.remove(cookie).is_none() {
+                self.moved_pending.push((path.clone(), *cookie, Instant::now()));
             }
             // A re-watched directory carries its new path under the same
             // descriptor, so this only drops entries that really are stale.
@@ -563,7 +578,7 @@ impl Daemon {
     }
 
     /// Does the model still file a node at `path`, with nothing on disk there?
-    /// Only then is a MOVED_FROM evidence that the node left the tree.
+    /// Necessary for a departure, never sufficient — see [`Self::settle_moved_away`].
     fn moved_away_for_good(&self, path: &Path) -> bool {
         let Some(name) = path.file_name().map(|s| s.to_string_lossy().to_string()) else {
             return false;
@@ -576,22 +591,28 @@ impl Daemon {
             && !path.exists()
     }
 
-    /// Apply the held MOVED_FROMs whose grace has run out. Re-checked against
-    /// the *current* model: by now the counterpart event (or the writer's own
-    /// UDS `move`) has normally re-pointed the node, which leaves nothing to do.
+    /// Settle the held MOVED_FROMs whose grace has run out. The counterpart is
+    /// queued by the same `rename()` microseconds later, so anything still
+    /// unpaired after a grace that spans several reads has no counterpart in
+    /// this tree: the directory was renamed out of it (or into a skipped
+    /// subtree), which is a departure.
     fn settle_pending_moves(&mut self) {
+        self.moved_arrivals.retain(|_, at| at.elapsed() < MOVED_GRACE * 2);
         if self.moved_pending.is_empty() {
             return;
         }
-        let mut due: Vec<PathBuf> = Vec::new();
-        self.moved_pending.retain(|(path, since)| {
+        let mut due: Vec<(PathBuf, u32)> = Vec::new();
+        self.moved_pending.retain(|(path, cookie, since)| {
             if since.elapsed() < MOVED_GRACE {
                 return true;
             }
-            due.push(path.clone());
+            due.push((path.clone(), *cookie));
             false
         });
-        for path in due {
+        for (path, cookie) in due {
+            if self.moved_arrivals.remove(&cookie).is_some() {
+                continue; // the other half arrived in a later read
+            }
             if !self.moved_away_for_good(&path) {
                 continue;
             }
@@ -1033,6 +1054,7 @@ fn main() {
         inotify,
         watches: HashMap::new(),
         moved_pending: Vec::new(),
+        moved_arrivals: HashMap::new(),
         degraded: false,
         verbose: args.verbose,
     };
@@ -1114,12 +1136,13 @@ fn main() {
         if r > 0 {
             // Inotify events.
             if pfds[0].revents & libc::POLLIN != 0 {
-                let mut moved_away: Vec<PathBuf> = Vec::new();
+                let mut moved_away: Vec<(PathBuf, u32)> = Vec::new();
                 let evs: Vec<Ev> = match d.inotify.read_events(&mut buffer) {
                     Ok(events) => events
                         .map(|e| Ev {
                             wd: e.wd.clone(),
                             mask: e.mask,
+                            cookie: e.cookie,
                             name: e.name.map(|n| n.to_string_lossy().into_owned()),
                         })
                         .collect(),
@@ -1146,6 +1169,13 @@ fn main() {
                             continue;
                         }
                         if ev.mask.intersects(EventMask::CREATE | EventMask::MOVED_TO) {
+                            if ev.cookie != 0 {
+                                // An arrival inside the tree: whatever left with
+                                // this cookie only changed place. Recorded even
+                                // when its MOVED_FROM is still to come, since a
+                                // read can split the pair either way.
+                                d.moved_arrivals.insert(ev.cookie, Instant::now());
+                            }
                             d.on_dir_added(&path);
                             metrics::record_watch_event();
                             if d.verbose {
@@ -1154,7 +1184,7 @@ fn main() {
                         } else if ev.mask.contains(EventMask::MOVED_FROM) {
                             // Went somewhere — settled after the batch, once
                             // the matching MOVED_TO has had its say.
-                            moved_away.push(path.clone());
+                            moved_away.push((path.clone(), ev.cookie));
                             metrics::record_watch_event();
                             if d.verbose {
                                 eprintln!("qdbd: > {}", path.display());
