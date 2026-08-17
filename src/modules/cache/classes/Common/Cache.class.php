@@ -85,6 +85,19 @@ class Cache extends DataContainer {
       return $link;
     }
 
+    // $overwrite means "replace a STALE link", not "rewrite an identical one".
+    // On a warm request the link almost always already points at $nodepath, and
+    // the symlink()+rename() pair below is then pure syscall waste — one readlink
+    // (served from the dentry cache) buys it back. Environment::nodePath() got
+    // this guard inline when storeNodePath first topped the profiler; the other
+    // caller, NodeFactory::fastLoadFromRealPath(), passes $overwrite = TRUE
+    // unconditionally and so kept paying it, which put storeNodePath back at the
+    // top of the profiler at ~13% of an admin list page. Guarding here fixes both
+    // call sites at once.
+    if (@readlink($link) === $nodepath) {
+      return $link;
+    }
+
     // Publish the link atomically: create it under a unique temporary name and
     // rename() it into place, which replaces whatever is there in one step.
     // The old unlink()+symlink() pair left a window in which a concurrent

@@ -198,7 +198,18 @@ class Localization {
     $prefix = 'i18n';
     $output_text = $text;
     if ($tag != NULL) {
-      $tagnode = $prefix . '-' . $tag;
+      // Normalize the tag the SAME way buildNode() below does. buildNode() runs
+      // Api::normalizePath() on the name (lowercase, spaces/underscores to
+      // dashes, accents stripped), so a tag that was not already in normal form
+      // — [TEXT|tag=Utenti:Users], tag=only_weekdays, tag=provided-By — was
+      // looked up as 'i18n-Utenti' but created as 'i18n-utenti'. The lookup
+      // could then never hit: every render missed, rebuilt the node, and
+      // overwrote whatever translation had been saved for it. That cost a
+      // locked+fsynced write plus a daemon round-trip on EVERY page render (the
+      // admin menu carries one, so every admin page paid it), and when the ack
+      // missed quanta_db.write_ack_timeout_ms it poisoned index coherence and
+      // dropped every PHP worker to filesystem-walk fallback.
+      $tagnode = $prefix . '-' . Api::normalizePath($tag);
       $node = NodeFactory::load($env, $tagnode);
       if (!($node->exists)) {
         $attributes = array('title' => $text);
