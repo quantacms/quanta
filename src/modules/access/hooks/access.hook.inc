@@ -243,8 +243,11 @@ function _access_filter($env, $criteria, $node, $user = NULL, $custom_value = nu
         break;
 
       default:
-        if (!empty($filter_type) && !empty($node->getAttributeJSON($filter_type)) || (in_array(\Quanta\Common\Access::EMPTY_FILTER,$filter_values))) {
-		      $filter_check[] = $node->getAttributeJSON($filter_type);
+        if (!empty($filter_type)) {
+          $attr_json = $node->getAttributeJSON($filter_type);
+          if ($attr_json !== NULL || in_array(\Quanta\Common\Access::EMPTY_FILTER, $filter_values)) {
+            $filter_check[] = ($attr_json !== NULL) ? $attr_json : array();
+          }
         }
         break;
     }
