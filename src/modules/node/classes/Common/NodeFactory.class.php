@@ -194,48 +194,48 @@
      */
     public static function unlinkNodes($env, $symlink_name, $symlink_folder, $vars = array())
     {
-      // Set the behavior to adopt if the symlink already exists.
+      // Set the behavior to adopt if the symlink does not exist.
       $if_not_exists = isset($vars['if_not_exists']) ? $vars['if_not_exists'] : 'error';
 
-      // quanta_db extension: unlink + index row removal in one step
-      // (files-db/docs/api-contract.md §9). On any error, fall through to
-      // the legacy path, which emits the user-facing Messages.
-      $unlinked = $env->db()->unlink($symlink_name, $symlink_folder, array(
-        'if_not_exists' => $if_not_exists === 'error' ? 'error' : 'ignore',
-      ));
-      if ($unlinked !== NULL) {
-        return;
-      }
-
-      $symlink_folder_node = NodeFactory::load($env, $symlink_folder);
-
-      if (!$symlink_folder_node->exists) {
+      // The container's own existence is checked here rather than left to
+      // unlink(): the two failures read differently to a user, and the node
+      // database has one code for "there is nothing to unlink" either way.
+      if (!$env->db()->exists($symlink_folder)) {
         new Message($env,
           t('Error: could not unlink !symlink_name from !symlink_folder. !symlink_folder doesn\'t exist',
             array('!symlink_name' => $symlink_name, '!symlink_folder' => $symlink_folder)
           ),
           Message::MESSAGE_ERROR
         );
-      } elseif (!is_link($symlink_folder_node->path . '/' . $symlink_name)) {
-        switch ($if_not_exists) {
-          case 'error':
-            new Message($env,
-              t('Error: could not unlink !symlink_name from !symlink_folder. !symlink_folder/!symlink_name doesn\'t exist',
-                array('!symlink_name' => $symlink_name, '!symlink_folder' => $symlink_folder)
-              ),
-              Message::MESSAGE_ERROR
-            );
-            break;
+        return;
+      }
 
-          case 'ignore':
-            break;
-        }
-      } else {
-        try {
-          unlink($symlink_folder_node->path . '/' . $symlink_name);
-        } catch (Exception $ex) {
-          new Message($vars['env'], 'Error: could not unlink ' . $symlink_name . ' from ' . $symlink_folder, Message::MESSAGE_ERROR);
-        }
+      // Always 'ignore', never 'error': the database raises the same code for
+      // "there was no such link" and "the removal failed", so asking it to
+      // throw would collapse two messages into one. The return says which —
+      // FALSE is "nothing to remove" — and an exception is then unambiguously
+      // the second.
+      try {
+        $unlinked = $env->db()->unlink($symlink_name, $symlink_folder, array(
+          'name' => $symlink_name,
+          'if_not_exists' => 'ignore',
+        ));
+      }
+      catch (\Quanta\Common\FilesDbException $e) {
+        new Message($env,
+          'Error: could not unlink ' . $symlink_name . ' from ' . $symlink_folder,
+          Message::MESSAGE_ERROR
+        );
+        return;
+      }
+
+      if (!$unlinked && $if_not_exists === 'error') {
+        new Message($env,
+          t('Error: could not unlink !symlink_name from !symlink_folder. !symlink_folder/!symlink_name doesn\'t exist',
+            array('!symlink_name' => $symlink_name, '!symlink_folder' => $symlink_folder)
+          ),
+          Message::MESSAGE_ERROR
+        );
       }
     }
 
@@ -265,85 +265,36 @@
       // Set the behavior to adopt if the symlink already exists.
       $if_exists = isset($vars['if_exists']) ? $vars['if_exists'] : 'error';
 
-      // quanta_db extension: symlink + index row in one step
-      // (files-db/docs/api-contract.md §9). Custom symlink names stay on the
-      // legacy path — a link is always named after its target there, so the
-      // contract has no way to express one — and on any error we fall through
-      // to the legacy code, which emits the user-facing Messages.
-      if ($symlink_name === $source_node) {
-        if ($if_exists === 'override') {
-          // Override means "make this link exist and point at the source",
-          // which is how Doctor::checkBrokenLinks repairs a dangling one. It
-          // has to be a real unlink + link: link(if_exists => 'ignore') would
-          // see the broken entry, call it present and leave it broken.
-          // Dropping the link first is also safe if the link below cannot be
-          // served — the legacy code then finds no link and creates it.
-          $unlinked = $env->db()->unlink($source_node, $symlink_folder, array(
-            'if_not_exists' => 'ignore',
-          ));
-          if ($unlinked !== NULL) {
-            $linked = $env->db()->link($source_node, $symlink_folder, array(
-              'if_exists' => 'ignore',
-            ));
-            if ($linked !== NULL) {
-              return $linked;
-            }
-          }
-        }
-        else {
-          $linked = $env->db()->link($source_node, $symlink_folder, array(
-            'if_exists' => $if_exists === 'error' ? 'error' : 'ignore',
-          ));
-          if ($linked !== NULL) {
-            return $linked;
-          }
-        }
-      }
-
-      $linked_ok = FALSE;
-
-      $from_node = new Node($env, $source_node);      
-      $symlink_folder_node = NodeFactory::load($env, $symlink_folder);
-
-      $create_link = FALSE;
-
-      // Check that source nodes and destination folder do actually exist.
-      if (!$from_node->exists) {
+      // Both existence checks stay here: they are the two distinct messages a
+      // user gets, and link() cannot tell them apart in its return.
+      $db = $env->db();
+      if (!$db->exists($source_node)) {
         new Message($env, 'Error: could not link ' . $source_node . ' into ' . $symlink_folder . '. ' . $source_node . ' doesn\'t exist', Message::MESSAGE_ERROR);
-      } elseif (!$symlink_folder_node->exists) {
+        return FALSE;
+      }
+      if (!$db->exists($symlink_folder)) {
         new Message($env, 'Error: could not link ' . $source_node . ' into ' . $symlink_folder . '. ' . $symlink_folder . ' doesn\'t exist', Message::MESSAGE_ERROR);
-      } // What to do if the symlink exists already.
-      elseif (is_link($symlink_folder_node->path . '/' . $symlink_name)) {
-
-        switch ($if_exists) {
-          case 'error':
-            new Message($env, 'Error: could not link ' . $source_node . ' into ' . $symlink_folder . '. ' . $symlink_folder . '/' . $symlink_name . ' already exists.', Message::MESSAGE_ERROR);
-            break;
-
-          case 'ignore':
-            break;
-
-          case 'override':
-            unlink($symlink_folder_node->path . '/' . $symlink_name);
-            $create_link = TRUE;
-            break;
-        }
-      } else {
-        $create_link = TRUE;
-
+        return FALSE;
       }
 
-      // All circumnstances are good to create the symlink. Try it.
-      if ($create_link) {
-        try {
-          symlink($from_node->path, $symlink_folder_node->path . '/' . $symlink_name);
-          $linked_ok = TRUE;
-        } catch (Exception $ex) {
-          new Message($vars['env'], 'Error: could not link ' . $source_node . ' to ' . $symlink_folder, Message::MESSAGE_ERROR);
-        }
+      try {
+        // 'override' is "make this link exist and point at the source", which
+        // is how Doctor::checkBrokenLinks repairs a dangling one; both
+        // implementations do a real unlink + link for it, because treating the
+        // broken entry as present would leave it broken.
+        return (bool) $db->link($source_node, $symlink_folder, array(
+          'name' => $symlink_name,
+          'if_exists' => $if_exists,
+        ));
       }
-
-      return $linked_ok;
+      catch (\Quanta\Common\FilesDbException $e) {
+        if ($e->getCode() == \Quanta\Common\FilesDbException::EXISTS) {
+          new Message($env, 'Error: could not link ' . $source_node . ' into ' . $symlink_folder . '. ' . $symlink_folder . '/' . $symlink_name . ' already exists.', Message::MESSAGE_ERROR);
+          return FALSE;
+        }
+        new Message($env, 'Error: could not link ' . $source_node . ' to ' . $symlink_folder, Message::MESSAGE_ERROR);
+        return FALSE;
+      }
     }
 
     /**
@@ -791,22 +742,14 @@
     {
       $exclude = explode(',', $exclude);
       $new_node = self::createNode($env, $source_node, $new_node_name, $father, $language, $overrides, $exclude);
-      // Check if the node have multiple language files.
-      // meta()['langs'] reports the languages directly, so no filename parsing:
-      // the '' entry is the neutral document, which the data_*.json glob below
-      // never matched either. It is also exact where the glob's \w+ was not —
-      // that pattern reads 'pt-br' as 'br' and then duplicates a language the
-      // source does not have.
-      $language_codes = array_values(array_filter($env->db()->langs($source_node->getName())));
-      if (empty($language_codes)) {
-        foreach ((array) glob($source_node->path . '/data_*.json') as $language_file) {
-          // Extract the language code from the file name
-          preg_match('/data_(\w+)\.json/', basename($language_file), $matches);
-          if (!empty($matches[1])) {
-            $language_codes[] = $matches[1];
-          }
-        }
-      }
+      // Check if the node have multiple language files. langs() reports them
+      // directly, so no filename parsing: the '' entry is the neutral document,
+      // which the data_*.json glob this replaced never matched either, and the
+      // codes are exact where that glob's \w+ was not — the old pattern read
+      // 'pt-br' as 'br' and then duplicated a language the source does not have.
+      $language_codes = array_values(array_filter(
+        $env->db()->langs($source_node->getName(), array('at' => $source_node->path))
+      ));
       foreach ($language_codes as $lang) {
         // NOTE: $language is deliberately not skipped here. The guard this
         // replaced compared a full file path against a language code, so it

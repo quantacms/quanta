@@ -100,117 +100,76 @@ class Node extends JSONDataContainer implements Cacheable {
    * TODO: move standard part into JSONDataContainer.
    */
   public function loadJSON() {
-    // The quanta_db extension serves node documents out of the daemon's
-    // shared-memory segment: no stat, no file read, and no json_decode — the
-    // extension keeps a per-process parse cache keyed by the node's generation,
-    // so a document is decoded at most once per worker per change.
+    // One call to the node database, which serves this from the daemon's
+    // shared-memory segment when it can (no stat, no file read, no
+    // json_decode) and off the disk when it cannot. This call site used to
+    // carry both — a class_exists()/method_exists() probe, a three-call
+    // extension read, and a complete legacy read to fall back to. Only the
+    // last of those was ever really about THIS node's behaviour; the rest was
+    // deciding which implementation to use, and FilesDb owns that now.
     //
-    // getObject() (not get()) is the right call here: it reproduces
-    // json_decode's shape all the way down, where get() returns the contract's
-    // nested ARRAYS. Quanta reads nested documents as objects — see
-    // loadPermissions() below ($this->json->permissions->{$permission}) and
-    // access.hook.inc — so a plain (object) cast of get() would only fix the
-    // top level. json_encode() cannot detect that difference; parity has to be
-    // checked with var_export().
+    // 'as' => 'object' (not the default array shape) is the right ask here: it
+    // reproduces json_decode's shape all the way down, where the array shape
+    // returns the contract's nested ARRAYS. Quanta reads nested documents as
+    // objects — see loadPermissions() below ($this->json->permissions->
+    // {$permission}) and access.hook.inc — so a plain (object) cast of the
+    // array shape would only fix the top level. json_encode() cannot detect
+    // that difference; parity has to be checked with var_export().
     //
-    // HISTORY — this call site previously carried a note that QuantaDb::get()
-    // was "~2-4x SLOWER" than the file read. That measurement was taken with
-    // the benchmark running in FALLBACK mode (tests/run-bench.sh never set
-    // QDB_MODE, and qdb_daemon_mode() defaults to false), i.e. with no daemon
-    // and no shared memory at all — so it compared two ways of reading the same
-    // file, one of them through an FFI boundary. Measured against a live daemon
-    // (tests/bench/probe.php on php:8.2-fpm):
-    //
-    //   document      legacy fgc+json_decode   QuantaDb::getObject()
-    //   48 B                       6.53 us                 0.24 us    27x
-    //   437 B                      7.19 us                 0.44 us    16x
-    //   205 KB                   129.61 us                 0.46 us   279x
-    //
-    // Most of the legacy cost is the syscalls (~6.3 us of the 6.53 us on a tiny
-    // document); the rest is json_decode, which the daemon's pre-decoded
-    // document image removes entirely. The 205 KB row is flat because the
-    // extension points PHP's string zvals straight at the shared mapping
-    // instead of copying the body (files-db/README.md, "Document reads").
+    // 'at' is load-bearing: this container may have been built from an
+    // explicit path (NodeFactory::loadFromRealPath / fastLoadFromRealPath),
+    // and the globally-unique NAME may point somewhere else entirely. Passing
+    // the path settles that inside the probe that is already holding the
+    // record, instead of resolving a second path here to compare against.
     //
     // Re-measure before changing this: loadJSON is the hottest function on
-    // admin list pages (~26% of render self-time).
-    //
-    // The legacy read below stays the unconditional fallback: extension absent,
-    // daemon down, name/path disagreement, or a corrupt document all land there.
-    static $qdb = NULL;
-    if ($qdb === NULL) {
-      // No autoload — see FilesDb::available().
-      $qdb = class_exists('QuantaDb', FALSE) && method_exists('QuantaDb', 'getObject');
-    }
-
+    // admin list pages (~26% of render self-time). The per-implementation
+    // numbers are on FilesDbExt::load().
     $language = $this->getLanguage();
-    // Quanta's neutral language is a named constant; the extension's is the
+    // Quanta's neutral language is a named constant; the database's is the
     // empty string. saveJSON() does the same mapping, and both treat an EMPTY
-    // language as neutral — otherwise the two implementations disagree about
-    // which file a call names ('data.json' vs 'data_.json').
-    $suffix = (empty($language) || $language == \Quanta\Common\Localization::LANGUAGE_NEUTRAL)
-      ? '' : ('_' . $language);
+    // language as neutral — otherwise the two disagree about which file a call
+    // names ('data.json' vs 'data_.json').
+    $neutral = (empty($language) || $language == \Quanta\Common\Localization::LANGUAGE_NEUTRAL);
 
-    if ($qdb && !empty($this->name) && !empty($this->path)) {
-      try {
-        // The extension resolves a globally-unique NAME, but this container may
-        // have been built from an explicit path (NodeFactory::loadFromRealPath /
-        // fastLoadFromRealPath), so make sure the two agree before trusting it.
-        // String compare first: $this->path almost always came from
-        // Environment::nodePath() -> QuantaDb::path(), so realpath() (two
-        // syscall-heavy resolutions that would eat the entire win) is only the
-        // tie-breaker.
-        $qdb_path = $this->env->quantaDbPathFor($this->name);
-        if (is_string($qdb_path)
-            && ($qdb_path === $this->path || realpath($qdb_path) === realpath($this->path))) {
-
-          $json = \QuantaDb::getObject($this->name, $suffix === '' ? NULL : $language);
-          $used = $suffix;
-          // Same order as the legacy read: language file first, then neutral.
-          if ($json === NULL && $suffix !== '') {
-            $json = \QuantaDb::getObject($this->name, NULL);
-            $used = '';
-          }
-          if ($json !== NULL) {
-            // Kept for BC: $this->jsonpath is written here and read nowhere else
-            // (saveJSON recomputes its own local $jsonpath).
-            $this->jsonpath = $this->path . '/data' . $used . '.json';
-            $this->json = $json;
-            $this->applyJsonFields();
-            return;
-          }
-          // No document in either language. Only trust that as "empty node"
-          // while the index is authoritative — same 3-state rule as
-          // FilesDb::path().
-          if ($this->env->db()->coherent()) {
-            $this->json = new \stdClass;
-            return;
-          }
-        }
-      }
-      catch (\Throwable $e) {
-        // Load-bearing, not decoration: a torn or invalid document makes the
-        // extension throw CORRUPT_JSON, whereas the legacy read below silently
-        // yields an empty object ((object) json_decode('{bad') == new stdClass).
-        // Falling through preserves the historical behaviour exactly.
-      }
-    }
-
-    // Legacy read. Look for a language version. $suffix is '' for both the
-    // neutral constant and an empty language, so this collapses to the neutral
-    // branch instead of stat-ing a 'data_.json' that no writer produces.
-    if ($suffix !== '' && is_file($this->path . '/data' . $suffix . '.json')) {
-      $this->jsonpath = ($this->path . '/data' . $suffix . '.json');
-    } // Look for a language neutral version.
-    elseif (is_file($this->path . '/data.json')) {
-      $this->jsonpath = ($this->path . '/data.json');
-    } // Impossible to load json. Error or empty Node.
-    else {
+    if (empty($this->name) || empty($this->path)) {
       $this->json = new \stdClass;
       return;
     }
 
-    $this->json = (object)json_decode(file_get_contents($this->jsonpath));
+    try {
+      $loaded = $this->env->db()->load($this->name, array(
+        'lang' => $neutral ? NULL : $language,
+        'at' => $this->path,
+        'as' => 'object',
+      ));
+    }
+    catch (\Quanta\Common\FilesDbException $e) {
+      // Load-bearing, not decoration: a torn or invalid document raises
+      // CORRUPT_JSON, and the historical behaviour for one is an EMPTY node
+      // that still gets its json fields applied — which is what sets the
+      // node's status. That is different from a node with no document at all,
+      // where the fields are left untouched, so the two cannot be collapsed.
+      $this->jsonpath = $this->path . '/data' . ($neutral ? '' : '_' . $language) . '.json';
+      $this->json = new \stdClass;
+      $this->applyJsonFields();
+      return;
+    }
+
+    if ($loaded === NULL) {
+      // No document in any language tried. A legal state: the node still
+      // resolves and still has children.
+      $this->json = new \stdClass;
+      return;
+    }
+
+    // Kept for BC: $this->jsonpath is written here and read nowhere else
+    // (saveJSON recomputes its own local $jsonpath). 'lang' is the file that
+    // actually answered, so this names it even when the neutral document
+    // served a translated request.
+    $used = ($loaded['lang'] === '') ? '' : ('_' . $loaded['lang']);
+    $this->jsonpath = $this->path . '/data' . $used . '.json';
+    $this->json = $loaded['json'];
     $this->applyJsonFields();
   }
 
@@ -406,20 +365,11 @@ class Node extends JSONDataContainer implements Cacheable {
    */
   public function hasChildren() {
     // DIR_DIRS is "real subdirectories + symlinked members", which is exactly
-    // what the is_dir() filter in the legacy scan below selected.
-    if ($this->env->db()->resolvesTo($this->getName(), $this->path)) {
-      return !empty($this->env->db()->children($this->getName(), array(
-        'type' => \Quanta\Common\Environment::DIR_DIRS,
-      )));
-    }
-
-    $scan = $this->env->scanDirectory($this->path);
-    foreach ($scan as $dir) {
-      if (is_dir($this->path . '/' . $dir)) {
-        return TRUE;
-      }
-    }
-    return FALSE;
+    // what the is_dir() filter of the scan this replaced selected.
+    return !empty($this->env->db()->children($this->getName(), array(
+      'type' => \Quanta\Common\Environment::DIR_DIRS,
+      'at' => $this->path,
+    )));
   }
   /**
    * Check if the node has been built.
@@ -438,18 +388,12 @@ class Node extends JSONDataContainer implements Cacheable {
    *   TRUE if the node has that child.
    */
   public function hasChild($name) {
-    if (empty($name)) {
-      return FALSE;
-    }
-    // exclude_dirs '' keeps '_'-prefixed children in the answer: is_dir() below
-    // never hid them, and callers ask about names like '_jobs_todo'.
-    if ($this->env->db()->resolvesTo($this->getName(), $this->path)) {
-      return in_array($name, $this->env->db()->children($this->getName(), array(
-        'type' => \Quanta\Common\Environment::DIR_DIRS,
-        'exclude_dirs' => '',
-      )), TRUE);
-    }
-    return is_dir($this->path . '/' . $name);
+    // child(), not children(): '_'-prefixed children stay in the answer (the
+    // is_dir() this replaced never hid them, and callers ask about names like
+    // '_jobs_todo'), and asking about one name is one probe either way, where
+    // listing them all is a full scandir() on the implementation that has to
+    // read the disk.
+    return $this->env->db()->child($this->getName(), $name, array('at' => $this->path));
   }
 
   /**
@@ -509,7 +453,7 @@ class Node extends JSONDataContainer implements Cacheable {
     $this->saveJSON(array('name', 'path', 'exists', 'father', 'data'));
     // Clear the node path cache so it's not cached as missing.
     $this->env->nodePath($this->getName(), FALSE, TRUE);
-    // Cache the new path to avoid expensive findNodePath lookups later
+    // Cache the new path to avoid an expensive docroot search later
     Cache::storeNodePath($this->env, $this->path, true);
     $this->env->hook('node_after_save', $vars);
   }
@@ -612,80 +556,41 @@ class Node extends JSONDataContainer implements Cacheable {
    * Delete this node by adding a __ prefix to the folder.
    */
   public function delete() {
-    // Route through the node database when it can take it: the move happens
-    // under the node's lock and the index learns of it on the ack, rather than
-    // an unlocked `mv` the watcher notices some time later. Both land the node
-    // in the same trashbin root — quanta_db.trashbin_dir is pointed at
-    // $env->dir['trashbin'] — so recovery works the way it always did.
-    if ($this->env->db()->delete($this->getName())) {
-      $vars = array('node' => &$this);
-      $this->env->hook('node_delete', $vars);
+    // The node database owns the move to the trashbin: under the node's lock,
+    // with the index told on the ack, where it can, and an `mv -T` where it
+    // cannot. Both implementations land the node in the same trashbin root —
+    // quanta_db.trashbin_dir is pointed at $env->dir['trashbin'] — so recovery
+    // works the way it always did.
+    try {
+      $deleted = $this->env->db()->delete($this->getName(), array('at' => $this->path));
+    }
+    catch (\Quanta\Common\FilesDbException $e) {
       new Message($this->env,
-        t('User deleted this node: !node.', array('!node' => $this->getName())),
-        \Quanta\Common\Message::MESSAGE_GENERIC,
-        \Quanta\Common\Message::MESSAGE_TYPE_LOG,
-        'node'
+        t('Failed to move the file.'),
+        \Quanta\Common\Message::MESSAGE_WARNING,
+        \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
       );
       return;
     }
 
-     // Define the destination folder path
-     $destinationFolder = $this->env->dir['trashbin'] . '/' . time();
- 
-    // Create the destination folder if it doesn't exist
-    if (!is_dir($destinationFolder)) {
-          // Create the destination folder if it doesn't exist with full permissions (0777)
-        if (!mkdir($destinationFolder, 0777, true)) {
-          // If directory creation fails, show an error and exit
-          $errorMessage = t("Failed to create destination folder.");
-        }
-      }
-
-    // Check if the source file exists before moving
-    elseif(!file_exists($this->path)) {
-      // If the source file doesn't exist, show an error and exit
-      $errorMessage = t("Source file does not exist.");
+    if (!$deleted) {
+      new Message($this->env,
+        t('Source file does not exist.'),
+        \Quanta\Common\Message::MESSAGE_WARNING,
+        \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
+      );
+      return;
     }
 
-    // Move the node to the trashbin folder
-    $sourceFile = $this->path;
-    $destinationFile = $destinationFolder . '/' . basename($this->path);
-    
-
-    // Use exec to execute the shell command
-    $command = "mv \"$sourceFile\" \"$destinationFile\"";
-    exec($command, $output, $return);
-
-      // Check if the move was successful
-      if ($return === 0) {
-        $vars = array('node' => &$this);
-        // Run node delete hooks.
-        $this->env->hook('node_delete', $vars);
-        // Node moved successfully
-        new Message($this->env,
-        t('User deleted this node: !node.', array('!node' => $this->getName())),
-        \Quanta\Common\Message::MESSAGE_GENERIC,
-        \Quanta\Common\Message::MESSAGE_TYPE_LOG,
-        'node'
-        );
-      }
-      else{
-        // Handle the case where the move operation failed
-        $errorMessage = t("Failed to move the file.");
-      }
-   
-    if (isset($errorMessage)) {
-      // Handle error message
-      // TODO: Show the error message
-      new Message($this->env,
-      $errorMessage,
-      \Quanta\Common\Message::MESSAGE_WARNING,
-      \Quanta\Common\Message::MESSAGE_TYPE_SCREEN
+    $vars = array('node' => &$this);
+    // Run node delete hooks.
+    $this->env->hook('node_delete', $vars);
+    new Message($this->env,
+      t('User deleted this node: !node.', array('!node' => $this->getName())),
+      \Quanta\Common\Message::MESSAGE_GENERIC,
+      \Quanta\Common\Message::MESSAGE_TYPE_LOG,
+      'node'
     );
-  }
- 
-    
-   
   }
 
   /**
@@ -1005,51 +910,34 @@ class Node extends JSONDataContainer implements Cacheable {
    *   All the Nodes containing a symlink to the node.
    */
   public function getCategories($node = NULL) {
-    $categories = array();
+    // links() is the containers holding a symlink to this node
+    // (files-db/docs/api-contract.md §9). The $node-scoped call passes 'in' to
+    // limit the sweep to one subtree, which the index cannot express — so that
+    // one always goes to the filesystem, and says so rather than being a
+    // fallback nobody can see.
+    $opts = array('at' => $this->path);
     if ($node != NULL) {
       $catnode = NodeFactory::load($this->env, $node);
-      $root = $catnode->path;
+      $opts['in'] = $catnode->path;
     }
-    else {
-      $root = $this->env->dir['docroot'];
-    }
+    $containers = $this->env->db()->links($this->getName(), $opts);
 
-    // Unscoped, this is exactly links(): the containers holding a symlink to
-    // this node (files-db/docs/api-contract.md §9). The legacy `find -L …
-    // -samefile` below also matches the node's own directory — with -L a
-    // symlink has the target's inode, so the real directory is a hit too and
-    // its parent lands in the result. links() reports only real containers, so
-    // the father is re-added here to keep the answer identical.
+    // links() reports real containers only, never the node's own father, where
+    // the `find -L … -samefile` this replaced also matched the node's own
+    // directory (with -L a symlink carries the target's inode) and so put the
+    // father in the result. Re-added here to keep the answer identical.
     //
-    // The $node-scoped call stays on find: limiting containers to one subtree
-    // is not something links() can express.
-    if ($node == NULL) {
-      $containers = $this->env->db()->links($this->getName());
-      if ($containers !== NULL) {
-        // The parent directory's basename, which is what the legacy
-        // $exp[count($exp) - 2] below extracts from the node's own path. Taken
-        // raw rather than through getFather(), both to avoid building a Node
-        // and because buildFather() rewrites the docroot to 'home' while the
-        // find result does not.
-        $parent = basename(dirname($this->path));
-        if ($parent !== '' && $parent !== '.') {
-          $containers[] = $parent;
-        }
-        foreach (array_unique($containers) as $container) {
-          $categories[] = NodeFactory::load($this->env, $container);
-        }
-        return $categories;
-      }
+    // Taken raw rather than through getFather(), both to avoid building a Node
+    // and because buildFather() rewrites the docroot to 'home' while the find
+    // result did not.
+    $parent = basename(dirname($this->path));
+    if ($parent !== '' && $parent !== '.') {
+      $containers[] = $parent;
     }
 
-    // Run a find command to search for all symlinks refering to this node.
-    $cmd = 'find -L ' . $root . ' -samefile ' . $this->path;
-    exec($cmd, $categories_url);
-
-    // Build the nodes that contain the symlink.
-    foreach ($categories_url as $cat_url) {
-      $exp = explode('/', $cat_url);
-      $categories[] = NodeFactory::load($this->env, $exp[count($exp) - 2]);
+    $categories = array();
+    foreach (array_unique($containers) as $container) {
+      $categories[] = NodeFactory::load($this->env, $container);
     }
     return $categories;
   }
@@ -1084,15 +972,19 @@ class Node extends JSONDataContainer implements Cacheable {
    *   True if the translation exists in that language.
    */
   public function hasTranslation($language) {
-    // NodeFactory::load() asks this for every node it loads, so the stat it
-    // replaces is on the hottest path in the system. meta()['langs'] reports
-    // the neutral document as '', which is never a $language here
-    // (LANGUAGE_NEUTRAL is the string 'language-neutral'), but an empty
-    // argument would collide with it — that stays on the legacy stat.
-    if (!empty($language) && $this->env->db()->resolvesTo($this->getName(), $this->path)) {
-      return in_array($language, $this->env->db()->langs($this->getName()), TRUE);
+    if (empty($language)) {
+      // The neutral document is not a translation. The database names it '',
+      // and hasLang('') would answer about data.json — where this method has
+      // always stat'd 'data_.json', a file no writer produces, and so has
+      // always said no. Kept as a semantic rule rather than a stat that only
+      // ever fails.
+      return FALSE;
     }
-    return is_file($this->path . '/data_' . $language . '.json');
+    // hasLang(), not langs(): NodeFactory::load() asks this for every node it
+    // loads, so it is on the hottest path in the system, and listing every
+    // language to look for one would turn a single is_file() into a glob() on
+    // the implementation that has to read the disk.
+    return $this->env->db()->hasLang($this->getName(), $language, array('at' => $this->path));
   }
 
 }

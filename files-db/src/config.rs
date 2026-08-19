@@ -44,9 +44,16 @@ pub struct Config {
     /// JSON in each record. Off falls every read back to parsing the raw bytes
     /// (via the per-process parse cache) — correct, just slower.
     pub image: bool,
-    /// Documents larger than this are not imaged. The image roughly doubles a
-    /// document's footprint in the segment, and a very large body is dominated
-    /// by moving bytes rather than by parsing, so the trade stops paying.
+    /// Documents larger than this are not imaged.
+    ///
+    /// The original rationale was that the image roughly DOUBLED a document's
+    /// footprint, since the segment carried the raw JSON as well. It no longer
+    /// does: the image is the only copy in shared memory, so imaging a large
+    /// document is now the cheaper option, not the more expensive one, and the
+    /// cap has inverted from a saving into a cliff — an unimaged document has
+    /// nothing in the segment to serve from and every read of it goes to disk.
+    /// The default is therefore high enough that nothing real trips it; the
+    /// setting stays as an escape hatch, not a tuning knob.
     pub image_max_doc: usize,
     /// Point PHP string zvals directly at the mapping instead of copying the
     /// bytes into request memory. Off is the safe, slightly slower path; it is
@@ -144,9 +151,13 @@ pub fn build_with(ini_get: impl Fn(&str) -> Option<String>) -> Result<Config, St
         setting("quanta_db.image", "QUANTA_DB_IMAGE").as_deref(),
         Some("off" | "0" | "false" | "no")
     );
+    // 64 MB, not the old 256 KB: see the field's doc comment. With the raw
+    // bytes gone from the segment, an unimaged document is served from disk on
+    // every read, so the cap must sit above anything a real document reaches
+    // rather than at the point where storing both copies stopped paying.
     let image_max_doc = setting("quanta_db.image_max_doc_kb", "QUANTA_DB_IMAGE_MAX_DOC_KB")
         .and_then(|s| s.parse::<usize>().ok())
-        .unwrap_or(256)
+        .unwrap_or(64 * 1024)
         .saturating_mul(1024);
     let zero_copy = !matches!(
         setting("quanta_db.zero_copy", "QUANTA_DB_ZERO_COPY").as_deref(),
