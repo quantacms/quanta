@@ -2,9 +2,14 @@
 # Everything here is either rebuilt during the image build (vendor, the Rust
 # target dir) or irrelevant at runtime — keeping it out speeds up the context
 # upload and prevents stale artifacts leaking into the image.
+#
+# The image's `COPY . /var/www/quanta/` puts whatever survives this file under
+# the document root, so an exclusion here is also an exclusion from the web
+# root: anything that is not application code has no business being there.
 
 .git
 .githooks
+.github
 .idea
 .idea*
 *.swp
@@ -29,3 +34,21 @@ files-db/target
 files-db/demo
 files-db/tests/bench
 files-db/.gitignore
+
+# Development, CI and build material. None of it is read at runtime, and all of
+# it would otherwise sit inside the document root. quanta-nginx.conf belongs to
+# a native (non-container) install — the image's vhost is docker/nginx/ — and
+# .conf is not among the extensions deny-dev-files.conf blocks.
+docs
+tests
+.phpcs.xml
+package.json
+contacts.csv
+quanta-nginx.conf
+Dockerfile
+.dockerignore
+
+# A Stripe test key, unreferenced by any code in this repo. Whatever it is for,
+# a credentials file under the document root is not it — a site that needs one
+# gets it from its .env (see docker-entrypoint.sh).
+secrets.php
