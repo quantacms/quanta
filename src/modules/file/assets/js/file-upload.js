@@ -38,9 +38,16 @@ $(function () {
       hasMultipleAttribute = fileInputElement.hasAttribute('multiple');
       
       var file = data.files[0];
-      // Check if file size is more than 12 MB (12 * 1024 * 1024 bytes)
-      if (file.size > 12 * 1024 * 1024) {
-        $('#max-resolution-error-message').show();
+      // Check max_file_size attribute (or default 12 MB)
+      var maxFileSizeAttr = fileInputElement ? fileInputElement.getAttribute('data-max_file_size') : null;
+      var maxSizeBytes = maxFileSizeAttr ? parseInt(maxFileSizeAttr, 10) : (400 * 1024);
+      if (file.size > maxSizeBytes) {
+        if ($('#max-size-error-message').length) {
+          $('#max-size-error-message').show();
+        } else {
+          var maxSizeKb = Math.round(maxSizeBytes / 1024);
+          alert('Il file supera la dimensione massima consentita di ' + (maxSizeKb >= 1024 ? (maxSizeKb / 1024) + ' MB' : maxSizeKb + ' KB') + '.');
+        }
         return;
       }
       var minResolutionAttr = fileInputElement.getAttribute('data-min_resolution');

@@ -19,7 +19,7 @@ class ResolutionMessage extends HtmlTag {
                 $this->html_body .= "[TEXT|tag=min:minima]:" . $min_resolution;
             }
             if (!empty($max_resolution)) {
-                $this->html_body .= "[TEXT|tag=max:massimo]:" . $max_resolution;
+                $this->html_body .= " [TEXT|tag=max:massimo]:" . $max_resolution;
 
             }
              $this->html_body .= " pixel";
