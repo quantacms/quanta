@@ -51,22 +51,28 @@ class Job extends Node {
       return true;
     }
 
-    // quanta_db extension: move under the node's lock, with every inbound
-    // symlink re-pointed (files-db/docs/api-contract.md §9). A bare `mv` leaves
-    // each container membership of the job dangling, and the index does not
-    // learn of the move until the watcher notices. The destination is checked
-    // to be a plain rename into a new father — that is all the call sites do —
-    // and an occupied destination was already handled above, so the contract's
-    // default if_exists => 'error' cannot fire here.
-    if ($env !== NULL && !empty($name)
-        && basename($destinationFile) === $name
-        && $env->db()->resolvesTo($name, $sourceFile)) {
-      $moved = $env->db()->move($name, basename(dirname($destinationFile)));
-      if ($moved) {
-        return true;
+    // The node database's move: under the node's lock and with every inbound
+    // symlink re-pointed where an index is serving (a bare `mv` leaves each
+    // container membership of the job dangling), and an `mv -T` where one is
+    // not. The destination is checked to be a plain rename into a new father —
+    // that is all the call sites do — and an occupied destination was already
+    // handled above, so the default if_exists => 'error' cannot fire here.
+    if ($env !== NULL && !empty($name) && basename($destinationFile) === $name) {
+      try {
+        if ($env->db()->move($name, basename(dirname($destinationFile)), array('at' => $sourceFile))) {
+          return true;
+        }
+      }
+      catch (\Quanta\Common\FilesDbException $e) {
+        // A losing racer: the winner moved the job out from under this one, so
+        // the destination filled or the source vanished between the checks
+        // above and the move. Both are success for this caller.
+        return !is_dir($sourceFile) || is_dir($destinationFile);
       }
     }
 
+    // No $env (the cron entry points call it that way), or a name that is not
+    // the destination's basename, which is not a plain rename.
     // -T treats destination as exact name, not parent directory (prevents nesting).
     exec("mv -T " . escapeshellarg($sourceFile) . " " . escapeshellarg($destinationFile) . " 2>/dev/null", $output, $return);
     // Success, or source is gone (another worker won the race).

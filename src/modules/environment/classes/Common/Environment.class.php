@@ -37,9 +37,18 @@ class Environment extends DataContainer {
   /**
    * The node database.
    *
-   * Every access to the file-based node tree that could go through the
-   * quanta_db extension goes through here, so the choice between the
-   * extension and the legacy filesystem code is made in exactly one place.
+   * Every access to the file-based node tree goes through here, and this is
+   * the one place that knows there are two implementations of it: FilesDbExt
+   * when the quanta_db extension is loaded, FilesDb — the filesystem, and a
+   * complete implementation on its own — when it is not. Both answer every
+   * method, so no caller branches on which one it got.
+   *
+   * The choice is NOT made by the autoloader, deliberately. The class map is
+   * rebuilt only when the file is missing (boot.php), so a map baked while the
+   * extension was loaded would keep naming the wrong class after it was turned
+   * off, with nothing to invalidate it; and mapClasses() keys the map by
+   * filename, which two files declaring one class name cannot share. This is
+   * one `if` in the method that is already the single entry point.
    *
    * @return FilesDb
    *   The accessor for this Environment.
@@ -47,12 +56,23 @@ class Environment extends DataContainer {
   public function db() {
     if ($this->files_db === NULL) {
       // The autoloader reads a class map that is only rebuilt when it is
-      // missing (boot.php), so a deploy that adds this class to an existing
-      // site would not find it until the cache is cleared. Load it directly.
+      // missing (boot.php), so a deploy that adds these classes to an existing
+      // site would not find them until the cache is cleared. Load directly.
       if (!class_exists('\Quanta\Common\FilesDb', FALSE)) {
         require_once __DIR__ . '/FilesDb.class.php';
       }
-      $this->files_db = new FilesDb($this);
+      // No autoload for QuantaDb: an extension registers its classes at
+      // startup, so if it is not here already it is not coming — and asking the
+      // autoloader for a class with no namespace is what made it warn.
+      if (class_exists('QuantaDb', FALSE)) {
+        if (!class_exists('\Quanta\Common\FilesDbExt', FALSE)) {
+          require_once __DIR__ . '/FilesDbExt.class.php';
+        }
+        $this->files_db = new FilesDbExt($this);
+      }
+      else {
+        $this->files_db = new FilesDb($this);
+      }
     }
     return $this->files_db;
   }
@@ -396,18 +416,19 @@ class Environment extends DataContainer {
   }
 
   /**
-   * List a NODE's children, by name, preferring the index over a scan.
+   * List a NODE's children, by name.
    *
    * scanDirectory() takes a path and reads the filesystem. When the caller
-   * knows the node NAME that path belongs to, the same question can be put to
-   * the node database instead — db()->children() answers it from the index and
-   * degrades to this very scan when it cannot (see FilesDb::children() for
-   * which attribute combinations are expressible).
+   * knows the node NAME that path belongs to, the same question goes to the
+   * node database instead, which answers it from the index when it can and
+   * from this very scan when it cannot (see FilesDbExt::children() for which
+   * attribute combinations are expressible).
    *
-   * The name must be checked against the path first: names are the index's
-   * key, but a caller can hold a path that was never resolved from one
+   * 'at' carries the path in with the name. Names are the database's key, but
+   * a caller can hold a path that was never resolved from one
    * (NodeFactory::loadFromRealPath), and must not be told about a different
-   * directory that happens to share the basename.
+   * directory that happens to share the basename — 'at' is what settles that,
+   * inside the probe rather than in a resolvesTo() call in front of it.
    *
    * @param string $path
    *   The directory to list.
@@ -420,14 +441,14 @@ class Environment extends DataContainer {
    *   Child names.
    */
   public function scanNodeDirectory($path, $name, $attributes = array()) {
-    if (!empty($name) && $this->db()->resolvesTo($name, $path)) {
-      return $this->db()->children($name, $attributes);
+    if (empty($name)) {
+      // array_values(): scanDirectory() leaves holes in the keys where it
+      // unset() entries, while children() returns a list. Both paths out of
+      // this method must be the same shape or a caller's ===, [0] or
+      // json_encode() would depend on which one answered.
+      return array_values($this->scanDirectory($path, $attributes));
     }
-    // array_values(): scanDirectory() leaves holes in the keys where it
-    // unset() entries, while children() returns a list. Both paths out of this
-    // method must be the same shape or a caller's ===, [0] or json_encode()
-    // would depend on which one answered. See FilesDb::children().
-    return array_values($this->scanDirectory($path, $attributes));
+    return $this->db()->children($name, $attributes + array('at' => $path));
   }
 
   /**
@@ -626,16 +647,10 @@ class Environment extends DataContainer {
 
     $i = 0;
     while (TRUE) {
-      // db()->exists() is the same question the Node below answers, minus
-      // building a Node — which resolves the path, reads the document and runs
-      // the node_open hooks just to look at ->exists. It is 3-state: TRUE/FALSE
-      // when the index is authoritative, NULL when it cannot say, and only the
-      // NULL case pays for the Node.
+      // db()->exists() is the same question a Node would answer, minus building
+      // one — which resolves the path, reads the document and runs the
+      // node_open hooks just to look at ->exists.
       $exists = $this->db()->exists($candidate_path);
-      if ($exists === NULL) {
-        $node = new Node($this, $candidate_path);
-        $exists = $node->exists;
-      }
       // If the candidate path already exists, add a progressive number
       // to it until it's free.
       if (!$exists) {
@@ -673,208 +688,33 @@ class Environment extends DataContainer {
   }
 
   /**
-   * Helper function to retrieve the system path of a node (folder).
-   *
-   * @param string $folder
-   *   The folder name (node name) to retrieve.
-   *
-   * @return mixed $results
-   *   The result of the node search.
-   */
-  private function findNodePath($folder) {
-    // TODO: cleaner way to exclude folders in _modules.
-    $findcmd = 'find ' . $this->dir['docroot'] . '/ -type d -name "' . $folder . '" -not -path */_modules* -not -path *.git*';
-    // TODO: sometimes getting empty folder. Why? Temporary fix.
-    if (empty($folder)) {
-      return NULL;
-    }
-    exec($findcmd, $results);
-    return $results;
-  }
-
-  function getLastPathSegment($path) {
-    // Regular expression to match the last valid part of a URL path excluding files
-    $pattern = '/([^\/\?#]*[^\/\?#\.][^\/\?#]*|[^\/\?#]+)(?:[\?#]|$)/';
-
-    if ($path == NULL) {
-      return NULL;
-    }
-    // Perform the regex match
-    if (preg_match($pattern, $path, $matches)) {
-      return $matches[1];
-    } else {
-      return null;
-    }
-  }
-
-  /**
    * Returns the system path of a node (folder).
    *
-   * @param $folder
+   * A thin wrapper over the node database's resolver, which owns the four
+   * layers this method used to carry inline — the per-request memo, the
+   * tmp/cache shard symlink, the derived index and exec(find). They moved to
+   * FilesDb::path() so that the resolver is one implementation with one
+   * fallback order instead of a caller and a callee each holding half of it,
+   * calling each other. This stays because two dozen call sites say nodePath().
+   *
+   * @param string $folder
    *   The folder (node) to search.
    * @param bool $link
    *   Search also symlinks if true.
-   *
-   * @return mixed
-   *   The path of the node.
-   */
-  public function nodePath($folder, $link = FALSE, $clear_cache = FALSE) {
-    static $node_paths = array();
-    static $missing_nodes = array();
-
-    if ($clear_cache) {
-      if ($folder) {
-        unset($missing_nodes[$folder], $node_paths[$folder]);
-      } else {
-        $missing_nodes = $node_paths = array();
-      }
-      return NULL;
-    }
-    
-    // Regular expression to match the last valid part of a URL path
-    $pattern = '/(?:.*\/)?([^\/\?#\.]+)(?:\/[^\/\?#]*)?(?:[\?#]|$)/';
-    //$pattern = '/(?:\/([^\/\?#]*[^\/\?#\.][^\/\?#]*))(?:[\?#]|$)/';
-    $cache_exists = FALSE;
-    // Perform the regex match
-    $folder = $this->getLastPathSegment($folder);
-
-    if ($folder == NULL) {
-      return NULL;
-    }
-
-    // A name starting with '-' is always a caller bug: it is "$x . '-suffix'"
-    // with $x empty. No node can be named that way, but the lookup below still
-    // pays for it — profiling a single cold page render found 67 of 168
-    // findNodePath() calls were misses like this ('-description', '-shifts'),
-    // about 2.1s of a 5.5s request, since exec(find) walks the whole docroot
-    // whether or not it matches. Refuse them here, for every caller at once.
-    if (substr($folder, 0, 1) == '-') {
-      return FALSE;
-    }
-
-    // If we already searched for this node in the current request and didn't find it, don't search again.
-    if (isset($missing_nodes[$folder])) {
-      return FALSE;
-    }
-    
-    // We use a static variable to lookup nodes paths only once.
-    if (isset($node_paths[$folder])) {
-      $node_path_link = $node_paths[$folder];
-      $cache_exists = TRUE;
-      //return $node_paths[$folder];
-    } else {
-      // build=FALSE: this is the read side, so just compute the shard path and
-      // stat the symlink. Creating the tmp/cache/a/b/c dirs here would run
-      // is_dir/mkdir on every lookup (this method tops the profiler); the dirs
-      // are created lazily by storeNodePath() below when a path is actually cached.
-      $node_path_link = Cache::getStoredNodePath($this, $folder, FALSE);
-    }
-
-    //print '<br>' . $folder . ': ' . $node_path_link;
-    // Remember what the shard symlink already points at, so we can avoid
-    // rewriting it below when it is already correct (the common warm case).
-    $stored_target = @readlink($node_path_link);
-    $node_path = $stored_target;
-
-    if ($node_path === '__MISSING__') {
-      $missing_nodes[$folder] = TRUE;
-      return FALSE;
-    }
-
-    if ($node_path !== false && !is_dir($node_path)) {
-      $node_path = false;
-    }
-
-    // quanta_db extension (files-db/docs/api-contract.md §9): resolve cold
-    // names via the derived index instead of exec(find). The result feeds
-    // the same static + symlink caches below. $link searches (their callers
-    // readlink() the result) use the legacy find. db()->path() is
-    // 3-state: a path string (found); FALSE (the watcher-backed index is
-    // authoritative and the node truly does not exist — skip the legacy find);
-    // or NULL (extension absent/unsure — fall through to the legacy find).
-    if ($node_path == false && !$link) {
-      $qdb = $this->db()->path($folder);
-      if (is_string($qdb)) {
-        $node_path = $qdb;
-      }
-      elseif ($qdb === FALSE) {
-        $missing_nodes[$folder] = TRUE;
-        return FALSE;
-      }
-    }
-
-    if ($node_path == false) {
-      //print "NOT FOUND";
-      // Use find to locate the node's directory in the file system.
-      // TODO: run a sanity check that there is only one folder or throw error instead?
-      $results = $this->findNodePath($folder);
-      $found_folders = array();
-
-      if (empty($results)) {
-        $missing_nodes[$folder] = TRUE;
-        $node_paths[$folder] = Cache::storeNodePath($this, '__MISSING__', true, $folder);
-        return FALSE;
-      }
-      // Check that there are not duplicate folders. Don't count symlinks.
-      foreach ($results as $i => $res) {
-        if (is_dir($results[$i]) && ($link ? true : !is_link($results[$i]))) {
-          $found_folders[] = $results[$i];
-          $node_path = $results[$i];
-        } else {
-          unset($results[$i]);
-        }
-      }
-      
-      if (empty($found_folders)) {
-        $missing_nodes[$folder] = TRUE;
-        $node_paths[$folder] = Cache::storeNodePath($this, '__MISSING__', true, $folder);
-        return FALSE;
-      }
-
-      if (count($found_folders) > 1) {
-        new Message($this,
-          t('Warning: there is more than one folder named !folder: <br/>!folds<br>Check integrity!',
-            array(
-              '!folder' => $folder,
-              '!folds' => var_export($found_folders, 1),
-            )
-          ));
-      }
-    }
-
-    // Only (re)write the shard symlink when what's on disk isn't already
-    // pointing at $node_path. On a warm request the symlink almost always
-    // exists and is correct, so the old unconditional unlink+symlink (one per
-    // node, every request) was pure waste — it put storeNodePath at the top of
-    // the profiler. The stale case ($stored_target pointed at a now-deleted dir,
-    // so it was reset to false above and re-resolved) still rewrites correctly.
-    if ($stored_target !== $node_path) {
-      $node_path_link = Cache::storeNodePath($this, $node_path, true, $folder);
-    }
-    $node_paths[$folder] = $node_path_link;
-    return $node_path;
-
-    }
-
-  /**
-   * Resolve a node name through the node database.
-   *
-   * Call sites that already hold a container's $path use this to check that the
-   * globally-unique node NAME really resolves to that folder before trusting
-   * the extension for it — a Node can be constructed with an explicit path
-   * (NodeFactory::loadFromRealPath / fastLoadFromRealPath). Going through here
-   * rather than calling \QuantaDb::path() directly keeps the sites/<alias>
-   * docroot rewrite in one place; comparing against a raw extension path would
-   * spuriously miss on alias hosts.
-   *
-   * @param string $name
-   *   The node name.
+   * @param bool $clear_cache
+   *   Drop $folder from the per-request memo (all of it when $folder is empty)
+   *   and return. Callers do this after a write that can have moved the node.
    *
    * @return string|false|null
-   *   Path, FALSE (definitively absent), or NULL (unsure — use the legacy path).
+   *   The path of the node; FALSE when it does not exist; NULL on a cache
+   *   clear, which returns no path because it was asked for none.
    */
-  public function quantaDbPathFor($name) {
-    return $this->db()->path($name);
+  public function nodePath($folder, $link = FALSE, $clear_cache = FALSE) {
+    if ($clear_cache) {
+      $this->db()->forget($folder);
+      return NULL;
+    }
+    return $this->db()->path($folder, array('link' => $link));
   }
 
   /**

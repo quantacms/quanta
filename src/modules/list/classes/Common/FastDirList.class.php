@@ -15,7 +15,7 @@ class FastDirList extends DirList {
   /**
    * Override the constructor to bypass NodeFactory::load() for the parent node.
    * The parent ListObject constructor calls NodeFactory::load() which triggers
-   * nodePath() -> findNodePath() -> exec('find ...') for uncached nodes.
+   * nodePath() -> db()->path() -> exec('find ...') for uncached nodes.
    * With many list items (e.g. hundreds of booking status folders), this causes
    * hundreds of sequential shell 'find' commands, each taking seconds.
    */
@@ -103,13 +103,15 @@ class FastDirList extends DirList {
       }
     }
 
-    // 1.5. quanta_db extension (files-db/docs/api-contract.md §9): resolve cold
-    // names via the derived index — authoritative and O(1), replacing the
-    // prefix-walk heuristic below (which only works for parent-prefixed names).
-    $ext_path = $this->quantaDbPath($name);
-    if ($ext_path !== NULL && is_dir($ext_path)) {
-      Cache::storeNodePath($this->env, $ext_path);
-      return $ext_path;
+    // 1.5. The node database, cheap layers only: 'search' => FALSE stops it
+    // before the exec(find) it would otherwise end with, because avoiding that
+    // find is what this whole class is for. Where an index is serving, this
+    // resolves any cold name in one probe and the prefix-walk heuristic below
+    // (which only works for parent-prefixed names) never runs.
+    $db_path = $this->env->db()->path($name, array('search' => FALSE));
+    if ($db_path !== FALSE && is_dir($db_path)) {
+      Cache::storeNodePath($this->env, $db_path);
+      return $db_path;
     }
 
     // 2. Try to find the directory by walking the known directory tree structure.
@@ -142,24 +144,6 @@ class FastDirList extends DirList {
     }
 
     return false;
-  }
-
-  /**
-   * Resolve a node name through the node database. Returns NULL when it has
-   * no path to offer — the extension is absent, errored, or does not know the
-   * name — and the caller then falls back to the legacy tree-walk.
-   *
-   * @param string $name
-   *   The node (folder) name.
-   *
-   * @return string|null
-   *   The node path under the current host's docroot, or NULL.
-   */
-  private function quantaDbPath($name) {
-    $path = $this->env->db()->path($name);
-    // A definitive absence (FALSE) is as useless to this caller as "unsure":
-    // either way it has nothing to return but the legacy walk's answer.
-    return is_string($path) ? $path : NULL;
   }
 
   /**

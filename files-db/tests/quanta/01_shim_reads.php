@@ -1,10 +1,15 @@
 <?php
 /**
- * FilesDb (the $env->db() shim) read surface.
+ * The $env->db() read surface.
  *
- * Every method here must return the same value with the extension serving it
- * and with the shim on its legacy body. The nodes are seeded the legacy way
- * (mkdir + file_put_contents), so this also covers the index self-heal.
+ * Every method here must return the same value whichever implementation
+ * answers — FilesDbExt off the index, FilesDb off the filesystem. There is no
+ * longer a "cannot answer" return to assert instead, so almost nothing in this
+ * file is guarded by mode any more; the exceptions are the ok_ext()
+ * discriminators, which prove the extension really was the one that replied.
+ *
+ * The nodes are seeded the legacy way (mkdir + file_put_contents), so this also
+ * covers the index self-heal.
  */
 require __DIR__ . '/_bootstrap.php';
 
@@ -34,14 +39,14 @@ if (qdb_daemon_mode()) {
 
 // ── path / exists / resolvesTo ───────────────────────────────────────────────
 $acme_path = "$db/home/businesses/acme";
-$p = $fdb->path('acme');
-ok($p === FALSE || $p === NULL || realpath((string) $p) === realpath($acme_path),
-    'path() agrees with the real location when it answers');
-ok_ext(fn() => realpath((string) $fdb->path('acme')) === realpath($acme_path),
-    'path() resolves a legacy-seeded node (index self-heal)');
+eq(realpath((string) $fdb->path('acme')), realpath($acme_path),
+    'path() resolves a legacy-seeded node in every mode (index self-heal)');
+eq($fdb->path('no-such-node'), FALSE, 'path() on a missing node is FALSE, never NULL');
+eq($fdb->exists('acme'), TRUE, 'exists() is TRUE');
+eq($fdb->exists('no-such-node'), FALSE, 'exists() is FALSE, never NULL');
 
-eq($fdb->resolvesTo('acme', $acme_path), qdb_ext(),
-    'resolvesTo() is TRUE exactly when the extension can confirm the path');
+eq($fdb->resolvesTo('acme', $acme_path), TRUE,
+    'resolvesTo() confirms the path in every mode');
 eq($fdb->resolvesTo('acme', "$db/home/cats"), FALSE,
     'resolvesTo() rejects a name that lives somewhere else');
 eq($fdb->resolvesTo('', $acme_path), FALSE, 'resolvesTo() rejects an empty name');
@@ -85,6 +90,23 @@ eq($langs, array('', 'it'), "langs() lists the neutral document as '' plus trans
 eq($fdb->langs('beta'), array(''), 'langs() on a neutral-only node');
 eq($fdb->langs('no-such-node'), array(), 'langs() on a missing node is empty');
 
+// ── hasLang: one probe for one language, not a list ──────────────────────────
+eq($fdb->hasLang('acme', 'it'), TRUE, 'hasLang() finds a translation');
+eq($fdb->hasLang('acme', 'de'), FALSE, 'hasLang() on a language with no document');
+eq($fdb->hasLang('acme', ''), TRUE, "hasLang('') asks about the neutral document");
+eq($fdb->hasLang('no-such-node', 'it'), FALSE, 'hasLang() on a missing node is FALSE');
+
+// ── at: the caller already holds the directory ───────────────────────────────
+$at = array('at' => $acme_path);
+eq($fdb->data('acme', NULL, $at), $fdb->data('acme'), "data() with 'at' agrees");
+eq($fdb->langs('acme', $at), $fdb->langs('acme'), "langs() with 'at' agrees");
+eq($fdb->hasLang('acme', 'it', $at), TRUE, "hasLang() with 'at' agrees");
+// A name that does not live at 'at' is answered ABOUT 'at', never about
+// wherever the name resolves — this is what NodeFactory::loadFromRealPath
+// needs and what the old resolvesTo() guards were protecting.
+eq($fdb->langs('acme', array('at' => "$db/home/businesses/beta")), array(''),
+    "'at' wins over the name when the two disagree");
+
 // ── children ─────────────────────────────────────────────────────────────────
 // Both branches of FilesDb::children() are exercised: DIR_DIRS is expressible
 // against the index, DIR_ALL is not and always takes the scan.
@@ -116,35 +138,111 @@ eq($fdb->children('cats', array(
 eq($fdb->children('cats', array('symlinks' => 'no')), array('data.json'),
     'children(symlinks=no) with no type keeps returning plain files');
 
-eq_ext(fn() => $fdb->links('acme'), array('cats'), 'links() names the containers');
-eq($fdb->links('acme'), qdb_ext() ? array('cats') : NULL,
-    'links() is NULL when the extension cannot answer (never a wrong empty list)');
+eq($fdb->links('acme'), array('cats'), 'links() names the containers, in every mode');
+eq($fdb->links('beta'), array(), 'links() on an unlinked node is empty, never NULL');
+eq($fdb->links('acme', array('in' => "$db/home/cats")), array('cats'),
+    "links(in:) scopes the sweep — not expressible against the index, so this "
+    . 'always takes the filesystem sweep');
+
+// ── child: one probe for one name, not a list ────────────────────────────────
+eq($fdb->child('businesses', 'acme'), TRUE, 'child() finds a child');
+eq($fdb->child('businesses', '_hidden'), TRUE, "child() sees '_'-prefixed names");
+eq($fdb->child('businesses', 'nope'), FALSE, 'child() on a missing child is FALSE');
+eq($fdb->child('acme', 'data.json'), FALSE, 'child() is about nodes, not files');
 
 // ── meta ─────────────────────────────────────────────────────────────────────
+// 'generation' and 'containers' are extension-only: a generation counter
+// belongs to an index, and containers would cost an exec(find) per node on the
+// filesystem — ruinous for sitemap.hook.inc, which asks this per page. The keys
+// below are the ones both implementations produce.
 $meta = $fdb->meta('acme');
-if (qdb_ext()) {
-    eq($meta['father'], 'businesses', 'meta().father');
-    ok(realpath($meta['path']) === realpath($acme_path), 'meta().path');
-    ok(is_int($meta['mtime']) && $meta['mtime'] > 0, 'meta().mtime is set');
-    $mlangs = $meta['langs'];
-    sort($mlangs);
-    eq($mlangs, array('', 'it'), 'meta().langs');
-} else {
-    eq($meta, NULL, 'meta() is NULL without the extension');
-}
+eq($meta['father'], 'businesses', 'meta().father');
+ok(realpath($meta['path']) === realpath($acme_path), 'meta().path');
+ok(is_int($meta['mtime']) && $meta['mtime'] > 0, 'meta().mtime is set');
+$mlangs = $meta['langs'];
+sort($mlangs);
+eq($mlangs, array('', 'it'), 'meta().langs');
+eq($fdb->meta('no-such-node'), NULL, 'meta() on a missing node is NULL');
 
-// ── find / count are extension-only, and say so rather than answering wrong ──
-eq_ext(fn() => $fdb->find(array('father' => 'businesses', 'where' => array('status' => 'active'))),
+// ── find / count ─────────────────────────────────────────────────────────────
+eq($fdb->find(array('father' => 'businesses', 'where' => array('status' => 'active'))),
     array('acme'), 'find() filters on the document');
-// 3, not 2: find()/count() do not hide '_'-prefixed names — only children()
-// applies Quanta's DIR_INACTIVE convention (files-db/docs/usage.md §6).
-eq_ext(fn() => $fdb->count(array('father' => 'businesses')), 3,
+eq($fdb->find(array('father' => 'businesses', 'where' => array('status' => 'nope'))),
+    array(), 'a find() that matches nothing is an empty list, never NULL');
+eq($fdb->find(array('father' => 'businesses', 'where' => array('owner.country' => 'IT'))),
+    array('acme'), 'find() filters on a dot path');
+eq($fdb->find(array('in' => 'cats')), array('acme'), 'find() by container membership');
+$named = $fdb->find(array('father' => 'businesses'), array('return' => 'names'));
+sort($named);
+eq($named, array('_hidden', 'acme', 'beta'),
+    "find() does not hide '_'-prefixed names — only children() applies Quanta's "
+    . 'DIR_INACTIVE convention (files-db/docs/usage.md §6)');
+eq($fdb->find(array('father' => 'businesses'), array('return' => 'data'))['acme']['title'],
+    'Acme', "return => 'data' maps name to document");
+// 3, not 2: same rule as above.
+eq($fdb->count(array('father' => 'businesses')), 3,
     "count() counts the match set, '_' names included");
-if (!qdb_ext()) {
-    eq($fdb->find(array('father' => 'businesses')), NULL,
-        'find() returns NULL (not an empty list) without the extension');
-    eq($fdb->count(array('father' => 'businesses')), NULL,
-        'count() returns NULL without the extension');
-}
+
+// ── where: equality, exactly as the contract defines it ──────────────────────
+// The same corpus and the same expectations as the extension's own conformance
+// suite (files-db/tests/php/_read_cases.php, assert_where_contract) — run here
+// through $env->db(), so the filesystem implementation has to reproduce
+// json_eq()'s semantics rather than approximate them with PHP's ==.
+seed($db, 'home/w-box', array('title' => 'Where box'));
+seed($db, 'home/w-box/w-1', array(
+    'status' => 'paid', 'amount' => 10, 'rate' => 1.5,
+    'flag' => TRUE, 'opt' => NULL, 'note' => "caff\u{e8} \u{1f600}",
+    'customer' => array('country' => 'IT'), 'tags' => array('a', 'b'),
+));
+seed($db, 'home/w-box/w-2', array(
+    'status' => 'unpaid', 'amount' => 20, 'rate' => 2.0,
+    'flag' => FALSE, 'opt' => 'set', 'note' => 'plain',
+    'customer' => array('country' => 'DE'), 'tags' => array('b', 'a'),
+));
+// No 'opt', no 'customer': a missing key must never match, not even null.
+seed($db, 'home/w-box/w-3', array('status' => 'paid', 'amount' => 10));
+
+$where = function (array $w) use ($fdb) {
+    return $fdb->find(array('father' => 'w-box', 'where' => $w));
+};
+
+eq($where(array('status' => 'paid')), array('w-1', 'w-3'), 'where: string');
+eq($where(array('amount' => 10)), array('w-1', 'w-3'), 'where: int');
+eq($where(array('amount' => 10.0)), array('w-1', 'w-3'), 'where: float matches int');
+eq($where(array('rate' => 1.5)), array('w-1'), 'where: float');
+eq($where(array('rate' => 2)), array('w-2'), 'where: int matches a whole float');
+eq($where(array('flag' => TRUE)), array('w-1'), 'where: true');
+eq($where(array('flag' => FALSE)), array('w-2'), 'where: false');
+eq($where(array('opt' => NULL)), array('w-1'), 'where: null matches null');
+eq($where(array('note' => "caff\u{e8} \u{1f600}")), array('w-1'), 'where: multibyte string');
+eq($where(array('customer.country' => 'IT')), array('w-1'), 'where: dot path');
+eq($where(array('tags.0' => 'a')), array('w-1'), 'where: list index');
+eq($where(array('tags.1' => 'a')), array('w-2'), 'where: second list index');
+eq($where(array('status' => 'paid', 'customer.country' => 'IT')), array('w-1'),
+    'where: predicates are AND-ed');
+
+// Everything that must NOT match — where a hand-rolled comparison usually
+// drifts away from json_decode's.
+eq($where(array('amount' => '10')), array(), 'where: a string does not equal a number');
+eq($where(array('status' => TRUE)), array(), 'where: a bool does not equal a string');
+eq($where(array('flag' => 1)), array(), 'where: 1 does not equal true');
+eq($where(array('opt' => NULL, 'status' => 'unpaid')), array(), 'where: AND with a null miss');
+eq($where(array('missing' => NULL)), array(), 'where: a missing key never matches null');
+eq($where(array('customer' => 'IT')), array(), 'where: an object never equals a scalar');
+eq($where(array('tags' => 'a')), array(), 'where: a list never equals a scalar');
+eq($where(array('status.deeper' => 'x')), array(), 'where: a path through a scalar');
+eq($where(array('tags.9' => 'a')), array(), 'where: list index out of range');
+eq($where(array('tags.x' => 'a')), array(), 'where: non-numeric index into a list');
+eq($where(array('customer.0' => 'IT')), array(), 'where: numeric key into an object');
+
+// Ordering and shaping must not move the result set.
+eq($fdb->find(array('father' => 'w-box', 'where' => array('status' => 'paid')),
+    array('order_by' => 'json:amount', 'order' => 'desc')),
+    array('w-3', 'w-1'), 'where + order_by json (ties break on name)');
+eq($fdb->find(array('father' => 'w-box', 'where' => array('status' => 'paid')),
+    array('order_by' => 'mtime', 'limit' => 1, 'offset' => 1)),
+    array('w-3'), 'where + order_by mtime + limit/offset');
+eq($fdb->count(array('father' => 'w-box', 'where' => array('status' => 'paid'))), 2,
+    'count where');
 
 finish();

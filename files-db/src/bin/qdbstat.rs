@@ -24,6 +24,11 @@
 mod metrics;
 #[path = "../paths.rs"]
 mod paths;
+// shm.rs builds the segment-wide string table out of ready-made `zend_string`s
+// (v3), so it needs php_abi. That module is PHP-free by design — it only
+// encodes the layout — so pulling it in here costs qdbstat nothing.
+#[path = "../php_abi.rs"]
+mod php_abi;
 #[path = "../shm.rs"]
 mod shm;
 
@@ -135,6 +140,9 @@ struct SegStats {
     dead_bytes: u64,
     seg_size: u64,
     tombstones: u64,
+    str_bytes: u64,
+    str_count: u64,
+    raw_bytes: u64,
 }
 
 fn seg_stats(dir: &Path, epoch: u64) -> SegStats {
@@ -156,6 +164,9 @@ fn seg_stats(dir: &Path, epoch: u64) -> SegStats {
                 dead_bytes: h.dead_bytes.load(Relaxed),
                 seg_size: h.seg_size,
                 tombstones: h.tombstone_count.load(Relaxed),
+                str_bytes: h.str_bytes.load(Relaxed),
+                str_count: h.str_count.load(Relaxed),
+                raw_bytes: h.raw_bytes.load(Relaxed),
             }
         }
         Err(_) => SegStats::default(),
@@ -541,6 +552,46 @@ fn render(
                 paint(col, C_YELLOW, "none — reads fall back to parsing raw JSON").to_string()
             },
         );
+        // The segment-wide string table (layout v3). Its value is the ratio:
+        // one entry serves every document that uses the string, where the
+        // per-document tables it replaced re-emitted a `zend_string` for every
+        // repeated key in every node. A count close to the node count means
+        // the tree's documents share almost nothing and the table is not
+        // earning its keep; far below it is the expected, healthy shape.
+        if seg.str_count > 0 {
+            row(
+                &mut o,
+                "strings",
+                &format!(
+                    "{}  shared ({} entries, ~{}/entry)",
+                    human_bytes(seg.str_bytes),
+                    thousands(seg.str_count),
+                    human_bytes(seg.str_bytes / seg.str_count.max(1)),
+                ),
+            );
+        }
+        // Raw JSON resident in the segment. A document stores its image OR its
+        // bytes, never both, so anything here is a document that could not be
+        // imaged — and every read of one costs a parse instead of a walk.
+        // Non-zero is not an error; a LARGE number means the image cap
+        // (image_max_doc_kb) is turning documents away.
+        row(
+            &mut o,
+            "raw json",
+            &if seg.raw_bytes == 0 {
+                "none resident — every document is served from its image".to_string()
+            } else {
+                paint(
+                    col,
+                    C_YELLOW,
+                    &format!(
+                        "{} for un-imaged documents (they cost a parse per read)",
+                        human_bytes(seg.raw_bytes)
+                    ),
+                )
+                .to_string()
+            },
+        );
         let frac = if seg.seg_size > 0 {
             seg.arena_used as f64 / seg.seg_size as f64
         } else {
@@ -826,6 +877,9 @@ fn to_json(s: &Snapshot, seg: &SegStats, arena_ok: bool) -> String {
             "dead_bytes": seg.dead_bytes,
             "seg_size": seg.seg_size,
             "tombstones": seg.tombstones,
+            "str_bytes": seg.str_bytes,
+            "str_count": seg.str_count,
+            "raw_bytes": seg.raw_bytes,
         },
         "reads": s.reads,
         "read_ns": s.read_ns,

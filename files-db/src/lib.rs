@@ -790,6 +790,50 @@ fn resolve_subtree_dir(cfg: &Config, name: &str) -> Result<Option<PathBuf>, DbEr
     Ok(store::fs_search(cfg, name))
 }
 
+/// Validate one document image and, when zero-copy is on, pin the mapping it
+/// lives in for the rest of the request.
+///
+/// **This is the only `image::Image::open` call site in the extension.** Every
+/// image read — `get`, `getObject`, `load`, the `where` walk in `find` — funnels
+/// through here precisely so that a change to how the image addresses its
+/// strings is a change to this function and nothing else. Strings live in the
+/// segment-wide table rather than inside the image, which is why both the
+/// reader (`seg.bytes()`) and the zero-copy base (`seg.base_ptr()`) are the
+/// whole mapping and not the image slice: `Node::Str.off` is a SEGMENT offset,
+/// so measuring it from the image would point outside it.
+///
+/// `pin` asks for the zero-copy base pointer. Pass FALSE when the caller only
+/// walks the image into owned data (`to_value`): pinning is capped per request,
+/// and spending a pin on a read that copies anyway would starve the reads that
+/// actually hand PHP a pointer into the mapping.
+fn open_image<'a>(
+    cfg: &Config,
+    seg: &'a Rc<shm::SegmentReader>,
+    img_bytes: &'a [u8],
+    pin: bool,
+) -> Option<(image::Image<'a>, Option<*mut u8>)> {
+    let Some(img) = image::Image::open(img_bytes, seg.bytes()) else {
+        metrics::img_invalid();
+        return None;
+    };
+    // Zero-copy needs the mapping to outlive the zvals; if we cannot pin it
+    // (cap reached) or it is disabled, materialize by copying instead.
+    let base = if pin && cfg.zero_copy && pin_segment(seg) {
+        Some(seg.base_ptr())
+    } else {
+        None
+    };
+    Some((img, base))
+}
+
+/// True when this process may read images at all. Split out because `load()`
+/// applies the same gate from inside its own probe rather than through
+/// [`with_shm_image`].
+fn image_enabled(cfg: &Config) -> bool {
+    use std::sync::atomic::Ordering as AtomicOrdering;
+    cfg.image && IMAGE_ABI_OK.load(AtomicOrdering::Relaxed)
+}
+
 /// One document served straight from the pre-decoded image, with no JSON parse
 /// at all. Returns `Ok(None)` when there is no usable image for this document
 /// (images off, oversize, ABI mismatch, damaged image) so the caller can fall
@@ -800,8 +844,7 @@ fn with_shm_image<T>(
     lang: &str,
     build: impl FnOnce(&image::Image, Option<*mut u8>) -> Result<T, DbError>,
 ) -> Result<Option<ShmDoc<T>>, DbError> {
-    use std::sync::atomic::Ordering as AtomicOrdering;
-    if !cfg.image || !IMAGE_ABI_OK.load(AtomicOrdering::Relaxed) {
+    if !image_enabled(cfg) {
         return Ok(None);
     }
     let Some(seg) = seg_current(cfg) else {
@@ -823,16 +866,8 @@ fn with_shm_image<T>(
         }
         Ok(Some(b)) => b,
     };
-    let Some(img) = image::Image::open(img_bytes) else {
-        metrics::img_invalid();
+    let Some((img, base)) = open_image(cfg, &seg, img_bytes, true) else {
         return Ok(None);
-    };
-    // Zero-copy needs the mapping to outlive the zvals; if we cannot pin it
-    // (cap reached) or it is disabled, materialize by copying instead.
-    let base = if cfg.zero_copy && pin_segment(&seg) {
-        Some(img_bytes.as_ptr().cast_mut())
-    } else {
-        None
     };
     // An image serve IS a segment serve — `img_serves` sub-classifies it as
     // "needed no parsing", the way `raw_writes` sub-classifies `writes`. Both
@@ -883,8 +918,13 @@ fn with_shm_doc<T>(
                         store::doc_file(lang)
                     )))
                 }
-                Ok(None) => Ok(ShmDoc::Absent),
-                Ok(Some(bytes)) => {
+                Ok(shm::DocBytes::Absent) => Ok(ShmDoc::Absent),
+                // The document exists, but the segment holds only its image
+                // (layout v3). `Unavailable` is exactly the right answer: it
+                // sends the caller to resolve the node and read the file, which
+                // is the only byte-exact source there has ever been.
+                Ok(shm::DocBytes::NotStored) => Ok(ShmDoc::Unavailable),
+                Ok(shm::DocBytes::Stored(bytes)) => {
                     metrics::index_serve();
                     f(bytes, rec.generation as i64).map(ShmDoc::Served)
                 }
@@ -925,10 +965,22 @@ fn with_shm_doc_raw<T>(
         Lookup::Found(rec) if !rec.is_tombstone() => {
             metrics::shm_hit();
             match rec.langs().into_iter().find(|l| l.lang == lang) {
-                Some(l) => {
+                Some(l) if l.flags & shm::LANG_HAS_RAW != 0 => {
                     metrics::index_serve();
                     Ok(ShmDoc::Served(f(l.doc)))
                 }
+                // Present, but its bytes are not in the segment. getRaw()'s
+                // whole contract is byte fidelity, and re-serializing from the
+                // image would not deliver it: escaping normalizes (PHP's `\/`
+                // and `\uXXXX` vs serde's neither), whitespace and indentation
+                // are gone, and float formatting changes. Its callers do
+                // textual substitution on the result (hili.doctor.hook.inc
+                // str_replace's the raw string and writes it back), so a
+                // normalized re-serialization would rewrite the escaping of
+                // every document it touches. It reads the file instead — this
+                // is integrity/doctor/migration code, not the render path, and
+                // it can afford an open+read.
+                Some(_) => Ok(ShmDoc::Unavailable),
                 None => Ok(ShmDoc::Absent),
             }
         }
@@ -958,6 +1010,7 @@ fn load_doc_inner(cfg: &Config, row: &NodeRow, lang: &str) -> Result<Option<Rc<V
     if let Some(seg) = seg_current(cfg) {
         if let Lookup::Found(rec) = seg.lookup(&row.name) {
             if !rec.is_tombstone() {
+                let generation = rec.generation as i64;
                 match rec.doc(lang) {
                     Err(()) => {
                         metrics::corrupt_json();
@@ -967,11 +1020,34 @@ fn load_doc_inner(cfg: &Config, row: &NodeRow, lang: &str) -> Result<Option<Rc<V
                             store::doc_file(lang)
                         )));
                     }
-                    Ok(None) => return Ok(None),
-                    Ok(Some(bytes)) => {
+                    Ok(shm::DocBytes::Absent) => return Ok(None),
+                    Ok(shm::DocBytes::Stored(bytes)) => {
                         metrics::index_serve();
-                        return parse_cached(&row.name, lang, bytes, rec.generation as i64)
-                            .map(Some);
+                        return parse_cached(&row.name, lang, bytes, generation).map(Some);
+                    }
+                    // The document exists but the segment holds only its image.
+                    // Walk the image into a `Value` rather than parsing bytes
+                    // that are no longer there. Same generation-keyed cache the
+                    // parse used, so a second consumer in one request pays
+                    // nothing either way — and no pin is taken, because this
+                    // builds owned data and never points PHP at the mapping.
+                    Ok(shm::DocBytes::NotStored) => {
+                        if let Some(v) = cache::get(&row.name, lang, generation) {
+                            return Ok(Some(v));
+                        }
+                        if let Ok(Some(img_bytes)) = rec.image(lang) {
+                            if let Some((img, _)) = open_image(cfg, &seg, img_bytes, false) {
+                                if let Some(v) = img.to_value(img.root, 0) {
+                                    metrics::index_serve();
+                                    let rc = Rc::new(v);
+                                    cache::put(&row.name, lang, generation, rc.clone());
+                                    return Ok(Some(rc));
+                                }
+                                metrics::img_invalid();
+                            }
+                        }
+                        // No usable image either (over `image_max_doc`, images
+                        // off, damaged). The file is the only source left.
                     }
                 }
             }
@@ -1041,6 +1117,336 @@ fn load_doc_by_name(cfg: &Config, name: &str, lang: &str) -> Result<Option<Rc<Va
     })();
     metrics::record_read(started.elapsed());
     r
+}
+
+// ---------------------------------------------------------------------------
+// Composed load (contract §3 `load`)
+// ---------------------------------------------------------------------------
+
+/// Everything `QuantaDb::load()` was asked for, normalized once so the probe
+/// below re-reads no policy.
+struct LoadOpts {
+    /// Languages to try, in order; `""` is the neutral document.
+    langs: Vec<String>,
+    /// The directory the caller believes this node lives in, in the EXTENSION's
+    /// root terms (the PHP wrapper translates a docroot spelling first).
+    at: Option<PathBuf>,
+    /// `getObject()` shape (JSON objects become stdClass, all the way down) as
+    /// against `get()` shape (associative arrays).
+    objects: bool,
+    /// Whether to report the node's absolute path. Deliberately tied to `at`
+    /// being absent: passing `at` IS the statement "I already know where this
+    /// node is", and building the path anyway is precisely the wasted `String`
+    /// this method exists to remove.
+    want_path: bool,
+}
+
+/// A document `load()` managed to produce.
+struct LoadHit {
+    json: Zval,
+    /// The language the document actually came from; `""` = neutral.
+    lang: String,
+    generation: i64,
+    /// Only ever `Some` when the caller did not pass `at`.
+    path: Option<String>,
+}
+
+/// Outcome of `load()`'s single segment probe.
+enum LoadOutcome {
+    Hit(LoadHit),
+    /// The segment is authoritative and the answer is "nothing": no such node,
+    /// not the node at `at`, or no document in any language the caller allowed.
+    Absent,
+    /// No usable segment (fallback mode, or a record that failed validation) —
+    /// the caller must resolve the node and read the file.
+    Unavailable,
+}
+
+fn parse_load_opts(opts: Option<&ZendHashTable>) -> Result<LoadOpts, DbError> {
+    let r = Reader::new(opts, &["lang", "fallback", "at", "as"], "opts")?;
+    let lang = normalize_lang(r.str_opt("lang")?)?;
+    // Default TRUE: Quanta reads the language file and then the neutral one, in
+    // that order, on every single node load — so the default is the policy the
+    // caller this replaces already had.
+    let fallback = r.raw("fallback").map_or(true, |z| z.bool().unwrap_or(true));
+    let objects = match r.str_opt("as")?.as_deref() {
+        None | Some("object") => true,
+        Some("array") => false,
+        Some(other) => return Err(DbError::BadArgs(format!("invalid opts 'as' value '{other}'"))),
+    };
+    let mut langs = Vec::with_capacity(2);
+    langs.push(lang.clone());
+    // Nothing to fall back TO when the request was already neutral.
+    if fallback && !lang.is_empty() {
+        langs.push(String::new());
+    }
+    let at = r.str_opt("at")?.map(PathBuf::from);
+    let want_path = at.is_none();
+    Ok(LoadOpts {
+        langs,
+        at,
+        objects,
+        want_path,
+    })
+}
+
+/// True when `dir` and `at` name the same directory.
+///
+/// Cheap compare first: `Path` equality is component-wise, so it already
+/// absorbs a trailing slash or a `.` segment without touching the filesystem.
+/// `canonicalize` is the tie-breaker for what it cannot see — two spellings of
+/// one directory through a `sites/<alias>` symlink — and is the same
+/// `realpath()` pair `Node::loadJSON` ran in PHP, now reached only when the
+/// two spellings genuinely differ.
+fn same_dir(dir: &Path, at: &Path) -> bool {
+    if dir == at {
+        return true;
+    }
+    match (fs::canonicalize(dir), fs::canonicalize(at)) {
+        (Ok(a), Ok(b)) => a == b,
+        _ => false,
+    }
+}
+
+/// [`same_dir`] against a record's own directory, without building it.
+///
+/// `at` almost always came out of this very index
+/// (`Environment::nodePath()` -> `QuantaDb::path()`), so stripping the root off
+/// it and comparing the remainder with `rel_path()` settles the question with no
+/// allocation at all. That is the point of the whole exercise: the absolute path
+/// `String` `resolve_node()` builds for every caller existed only to be compared
+/// once, in PHP, and dropped.
+fn rec_is_at(cfg: &Config, rel_path: &str, at: &Path) -> bool {
+    if at
+        .strip_prefix(&cfg.root)
+        .is_ok_and(|rest| rest == Path::new(rel_path))
+    {
+        return true;
+    }
+    same_dir(&cfg.root.join(rel_path), at)
+}
+
+/// Materialize one language's document from its image, or `Ok(None)` when there
+/// is no usable image for it (images off, oversize, damaged, or a `getObject`
+/// root shape the image does not serve directly).
+///
+/// Takes the record the caller already holds, so it costs no probe of its own —
+/// which is the entire reason `load()` does not route through
+/// [`with_shm_image`].
+fn image_zval(
+    cfg: &Config,
+    seg: &Rc<shm::SegmentReader>,
+    rec: &shm::RecordView<'_>,
+    lang: &str,
+    objects: bool,
+) -> Result<Option<Zval>, DbError> {
+    if !image_enabled(cfg) {
+        return Ok(None);
+    }
+    let img_bytes = match rec.image(lang) {
+        // Unreachable as things stand: the caller picked this language through
+        // `doc()`, which already raised CORRUPT_JSON for a corrupt one. Kept
+        // explicit so a future caller cannot serve a corrupt document as merely
+        // "no image".
+        Err(()) => return Ok(None),
+        Ok(None) => {
+            metrics::img_absent();
+            return Ok(None);
+        }
+        Ok(Some(b)) => b,
+    };
+    let Some((img, base)) = open_image(cfg, seg, img_bytes, true) else {
+        return Ok(None);
+    };
+    // The image path only serves object roots directly; PHP's `(object)` cast
+    // rules for array/scalar roots stay in one place (json_root_to_object_zval).
+    if objects && !img.root_is_map() {
+        return Ok(None);
+    }
+    metrics::index_serve();
+    metrics::img_serve();
+    materialize(&img, base, img.root, 0, objects).map(Some)
+}
+
+/// Existence, path identity, language selection and materialisation, all out of
+/// ONE `seg.lookup()`.
+///
+/// The three calls this replaces (`path()`, `getObject($lang)`,
+/// `getObject(null)`) each interrogated the same record. The view returned by a
+/// single probe already carries the node's directory, its language list, its
+/// documents, its images and its generation, so asking for them one at a time
+/// was two extra hash probes and one absolute-path `String` spent re-answering
+/// what the first probe had in hand.
+fn shm_load(cfg: &Config, name: &str, o: &LoadOpts) -> Result<LoadOutcome, DbError> {
+    let Some(seg) = seg_current(cfg) else {
+        return Ok(LoadOutcome::Unavailable);
+    };
+    let rec = match seg.lookup(name) {
+        Lookup::Found(rec) if !rec.is_tombstone() => rec,
+        // A miss or a tombstone is a definitive absence while the daemon is
+        // coherent — no filesystem walk, no file read.
+        Lookup::Found(_) | Lookup::Absent => {
+            metrics::authoritative_miss();
+            return Ok(LoadOutcome::Absent);
+        }
+        Lookup::Invalid => {
+            metrics::shm_invalid(); // never trust a failed validation
+            return Ok(LoadOutcome::Unavailable);
+        }
+    };
+    metrics::shm_hit();
+    // "That name resolves somewhere else" is an absence for THIS caller, never
+    // a licence to hand back the other node's document. Containers built from an
+    // explicit path (NodeFactory::loadFromRealPath) are why the check exists.
+    if let Some(at) = &o.at {
+        if !rec_is_at(cfg, rec.rel_path(), at) {
+            return Ok(LoadOutcome::Absent);
+        }
+    }
+    // Language choice is made on DOCUMENT presence, not image presence: a
+    // document that exists but could not be imaged (oversize, images off) must
+    // still beat the neutral fallback, or `load()` would quietly answer in a
+    // different language than `getObject()` does.
+    // `None` bytes = the document exists but the segment keeps only its image,
+    // which is the normal case; it still wins the language choice, and only the
+    // no-image fallback below has to care.
+    let mut chosen: Option<(&str, Option<&[u8]>)> = None;
+    for lang in &o.langs {
+        match rec.doc(lang) {
+            Err(()) => {
+                metrics::corrupt_json();
+                return Err(DbError::CorruptJson(format!(
+                    "invalid JSON in {}/{}",
+                    rec.rel_path(),
+                    store::doc_file(lang)
+                )));
+            }
+            Ok(shm::DocBytes::Absent) => continue,
+            Ok(shm::DocBytes::NotStored) => {
+                chosen = Some((lang.as_str(), None));
+                break;
+            }
+            Ok(shm::DocBytes::Stored(bytes)) => {
+                chosen = Some((lang.as_str(), Some(bytes)));
+                break;
+            }
+        }
+    }
+    let Some((lang, bytes)) = chosen else {
+        return Ok(LoadOutcome::Absent);
+    };
+    let generation = rec.generation as i64;
+    let path = o
+        .want_path
+        .then(|| cfg.root.join(rec.rel_path()).to_string_lossy().to_string());
+    let json = match image_zval(cfg, &seg, &rec, lang, o.objects)? {
+        Some(z) => z,
+        None => match bytes {
+            // Same fallback `getObject()` takes, minus its second probe: the
+            // bytes are already here, so only the parse cache is consulted.
+            Some(bytes) => {
+                metrics::index_serve();
+                let doc = parse_cached(name, lang, bytes, generation)?;
+                if o.objects {
+                    json_root_to_object_zval(&doc)?
+                } else {
+                    json_to_zval(&doc)?
+                }
+            }
+            // No image AND no stored bytes: nothing in the segment can answer.
+            // Hand it to `load_impl`'s resolve + file read rather than
+            // duplicating that path here.
+            None => return Ok(LoadOutcome::Unavailable),
+        },
+    };
+    Ok(LoadOutcome::Hit(LoadHit {
+        json,
+        lang: lang.to_string(),
+        generation,
+        path,
+    }))
+}
+
+/// `load()` end to end: the single-probe segment path, then — only when there is
+/// no usable segment — the same resolve + uncached file read `getObject()` falls
+/// back to.
+fn load_impl(cfg: &Config, name: &str, o: &LoadOpts) -> Result<Option<LoadHit>, DbError> {
+    ensure_valid_name(name)?;
+    // Time the segment path like every other read.
+    //
+    // Not decoration: `load()` took over the hot read from `getObject()`, and
+    // `getObject()`'s image branch never called this — so once Node::loadJSON
+    // switched, `reads` / `read_ns` / `avg_read_ms` went to ZERO on a pod
+    // serving 23,000 documents a render, and the READS section of `qdbstat`
+    // (the operator's only latency view) went blind. A read that is not counted
+    // is a read nobody can find when it gets slow.
+    let started = Instant::now();
+    let outcome = shm_load(cfg, name, o);
+    metrics::record_read(started.elapsed());
+    match outcome? {
+        LoadOutcome::Hit(hit) => return Ok(Some(hit)),
+        LoadOutcome::Absent => return Ok(None),
+        LoadOutcome::Unavailable => {}
+    }
+    // Fallback mode only, so this branch may cost what a file read costs — and
+    // is the one place the node's absolute path is genuinely needed, to open
+    // the file with.
+    let started = Instant::now();
+    let r = (|| {
+        let Some(row) = resolve_node(cfg, name)? else {
+            return Ok(None);
+        };
+        if let Some(at) = &o.at {
+            if !same_dir(Path::new(&row.path), at) {
+                return Ok(None);
+            }
+        }
+        for lang in &o.langs {
+            let Some(doc) = load_doc_file(cfg, &row, lang)? else {
+                continue;
+            };
+            let json = if o.objects {
+                json_root_to_object_zval(&doc)?
+            } else {
+                json_to_zval(&doc)?
+            };
+            return Ok(Some(LoadHit {
+                json,
+                lang: lang.clone(),
+                generation: row.generation,
+                path: o.want_path.then(|| row.path.clone()),
+            }));
+        }
+        Ok(None)
+    })();
+    metrics::record_read(started.elapsed());
+    r
+}
+
+fn load_hit_zval(hit: LoadHit) -> Result<Zval, DbError> {
+    let mut ht = ZendHashTable::with_capacity(4);
+    let ins = |ht: &mut ZendHashTable, k: &str, v: Zval| -> Result<(), DbError> {
+        ht.insert(ArrayKey::Str(k), v)
+            .map_err(|e| DbError::Io(format!("array conversion: {e}")))
+    };
+    ins(&mut ht, "json", hit.json)?;
+    let mut z = Zval::new();
+    z.set_string(&hit.lang, false)
+        .map_err(|e| DbError::Io(e.to_string()))?;
+    ins(&mut ht, "lang", z)?;
+    let mut z = Zval::new();
+    z.set_long(hit.generation);
+    ins(&mut ht, "generation", z)?;
+    // Present only when the caller did not pass 'at' — see LoadOpts::want_path.
+    if let Some(p) = &hit.path {
+        let mut z = Zval::new();
+        z.set_string(p, false)
+            .map_err(|e| DbError::Io(e.to_string()))?;
+        ins(&mut ht, "path", z)?;
+    }
+    let mut out = Zval::new();
+    out.set_hashtable(ht);
+    Ok(out)
 }
 
 /// The raw JSON bytes of one document, resolved by NAME in a single hash probe.
@@ -1343,6 +1749,80 @@ fn json_eq(a: &Value, b: &Value) -> bool {
     }
 }
 
+/// [`json_value_at`] evaluated against the pre-decoded image instead of a
+/// `serde_json::Value`, returning the value node the dotted path lands on.
+///
+/// Same navigation rules, deliberately: object keys by name, array elements by
+/// decimal index, and anything else (a scalar with path left to walk, a missing
+/// key, an out-of-range or non-numeric index) is a miss. It descends the map
+/// pairs comparing the key's bytes, which is why it needs no `Value` at all —
+/// where the parse path had to materialize the WHOLE document, and cache an
+/// `Rc<Value>` of it per node, before it could look at one field.
+///
+/// `Err(())` is a DAMAGED image (an interior offset that does not bounds-check),
+/// kept distinct from `Ok(None)` so the caller decodes the document instead of
+/// reading damage as "this candidate does not match". A bad image may cost time;
+/// it must never silently change a result set.
+///
+/// Lives here rather than in `image.rs` because these are `find`'s semantics,
+/// not the image format's.
+fn image_value_at<'a>(
+    img: &image::Image<'a>,
+    path: &str,
+) -> Result<Option<image::Node<'a>>, ()> {
+    let mut off = img.root;
+    for seg in path.split('.') {
+        off = match img.node(off).ok_or(())? {
+            image::Node::Map { count, table } => {
+                // Keys are unique — the daemon images an already-parsed
+                // document, and JSON object keys collapse last-wins on parse —
+                // so the first hit is the only hit.
+                let mut hit = None;
+                for i in 0..count {
+                    let (ko, vo) = img.map_pair(table, i).ok_or(())?;
+                    if img.string_bytes(ko).ok_or(())? == seg.as_bytes() {
+                        hit = Some(vo);
+                        break;
+                    }
+                }
+                match hit {
+                    Some(vo) => vo,
+                    None => return Ok(None),
+                }
+            }
+            image::Node::List { count, table } => {
+                let Ok(i) = seg.parse::<u32>() else {
+                    return Ok(None);
+                };
+                if i >= count {
+                    return Ok(None);
+                }
+                img.list_elem(table, i).ok_or(())?
+            }
+            _ => return Ok(None),
+        };
+    }
+    img.node(off).ok_or(()).map(Some)
+}
+
+/// [`json_eq`] with the left-hand side still in the image.
+///
+/// `expected` is always a scalar — `parse_criteria` rejects anything else — so
+/// the cases here are exactly the ones `json_eq` can answer true for, and every
+/// other pairing falls to its `a == b` arm, which is false across variants.
+/// Numbers compare as `f64` on both sides, as `json_eq` does, so an integer
+/// predicate still matches a float document value and vice versa.
+fn image_node_eq(node: &image::Node<'_>, expected: &Value) -> bool {
+    match (node, expected) {
+        (image::Node::Null, Value::Null) => true,
+        (image::Node::Bool(b), Value::Bool(e)) => b == e,
+        (image::Node::Long(i), Value::Number(_)) => expected.as_f64() == Some(*i as f64),
+        (image::Node::Double(d), Value::Number(_)) => expected.as_f64() == Some(*d),
+        (image::Node::Str { bytes, .. }, Value::String(s)) => *bytes == s.as_bytes(),
+        _ => false,
+    }
+}
+
 fn cmp_json(a: Option<&Value>, b: Option<&Value>) -> std::cmp::Ordering {
     use std::cmp::Ordering;
     fn rank(v: Option<&Value>) -> u8 {
@@ -1449,6 +1929,97 @@ fn find_candidates(cfg: &Config, crit: &Criteria) -> Result<Vec<String>, DbError
     Ok(names)
 }
 
+/// One `find` candidate, resolved at most once.
+///
+/// `find_impl` used to call `resolve_node()` in each of its three passes —
+/// `where` filtering, non-name ordering, result shaping — so a
+/// `find(where:, order_by: 'json:…', return: 'data')` over N candidates spent 3N
+/// hash probes and 3N absolute-path `String`s answering the same question three
+/// times. Resolution now happens on first demand and is remembered, and a pass
+/// that needs no path at all (a `where` answered from the image, `return:
+/// 'names'`) still pays nothing.
+struct Candidate {
+    name: String,
+    row: Option<NodeRow>,
+    /// `row == None` is itself an answer ("this name no longer resolves"), so
+    /// "not asked yet" needs a flag of its own rather than being inferred.
+    resolved: bool,
+}
+
+impl Candidate {
+    fn new(name: String) -> Self {
+        Self {
+            name,
+            row: None,
+            resolved: false,
+        }
+    }
+
+    fn row(&mut self, cfg: &Config) -> Result<Option<&NodeRow>, DbError> {
+        if !self.resolved {
+            self.row = resolve_node(cfg, &self.name)?;
+            self.resolved = true;
+        }
+        Ok(self.row.as_ref())
+    }
+}
+
+/// Every `where` predicate against one image, or `None` when the image could not
+/// answer (see [`image_value_at`]). Stops at the first failing predicate, so a
+/// query over a wide candidate set touches one field of each document rather
+/// than all of them.
+fn image_where_all(img: &image::Image<'_>, preds: &[(String, Value)]) -> Option<bool> {
+    for (path, expected) in preds {
+        match image_value_at(img, path) {
+            // A missing field never matches — `json_value_at(..).map(..) ==
+            // Some(true)` is the rule this mirrors.
+            Ok(None) => return Some(false),
+            Ok(Some(node)) if !image_node_eq(&node, expected) => return Some(false),
+            Ok(Some(_)) => {}
+            Err(()) => return None,
+        }
+    }
+    Some(true)
+}
+
+/// Does this candidate satisfy every `where` predicate?
+///
+/// Fast path: walk the document image — no parse, no allocation, no parse-cache
+/// entry, and a stop at the first failing predicate, where the parse path has to
+/// materialize the entire document (and hold an `Rc<Value>` of it per node)
+/// before it can test one field. That matters most exactly where `find` is
+/// weakest: `limit` cannot be applied before the filter, so a `where` over
+/// thousands of candidates used to decode thousands of documents.
+///
+/// A candidate with no usable image — images off, ABI mismatch, oversize
+/// document, damaged image, fallback mode — falls back to the previous path
+/// unchanged, so results never move.
+fn where_matches(
+    cfg: &Config,
+    c: &mut Candidate,
+    preds: &[(String, Value)],
+    lang: &str,
+) -> Result<bool, DbError> {
+    // `resolve_node()` raised this for a name the store handed back but the API
+    // will not address; the image path skips resolution, so raise it here or the
+    // error would disappear on exactly the documents this shortcut serves.
+    ensure_valid_name(&c.name)?;
+    if let Some(ShmDoc::Served(Some(matched))) =
+        with_shm_image(cfg, &c.name, lang, |img, _base| Ok(image_where_all(img, preds)))?
+    {
+        return Ok(matched);
+    }
+    let Some(row) = c.row(cfg)? else {
+        return Ok(false);
+    };
+    let Some(doc) = load_doc(cfg, row, lang)? else {
+        return Ok(false);
+    };
+    Ok(preds.iter().all(|(path, expected)| {
+        json_value_at(&doc, path).map(|v| json_eq(v, expected)) == Some(true)
+    }))
+}
+
 fn find_impl(
     cfg: &Config,
     criteria: Option<&ZendHashTable>,
@@ -1473,57 +2044,55 @@ fn find_impl(
     let offset = r.long_opt("offset")?.unwrap_or(0).max(0) as usize;
     let lang = normalize_lang(r.str_opt("lang")?)?;
 
-    let candidates = find_candidates(cfg, &crit)?;
+    let mut cands: Vec<Candidate> = find_candidates(cfg, &crit)?
+        .into_iter()
+        .map(Candidate::new)
+        .collect();
 
-    // Filter by 'where' (loads documents; missing doc never matches).
-    let mut names: Vec<String> = Vec::new();
-    for name in candidates {
-        if crit.where_.is_empty() {
-            names.push(name);
-            continue;
+    // Filter by 'where' (missing document never matches).
+    if !crit.where_.is_empty() {
+        let mut kept = Vec::with_capacity(cands.len());
+        for mut c in cands {
+            if where_matches(cfg, &mut c, &crit.where_, &lang)? {
+                kept.push(c);
+            }
         }
-        let Some(row) = resolve_node(cfg, &name)? else { continue };
-        let Some(doc) = load_doc(cfg, &row, &lang)? else { continue };
-        let matches = crit.where_.iter().all(|(path, expected)| {
-            json_value_at(&doc, path).map(|v| json_eq(v, expected)) == Some(true)
-        });
-        if matches {
-            names.push(name);
-        }
+        cands = kept;
     }
 
-    // Ordering.
+    // Ordering. Ties break on name in every mode, so the result is total.
     if order_by == "name" {
-        names.sort();
+        cands.sort_by(|a, b| a.name.cmp(&b.name));
     } else if order_by == "mtime" {
-        let mut keyed: Vec<(i64, String)> = Vec::new();
-        for n in names {
-            let m = resolve_node(cfg, &n)?.map(|r| node_mtime(cfg, &r)).unwrap_or(0);
-            keyed.push((m, n));
+        let mut keyed: Vec<(i64, Candidate)> = Vec::with_capacity(cands.len());
+        for mut c in cands {
+            let m = c.row(cfg)?.map(|r| node_mtime(cfg, r)).unwrap_or(0);
+            keyed.push((m, c));
         }
-        keyed.sort_by(|a, b| a.0.cmp(&b.0).then_with(|| a.1.cmp(&b.1)));
-        names = keyed.into_iter().map(|(_, n)| n).collect();
+        keyed.sort_by(|a, b| a.0.cmp(&b.0).then_with(|| a.1.name.cmp(&b.1.name)));
+        cands = keyed.into_iter().map(|(_, c)| c).collect();
     } else if let Some(jpath) = order_by.strip_prefix("json:") {
-        let mut keyed: Vec<(Option<Value>, String)> = Vec::new();
-        for n in names {
-            let val = match resolve_node(cfg, &n)? {
-                Some(row) => load_doc(cfg, &row, &lang)?
-                    .and_then(|d| json_value_at(&d, jpath).cloned()),
+        let mut keyed: Vec<(Option<Value>, Candidate)> = Vec::with_capacity(cands.len());
+        for mut c in cands {
+            let val = match c.row(cfg)? {
+                Some(row) => {
+                    load_doc(cfg, row, &lang)?.and_then(|d| json_value_at(&d, jpath).cloned())
+                }
                 None => None,
             };
-            keyed.push((val, n));
+            keyed.push((val, c));
         }
-        keyed.sort_by(|a, b| cmp_json(a.0.as_ref(), b.0.as_ref()).then_with(|| a.1.cmp(&b.1)));
-        names = keyed.into_iter().map(|(_, n)| n).collect();
+        keyed.sort_by(|a, b| cmp_json(a.0.as_ref(), b.0.as_ref()).then_with(|| a.1.name.cmp(&b.1.name)));
+        cands = keyed.into_iter().map(|(_, c)| c).collect();
     } else {
         return Err(DbError::BadArgs(format!("invalid order_by '{order_by}'")));
     }
     if order == "desc" {
-        names.reverse();
+        cands.reverse();
     }
 
     // Slice.
-    let names: Vec<String> = names
+    let cands: Vec<Candidate> = cands
         .into_iter()
         .skip(offset)
         .take(limit.map(|l| l.max(0) as usize).unwrap_or(usize::MAX))
@@ -1531,18 +2100,21 @@ fn find_impl(
 
     // Shape the return value.
     match ret_mode.as_str() {
-        "names" => strings_to_zval(&names),
+        "names" => {
+            let names: Vec<String> = cands.into_iter().map(|c| c.name).collect();
+            strings_to_zval(&names)
+        }
         "data" => {
             let mut ht = ZendHashTable::new();
-            for n in &names {
-                let v = match resolve_node(cfg, n)? {
-                    Some(row) => match load_doc(cfg, &row, &lang)? {
+            for mut c in cands {
+                let v = match c.row(cfg)? {
+                    Some(row) => match load_doc(cfg, row, &lang)? {
                         Some(doc) => json_to_zval(&doc)?,
                         None => null_zval(),
                     },
                     None => null_zval(),
                 };
-                ht.insert(ArrayKey::from(n.clone()), v)
+                ht.insert(ArrayKey::from(c.name), v)
                     .map_err(|e| DbError::Io(format!("array conversion: {e}")))?;
             }
             let mut z = Zval::new();
@@ -1551,12 +2123,12 @@ fn find_impl(
         }
         _ => {
             let mut ht = ZendHashTable::new();
-            for n in &names {
-                let v = match resolve_node(cfg, n)? {
-                    Some(row) => meta_zval(cfg, &row)?,
+            for mut c in cands {
+                let v = match c.row(cfg)? {
+                    Some(row) => meta_zval(cfg, row)?,
                     None => null_zval(),
                 };
-                ht.insert(ArrayKey::from(n.clone()), v)
+                ht.insert(ArrayKey::from(c.name), v)
                     .map_err(|e| DbError::Io(format!("array conversion: {e}")))?;
             }
             let mut z = Zval::new();
@@ -1672,6 +2244,45 @@ pub fn get_object(name: String, lang: Option<String>) -> PhpResult<Zval> {
     }
     match load_doc_by_name(cfg, &name, &lang)? {
         Some(doc) => Ok(json_root_to_object_zval(&doc)?),
+        None => Ok(null_zval()),
+    }
+}
+
+/// One node's document with the caller's language policy and path check applied
+/// INSIDE the single probe that already holds the record — the composed read
+/// behind `Node::loadJSON()`.
+///
+/// Explicitly NOT a primitive: `get`/`getObject`/`path` are unchanged and stay
+/// the vocabulary for everything else. This exists because the hot path needs
+/// all three answers at once, and asking for them separately cost three probes
+/// plus an absolute-path `String` that was built in Rust, compared once in PHP
+/// and dropped.
+///
+/// `$opts`:
+///   - `lang`     — the language to try first; null / `''` = the neutral document
+///   - `fallback` — default true: retry the neutral document when `lang` has none
+///   - `at`       — the directory the caller believes this node lives in, in the
+///                  EXTENSION's own root terms (`quanta_db.root`), not a site
+///                  docroot. Given, the identity check happens against the
+///                  record and no absolute path is built
+///   - `as`       — `'object'` (default; `getObject()` shape all the way down,
+///                  which is what Quanta reads) or `'array'` (`get()` shape)
+///
+/// Returns null for "no such node", "it is not the node at `at`" and "no
+/// document in any language tried" alike: to the caller all three mean the same
+/// thing, which is that it must decide for itself what an absent document means.
+/// A corrupt document still raises CORRUPT_JSON exactly as `getObject()` does —
+/// that is an error, not an absence.
+///
+/// `path` is in the result ONLY when `at` was NOT supplied. Passing `at` is the
+/// caller saying it already knows where the node is, so building the path would
+/// be the very allocation this method removes; omitting `at` is the caller
+/// asking for it.
+pub fn load(name: String, opts: Option<&ZendHashTable>) -> PhpResult<Zval> {
+    let cfg = config()?;
+    let o = parse_load_opts(opts)?;
+    match load_impl(cfg, &name, &o)? {
+        Some(hit) => Ok(load_hit_zval(hit)?),
         None => Ok(null_zval()),
     }
 }

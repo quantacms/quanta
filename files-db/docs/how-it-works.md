@@ -484,8 +484,9 @@ probe plus a walk of already-decoded bytes. No `stat`, no `open`, no
 **Authoritative absence** is the semantically important branch. A miss under a
 coherent daemon means the node genuinely does not exist — the daemon's inotify
 and reconcile already reflect any out-of-band create — so the answer comes back
-with no filesystem access. That is what lets `Environment::nodePath()` skip its
-legacy `exec find` entirely for names that do not exist.
+with no filesystem access. That is what lets the node resolver
+(`FilesDb::path()`, which `Environment::nodePath()` wraps) skip its shard
+symlink and its `exec find` entirely for names that do not exist.
 
 ---
 
@@ -618,7 +619,7 @@ unchanged means return.
 was subtly wrong. Treating `MOVED_FROM` as a delete turns every in-tree rename
 into delete-then-add — and a lookup landing in that gap gets an **authoritative**
 "no such node" for a node that existed the entire time. Callers act on that
-answer (`Environment::nodePath` skips its legacy `find` on exactly that verdict),
+answer (`FilesDb::path()` skips its `find` on exactly that verdict),
 so the node briefly vanishes from the site. Deferring until the end of the event
 batch lets the matching `MOVED_TO` — same `rename()`, normally the same `read()`
 — re-point the model first.

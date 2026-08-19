@@ -13,6 +13,19 @@ abstract class DataContainer {
   public $language;
 
   /**
+   * The Environment this container belongs to.
+   *
+   * Every container is built with one, so a caller holding a container never
+   * has to be handed the Environment separately — which is how a helper ends up
+   * with an optional $env parameter it cannot work without.
+   *
+   * @return Environment
+   */
+  public function getEnv() {
+    return $this->env;
+  }
+
+  /**
    * @param $key
    * @param $value
    */

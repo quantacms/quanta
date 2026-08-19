@@ -41,7 +41,10 @@ class QuantaDb
 
     /**
      * Decoded data document of a node, or null if node/language file is absent.
-     * No language fallback (that policy stays in NodeFactory).
+     * No language fallback — this primitive reads exactly one file. Callers
+     * wanting Quanta's "translation first, then neutral" order either ask twice
+     * or use load(), which is the composed operation offered ALONGSIDE these
+     * primitives, not a replacement for them.
      *
      * @param string      $name node basename
      * @param string|null $lang null = data.json, 'it' = data_it.json, …
@@ -76,6 +79,46 @@ class QuantaDb
      * @param string|null $lang null = data.json, 'it' = data_it.json, …
      */
     public static function getObject(string $name, ?string $lang = null): ?object {}
+
+    /**
+     * One node's document with language fallback and a path-identity check
+     * applied INSIDE the single index probe that already holds the record.
+     * (Contract 1.3.)
+     *
+     * The composed operation, offered alongside the primitives above rather
+     * than replacing them: "load this node's document, in this language or the
+     * neutral one, having confirmed it is the node in this directory" is what
+     * Node::loadJSON does on every node of every page, and expressing it with
+     * path() + getObject() + getObject() costs three probes and one absolute
+     * path string that exists only to be compared once in PHP.
+     *
+     * $opts:
+     *  - lang     : language to try first; null / '' = the neutral document.
+     *  - fallback : default true — retry the neutral document when 'lang' has
+     *               none. This is the one place the API takes a position on
+     *               language policy, and only because the caller asked for it.
+     *  - at       : the directory the caller believes this node lives in, in
+     *               the EXTENSION's root terms (quanta_db.root), never a site
+     *               docroot. Given, the identity check happens against the
+     *               record and no path is built.
+     *  - as       : 'object' (default; getObject() shape all the way down) or
+     *               'array' (get() shape).
+     *
+     * Returns null for "no such node", "it is not the node at 'at'" and "no
+     * document in any language tried" alike. A corrupt document still throws
+     * CORRUPT_JSON, exactly as getObject() does — that is an error, not an
+     * absence.
+     *
+     * 'path' is in the result ONLY when 'at' was not supplied: passing 'at' is
+     * the caller saying it already knows where the node is, and building the
+     * path anyway is the allocation this method exists to remove.
+     *
+     * @param array{lang?: ?string, fallback?: bool, at?: string,
+     *              as?: 'object'|'array'} $opts
+     * @return array{json: object|array, lang: string, generation: int,
+     *               path?: string}|null
+     */
+    public static function load(string $name, array $opts = []): ?array {}
 
     /** Absolute directory path of the node, or null. Replaces Environment::nodePath(). */
     public static function path(string $name): ?string {}
