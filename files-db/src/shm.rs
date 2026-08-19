@@ -29,10 +29,12 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 /// "QDBDAT1\0" little-endian.
 const MAGIC: u64 = 0x0031_5441_4442_4451;
-/// Bumped to 2 when the per-language pre-decoded image was added. A reader
-/// built against a different layout rejects the segment in `SegmentReader::open`
-/// and degrades to fallback mode, so a daemon/extension version skew is safe.
-pub const LAYOUT_VERSION: u32 = 2;
+/// Bumped to 2 when the per-language pre-decoded image was added, and to 3 when
+/// image strings moved out of the per-document image into a segment-wide table
+/// (`image.rs`). A reader built against a different layout rejects the segment
+/// in `SegmentReader::open` and degrades to fallback mode, so a daemon/extension
+/// version skew is safe — rollout is a restart, never a migration.
+pub const LAYOUT_VERSION: u32 = 3;
 /// Fixed header block; slot directory starts right after it.
 pub const HEADER_SIZE: u64 = 4096;
 
@@ -44,8 +46,21 @@ pub const REC_TOMBSTONE: u16 = 1;
 /// Per-language flag: the doc file exists but does not parse. Readers must
 /// surface CORRUPT_JSON (contract §7), not "no document".
 pub const LANG_CORRUPT: u16 = 1;
-/// Per-language flag: a pre-decoded image (`image.rs`) accompanies the raw doc.
+/// Per-language flag: a pre-decoded image (`image.rs`) accompanies the doc.
 pub const LANG_HAS_IMAGE: u16 = 2;
+/// Per-language flag: the record carries the document's exact bytes.
+///
+/// Cleared from layout v3 on. The image is a complete representation of the
+/// decoded document, so storing the JSON next to it was storing the same
+/// content twice — 39.7 MB of hili's production segment, and the same again in
+/// the daemon's own heap, which held every document's bytes for the life of the
+/// model just to re-encode them on republish.
+///
+/// What still needs the exact bytes reads the file: `getRaw()` (whose contract
+/// IS byte fidelity, and whose callers are integrity/doctor/migration code, not
+/// the render path) and any document too large or too deep to image. Both are
+/// off the hot path, and the files were always the source of truth.
+pub const LANG_HAS_RAW: u16 = 4;
 
 /// Fixed-size record header preceding the variable section (see `encode_record`).
 pub const REC_FIXED: usize = 44;
@@ -85,6 +100,17 @@ pub struct SegHeader {
     /// Live pre-decoded image bytes (diagnostics, qdbstat). Appended after
     /// `daemon_pid` per the append-only rule above.
     pub img_bytes: AtomicU64,
+    /// Bytes of the segment-wide string table (v3+). Separate from `img_bytes`
+    /// because the whole point of the table is that it does NOT scale with the
+    /// number of documents — reporting them merged would hide that.
+    pub str_bytes: AtomicU64,
+    /// Distinct strings placed in this segment (v3+).
+    pub str_count: AtomicU64,
+    /// Raw JSON bytes actually RESIDENT in the segment (v3+). `doc_bytes` above
+    /// is the documents' size on disk, which the daemon knows either way; this
+    /// is what the segment pays for them, and it is 0 once `LANG_HAS_RAW` stops
+    /// being set. Two fields because the interesting number is the difference.
+    pub raw_bytes: AtomicU64,
 }
 
 const _: () = assert!(std::mem::size_of::<SegHeader>() <= HEADER_SIZE as usize);
@@ -250,6 +276,13 @@ pub fn encode_record(r: &RecordInput, tombstone: bool) -> Vec<u8> {
         if !l.image.is_empty() {
             flags |= LANG_HAS_IMAGE;
         }
+        // The daemon decides whether to ship the bytes by supplying them or
+        // not; the flag records that decision so a reader never has to infer
+        // "not stored" from an empty slice (which a 0-byte file would also
+        // produce).
+        if !l.doc.is_empty() {
+            flags |= LANG_HAS_RAW;
+        }
         put_u16(&mut buf, flags);
         put_u32(&mut buf, l.doc.len() as u32);
         put_i64(&mut buf, l.doc_mtime);
@@ -332,6 +365,37 @@ pub struct RecordView<'a> {
     child_count: usize,
     inlink_count: usize,
     lang_count: usize,
+}
+
+/// What a record can say about one language's raw JSON.
+#[derive(Debug, PartialEq)]
+pub enum DocBytes<'a> {
+    /// The record carries the exact bytes.
+    Stored(&'a [u8]),
+    /// The document exists, but only its image is in shared memory. A caller
+    /// that needs a `Value` should walk the image; one that needs the exact
+    /// bytes must read the file.
+    NotStored,
+    /// This node has no document in this language.
+    Absent,
+}
+
+impl<'a> DocBytes<'a> {
+    /// The bytes, when the record has them. `None` covers both `NotStored` and
+    /// `Absent`, so use it only where those two mean the same thing.
+    #[must_use]
+    pub fn stored(self) -> Option<&'a [u8]> {
+        match self {
+            DocBytes::Stored(b) => Some(b),
+            _ => None,
+        }
+    }
+
+    /// True when the language exists on the node at all.
+    #[must_use]
+    pub fn exists(&self) -> bool {
+        !matches!(self, DocBytes::Absent)
+    }
 }
 
 pub struct LangView<'a> {
@@ -523,18 +587,26 @@ impl<'a> RecordView<'a> {
         out
     }
 
-    /// The raw JSON document for `lang`. `Ok(None)` = no such language file;
+    /// The raw JSON document for `lang`.
+    ///
     /// `Err(())` = the file exists but is corrupt (caller maps to CORRUPT_JSON).
-    pub fn doc(&self, lang: &str) -> Result<Option<&'a [u8]>, ()> {
+    /// Otherwise see [`DocBytes`] — note that `NotStored` is the NORMAL answer
+    /// from layout v3 on, not an error: the document exists and its image is in
+    /// the record, but its bytes are not.
+    pub fn doc(&self, lang: &str) -> Result<DocBytes<'a>, ()> {
         for l in self.langs() {
             if l.lang == lang {
                 if l.flags & LANG_CORRUPT != 0 {
                     return Err(());
                 }
-                return Ok(Some(l.doc));
+                return Ok(if l.flags & LANG_HAS_RAW != 0 {
+                    DocBytes::Stored(l.doc)
+                } else {
+                    DocBytes::NotStored
+                });
             }
         }
-        Ok(None)
+        Ok(DocBytes::Absent)
     }
 
     /// The pre-decoded image for `lang`, when the record carries one.
@@ -654,6 +726,25 @@ impl SegmentReader {
         unsafe { &*(self.ptr as *const SegHeader) }
     }
 
+    /// The whole read-only mapping.
+    ///
+    /// Needed because a v3 image's strings live in the segment-wide table, not
+    /// inside the image: `image::Image` resolves string offsets against this
+    /// slice. Borrowed from `&self`, exactly like a `RecordView`, so the two
+    /// cannot outlive the mapping independently.
+    #[inline]
+    pub fn bytes(&self) -> &[u8] {
+        unsafe { std::slice::from_raw_parts(self.ptr, self.len) }
+    }
+
+    /// Base address of the mapping. The zero-copy read path adds a string's
+    /// segment offset to this and hands the result to the Zend engine, so it
+    /// must be the same base `bytes()` is measured from.
+    #[inline]
+    pub fn base_ptr(&self) -> *mut u8 {
+        self.ptr
+    }
+
     #[inline]
     fn slot(&self, i: u64) -> &AtomicU64 {
         debug_assert!(i < self.slot_count);
@@ -737,6 +828,14 @@ pub struct SegmentWriter {
     arena_off: u64,
     /// Occupied slots (live + tombstone); load-factor input for compaction.
     used_slots: u64,
+    /// `image::Interner` ID -> offset of that string's `zend_string` in THIS
+    /// segment; 0 = not placed yet (offset 0 is the header, never a string).
+    ///
+    /// Indexed by ID rather than hashed: IDs are dense and assigned in order,
+    /// so this is one 4-byte slot per distinct string in the tree — ~350 KB on
+    /// hili's production data, against a `HashMap` probe on every string of
+    /// every record written.
+    str_off: Vec<u32>,
 }
 
 unsafe impl Send for SegmentWriter {}
@@ -808,6 +907,7 @@ impl SegmentWriter {
             slots_off,
             arena_off,
             used_slots: 0,
+            str_off: Vec::new(),
         };
         // Plain (non-atomic) header fields are written only before `magic` is
         // published and are immutable afterwards, so raw writes are sound.
@@ -852,6 +952,43 @@ impl SegmentWriter {
             ptr::copy_nonoverlapping(bytes.as_ptr(), self.ptr.add(off as usize), bytes.len());
         }
         h.arena_next.store(off + bytes.len() as u64, REL);
+        Ok(off)
+    }
+
+    /// Offset of `bytes` as a `zend_string` in this segment's arena, placing it
+    /// on first use. `id` is the daemon-global `image::Interner` ID, which is
+    /// what makes the table segment-wide: every document that uses the string
+    /// resolves to this one copy.
+    ///
+    /// This is the write half of the v3 layout change. The read half is
+    /// `image::Image`, which resolves string offsets against the whole segment
+    /// mapping rather than against the image it is reading.
+    pub fn place_string(&mut self, id: u32, bytes: &[u8]) -> Result<u32, WriteErr> {
+        let idx = id as usize;
+        if let Some(&off) = self.str_off.get(idx) {
+            if off != 0 {
+                return Ok(off);
+            }
+        }
+        // Build the entry standalone so `push_zend_string`'s own padding lands
+        // at a known place, then append it whole. Its length is a multiple of
+        // 8, which is what keeps `arena_next` 8-aligned for the next record —
+        // and 8-alignment is what lets PHP point a zval straight at these bytes.
+        let mut entry = Vec::with_capacity(crate::php_abi::ZS_HEADER_SIZE + bytes.len() + 8);
+        crate::php_abi::push_zend_string(&mut entry, bytes);
+        debug_assert_eq!(entry.len() % 8, 0, "string entry must keep the arena 8-aligned");
+        let off = self.append(&entry)?;
+        // Segment offsets are stored in the image as u32. A segment big enough
+        // to break that is far past every other limit here, but a silently
+        // truncated offset would be a wild pointer, so refuse it explicitly.
+        let off = u32::try_from(off).map_err(|_| WriteErr::ArenaFull)?;
+        if self.str_off.len() <= idx {
+            self.str_off.resize(idx + 1, 0);
+        }
+        self.str_off[idx] = off;
+        let h = self.header();
+        h.str_bytes.fetch_add(entry.len() as u64, REL);
+        h.str_count.fetch_add(1, REL);
         Ok(off)
     }
 
@@ -959,12 +1096,29 @@ impl SegmentWriter {
         self.used_slots * 2 >= self.slot_count || dead > (used / 4).max(4 << 20)
     }
 
-    pub fn set_counts(&self, nodes: u64, links: u64, doc_bytes: u64, img_bytes: u64) {
+    /// `doc_bytes` is the documents' size ON DISK; `raw_bytes` is how much of
+    /// that the segment actually holds (0 once the daemon stops shipping raw
+    /// JSON). Both come from the daemon because only it knows the difference.
+    pub fn set_counts(
+        &self,
+        nodes: u64,
+        links: u64,
+        doc_bytes: u64,
+        img_bytes: u64,
+        raw_bytes: u64,
+    ) {
         let h = self.header();
         h.node_count.store(nodes, REL);
         h.link_count.store(links, REL);
         h.doc_bytes.store(doc_bytes, REL);
         h.img_bytes.store(img_bytes, REL);
+        h.raw_bytes.store(raw_bytes, REL);
+    }
+
+    /// Bytes and entries the segment-wide string table has placed so far.
+    pub fn string_stats(&self) -> (u64, u64) {
+        let h = self.header();
+        (h.str_bytes.load(REL), h.str_count.load(REL))
     }
 }
 
@@ -1038,9 +1192,9 @@ mod tests {
         assert_eq!(rec.mtime, 1234);
         assert_eq!(rec.children(), vec![("alpha", false), ("beta", true)]);
         assert_eq!(rec.inlinks(), vec!["cont1", "cont2"]);
-        assert_eq!(rec.doc("").unwrap().unwrap(), doc);
+        assert_eq!(rec.doc("").unwrap().stored().unwrap(), doc);
         assert!(rec.doc("it").is_err(), "corrupt lang surfaces as Err");
-        assert_eq!(rec.doc("de").unwrap(), None);
+        assert_eq!(rec.doc("de").unwrap(), DocBytes::Absent);
 
         let ls = rec.langs();
         assert_eq!(ls.len(), 2);
@@ -1094,8 +1248,8 @@ mod tests {
         assert_eq!(rec.image("de").unwrap(), None, "no image for 'de'");
         assert_eq!(rec.image("fr").unwrap(), None, "absent language");
         // Documents still readable alongside their images.
-        assert_eq!(rec.doc("").unwrap(), Some(&b"{\"a\":1}"[..]));
-        assert_eq!(rec.doc("en").unwrap(), Some(&b"{\"b\":22}"[..]));
+        assert_eq!(rec.doc("").unwrap(), DocBytes::Stored(&b"{\"a\":1}"[..]));
+        assert_eq!(rec.doc("en").unwrap(), DocBytes::Stored(&b"{\"b\":22}"[..]));
 
         for l in rec.langs() {
             if l.img.is_empty() {
@@ -1109,6 +1263,49 @@ mod tests {
         for cut in 0..bytes.len() {
             let _ = RecordView::parse(&bytes[..cut]);
         }
+    }
+
+    /// A record built the way the daemon builds them from layout v3 on: image
+    /// present, document bytes absent. The distinction a reader depends on is
+    /// "exists but not stored" vs "no such language", and an empty byte slice
+    /// cannot express it — which is what LANG_HAS_RAW is for.
+    #[test]
+    fn a_document_without_stored_bytes_is_not_an_absent_one() {
+        let img = vec![0u8; 32];
+        let langs = vec![
+            LangDoc {
+                lang: "",
+                doc: &[],
+                corrupt: false,
+                doc_mtime: 1,
+                doc_size: 99,
+                image: &img,
+            },
+        ];
+        let children: Vec<(String, bool)> = Vec::new();
+        let inlinks: Vec<String> = Vec::new();
+        let bytes = encode_record(
+            &RecordInput {
+                name: "n",
+                rel_path: "n",
+                father: None,
+                generation: 1,
+                mtime: 0,
+                children: &children,
+                inlinks: &inlinks,
+                langs: &langs,
+            },
+            false,
+        );
+        let rec = RecordView::parse(&bytes).expect("record parses");
+        assert_eq!(rec.doc("").unwrap(), DocBytes::NotStored);
+        assert!(rec.doc("").unwrap().exists(), "the document still exists");
+        assert_eq!(rec.doc("xx").unwrap(), DocBytes::Absent);
+        assert!(!rec.doc("xx").unwrap().exists());
+        // The size the daemon recorded survives even though the bytes did not.
+        assert_eq!(rec.langs()[0].doc_size, 99);
+        // ...and the image is still reachable, which is the whole point.
+        assert_eq!(rec.image("").unwrap().map(<[u8]>::len), Some(32));
     }
 
     #[test]
@@ -1158,7 +1355,7 @@ mod tests {
             let input = mk_input(&name, &rel, Some("home"), i as u64 + 1, &[], &[], &langs);
             w.upsert(&name, &encode_record(&input, false)).unwrap();
         }
-        w.set_counts(500, 0, 0, 0);
+        w.set_counts(500, 0, 0, 0, 0);
         w.publish_ready();
 
         let r = SegmentReader::open(&dir, 1, 42).unwrap();
@@ -1166,7 +1363,7 @@ mod tests {
         match r.lookup("node-123") {
             Lookup::Found(rec) => {
                 assert_eq!(rec.rel_path(), "home/node-123");
-                assert_eq!(rec.doc("").unwrap().unwrap(), br#"{"n":123}"#);
+                assert_eq!(rec.doc("").unwrap().stored().unwrap(), br#"{"n":123}"#);
             }
             _ => panic!("node-123 should be found"),
         }
@@ -1187,7 +1384,7 @@ mod tests {
         match r.lookup("node-7") {
             Lookup::Found(rec) => {
                 assert_eq!(rec.generation, 999);
-                assert_eq!(rec.doc("").unwrap().unwrap(), doc);
+                assert_eq!(rec.doc("").unwrap().stored().unwrap(), doc);
             }
             _ => panic!("node-7 should be found"),
         }
@@ -1269,7 +1466,7 @@ mod tests {
                     match r.lookup(&name) {
                         Lookup::Found(rec) => {
                             // The doc must always be a complete JSON object.
-                            let doc = rec.doc("").expect("never corrupt").expect("present");
+                            let doc = rec.doc("").expect("never corrupt").stored().expect("present");
                             assert!(doc.starts_with(b"{") && doc.ends_with(b"}"));
                             assert_eq!(rec.name(), name);
                         }

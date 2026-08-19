@@ -66,6 +66,15 @@ class Cache extends DataContainer {
    * @see Cache::getStoredNodePath()
    * @see Cache::nodePathFolder()
    *
+   * Note on who still fills this cache: FilesDb::path() — the node resolver
+   * Environment::nodePath() wraps — only writes here on its filesystem path.
+   * When a quanta_db index is coherent, FilesDbExt resolves a name from the
+   * extension and never touches the shard tree, because there the symlink
+   * would only be guarding a lookup that is already syscall-free. The other
+   * callers — Node::save(), User::save(),
+   * NodeFactory::fastLoadFromRealPath(), FastDirList — write unconditionally,
+   * in every mode.
+   *
    * @param $env
    *   The Environment
    * @param null $nodepath
@@ -77,11 +86,22 @@ class Cache extends DataContainer {
       $node_name = $exp[count($exp) - 1];
     }
 
-    $cache_folder = Cache::nodePathFolder($env, $node_name);
+    // build=FALSE: work out the shard path without creating it. Both early
+    // returns below are the common case and neither needs the directory to
+    // exist — if the link is there, its parents are too. Building costs three
+    // is_dir() calls on three different paths, and PHP's stat cache keeps one
+    // entry, so they are three real stats on every call, including the calls
+    // that turn out to have nothing to write. The shard is created further
+    // down, at the point where this call is actually about to write.
+    $cache_folder = Cache::nodePathFolder($env, $node_name, FALSE);
     $link = $cache_folder . '/' . $node_name;
 
-    // Keep an existing link unless we were asked to replace it.
-    if (is_link($link) && !$overwrite) {
+    // Keep an existing link unless we were asked to replace it. $overwrite is
+    // tested first because it is a boolean and is_link() is an lstat: the
+    // caller that always overwrites (NodeFactory::fastLoadFromRealPath, once
+    // per row of an admin list) should not pay a syscall to ask a question
+    // whose answer it discards.
+    if (!$overwrite && is_link($link)) {
       return $link;
     }
 
@@ -92,11 +112,15 @@ class Cache extends DataContainer {
     // this guard inline when storeNodePath first topped the profiler; the other
     // caller, NodeFactory::fastLoadFromRealPath(), passes $overwrite = TRUE
     // unconditionally and so kept paying it, which put storeNodePath back at the
-    // top of the profiler at ~13% of an admin list page. Guarding here fixes both
-    // call sites at once.
+    // top of the profiler at ~13% of an admin list page. Guarding here fixes
+    // every call site at once.
     if (@readlink($link) === $nodepath) {
       return $link;
     }
+
+    // Past both guards, so this call is going to write: now the shard
+    // directories have to exist.
+    Cache::nodePathFolder($env, $node_name, TRUE);
 
     // Publish the link atomically: create it under a unique temporary name and
     // rename() it into place, which replaces whatever is there in one step.
@@ -122,12 +146,23 @@ class Cache extends DataContainer {
    * Check if a link to the given node name has been stored
    * in the caching system.
    *
+   * Returns the LINK, not its target: callers readlink() it themselves
+   * (FilesDb::path(), FastDirList).
+   *
+   * This is a cache with no guarantee behind it, so a caller that has no
+   * fallback for FALSE is a bug. FileFactory::checkFile() was one — it built
+   * "<link>/<filename>" and served the file straight off the symlink — and it
+   * broke silently once the resolver stopped writing here in coherent mode.
+   * It asks Environment::nodePath() now. The remaining writers
+   * are Node::save(), User::save(), NodeFactory::fastLoadFromRealPath() and
+   * FastDirList, which write in every mode.
+   *
    * @param Environment $env
    *  The environment.
    * @param string $node_name
    *  The name of the node.
    * @return bool|string
-   *  The real path of the node.
+   *  The path of the cache symlink to the node, or FALSE when there is none.
    */
   public static function getStoredNodePath($env, $node_name, $build = FALSE) {
     $cache_folder = Cache::nodePathFolder($env, $node_name, $build);

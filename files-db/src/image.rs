@@ -6,24 +6,59 @@
 //! see `model::load_docs`, so the encode is nearly free) and read by the
 //! extension straight out of its read-only mapping.
 //!
-//! **No pointers anywhere.** Every reference is an offset from the start of the
-//! image, so the same bytes are valid at whatever address each worker happens
-//! to map the segment at. String entries are ready-made `zend_string`s
-//! (`php_abi::push_zend_string`), which is what lets a zval point directly into
-//! shared memory instead of copying.
+//! **No pointers anywhere.** Every reference is an offset — within the image
+//! for value nodes, within the whole SEGMENT for strings — so the same bytes
+//! are valid at whatever address each worker happens to map the segment at.
+//! String entries are ready-made `zend_string`s (`php_abi::push_zend_string`),
+//! which is what lets a zval point directly into shared memory instead of
+//! copying.
+//!
+//! ## Strings live in the segment, not in the image (layout v3)
+//!
+//! Until v2 each document carried its own string table, so every one of a tree
+//! of same-shaped nodes re-emitted `"title"`, `"language"`, `"permissions"` as
+//! its own 32-byte `zend_string`. Modelled over hili's production tree
+//! (111,124 documents, `tests/bench/image-size.py --dedup`):
+//!
+//! ```text
+//! per-document string tables : 2,112,806 entries, 89,500,320 B
+//! segment-wide string table  :    87,585 entries,  9,844,208 B
+//! saving                     :               79,656,112 B  (89.0%)
+//! ```
+//!
+//! So strings moved out. The encoder now emits, in every string slot, a
+//! DAEMON-GLOBAL STRING ID from [`Interner`]; [`resolve`] later rewrites those
+//! ids into offsets in the segment being written, placing each string in the
+//! arena the first time that segment needs it. Two consequences worth stating
+//! plainly:
+//!
+//! * an id-image is NOT readable — the header carries [`FLAG_STRING_IDS`] and
+//!   [`Image::open`] refuses it. Publishing an unresolved image would hand PHP
+//!   a string id as an address, so this is a hard error, not a fallback;
+//! * string offsets are unique across a whole epoch, where they used to
+//!   collide between documents at small image-relative values. That is what
+//!   makes a per-request memo of interned keys correct (see `interned_key` in
+//!   lib.rs, whose comment records why it was NOT safe before).
 //!
 //! PHP-free, like `php_abi`: `qdbd` links this without linking PHP.
+
+use std::collections::HashMap;
 
 use serde_json::Value;
 
 use crate::php_abi;
 
 pub const MAGIC: u32 = 0x4942_4451; // "QDBI"
-pub const VERSION: u16 = 1;
+/// 2 = strings are segment-resident (v1 carried them inside the image).
+pub const VERSION: u16 = 2;
 pub const HEADER_SIZE: usize = 16;
 
 /// Bit 0: string entries are ready-made `zend_string` structs.
 pub const FLAG_ZEND_STRINGS: u16 = 1;
+/// Bit 1: every string slot still holds an [`Interner`] ID, not an offset —
+/// the image came out of [`encode`] and has not been through [`resolve`] yet.
+/// Readers must refuse it.
+pub const FLAG_STRING_IDS: u16 = 2;
 
 /// Mirrors PHP's own nesting limit for `json_decode`. The materializer
 /// recurses, so a hostile document must not be able to blow the C stack.
@@ -52,6 +87,74 @@ pub enum ImageError {
 }
 
 // ---------------------------------------------------------------------------
+// Interner (daemon side)
+// ---------------------------------------------------------------------------
+
+/// The daemon's one table of distinct document strings, shared by every
+/// document in the tree. Owns the bytes exactly once; images reference entries
+/// by index.
+///
+/// **IDs are never reused or renumbered.** An image is encoded once, at
+/// document load, and then republished into many segments over the daemon's
+/// life (`apply_link`, `refresh_children` and `publish_full` all republish
+/// without re-imaging) — renumbering would invalidate every image already in
+/// the model. The cost of that choice is that a string which no live document
+/// references any more keeps its slot in this table until the daemon restarts.
+/// It does NOT keep its bytes in the segment: [`resolve`] places a string only
+/// when a document being written actually asks for it, so each compaction
+/// naturally drops the unreferenced ones.
+#[derive(Default)]
+pub struct Interner {
+    map: HashMap<Box<str>, u32>,
+    strings: Vec<Box<str>>,
+}
+
+// The daemon builds and queries the interner; the extension only ever reads
+// images that were already resolved against it. Everything here is therefore
+// dead code in the cdylib target and live in `qdbd` — the split is the point,
+// not an oversight.
+#[allow(dead_code)]
+impl Interner {
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// ID for `s`, interning it if new.
+    pub fn intern(&mut self, s: &str) -> u32 {
+        if let Some(id) = self.map.get(s) {
+            return *id;
+        }
+        let id = self.strings.len() as u32;
+        let boxed: Box<str> = s.into();
+        self.strings.push(boxed.clone());
+        self.map.insert(boxed, id);
+        id
+    }
+
+    #[must_use]
+    pub fn get(&self, id: u32) -> Option<&str> {
+        self.strings.get(id as usize).map(|s| &**s)
+    }
+
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.strings.len()
+    }
+
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.strings.is_empty()
+    }
+
+    /// Bytes of text held (diagnostics; excludes the map/vec overhead).
+    #[must_use]
+    pub fn text_bytes(&self) -> usize {
+        self.strings.iter().map(|s| s.len()).sum()
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Encoder (daemon side)
 // ---------------------------------------------------------------------------
 
@@ -70,41 +173,32 @@ pub enum ImageError {
 ///   1  _pad       u8
 ///   2  _pad       u16
 ///   4  count      u32   list: elements | map: pairs | else 0
-///   8  payload    u64   long: i64 | double: f64 bits | str: str_off
+///   8  payload    u64   long: i64 | double: f64 bits | str: str_ref
 ///                       list: elems_off | map: pairs_off
 ///
 /// list elements: count x u32 node_off
-/// map pairs:     count x { u32 key_str_off, u32 val_node_off }
-/// string entry:  a zend_string (see php_abi::push_zend_string)
+/// map pairs:     count x { u32 key_str_ref, u32 val_node_off }
 /// ```
 ///
-/// Strings are deduplicated within the document, which collapses the repeated
-/// keys of same-shaped objects (file lists, `permissions`) that Quanta
-/// documents are full of.
-pub struct Encoder {
+/// A `str_ref` is an [`Interner`] ID while [`FLAG_STRING_IDS`] is set, and a
+/// SEGMENT-relative offset of a `zend_string` (see `php_abi::push_zend_string`)
+/// once [`resolve`] has cleared that flag. Node and table offsets are always
+/// image-relative and are never rewritten.
+pub struct Encoder<'i> {
     buf: Vec<u8>,
-    strings: std::collections::HashMap<String, u32>,
+    interner: &'i mut Interner,
     node_count: u32,
 }
 
-impl Encoder {
-    fn new() -> Self {
+impl<'i> Encoder<'i> {
+    fn new(interner: &'i mut Interner) -> Self {
         let mut buf = Vec::with_capacity(256);
         buf.resize(HEADER_SIZE, 0);
         Self {
             buf,
-            strings: std::collections::HashMap::new(),
+            interner,
             node_count: 0,
         }
-    }
-
-    fn intern(&mut self, s: &str) -> u32 {
-        if let Some(off) = self.strings.get(s) {
-            return *off;
-        }
-        let off = php_abi::push_zend_string(&mut self.buf, s.as_bytes());
-        self.strings.insert(s.to_string(), off);
-        off
     }
 
     /// Reserve a value node, returning its offset. Filled in by the caller.
@@ -143,16 +237,16 @@ impl Encoder {
                 }
             }
             Value::String(s) => {
-                let so = self.intern(s);
-                self.write_node(off, TAG_STR, 0, u64::from(so));
+                let id = self.interner.intern(s);
+                self.write_node(off, TAG_STR, 0, u64::from(id));
             }
             Value::Array(items) => {
                 if items.len() > MAX_COUNT {
                     return Err(ImageError::TooLarge);
                 }
                 // Children first, then the offset table: an element's own
-                // encoding may append strings, so the table cannot be
-                // contiguous with the recursion.
+                // encoding appends nodes, so the table cannot be contiguous
+                // with the recursion.
                 let mut offs = Vec::with_capacity(items.len());
                 for item in items {
                     offs.push(self.encode_value(item, depth + 1)?);
@@ -176,16 +270,16 @@ impl Encoder {
                 // zend_hash_add_new (which assumes no duplicates).
                 let mut pairs = Vec::with_capacity(map.len());
                 for (k, val) in map {
-                    let ko = self.intern(k);
+                    let kid = self.interner.intern(k);
                     let vo = self.encode_value(val, depth + 1)?;
-                    pairs.push((ko, vo));
+                    pairs.push((kid, vo));
                 }
                 while self.buf.len() % 4 != 0 {
                     self.buf.push(0);
                 }
                 let table = self.buf.len() as u32;
-                for (ko, vo) in &pairs {
-                    self.buf.extend_from_slice(&ko.to_le_bytes());
+                for (kid, vo) in &pairs {
+                    self.buf.extend_from_slice(&kid.to_le_bytes());
                     self.buf.extend_from_slice(&vo.to_le_bytes());
                 }
                 self.write_node(off, TAG_MAP, map.len() as u32, u64::from(table));
@@ -195,13 +289,13 @@ impl Encoder {
     }
 }
 
-/// Encode one decoded document. Returns an empty vec if the document cannot be
-/// imaged (too deep, too large) — callers treat that as "no image", never as an
-/// error: the raw bytes are still in the record and the reader falls back to
-/// parsing them.
+/// Encode one decoded document into an ID-image: every string slot holds an
+/// [`Interner`] ID and must be run through [`resolve`] before it can be
+/// published. Returns an empty vec if the document cannot be imaged (too deep,
+/// too large) — callers treat that as "no image", never as an error.
 #[must_use]
-pub fn encode(v: &Value) -> Vec<u8> {
-    let mut e = Encoder::new();
+pub fn encode(v: &Value, interner: &mut Interner) -> Vec<u8> {
+    let mut e = Encoder::new(interner);
     let Ok(root) = e.encode_value(v, 0) else {
         return Vec::new();
     };
@@ -209,10 +303,116 @@ pub fn encode(v: &Value) -> Vec<u8> {
     let buf = &mut e.buf;
     buf[0..4].copy_from_slice(&MAGIC.to_le_bytes());
     buf[4..6].copy_from_slice(&VERSION.to_le_bytes());
-    buf[6..8].copy_from_slice(&FLAG_ZEND_STRINGS.to_le_bytes());
+    buf[6..8].copy_from_slice(&(FLAG_ZEND_STRINGS | FLAG_STRING_IDS).to_le_bytes());
     buf[8..12].copy_from_slice(&node_count.to_le_bytes());
     buf[12..16].copy_from_slice(&root.to_le_bytes());
     e.buf
+}
+
+// ---------------------------------------------------------------------------
+// Resolver (daemon side; runs once per record per segment)
+// ---------------------------------------------------------------------------
+
+fn wr_u32(b: &mut [u8], off: usize, v: u32) -> Option<()> {
+    b.get_mut(off..off + 4)?.copy_from_slice(&v.to_le_bytes());
+    Some(())
+}
+
+fn wr_u64(b: &mut [u8], off: usize, v: u64) -> Option<()> {
+    b.get_mut(off..off + 8)?.copy_from_slice(&v.to_le_bytes());
+    Some(())
+}
+
+/// Rewrite every string reference in an ID-image into a segment offset,
+/// returning the publishable image.
+///
+/// `place` is called once per string reference with the [`Interner`] ID and
+/// must return the offset of that string's `zend_string` inside the segment
+/// being written, appending it to the arena if it is not there yet. Returning
+/// `None` (arena full, id unknown) aborts the whole resolve: a half-rewritten
+/// image would hand PHP an ID as an address, so there is no partial success.
+///
+/// Walks the value tree rather than carrying a relocation table. The table
+/// would be ~4 bytes per string reference — 8 MB of daemon RSS on hili's tree —
+/// to save a walk that only runs when a record is actually written, which is
+/// the wrong side of that trade.
+#[must_use]
+pub fn resolve(img: &[u8], mut place: impl FnMut(u32) -> Option<u32>) -> Option<Vec<u8>> {
+    if img.len() < HEADER_SIZE {
+        return None;
+    }
+    let flags = u16::from_le_bytes([img[6], img[7]]);
+    if flags & FLAG_STRING_IDS == 0 {
+        // Already resolved. Rewriting offsets as if they were IDs is exactly
+        // the corruption this flag exists to prevent, so refuse rather than
+        // silently double-resolve.
+        return None;
+    }
+    let root = u32::from_le_bytes([img[12], img[13], img[14], img[15]]);
+    let mut out = img.to_vec();
+    walk_resolve(&mut out, root, 0, &mut place)?;
+    let cleared = (flags & !FLAG_STRING_IDS).to_le_bytes();
+    out[6..8].copy_from_slice(&cleared);
+    Some(out)
+}
+
+fn walk_resolve(
+    buf: &mut Vec<u8>,
+    off: u32,
+    depth: u32,
+    place: &mut impl FnMut(u32) -> Option<u32>,
+) -> Option<()> {
+    if depth > MAX_DEPTH {
+        return None;
+    }
+    let o = off as usize;
+    if o % 8 != 0 || o.checked_add(NODE_SIZE)? > buf.len() {
+        return None;
+    }
+    let tag = *buf.get(o)?;
+    let count = rd_u32(buf, o + 4)?;
+    let payload = rd_u64(buf, o + 8)?;
+    match tag {
+        TAG_STR => {
+            let id = u32::try_from(payload).ok()?;
+            let so = place(id)?;
+            wr_u64(buf, o + 8, u64::from(so))?;
+        }
+        TAG_LIST => {
+            if count as usize > MAX_COUNT {
+                return None;
+            }
+            let table = u32::try_from(payload).ok()? as usize;
+            let end = table.checked_add((count as usize).checked_mul(4)?)?;
+            if end > buf.len() {
+                return None;
+            }
+            for i in 0..count as usize {
+                let eo = rd_u32(buf, table + i * 4)?;
+                walk_resolve(buf, eo, depth + 1, place)?;
+            }
+        }
+        TAG_MAP => {
+            if count as usize > MAX_COUNT {
+                return None;
+            }
+            let table = u32::try_from(payload).ok()? as usize;
+            let end = table.checked_add((count as usize).checked_mul(8)?)?;
+            if end > buf.len() {
+                return None;
+            }
+            for i in 0..count as usize {
+                let kid = rd_u32(buf, table + i * 8)?;
+                let vo = rd_u32(buf, table + i * 8 + 4)?;
+                let so = place(kid)?;
+                wr_u32(buf, table + i * 8, so)?;
+                walk_resolve(buf, vo, depth + 1, place)?;
+            }
+        }
+        TAG_NULL | TAG_FALSE | TAG_TRUE | TAG_LONG | TAG_DOUBLE => {}
+        _ => return None,
+    }
+    Some(())
 }
 
 // ---------------------------------------------------------------------------
@@ -222,8 +422,13 @@ pub fn encode(v: &Value) -> Vec<u8> {
 /// A validated image. Construction checks the header and geometry; the accessors
 /// bounds-check every offset, so a damaged image yields `None` (the caller then
 /// parses the raw bytes) instead of reading outside the mapping.
+///
+/// `seg` is the whole segment mapping, because that is where the strings live
+/// (see the module docs). It is a superset of `bytes`, and both are borrowed
+/// from the same pinned mapping.
 pub struct Image<'a> {
     pub bytes: &'a [u8],
+    pub seg: &'a [u8],
     pub root: u32,
 }
 
@@ -233,7 +438,8 @@ pub enum Node<'a> {
     Bool(bool),
     Long(i64),
     Double(f64),
-    /// Offset of the `zend_string` header, plus its bytes for the copy path.
+    /// SEGMENT offset of the `zend_string` header, plus its bytes for the copy
+    /// path.
     Str { off: u32, bytes: &'a [u8] },
     List { count: u32, table: u32 },
     Map { count: u32, table: u32 },
@@ -254,21 +460,30 @@ fn rd_u64(b: &[u8], off: usize) -> Option<u64> {
 }
 
 impl<'a> Image<'a> {
-    /// Validate the header. Returns None for anything unrecognised — a foreign
-    /// or truncated image must degrade to the parse path, never be trusted.
+    /// Validate the header. Returns None for anything unrecognised — a foreign,
+    /// truncated or still-unresolved image must degrade to the parse path,
+    /// never be trusted.
     #[must_use]
-    pub fn open(bytes: &'a [u8]) -> Option<Self> {
+    pub fn open(bytes: &'a [u8], seg: &'a [u8]) -> Option<Self> {
         if bytes.len() < HEADER_SIZE {
             return None;
         }
         if rd_u32(bytes, 0)? != MAGIC || rd_u16(bytes, 4)? != VERSION {
             return None;
         }
-        if rd_u16(bytes, 6)? & FLAG_ZEND_STRINGS == 0 {
+        let flags = rd_u16(bytes, 6)?;
+        if flags & FLAG_ZEND_STRINGS == 0 {
+            return None;
+        }
+        // An ID-image never reached `resolve`. Its string slots hold interner
+        // IDs, which as addresses are small integers — reading one is a fault,
+        // not a wrong answer. Refuse it here, once, rather than bounds-checking
+        // the same mistake at every accessor.
+        if flags & FLAG_STRING_IDS != 0 {
             return None;
         }
         let root = rd_u32(bytes, 12)?;
-        let img = Image { bytes, root };
+        let img = Image { bytes, seg, root };
         // Cheap sanity check that the root is addressable; the recursive walk
         // bounds-checks everything else as it goes.
         img.node(root)?;
@@ -316,15 +531,16 @@ impl<'a> Image<'a> {
         })
     }
 
-    /// Bytes of the `zend_string` at `off` (without the header or the NUL).
+    /// Bytes of the `zend_string` at segment offset `off` (without the header
+    /// or the NUL).
     #[must_use]
     pub fn string_bytes(&self, off: u32) -> Option<&'a [u8]> {
         let o = off as usize;
         if o % 8 != 0 {
             return None;
         }
-        let len = php_abi::zend_string_len(self.bytes, o)?;
-        self.bytes.get(o + php_abi::ZS_OFF_VAL..o + php_abi::ZS_OFF_VAL + len)
+        let len = php_abi::zend_string_len(self.seg, o)?;
+        self.seg.get(o + php_abi::ZS_OFF_VAL..o + php_abi::ZS_OFF_VAL + len)
     }
 
     /// Offset of the nth element of a list.
@@ -346,6 +562,43 @@ impl<'a> Image<'a> {
     pub fn root_is_map(&self) -> bool {
         matches!(self.node(self.root), Some(Node::Map { .. }))
     }
+
+    /// Walk the image back into a `serde_json::Value`.
+    ///
+    /// The read path never needs this — it materializes zvals directly — but
+    /// the daemon-free consumers do: `update()`'s read-modify-write and
+    /// `find()`'s `order_by: json:` both want a `Value` and, since the record
+    /// no longer carries the raw bytes, the image is the only in-memory source.
+    /// Depth-bounded like every other walk here.
+    #[must_use]
+    pub fn to_value(&self, off: u32, depth: u32) -> Option<Value> {
+        if depth > MAX_DEPTH {
+            return None;
+        }
+        Some(match self.node(off)? {
+            Node::Null => Value::Null,
+            Node::Bool(b) => Value::Bool(b),
+            Node::Long(i) => Value::from(i),
+            Node::Double(d) => Value::from(d),
+            Node::Str { bytes, .. } => Value::String(String::from_utf8(bytes.to_vec()).ok()?),
+            Node::List { count, table } => {
+                let mut out = Vec::with_capacity(count as usize);
+                for i in 0..count {
+                    out.push(self.to_value(self.list_elem(table, i)?, depth + 1)?);
+                }
+                Value::Array(out)
+            }
+            Node::Map { count, table } => {
+                let mut m = serde_json::Map::new();
+                for i in 0..count {
+                    let (k, v) = self.map_pair(table, i)?;
+                    let key = String::from_utf8(self.string_bytes(k)?.to_vec()).ok()?;
+                    m.insert(key, self.to_value(v, depth + 1)?);
+                }
+                Value::Object(m)
+            }
+        })
+    }
 }
 
 #[cfg(test)]
@@ -353,36 +606,30 @@ mod tests {
     use super::*;
     use serde_json::json;
 
-    fn roundtrip(v: &Value) -> Vec<u8> {
-        let img = encode(v);
+    /// Encode + resolve into a standalone buffer pair, mimicking what a segment
+    /// does: strings are appended to `seg` (which starts with a dummy header so
+    /// offset 0 stays an invalid sentinel) and referenced from there.
+    fn build(v: &Value) -> (Vec<u8>, Vec<u8>, Interner) {
+        let mut interner = Interner::new();
+        let img = encode(v, &mut interner);
         assert!(!img.is_empty(), "encode produced nothing for {v}");
-        img
+        let mut seg = vec![0u8; 64];
+        let mut placed: HashMap<u32, u32> = HashMap::new();
+        let resolved = resolve(&img, |id| {
+            if let Some(o) = placed.get(&id) {
+                return Some(*o);
+            }
+            let s = interner.get(id)?;
+            let o = php_abi::push_zend_string(&mut seg, s.as_bytes());
+            placed.insert(id, o);
+            Some(o)
+        })
+        .expect("resolve");
+        (resolved, seg, interner)
     }
 
-    /// Walk an image back into a serde Value so encode/decode can be compared
-    /// against the input directly.
     fn read_back(img: &Image, off: u32) -> Value {
-        match img.node(off).expect("valid node") {
-            Node::Null => Value::Null,
-            Node::Bool(b) => Value::Bool(b),
-            Node::Long(i) => Value::from(i),
-            Node::Double(d) => Value::from(d),
-            Node::Str { bytes, .. } => Value::String(String::from_utf8(bytes.to_vec()).unwrap()),
-            Node::List { count, table } => Value::Array(
-                (0..count)
-                    .map(|i| read_back(img, img.list_elem(table, i).unwrap()))
-                    .collect(),
-            ),
-            Node::Map { count, table } => {
-                let mut m = serde_json::Map::new();
-                for i in 0..count {
-                    let (k, v) = img.map_pair(table, i).unwrap();
-                    let key = String::from_utf8(img.string_bytes(k).unwrap().to_vec()).unwrap();
-                    m.insert(key, read_back(img, v));
-                }
-                Value::Object(m)
-            }
-        }
+        img.to_value(off, 0).expect("valid image")
     }
 
     #[test]
@@ -410,36 +657,120 @@ mod tests {
             json!({"": "empty key", "0": "zero", "-3": "neg"}),
         ];
         for v in cases {
-            let buf = roundtrip(&v);
-            let img = Image::open(&buf).expect("header validates");
+            let (buf, seg, _i) = build(&v);
+            let img = Image::open(&buf, &seg).expect("header validates");
             assert_eq!(read_back(&img, img.root), v, "round trip of {v}");
         }
     }
 
     #[test]
-    fn strings_are_deduplicated_within_a_document() {
-        let v = json!([{"k": "v"}, {"k": "v"}, {"k": "v"}, {"k": "v"}]);
-        let buf = encode(&v);
-        // "k" and "v" must each be stored once, not four times.
-        let occurrences = buf.windows(1).filter(|w| w[0] == b'k').count();
-        assert!(occurrences <= 2, "key bytes repeated {occurrences} times");
+    fn strings_are_shared_across_documents() {
+        // The whole point of the segment-wide table: two documents that use the
+        // same key and value resolve to the SAME segment offsets, and the
+        // second document adds nothing to the arena for them.
+        let mut interner = Interner::new();
+        let a = encode(&json!({"k": "v", "other": 1}), &mut interner);
+        let b = encode(&json!({"k": "v", "more": 2}), &mut interner);
+        let mut seg = vec![0u8; 64];
+        let mut placed: HashMap<u32, u32> = HashMap::new();
+
+        fn place_into(
+            seg: &mut Vec<u8>,
+            placed: &mut HashMap<u32, u32>,
+            interner: &Interner,
+            id: u32,
+        ) -> Option<u32> {
+            if let Some(o) = placed.get(&id) {
+                return Some(*o);
+            }
+            let o = php_abi::push_zend_string(seg, interner.get(id)?.as_bytes());
+            placed.insert(id, o);
+            Some(o)
+        }
+
+        let ra = resolve(&a, |id| place_into(&mut seg, &mut placed, &interner, id)).unwrap();
+        let before = seg.len();
+        let rb = resolve(&b, |id| place_into(&mut seg, &mut placed, &interner, id)).unwrap();
+        // Only "more" is new; "k" and "v" were placed by document A.
+        assert!(
+            seg.len() - before < 40,
+            "second document re-emitted shared strings ({} B)",
+            seg.len() - before
+        );
+
+        let ia = Image::open(&ra, &seg).unwrap();
+        let ib = Image::open(&rb, &seg).unwrap();
+        let (ka, va) = match ia.node(ia.root).unwrap() {
+            Node::Map { table, .. } => ia.map_pair(table, 0).unwrap(),
+            _ => panic!("root must be a map"),
+        };
+        let (kb, vb) = match ib.node(ib.root).unwrap() {
+            Node::Map { table, .. } => ib.map_pair(table, 0).unwrap(),
+            _ => panic!("root must be a map"),
+        };
+        assert_eq!(ka, kb, "shared key must resolve to one segment offset");
+        let so = |img: &Image, off: u32| match img.node(off).unwrap() {
+            Node::Str { off, .. } => off,
+            _ => panic!("expected a string"),
+        };
+        assert_eq!(so(&ia, va), so(&ib, vb), "shared value must share an offset");
+        // ...and the bytes are in the segment, not in either image.
+        assert!(!ra.windows(1).any(|w| w == b"v"), "image must not carry string bytes");
+    }
+
+    #[test]
+    fn unresolved_images_are_refused() {
+        let mut interner = Interner::new();
+        let img = encode(&json!({"a": "b"}), &mut interner);
+        let seg = vec![0u8; 64];
+        assert!(
+            Image::open(&img, &seg).is_none(),
+            "an ID-image must never open: its string slots are not addresses"
+        );
+        // ...and it cannot be resolved twice either.
+        let mut s2 = vec![0u8; 64];
+        let r = resolve(&img, |id| {
+            Some(php_abi::push_zend_string(&mut s2, interner.get(id)?.as_bytes()))
+        })
+        .unwrap();
+        assert!(resolve(&r, |_| Some(8)).is_none(), "double resolve must fail");
+    }
+
+    #[test]
+    fn resolve_fails_whole_image_when_placement_fails() {
+        let mut interner = Interner::new();
+        let img = encode(&json!({"a": "b", "c": "d"}), &mut interner);
+        // A placer that runs out of room after the first string must abort the
+        // whole image, not publish one half-rewritten.
+        let mut n = 0;
+        assert!(resolve(&img, |_| {
+            n += 1;
+            if n > 1 { None } else { Some(8) }
+        })
+        .is_none());
     }
 
     #[test]
     fn rejects_foreign_or_truncated_images() {
-        assert!(Image::open(&[]).is_none());
-        assert!(Image::open(&[0u8; 8]).is_none());
-        let mut buf = encode(&json!({"a": 1}));
-        buf[0] ^= 0xff; // corrupt magic
-        assert!(Image::open(&buf).is_none());
+        let (good, seg, _i) = build(&json!({"a": 1, "b": [1, 2, {"c": "d"}]}));
+        assert!(Image::open(&[], &seg).is_none());
+        assert!(Image::open(&[0u8; 8], &seg).is_none());
+        let mut bad = good.clone();
+        bad[0] ^= 0xff; // corrupt magic
+        assert!(Image::open(&bad, &seg).is_none());
         // A payload truncated anywhere must be rejected or safely walkable,
         // never a panic or an out-of-bounds read.
-        let good = encode(&json!({"a": 1, "b": [1, 2, {"c": "d"}]}));
         for cut in 0..good.len() {
-            if let Some(img) = Image::open(&good[..cut]) {
-                // Walking a surviving header must still be bounds-checked.
+            if let Some(img) = Image::open(&good[..cut], &seg) {
                 let _ = img.node(img.root);
                 let _ = img.root_is_map();
+                let _ = img.to_value(img.root, 0);
+            }
+        }
+        // Same for a truncated segment: the strings are out of bounds now.
+        for cut in 0..seg.len() {
+            if let Some(img) = Image::open(&good, &seg[..cut]) {
+                let _ = img.to_value(img.root, 0);
             }
         }
     }
@@ -450,13 +781,17 @@ mod tests {
         for _ in 0..(MAX_DEPTH + 10) {
             v = Value::Array(vec![v]);
         }
-        assert!(encode(&v).is_empty(), "over-deep document must not be imaged");
+        let mut interner = Interner::new();
+        assert!(
+            encode(&v, &mut interner).is_empty(),
+            "over-deep document must not be imaged"
+        );
     }
 
     #[test]
     fn string_offsets_are_eight_byte_aligned() {
-        let buf = encode(&json!({"aa": "b", "ccc": "dddd", "e": ""}));
-        let img = Image::open(&buf).unwrap();
+        let (buf, seg, _i) = build(&json!({"aa": "b", "ccc": "dddd", "e": ""}));
+        let img = Image::open(&buf, &seg).unwrap();
         let Node::Map { count, table } = img.node(img.root).unwrap() else {
             panic!("root must be a map");
         };
@@ -464,5 +799,17 @@ mod tests {
             let (k, _) = img.map_pair(table, i).unwrap();
             assert_eq!(k % 8, 0, "zend_string must be 8-aligned");
         }
+    }
+
+    #[test]
+    fn interner_ids_are_stable_and_dedup() {
+        let mut i = Interner::new();
+        let a = i.intern("title");
+        let b = i.intern("body");
+        assert_eq!(i.intern("title"), a);
+        assert_ne!(a, b);
+        assert_eq!(i.get(a), Some("title"));
+        assert_eq!(i.len(), 2);
+        assert_eq!(i.get(999), None);
     }
 }

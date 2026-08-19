@@ -122,41 +122,33 @@ function integrity_check_parent_nodes($env,$path,$subnodes_types){
  *   The Environment, to reach the node database.
  */
 function integrity_check_node($node, $env = NULL){
-  $indexed = ($env !== NULL) && $env->db()->resolvesTo($node->getName(), $node->path);
+  // $env stays optional so an old caller cannot fatal, but it is no longer
+  // optional to HAVE one — the node database is where the repair happens, and
+  // the node is carrying its Environment anyway.
+  $db = ($env === NULL ? $node->getEnv() : $env)->db();
+  // 'at': this repair is about the documents in THIS directory, so the
+  // database is told where the node is rather than asked to resolve the name.
+  $at = array('at' => $node->path);
 
   //check if parent node has translation files
-  if ($indexed) {
-    $langs = $env->db()->langs($node->getName());
-    $language_codes = array_values(array_filter($langs));
-    $has_neutral = in_array('', $langs, TRUE);
-  }
-  else {
-    $language_codes = array();
-    foreach ((array) glob($node->path . '/data_*.json') as $language_file) {
-      $language_codes[] = substr(basename($language_file), strlen('data_'), -strlen('.json'));
-    }
-    $has_neutral = file_exists($node->path . '/data.json');
-  }
+  $langs = $db->langs($node->getName(), $at);
+  $language_codes = array_values(array_filter($langs));
+  $has_neutral = in_array('', $langs, TRUE);
 
   foreach ($language_codes as $lang){
-    $language_file = $node->path . '/data_' . $lang . '.json';
     if($has_neutral){
       // If data.json exists, delete data_<language>.json
-      if (!$indexed || $env->db()->deleteDoc($node->getName(), $lang) === NULL) {
-        unlink($language_file);
-      }
+      $db->deleteDoc($node->getName(), $lang, $at);
     }
     else{
       // If data.json not exist, rename data_<language>.json to data.json.
       // Write the survivor first and drop the original second, so an
       // interruption leaves a duplicate this same check repairs next run,
-      // rather than no document at all.
-      $raw = $indexed ? $env->db()->raw($node->getName(), $lang) : NULL;
-      if ($raw !== NULL && $env->db()->putRaw($node->getName(), $raw)) {
-        $env->db()->deleteDoc($node->getName(), $lang);
-      }
-      else {
-        rename($language_file, $node->path.'/data.json');
+      // rather than no document at all. putRaw() so the bytes are not
+      // re-encoded on the way through.
+      $raw = $db->raw($node->getName(), $lang, $at);
+      if ($raw !== NULL && $db->putRaw($node->getName(), $raw, $at)) {
+        $db->deleteDoc($node->getName(), $lang, $at);
       }
       // Every later language now collapses onto the neutral document.
       $has_neutral = TRUE;
@@ -165,19 +157,15 @@ function integrity_check_node($node, $env = NULL){
 }
 
 function integrity_check_sub_nodes($env,$node,$subnode,$subnode_type,$translated_nodes,$payload_data = []){
-  // The subnode's documents, from the index when it can be trusted for this
-  // path (files-db/docs/api-contract.md §9). $subnode_language_files keeps its
-  // original meaning — the translated documents only, never the neutral one.
-  $indexed = $env->db()->resolvesTo($subnode->getName(), $subnode->path);
-  if ($indexed) {
-    $subnode_langs = $env->db()->langs($subnode->getName());
-    $subnode_language_files = array_values(array_filter($subnode_langs));
-    $subnode_has_neutral = in_array('', $subnode_langs, TRUE);
-  }
-  else {
-    $subnode_language_files = (array) glob($subnode->path . '/data_*.json');
-    $subnode_has_neutral = file_exists($subnode->path . '/data.json');
-  }
+  // The subnode's documents. 'at' names the directory this repair is about, so
+  // the database answers about it rather than about wherever the globally
+  // unique name resolves. $subnode_language_files keeps its original meaning —
+  // the translated documents only, never the neutral one.
+  $at = array('at' => $subnode->path);
+  $db = $env->db();
+  $subnode_langs = $db->langs($subnode->getName(), $at);
+  $subnode_language_files = array_values(array_filter($subnode_langs));
+  $subnode_has_neutral = in_array('', $subnode_langs, TRUE);
   $language= \Quanta\Common\Localization::getLanguage($env);
   //check if subnode not exist or the subnode exist but it is a translated node and not has any translated file          
   if (!$subnode->exists || (in_array($subnode_type,$translated_nodes) && !count($subnode_language_files))) {
@@ -203,14 +191,9 @@ function integrity_check_sub_nodes($env,$node,$subnode,$subnode_type,$translated
   // buildNode() above may have just created the subnode, so re-read its
   // documents rather than trusting the snapshot taken before it ran. The
   // legacy code re-checked data.json here too, inside the branch below.
-  if ($indexed) {
-    $subnode_langs = $env->db()->langs($subnode->getName());
-    $subnode_language_files = array_values(array_filter($subnode_langs));
-    $subnode_has_neutral = in_array('', $subnode_langs, TRUE);
-  }
-  else {
-    $subnode_has_neutral = file_exists($subnode->path . '/data.json');
-  }
+  $subnode_langs = $db->langs($subnode->getName(), $at);
+  $subnode_language_files = array_values(array_filter($subnode_langs));
+  $subnode_has_neutral = in_array('', $subnode_langs, TRUE);
 
   if(in_array($subnode_type,$translated_nodes) && $subnode_has_neutral){
     //check if the node is translated but contain data.json file
@@ -218,21 +201,15 @@ function integrity_check_sub_nodes($env,$node,$subnode,$subnode_type,$translated
     //check if the node has translated file
     if(count($subnode_language_files)){
       // If data_<language>.json exists, delete data.json
-      if (!$indexed || $env->db()->deleteDoc($subnode->getName(), NULL) === NULL) {
-        unlink($subnode->path.'/data.json');
-      }
+      $db->deleteDoc($subnode->getName(), NULL, $at);
     }
     else{
       // If data_<language>.json does not exist, rename data.json to
       // data_<language>.json. Survivor first, original second, so an
       // interruption leaves a duplicate rather than nothing.
-      $raw = $indexed ? $env->db()->raw($subnode->getName(), NULL) : NULL;
-      if ($raw !== NULL && $env->db()->putRaw($subnode->getName(), $raw, array('lang' => $language))) {
-        $env->db()->deleteDoc($subnode->getName(), NULL);
-      }
-      else {
-        $translated_file = $subnode->path.'/data_'.$language.'.json';
-        rename($subnode->path.'/data.json', $translated_file);
+      $raw = $db->raw($subnode->getName(), NULL, $at);
+      if ($raw !== NULL && $db->putRaw($subnode->getName(), $raw, $at + array('lang' => $language))) {
+        $db->deleteDoc($subnode->getName(), NULL, $at);
       }
     }
 
@@ -240,28 +217,17 @@ function integrity_check_sub_nodes($env,$node,$subnode,$subnode_type,$translated
   }elseif(!in_array($subnode_type,$translated_nodes) && count($subnode_language_files)){
     //check if the node is non-translated but contain data<language>.json file
 
-    foreach ($subnode_language_files as $language_file){
-      // Indexed, $language_file is a language code; otherwise a path.
-      $lang = $indexed
-        ? $language_file
-        : substr(basename($language_file), strlen('data_'), -strlen('.json'));
-      $language_path = $subnode->path . '/data_' . $lang . '.json';
-
+    foreach ($subnode_language_files as $lang){
       if($subnode_has_neutral){
         // If data.json exists, delete data_<language>.json
-        if (!$indexed || $env->db()->deleteDoc($subnode->getName(), $lang) === NULL) {
-          unlink($language_path);
-        }
+        $db->deleteDoc($subnode->getName(), $lang, $at);
       }
       else{
         // If data.json not exist, rename data_<language>.json to data.json.
         // Survivor first, original second — see the note above.
-        $raw = $indexed ? $env->db()->raw($subnode->getName(), $lang) : NULL;
-        if ($raw !== NULL && $env->db()->putRaw($subnode->getName(), $raw)) {
-          $env->db()->deleteDoc($subnode->getName(), $lang);
-        }
-        else {
-          rename($language_path, $subnode->path.'/data.json');
+        $raw = $db->raw($subnode->getName(), $lang, $at);
+        if ($raw !== NULL && $db->putRaw($subnode->getName(), $raw, $at)) {
+          $db->deleteDoc($subnode->getName(), $lang, $at);
         }
         // Every later language now collapses onto the neutral document.
         $subnode_has_neutral = TRUE;

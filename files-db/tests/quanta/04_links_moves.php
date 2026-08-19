@@ -124,10 +124,8 @@ eq($free, 'a-name-nobody-has-taken', 'a free name is returned unchanged');
 $taken = $env->getCandidatePath('acme');
 ok($taken !== 'acme' && strpos($taken, 'acme-') === 0,
     'a taken name is suffixed until it is free');
-// FALSE only where a miss is authoritative. In fallback the extension answers
-// from a per-process walk, so "not found" means "the fast path does not know"
-// and the shim correctly reports NULL rather than a definitive absence.
-eq($env->db()->exists($taken), qdb_daemon_mode() ? FALSE : NULL,
-    'the candidate name really is free');
+// FALSE in every mode: exists() no longer has a third state to fall back on,
+// because a miss it cannot confirm from an index it confirms from the disk.
+eq($env->db()->exists($taken), FALSE, 'the candidate name really is free');
 
 finish();

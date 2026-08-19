@@ -69,10 +69,14 @@ QuantaDb::reindex();
 throws(fn() => QuantaDb::getObject('p-bad'), QuantaDbException::CORRUPT_JSON,
     'corrupt document throws CORRUPT_JSON');
 // getRaw() reports bytes instead of decoding, so a corrupt document is data
-// rather than an error. The daemon does not keep the bytes of a document it
-// could not parse (model::load_docs stores an empty raw for it), so in daemon
-// mode this is the empty string; only fallback mode reads them off disk.
-eq(QuantaDb::getRaw('p-bad'), qdb_daemon_mode() ? '' : '{nope',
+// rather than an error — and it now reports the REAL bytes in both modes.
+// Its contract is byte fidelity, which shared memory stopped being able to
+// honour when the raw JSON moved out of the segment (layout v3), so getRaw()
+// reads the file. That also retired a long-standing wart: in daemon mode this
+// used to answer '' for a corrupt document, because the daemon keeps no bytes
+// for one, which made the escape hatch for inspecting a broken document the
+// one call that could not show it to you.
+eq(QuantaDb::getRaw('p-bad'), '{nope',
     'getRaw does not throw on a corrupt document');
 
 // --- Mutability: the whole reason this returns an object. --------------------

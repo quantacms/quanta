@@ -284,7 +284,7 @@ class User extends Node {
     $this->saveJSON($ignore);
     // Clear the node path cache so it's not cached as missing.
     $this->env->nodePath($this->getName(), FALSE, TRUE);
-    // Cache the new path to avoid expensive findNodePath lookups later.
+    // Cache the new path to avoid an expensive docroot search later.
     Cache::storeNodePath($this->env, $this->path, true);
     $this->env->hook('user_after_save', $vars);
 
