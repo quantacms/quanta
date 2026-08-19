@@ -29,6 +29,14 @@ wait for the watcher to notice. Node move/rename accordingly leaves the §11
 non-goals. New counters `moves`, `doc_deletes`, `raw_writes` in `stats()`
 (metrics layout 7). No v1.2 signature changes.
 
+**v1.3 also adds `QuantaDb::load()`** — the first *composed* operation in the
+API. Everything else here is a primitive that answers exactly one question;
+`load()` answers the four that Quanta's hot path asks together (does this name
+resolve, is it the node in this directory, which language does it have, what is
+in it) out of the single index probe that already holds all four answers. It is
+offered **alongside** the primitives, not in place of them, and it does not
+change what any of them do.
+
 **v1.2 additions:** `QuantaDb::getObject()` (stdClass read, the reader behind
 `Node::loadJSON`); config keys `quanta_db.image`, `quanta_db.image_max_doc_kb`,
 `quanta_db.zero_copy`; the segment gained a per-language pre-decoded document
@@ -98,8 +106,10 @@ QuantaDb::get(string $name, ?string $lang = null): ?array
 ```
 Returns the decoded data document, or `null` if the node or the requested
 language file does not exist. `$lang = null` reads `data.json`. **No language
-fallback** — fallback policy stays in userland (`NodeFactory`), so the API
-returns exactly one file's content.
+fallback** — this primitive returns exactly one file's content, and a caller
+that wants Quanta's "translation first, then neutral" order either asks twice or
+uses `load()` (below), which is the composed operation offered alongside the
+primitives. The primitives themselves stay policy-free.
 
 ```php
 QuantaDb::getRaw(string $name, ?string $lang = null): ?string   // v1.1
@@ -140,6 +150,48 @@ return two independent objects. `Node::loadJSON` assigns it to `$node->json`,
 which the codebase mutates in many places (`access.hook.inc`, `file.hook.inc`,
 `Job::attempt()`, `Node::setAttributeJSON`/`removeAttributeJSON`). Every other
 reader on this class keeps the "treat results as immutable" rule.
+
+```php
+QuantaDb::load(string $name, array $opts = []): ?array   // v1.3
+```
+One node's document, with language fallback and a path-identity check applied
+**inside** the single index probe that already holds the record. `$opts`:
+
+- `lang`: the language to try first; `null` / `''` = the neutral document.
+- `fallback`: bool, default `true` — retry the neutral document when `lang` has
+  none. This is the one place the API takes a position on language policy, and
+  only because the caller explicitly asked for it; `get()`/`getObject()` stay
+  policy-free.
+- `at`: the directory the caller believes this node lives in, **in the
+  implementation's own root terms** (`quanta_db.root`), never a site docroot —
+  a wrapper serving aliased hosts must translate before calling. Supplied, the
+  identity check is made against the record and no absolute path is built.
+- `as`: `'object'` (default; `getObject()` shape all the way down) or `'array'`
+  (`get()` shape).
+
+Returns:
+
+```php
+['json' => object|array, 'lang' => string /* '' = neutral */,
+ 'generation' => int, 'path' => string /* only when 'at' was NOT supplied */]
+```
+
+`null` covers **"no such node"**, **"it is not the node at `at`"** and **"no
+document in any language tried"** alike: all three mean the caller has no
+document, and which one it was is the caller's own policy question (Quanta
+answers it with `coherent()` + a path check, exactly as it does for `path()`'s
+three-state return). A *corrupt* document is not an absence and still raises
+`CORRUPT_JSON`, with the same semantics as `getObject()`.
+
+`path` is present **only when `at` was not supplied**. That is the signal "the
+caller asked for the path": passing `at` states that the caller already knows
+where the node is, and building the path anyway is precisely the per-load
+allocation this operation removes.
+
+Implementations MUST answer `load()` with **one** index lookup on the hot path.
+That is the whole point of the operation — a composed method that internally
+made the same three lookups the caller would have made is a documentation
+change, not a contract feature.
 
 ```php
 QuantaDb::path(string $name): ?string
@@ -412,8 +464,8 @@ polyfill (`QUANTA_DB_*`), highest-precedence first: ini → env → default.
 | `quanta_db.shm_size_mb` | `64` | Extension: initial per-epoch data-segment budget (sparse on tmpfs; grown by compaction) |
 | `quanta_db.verify_reads` | `always` | §4.2. Only `never` selects the other branch; every other value means `always`. **`watch` is a described mode, not a settable value** — it is what the extension effectively does whenever `qdbd` is coherent. In the extension this key is currently **inert**: it is parsed and reported by `stats()`, but no code path reads it |
 | `quanta_db.neg_cache_ms` | `30000` | Fallback-mode TTL for the per-process known-absent cache |
-| `quanta_db.image` | `on` | Build the pre-decoded document image alongside the raw JSON, so a read needs no `json_decode` at all. `off` falls back to parsing (correct, slower) |
-| `quanta_db.image_max_doc_kb` | `256` | Documents above this are not imaged (the image roughly doubles a document's segment footprint) |
+| `quanta_db.image` | `on` | Build the pre-decoded document image, so a read needs no `json_decode` at all. **`off` is a deployment-wide setting, not a per-process one** — see below |
+| `quanta_db.image_max_doc_kb` | `65536` | Documents above this are not imaged, and are stored as raw JSON instead so the segment can still answer for them |
 | `quanta_db.zero_copy` | `on` | Point PHP string zvals straight at the mapping instead of copying. `off` is the kill switch — see the zero-copy note in README |
 
 ## 7. Errors
@@ -446,10 +498,10 @@ treats missing nodes today.
   byte-equal after `var_export()` normalization on the conformance suite
   (array key order included — both use file/document order).
 - **Multi-site note**: v1 binds one root per PHP process (`quanta_db.root`).
-  Quanta's per-host `Environment` continues to exist; the integration shim
-  routes through `quanta_db_*` only when `env->dir['db']` matches the
-  configured root, else falls back to legacy paths. Multi-root is an explicit
-  v2 topic.
+  Quanta's per-host `Environment` continues to exist; `FilesDbExt` translates
+  between the host's docroot and the configured root (`sites/<alias>` hosts are
+  symlinks to the canonical directory), and answers about a host outside that
+  root come off the filesystem. Multi-root is an explicit v2 topic.
 
 ## 9. Integration map (where legacy paths get replaced)
 
@@ -457,7 +509,7 @@ treats missing nodes today.
 |---|---|
 | `Environment::nodePath()` (symlink cache + `exec find`) | `QuantaDb::path()` |
 | `JSONDataContainer::saveJSON()` (`fopen 'w+'`) | `QuantaDb::put()` |
-| `Node::loadJSON()` (`is_file` ×2 + `file_get_contents` + `json_decode`) | `QuantaDb::getObject()` — **wired** |
+| `Node::loadJSON()` (`is_file` ×2 + `file_get_contents` + `json_decode`) | `QuantaDb::load()` |
 | `Environment::scanDirectory()` in `ListObject` / `DirList` / `FastDirList` | `QuantaDb::children()` |
 | `NodeFactory::linkNodes/unlinkNodes` | `QuantaDb::link()` / `QuantaDb::unlink()` |
 | `BookingFactory::changeBookingStatus()` | `QuantaDb::relink()` |
@@ -469,15 +521,20 @@ treats missing nodes today.
 | `integrity` hook's `data.json` ↔ `data_<lang>.json` `rename`/`unlink` | `QuantaDb::putRaw()` + `QuantaDb::deleteDoc()` |
 | `doctor` module | `QuantaDb::reindex()` / `QuantaDb::stats()` |
 
-This table is a map of what each API method *replaces*, not a claim about what
-is wired. As of v1.3 only the rows marked **wired** are called from Quanta
-itself; the rest of the surface exists so a site can adopt it deliberately, at
-its own pace, without the extension reaching into code it does not own.
+Every row is wired, and none of them is a call site's decision any more. Quanta
+reaches all of it through `$env->db()`, which is one of two classes
+with the same methods — `Quanta\Common\FilesDbExt` when this extension is
+loaded, `Quanta\Common\FilesDb` (the filesystem, complete on its own) when it
+is not. A method that the extension cannot serve falls to the base class inside
+the override, not at the caller. See `files-db/docs/two-implementations.md`.
 
-Quanta is vendored; any touch point that does get wired changes inside
-`quanta/` and must be re-applied when Quanta is re-vendored (see README
-"Updating Quanta") — keep each shim a one-line delegation so the diff stays
-trivial.
+The practical consequence for this contract: **"not answerable" is no longer a
+return value.** A call site cannot see the difference between the two
+implementations, so neither may report one — every method returns a value or
+raises, and "not found" is still a value, never an exception.
+
+Quanta is vendored; the two classes live inside `quanta/` and must be
+re-applied when Quanta is re-vendored (see README "Updating Quanta").
 
 ### Adopting the write API
 
@@ -493,14 +550,22 @@ a caller must decide about before switching a call site over:
   second node with a duplicate name. That is the contract enforcing what Quanta
   has always assumed, but on an existing tree it can surface duplicates that
   were previously silent. Audit with `find(['name_prefix' => ''])` or
-  `reindex()` before adopting, and decide whether a duplicate should be a
-  user-visible error or a fall-back-to-legacy.
+  `reindex()` before adopting.
+
+  Quanta's answer today is `if_exists => 'ignore'` in
+  `JSONDataContainer::saveJSON()`: create the duplicate, warn about it when the
+  resolver next trips over it, exactly as before. **Both implementations do
+  this** — `FilesDb::reserve()` runs the same tree-wide check, and the resolver
+  it uses is the memo and the shard symlink, not a fresh `exec(find)` per
+  creation. Dropping the option makes a duplicate name a user-visible error;
+  that is a product decision, and it is one line.
 - **Failure has to mean something.** Every method either succeeds, returns
-  `false`/`null` for "not found", or throws one of §7's five codes. A caller
-  that wraps the API in `try { … } catch (\Throwable) { legacy(); }` keeps
-  today's behaviour exactly, at the cost of silently taking the slow path;
-  a caller that lets `EXISTS` through gets the enforcement. Both are
-  legitimate — the contract does not choose.
+  `false`/`null` for "not found", or throws one of §7's five codes. Note what a
+  caller may NOT do with a failure: retry it against the filesystem.
+  `FilesDbExt` re-throws write failures rather than calling `parent::` — a
+  locked, half-completed write is not something to paper over by doing it again
+  unlocked. The one exception is the `EXISTS` above, which is not a failure of
+  the write but a refusal to make it, and which the caller asked to ignore.
 
 ## 10. Conformance suite
 
@@ -514,6 +579,33 @@ contract. Minimum scenarios:
 5. Two same-second writes both observed (generation, not mtime, invalidates).
 6. External write (direct `file_put_contents` on `data.json`) observed per `verify_reads` policy.
 7. relink(): concurrent readers of both containers always see the member in exactly one.
+### Segment layout 3 — a document is stored as its image OR its bytes, never both
+
+From layout 3 the segment holds, per document, EITHER the pre-decoded image or
+the raw JSON — not both, as layouts 1-2 did. Two consequences a caller can
+observe:
+
+- **`getRaw()` reads the file.** Its contract is byte fidelity (rule 13 below),
+  and re-serializing from the image would not deliver it: escaping normalizes,
+  whitespace is gone, float formatting changes. It is integrity/doctor/migration
+  code, not the render path, so it can afford the `open`+`read`. It now returns
+  the real bytes of a CORRUPT document too, where daemon mode used to answer the
+  empty string.
+- **`quanta_db.image=off` must be set for the DAEMON, not just for a PHP
+  worker.** The daemon decides what goes in the segment: with images on it ships
+  images and no raw, so a worker that has its own image path disabled finds
+  nothing in shared memory it will use and every read falls to the filesystem.
+  Results stay correct; the cost changes from a parse to a syscall. Give `qdbd`
+  `QUANTA_DB_IMAGE=0` as well and it ships raw JSON again, restoring the
+  in-memory fallback. The same applies when the PHP-ABI self-check fails and
+  disables the image path — `qdbstat`'s STORAGE section reports `raw json` so
+  the state is visible rather than inferred.
+
+Strings also moved out of the per-document image into one segment-wide table in
+layout 3; that is invisible to callers, and readers reject a foreign layout
+version outright, so a version skew degrades to fallback mode rather than
+misreading.
+
 8. delete() → trashbin layout matches legacy `Node::delete()`; links to it are gone.
 9. find/count criteria matrix incl. `where` dot-paths, `in`, ordering, limit/offset.
 10. reindex() after wiping derived data restores answers 1–9.

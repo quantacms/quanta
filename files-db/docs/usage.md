@@ -639,70 +639,108 @@ QuantaDb::deleteDoc($name);            // drop the neutral one
 
 ## 10. Inside Quanta
 
-### Where it is already wired
+### One API, two implementations
 
-The extension was **layered into the existing code, not swapped for it**. Every
-legacy path is still present, both as the front-line cache and as the fallback:
+Quanta reaches the node database through `$env->db()`, and never names the
+extension. There are two classes behind that call, with the same methods:
 
-| Call site | Uses | Replaces |
+| | |
+|---|---|
+| `Quanta\Common\FilesDb` | the filesystem — `exec find`, `scandir`, `file_get_contents`, `glob`, `mkdir`, `symlink`. Complete on its own. |
+| `Quanta\Common\FilesDbExt` | extends it, and serves the same methods from this extension. Where it cannot, `return parent::…()` lands back on the filesystem. |
+
+`Environment::db()` instantiates the subclass when `QuantaDb` is loaded and the
+base when it is not. **Every method answers**: a call site never branches on
+which implementation it got and never carries a second body for the case where
+the extension declines. That is the whole design — see
+`files-db/docs/two-implementations.md` for why the choice cannot simply be made
+once per process.
+
+`NULL` therefore means what it says. `path()` is `string|FALSE`; `find()`,
+`children()`, `langs()` and `links()` return `array()` for "nothing matched";
+`put()`, `link()`, `move()` and friends return a bool. Only `reindex()`,
+`stats()` and `version()` return NULL on the base, because they describe a
+derived index and there is not one.
+
+Failures raise `Quanta\Common\FilesDbException` with this contract's codes,
+from either implementation — the extension's `\QuantaDbException` is wrapped so
+that a `catch` clause is not a fatal on a host with no `.so`.
+
+### Where it is wired
+
+| Call site | Method | Filesystem body it replaced |
 |---|---|---|
-| `Environment::nodePath()` | `path()` + `coherent()` | `exec('find …')` |
-| `Node::loadJSON()` | `getObject()` | `is_file` ×2 + `file_get_contents` + `json_decode` |
-| `JSONDataContainer::saveJSON()` | `put()` | unlocked `fopen('w+')` |
-| `NodeFactory::linkNodes/unlinkNodes` | `link()` / `unlink()` | manual `symlink`/`unlink` |
-| `UserFactory::getUserFromField()` | `find()` with `where` | `exec('grep -r …')` |
-| `FastDirList` | `path()` | its own `nodePath()` bypass |
+| `Environment::nodePath()` | `path()` | the whole four-layer resolver, which now lives *in* `FilesDb::path()` |
+| `Node::loadJSON()` | `load()` | `is_file` ×2 + `file_get_contents` + `json_decode` |
+| `Node::hasChild()` / `hasChildren()` | `child()` / `children()` | `is_dir` / `scanDirectory` + `is_dir` loop |
+| `Node::hasTranslation()` | `hasLang()` | `is_file` |
+| `Node::getCategories()` | `links()` | `exec('find -L … -samefile')` |
+| `Node::delete()` | `delete()` | `mkdir` + `exec mv` |
+| `JSONDataContainer::saveJSON()` | `put()` | `mkdir` + unlocked `fopen('w+')` |
+| `Environment::scanNodeDirectory()` | `children()` | `scanDirectory()` |
+| `Environment::getCandidatePath()` | `exists()` | building a `Node` per attempt |
+| `NodeFactory::linkNodes` / `unlinkNodes` | `link()` / `unlink()` | manual `symlink` / `unlink` |
+| `NodeFactory::duplicate()` | `langs()` | `glob` + `preg_match` |
+| `UserFactory::getUserFromField()` | `find()` with `where` | `exec('grep -r …')` — kept as a *widening*, see below |
+| `FastDirList` | `path(['search' => FALSE])` | its own prefix-walk bypass |
+| `Job::safeMove()` | `move()` | `exec('mv -T')` |
+| `integrity` hook | `langs()` `raw()` `putRaw()` `deleteDoc()` | `glob` + `rename` + `unlink` |
+| `sitemap` hook | `meta()` | `file_exists` + `filemtime` |
+| `Doctor::checkBrokenLinks()` | `reindex()` | — |
 
-Path resolution is a *fourth tier*, not a replacement — the legacy chain runs
-first and the extension's answer is written back into it:
+Path resolution keeps all four tiers; they simply live in one class now, and
+`FilesDbExt` puts the index in front of them:
 
 ```
-static $node_paths  →  tmp/cache shard symlink  →  QuantaDb::path()  →  exec find
+per-request memo  →  tmp/cache shard symlink  →  QuantaDb::path()  →  exec find
 ```
 
-### The guard pattern to copy
+When the index is coherent it is asked *first* and the shard symlink is skipped
+entirely — a `readlink()` guarding a probe that needs no syscall is strictly
+negative.
 
-Every wired call site looks like this, and a new one should too:
+### Naming a node: `at`
+
+The database is keyed by the globally unique node NAME, but a container can be
+built from an explicit path (`NodeFactory::loadFromRealPath`). Every name-keyed
+method takes `'at' => $path`, and a caller holding the directory passes it:
 
 ```php
-if (class_exists('QuantaDb')) {
-    try {
-        $result = QuantaDb::path($name);
-        if ($result !== null) {
-            return $result;
-        }
-    } catch (\Throwable $e) {
-        // fall through
-    }
-}
-return $this->legacyLookup($name);   // original implementation, untouched
+$db->langs($node->getName(), array('at' => $node->path));
 ```
 
-That gives **two independent fallbacks stacked**: the extension's own (shared
-memory → filesystem walk, when the daemon is stale) and the app's (extension →
-original PHP code, when the class is missing or throws). The extension is never
-load-bearing.
+In `FilesDb` that *is* the answer — it reads the directory it was handed. In
+`FilesDbExt` it is the identity check, made against the record the probe is
+already holding. It replaced a `resolvesTo()` call sitting in front of nine call
+sites for exactly this reason, and it costs the same one probe those did.
 
-### Why the write surface is not wired
+### What is deliberately still two things
 
-`put`, `putRaw`, `update`, `delete`, `deleteDoc`, `move` and the link operations
-are complete and tested, but Quanta calls only `put`, `link` and `unlink`. That
-is deliberate: adopting a write changes observable behaviour, in two ways a site
-has to decide about first.
+Two call sites keep a second path, and neither is a fallback:
 
-- **`EXISTS` becomes reachable.** `put(..., ['father' => …])` refuses a name
-  already used anywhere in the tree, where a bare `mkdir` would happily create a
-  duplicate. On an existing tree that can surface duplicates which were
-  previously silent. Audit with `find(['name_prefix' => ''])` before adopting.
-- **Failure has to mean something.** Wrapping the call in
-  `try { … } catch (\Throwable) { legacy(); }` keeps today's behaviour exactly,
-  at the cost of silently taking the slow path. Letting `EXISTS` through gets the
-  enforcement. Both are legitimate; the contract does not choose.
+- **`UserFactory::getUserFromField()`** keeps its `grep`. `where` is equality
+  only (§Queries) and the grep is case-INSENSITIVE, so an empty `find()` is a
+  definitive "no exact match" and the grep is a genuine widening of the query.
+- **`JSONDataContainer::saveJSON()`** passes `if_exists => 'ignore'` on create.
+  Create intent reserves a node name tree-wide, so a name already in use raises
+  `EXISTS` — where Quanta has always just made a second directory and warned
+  about the duplicate later. `'ignore'` keeps that. Dropping the option turns
+  the refusal into a user-visible error; that is a product decision, and it is
+  named in one line rather than buried in a fallback.
 
-Paths deliberately left on legacy: `Node::delete()` (`exec mv`), node creation
-inside `saveJSON()`, `Job::safeMove()`, and the integrity hook's
-`data.json` ↔ `data_<lang>.json` renames. They keep working, and the daemon picks
-the changes up through inotify a second or so later rather than on the ack.
+### Writing a new call site
+
+Call the method. There is no guard pattern any more:
+
+```php
+$path = $this->env->db()->path($name);       // string | FALSE
+$langs = $this->env->db()->langs($name, array('at' => $dir));   // array
+```
+
+Catch `FilesDbException` where a failure needs a user-facing message. Do NOT
+branch on `available()` or `coherent()` — they are there for `Doctor`, for the
+parity suite's discriminators, and for reporting on a deployment. A call site
+that branches on them is re-creating the problem this design removed.
 
 ---
 

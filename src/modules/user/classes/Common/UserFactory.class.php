@@ -86,11 +86,12 @@ class UserFactory {
    *   The retrieved user object.
    */
   public static function getUserFromField(Environment $env, $field, $value) {
-    // quanta_db extension (files-db/docs/api-contract.md §Queries): resolve the
-    // user via the derived index instead of a recursive grep. Scoped to the
-    // direct children of '_users' (same scope as the grep on dir['users']).
-    // Equality-only `where` is a strict subset of the legacy case-insensitive
-    // grep, so an empty/failed result falls through to the grep below.
+    // find() over the direct children of '_users' — the same scope as the grep
+    // below, which stays for a reason that has nothing to do with which
+    // implementation answers: the node database's `where` is equality only
+    // (api-contract.md §Queries), where the grep is case-INSENSITIVE. So an
+    // empty result here is a definitive "no exact match", not "could not tell",
+    // and the grep is the widening, not the fallback.
     $names = $env->db()->find(
       array('father' => '_users', 'where' => array($field => $value)),
       array('return' => 'names', 'limit' => 1)

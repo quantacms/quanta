@@ -23,9 +23,21 @@ class FileFactory {
       $filename = $env->request[count($env->request) - 1];
 
       $dir = $env->request[count($env->request) - 2];
-      $nodepath = Cache::getStoredNodePath($env, $dir);
-      $file = $nodepath . '/' . urldecode($filename);
-      if (is_file($file)) {
+      // Resolve the node properly instead of reading the shard symlink
+      // directly. getStoredNodePath() only answers for a name some earlier
+      // request happened to cache, and Environment::nodePath() stopped writing
+      // that cache once the files-db index became authoritative (it answers
+      // from a hash probe, so the symlink layer is pure syscall overhead there).
+      // Reading the shard directly therefore meant file URLs stopped resolving
+      // on a cold tmp/cache — a fresh deploy or a Cache::clear() — until some
+      // other code path repopulated it. nodePath() has every lookup layer
+      // behind it, so it answers warm or cold.
+      // FALSE (no such node) / NULL (unusable name) must not concatenate into
+      // an absolute path rooted at '/', which is what the old string-append
+      // did whenever the cache lookup missed.
+      $nodepath = $env->nodePath($dir);
+      $file = is_string($nodepath) ? ($nodepath . '/' . urldecode($filename)) : '';
+      if ($file !== '' && is_file($file)) {
         // Request for a file download.
         if (isset($_GET['download'])) {
           header('Pragma: public');

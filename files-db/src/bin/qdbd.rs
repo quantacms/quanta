@@ -228,32 +228,60 @@ impl Daemon {
     /// are unlinked (a reader that raced the flip can still map epoch-1).
     fn publish_full(&mut self) -> io::Result<()> {
         let epoch = self.writer.epoch + 1;
-        let encoded: Vec<(String, Vec<u8>)> = self
+        // Size from a pass that allocates nothing, then stream one record at a
+        // time. The previous version collected the WHOLE tree — every record's
+        // bytes, raw documents and images included — into a Vec just to sum the
+        // lengths, and held it alive across `SegmentWriter::create`. Peak
+        // footprint during a routine compaction was therefore the model, plus a
+        // second copy of every document, plus both segment mappings; on a
+        // system that has already hit a /dev/shm sizing wall that transient
+        // spike is the one worth removing. Only one record's bytes are live now.
+        let live: u64 = self
             .model
             .nodes
-            .iter()
-            .map(|(n, m)| (n.clone(), m.encode()))
-            .collect();
-        let live: u64 = encoded.iter().map(|(_, b)| b.len() as u64).sum();
+            .values()
+            .map(model::NodeModel::encoded_size_hint)
+            .sum();
+        // The segment-wide string table is written into the same arena, and it
+        // is not counted by any record's size, so budget for it explicitly:
+        // the text plus a `zend_string` header (24 B) + NUL + padding each.
+        let str_est = self.model.strings.text_bytes() as u64
+            + (self.model.strings.len() as u64) * 32;
         let slots = shm::slot_count_for(self.model.nodes.len() as u64);
-        let size = shm::seg_size_for(live, slots, self.cfg.shm_size_mb << 20);
+        let size = shm::seg_size_for(live + str_est, slots, self.cfg.shm_size_mb << 20);
         let mut w = SegmentWriter::create(&self.cfg.shm_dir, epoch, size, slots, self.cfg.root_hash)?;
-        for (name, bytes) in &encoded {
-            w.upsert(name, bytes)
-                .map_err(|e| io::Error::other(format!("fresh segment overflow: {e:?}")))?;
+        {
+            let strings = &self.model.strings;
+            for (name, node) in &self.model.nodes {
+                let bytes = node
+                    .encode(strings, |id, s| w.place_string(id, s.as_bytes()).ok())
+                    .ok_or_else(|| {
+                        io::Error::other("fresh segment overflow: string arena full")
+                    })?;
+                w.upsert(name, &bytes)
+                    .map_err(|e| io::Error::other(format!("fresh segment overflow: {e:?}")))?;
+            }
         }
         w.set_counts(
             self.model.nodes.len() as u64,
             self.model.links.len() as u64,
             self.doc_bytes,
             self.img_bytes,
+            // Raw JSON resident in the segment: non-zero only for documents
+            // that could not be imaged, which keep their bytes so the segment
+            // can still answer for them (see `model::DocModel::raw`).
+            self.model.raw_bytes(),
         );
         w.publish_ready();
+        let (str_bytes, str_count) = w.string_stats();
         self.writer = w;
         metrics::set_data_epoch(epoch);
         self.cleanup_segments(epoch);
         if self.verbose {
-            eprintln!("qdbd: published epoch {epoch} ({} nodes)", self.model.nodes.len());
+            eprintln!(
+                "qdbd: published epoch {epoch} ({} nodes, {str_count} strings / {str_bytes} B shared)",
+                self.model.nodes.len()
+            );
         }
         Ok(())
     }
@@ -278,9 +306,22 @@ impl Daemon {
     /// (Re)publish one node's record; a full segment triggers compaction
     /// (which already contains the node, so no retry is needed).
     fn publish_node(&mut self, name: &str) {
-        let Some(node) = self.model.nodes.get(name) else { return };
-        let bytes = node.encode();
-        if self.writer.upsert(name, &bytes).is_err() {
+        // Encode in its own scope so the borrows of `model` and `writer` are
+        // both released before the compaction branch, which needs `&mut self`.
+        let encoded = {
+            let Some(node) = self.model.nodes.get(name) else { return };
+            let w = &mut self.writer;
+            node.encode(&self.model.strings, |id, s| w.place_string(id, s.as_bytes()).ok())
+        };
+        // `None` means the arena could not take one of this record's strings,
+        // which is the same condition `upsert` reports as ArenaFull — and the
+        // same remedy: compact into a fresh segment, which re-encodes this node
+        // along with everything else, so there is nothing to retry here.
+        let full = match encoded {
+            Some(bytes) => self.writer.upsert(name, &bytes).is_err(),
+            None => true,
+        };
+        if full {
             if let Err(e) = self.publish_full() {
                 eprintln!("qdbd: compaction failed: {e}");
             }
@@ -306,6 +347,7 @@ impl Daemon {
             self.model.links.len() as u64,
             self.doc_bytes,
             self.img_bytes,
+            self.model.raw_bytes(),
         );
     }
 
@@ -343,7 +385,8 @@ impl Daemon {
             return Err(format!("{} is not a directory", path.display()));
         }
         let father = store::father_of(&self.cfg, path);
-        let mut node = model::load_node(&self.cfg, name, path, father.clone());
+        let mut node =
+            model::load_node(&self.cfg, name, path, father.clone(), &mut self.model.strings);
         node.generation = metrics::next_generation();
         let gen = node.generation;
         if let Some(old) = self.model.nodes.get(name) {
@@ -735,7 +778,7 @@ impl Daemon {
             };
             if drift {
                 let mut node =
-                    model::load_node(&self.cfg, &wn.name, &wn.path, wn.father.clone());
+                    model::load_node(&self.cfg, &wn.name, &wn.path, wn.father.clone(), &mut self.model.strings);
                 node.generation = metrics::next_generation();
                 if let Some(old) = self.model.nodes.get(&wn.name) {
                     self.doc_bytes = self.doc_bytes.saturating_sub(old.doc_bytes());
