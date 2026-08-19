@@ -113,8 +113,10 @@ function file_node_presave(Environment $env, array $vars) {
   foreach ($uploaded_files as $form_name => $uploaded_file_list) {
     if($isMultiple){
       $old_files = $node->json->{$form_name};
-      // $old_files = is_array( $old_files ) ? $old_files : [$old_files];
-      $uploaded_file_list = array_merge($old_files, $uploaded_file_list);
+      if(!empty($old_files)){
+        $old_files = is_array( $old_files ) ? $old_files : [$old_files];
+        $uploaded_file_list = array_merge($old_files, $uploaded_file_list);
+      }
     }
     // Save list of uploaded files for this file field in json.
     $node->json->{$form_name} = $isMultiple ? $uploaded_file_list : $uploaded_file_list[count($uploaded_file_list) - 1];
