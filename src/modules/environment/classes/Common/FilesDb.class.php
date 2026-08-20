@@ -161,6 +161,22 @@ class FilesDb {
   }
 
   /**
+   * The properties that survive a serialize(), i.e. not $last_error.
+   *
+   * Under the native extension $last_error is a \QuantaDbException, and PHP
+   * forbids serializing an exception object. Holding one therefore made every
+   * object that can reach this instance — anything with an $env — fatal to
+   * serialize, for the rest of the request, because of a failure this class
+   * had already swallowed. The memos go too: both are per-request answers with
+   * nothing to say to a later one.
+   *
+   * @return array
+   */
+  public function __sleep() {
+    return array('env');
+  }
+
+  /**
    * The implementation and contract version, e.g. 'ext/1.3'.
    *
    * @return string|null

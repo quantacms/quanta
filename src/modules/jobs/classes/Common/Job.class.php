@@ -67,12 +67,26 @@ class Job extends Node {
         // A losing racer: the winner moved the job out from under this one, so
         // the destination filled or the source vanished between the checks
         // above and the move. Both are success for this caller.
-        return !is_dir($sourceFile) || is_dir($destinationFile);
+        if (!is_dir($sourceFile) || is_dir($destinationFile)) {
+          return true;
+        }
+        // Anything else and the job is still sitting in its old father, so this
+        // is NOT done — fall through to the `mv -T` below rather than reporting
+        // a failure the callers can only log.
+        //
+        // The failure this actually catches is EXDEV. The job fathers are
+        // separate mounts in every real deployment (HILI gives _jobs_todo,
+        // _jobs_done, _jobs_unknown and _jobs_archived a hostPath volume each),
+        // and rename(2) refuses to cross a mount boundary even when both sides
+        // live on the same filesystem. `mv -T` copies and unlinks instead, so
+        // it is the only thing here that can complete such a move; the index
+        // picks the job up at its new father from the father's dir watch.
       }
     }
 
-    // No $env (the cron entry points call it that way), or a name that is not
-    // the destination's basename, which is not a plain rename.
+    // No $env (the cron entry points call it that way), a name that is not the
+    // destination's basename, which is not a plain rename, or a node-database
+    // move that could not complete (see the catch above).
     // -T treats destination as exact name, not parent directory (prevents nesting).
     exec("mv -T " . escapeshellarg($sourceFile) . " " . escapeshellarg($destinationFile) . " 2>/dev/null", $output, $return);
     // Success, or source is gone (another worker won the race).
