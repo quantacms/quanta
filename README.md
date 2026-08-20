@@ -158,6 +158,27 @@ Once you have, you can start:
 * the documentation -> https://www.quanta.org/documentation/
 * the tutorials  -> https://www.quanta.org/tutorial/
 
+Documentation site
+-----------------
+`docs/` is a small static site: a landing page, an animated walkthrough of
+Files-DB, and the documentation itself, rendered from the Markdown files that
+already live in this repository. `docs/site/` holds its source; everything else
+under `docs/` is generated from that and committed.
+
+Read it locally with:
+
+```bash
+npm install           # once — the build needs one dev dependency (marked)
+npm run docs:serve    # http://localhost:4000 — rebuilds as you edit
+```
+
+Then open http://localhost:4000/ and stop the server with Ctrl+C.
+
+`npm run docs:build` regenerates `docs/` without serving, and `npm run docs:check`
+verifies that every internal link and anchor still resolves. Nothing is
+published anywhere yet — this is a local preview only.
+See [docs/site/README.md](docs/site/README.md).
+
 Support
 -----------------
 Found any issue? Got any idea? 

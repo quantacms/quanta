@@ -1,13 +1,16 @@
 {
   "name": "quanta",
   "version": "1.0.0",
-  "description": "![alt text](https://www.quanta.org/assets/img/q_cms.png) # Quanta Cms # An innovative, DB-free Framework for web and application development, based on the principles of Quantum physics.",
+  "description": "Quanta CMS — a DB-free CMS and framework built on the filesystem.",
   "main": "index.js",
   "directories": {
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docs:build": "node docs/site/build.mjs",
+    "docs:serve": "node docs/site/serve.mjs",
+    "docs:check": "node docs/site/check-links.mjs"
   },
   "repository": {
     "type": "git",
@@ -19,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/quantacms/quanta/issues"
   },
-  "homepage": "https://github.com/quantacms/quanta#readme"
+  "homepage": "https://github.com/quantacms/quanta#readme",
+  "devDependencies": {
+    "marked": "^18.0.10"
+  }
 }

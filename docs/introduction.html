@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quanta Cms — Quanta CMS</title>
+  <meta name="description" content="!alt text(https://www.quanta.org/assets/img/qcms.png)">
+  <meta property="og:title" content="Quanta Cms — Quanta CMS">
+  <meta property="og:description" content="!alt text(https://www.quanta.org/assets/img/qcms.png)">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/site.css">
+  <script>
+    // Applied before first paint so a dark-mode reader never sees a light flash.
+    (function () {
+      var root = document.documentElement;
+      root.classList.remove('no-js');
+      try {
+        var saved = localStorage.getItem('quanta-theme');
+        if (saved) root.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body class="page page--docs">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="logo" href="./">
+        <svg class="logo__mark" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+      <circle cx="20" cy="20" r="4.2" fill="currentColor"/>
+      <ellipse cx="20" cy="20" rx="17" ry="7.4" fill="none" stroke="currentColor" stroke-width="2" opacity=".85" transform="rotate(-30 20 20)"/>
+      <ellipse cx="20" cy="20" rx="17" ry="7.4" fill="none" stroke="currentColor" stroke-width="2" opacity=".45" transform="rotate(30 20 20)"/>
+    </svg>
+        <span class="logo__text">Quanta<span class="logo__accent">CMS</span></span>
+      </a>
+      <button class="topbar__burger" type="button" aria-expanded="false" aria-controls="site-nav" data-nav-toggle>
+        <span class="topbar__burger-bar"></span><span class="sr-only">Menu</span>
+      </button>
+      <nav class="topnav" id="site-nav" aria-label="Main">
+        <a class="topnav__link is-active" href="overview.html">Documentation</a>
+          <a class="topnav__link" href="files-db.html">Files-DB</a>
+          <a class="topnav__link" href="https://www.quanta.org" target="_blank" rel="noopener">quanta.org</a>
+          <a class="topnav__link" href="https://github.com/quantacms/quanta" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode">
+        <svg viewBox="0 0 24 24" class="theme-toggle__sun" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6"/></g></svg>
+        <svg viewBox="0 0 24 24" class="theme-toggle__moon" aria-hidden="true"><path d="M20 14.2A8.2 8.2 0 0 1 9.8 4a8.4 8.4 0 1 0 10.2 10.2Z" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </header>
+  <div class="docs">
+    <input type="checkbox" id="docs-sidebar-toggle" class="docs__sidebar-checkbox">
+    <aside class="docs__sidebar" aria-label="Documentation">
+      <label class="docs__sidebar-close" for="docs-sidebar-toggle" aria-hidden="true">Close</label>
+      <nav class="docs__nav">
+        <p class="docs__navtitle">Quanta</p>
+        <ul class="docs__navlist">
+          <li><a class="docs__navlink" href="overview.html">Overview</a></li>
+          <li><a class="docs__navlink is-active" aria-current="page" href="introduction.html">Introduction &amp; install</a></li>
+        </ul>
+        <p class="docs__navtitle">Files-DB</p>
+        <ul class="docs__navlist">
+          <li><a class="docs__navlink" href="files-db/">The extension</a></li>
+          <li><a class="docs__navlink" href="files-db/usage.html">Using Files-DB from PHP</a></li>
+          <li><a class="docs__navlink" href="files-db/how-it-works.html">How Files-DB works</a></li>
+          <li><a class="docs__navlink" href="files-db/api-contract.html">API contract</a></li>
+          <li><a class="docs__navlink" href="files-db/two-implementations.html">Two implementations</a></li>
+          <li><a class="docs__navlink" href="files-db/simpler-faster.html">Simpler and faster</a></li>
+        </ul>
+      </nav>
+    </aside>
+    <main class="docs__main" id="main">
+      <label class="docs__sidebar-open" for="docs-sidebar-toggle">Documentation menu</label>
+      <article class="prose">
+        <p class="prose__eyebrow">Quanta</p>
+        <h1>Quanta Cms</h1>
+<p><img src="https://www.quanta.org/assets/img/q_cms.png" alt="alt text" loading="lazy"></p>
+<p>An innovative, DB-free Framework for web and application development, based on the principles of Quantum physics.</p>
+<p>Originally designed by Aldo Tripiciano in 2014, Quanta is now proudly free and open source.</p>
+<p>Detailed info is available at the official website: <a href="https://www.quanta.org" target="_blank" rel="noopener">https://www.quanta.org</a></p>
+<h2 id="the-author">The Author<a class="prose__anchor" href="#the-author" aria-label="Link to this section">#</a></h2>
+<p>Aldo Tripiciano is a seasoned italian IT Developer, consulting for 15+ years on the major CMS players (Drupal, Wordpress, Joomla, etc.) for global companies and organisations such as the United Nations and the European Commission. 
+After mastering the top tools in the market, he decided to go one step beyond and build something new, to better fit the new generation of the Web. </p>
+<h2 id="quantas-features">Quanta&#39;s Features<a class="prose__anchor" href="#quantas-features" aria-label="Link to this section">#</a></h2>
+<p>Quanta is a CMS thought for developers, offering a number of features out of the box:</p>
+<ul>
+<li>Pre-defined installation profiles (including modules, themes and general entities)</li>
+<li>A customizable UI backend (&quot;Shadow&quot;), also used for overlay forms</li>
+<li>Qtags, an agnostic markup language allowing the creation of nestable Tags that are incapsulated into templates, allowing the creation of complex applications with huge reduction of coding times</li>
+<li>Inline editing of content</li>
+<li>A batch tool (Doctor) for installing, updating, diagnostic and repairing the system.</li>
+<li>User management tools</li>
+<li>Inline Form management</li>
+<li>Workflow management (Draft-&gt;Published statuses, etc.)</li>
+<li>Taxonomy management</li>
+<li>Multilingualism / Internationalization </li>
+<li>Widget / Web service tools based on Qtags</li>
+<li>Many Pre-defined integrated Qtags (Blog, Carousels and Slideshows, Galleries, Media Playlists, Maps, XML Sitemaps, Widgets, and much more)</li>
+</ul>
+<h2 id="quantas-architecture">Quanta&#39;s Architecture<a class="prose__anchor" href="#quantas-architecture" aria-label="Link to this section">#</a></h2>
+<p>Quanta&#39;s Architecture is built on a modular, Object Oriented PHP approach, not adhering to the traditional MVC model. </p>
+<p>Quanta uses the follow design patterns:</p>
+<h3 id="factory">Factory<a class="prose__anchor" href="#factory" aria-label="Link to this section">#</a></h3>
+<p>All Quanta entities such Nodes, Pages, Templates, Qtags, etc. are constructed and manipulated via static methods implemented in Factory classes. 
+The classes are dynamically loaded at run-time using an <strong>autoload</strong> routine.</p>
+<h3 id="front-controller">Front Controller<a class="prose__anchor" href="#front-controller" aria-label="Link to this section">#</a></h3>
+<p>All requests (excluding static files, that are served directly) are elaborated and served via the centralized <strong>boot.php</strong> file. 
+The boot file processes the request, bootstraps Quanta and renders. </p>
+<h3 id="template-method">Template Method<a class="prose__anchor" href="#template-method" aria-label="Link to this section">#</a></h3>
+<p>Through the use of &quot;hooks&quot; function, custom modules can intercept every phase of the content loading phase, manipulate the data and change the behavior of standard processes. </p>
+<p>Quanta&#39;s internal architecture is based on: </p>
+<ul>
+<li>a 100% file-system based DB architecture structured on  hierarchical system folders 📁 (no SQL involved). </li>
+<li>Internal caching and indexation of directories through an internal vocabulary</li>
+<li>JSON storage of data and metadata</li>
+<li>Template engine allowing creation and override individual template for individual or multiple entities</li>
+<li>CSS Grid approach natively supported by Qtags</li>
+<li>Node-level access control (roles, permissions, etc.)</li>
+<li>Views system</li>
+</ul>
+<h2 id="pre-requisites">Pre-Requisites<a class="prose__anchor" href="#pre-requisites" aria-label="Link to this section">#</a></h2>
+<p>Quanta can only be installed on any UNIX-based OS (Linux, OSx, etc.). </p>
+<h3 id="general-requisites">General Requisites:<a class="prose__anchor" href="#general-requisites" aria-label="Link to this section">#</a></h3>
+<p><strong>Apache 2.4+</strong> or <strong>Nginx 1.15+</strong>
+<strong>PHP 8.5+</strong> including libraries: <strong>GD</strong>, <strong>CURL</strong>
+<strong>Composer</strong></p>
+<h3 id="for-apache-users">For Apache users:<a class="prose__anchor" href="#for-apache-users" aria-label="Link to this section">#</a></h3>
+<p>The <strong>rewrite</strong> and <strong>headers</strong> modules must be enabled.</p>
+<h3 id="with-docker">With Docker:<a class="prose__anchor" href="#with-docker" aria-label="Link to this section">#</a></h3>
+<p>The image built from the <code>Dockerfile</code> at the repo root runs <strong>nginx + php-fpm</strong>
+(supervised by supervisord); the vhost, the php-fpm pool and the nginx cache
+zones live under <code>docker/</code>. <code>.htaccess</code> is not used there — its rewrite map is
+reproduced in <code>docker/nginx/quanta.conf</code>, so keep the two in sync when adding
+routes.</p>
+<p>The container entrypoint (<code>docker/docker-entrypoint.sh</code>) does the site setup
+before supervisord starts: the writable directories Quanta expects (<code>db/_users</code>,
+<code>db/_translations</code>, the jobs queue, <code>static/tmp/…</code>), the host-alias symlinks, the
+ownership fixes php-fpm needs, the CSS/JS bundles, the doctor passes, PHP error
+display and the <code>quanta_db</code> kill switch. It is driven by environment variables:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>QUANTA_DIR</code></td>
+<td><code>/var/www/quanta</code></td>
+<td>Quanta source root</td>
+</tr>
+<tr>
+<td><code>QUANTA_SITE</code></td>
+<td><code>localhost</code></td>
+<td>canonical site directory under <code>sites/</code></td>
+</tr>
+<tr>
+<td><code>IS_PRODUCTION</code></td>
+<td>unset (dev)</td>
+<td><code>true</code>/<code>1</code> turns PHP error display off</td>
+</tr>
+<tr>
+<td><code>QUANTA_DB_ENABLED</code></td>
+<td><code>1</code></td>
+<td><code>0</code>/<code>off</code> unloads <code>quanta_db.so</code> and runs the legacy filesystem paths</td>
+</tr>
+<tr>
+<td><code>SITE_ALIASES</code></td>
+<td>empty</td>
+<td>comma-separated extra hostnames symlinked to the site</td>
+</tr>
+<tr>
+<td><code>QUANTA_ASSETS_DIR</code></td>
+<td><code>/usr/local/share/quanta/assets</code></td>
+<td>where the image keeps the CSS/JS bundles</td>
+</tr>
+<tr>
+<td><code>QUANTA_BOOT_CLEAR_CACHE</code></td>
+<td><code>1</code></td>
+<td>run <code>doctor &lt;site&gt; clear_cache</code> on start (drops cached node paths and all thumbnails)</td>
+</tr>
+<tr>
+<td><code>QUANTA_BOOT_CHECK</code></td>
+<td><code>0</code></td>
+<td>run <code>doctor &lt;site&gt; check</code> on start (the broken-symlink repair pass)</td>
+</tr>
+</tbody></table>
+</div>
+<p>The CSS/JS bundles are built when the <strong>image</strong> is built, not on every start:
+<code>quanta-build-assets</code> (<code>docker/build-assets.sh</code>) runs <code>doctor &lt;site&gt; check</code> and
+keeps <code>css.min.css</code> / <code>js.min.js</code> in <code>QUANTA_ASSETS_DIR</code>, and the entrypoint
+copies them into <code>static/tmp/&lt;site&gt;/files/</code> — the same place the CMS has always
+read them from. They are derived from the modules&#39; assets, which the image
+already contains, so rebuilding them per container (into a volume every pod
+shares, while the others serve from it) was repeated work.</p>
+<p>Nothing in <code>src/</code> is involved in this, so a <strong>native installation is unaffected</strong>:
+<code>doctor &lt;site&gt; check</code> keeps aggregating and minifying into each site&#39;s own
+<code>static/tmp/&lt;site&gt;/files/</code>, which is also what a single source tree serving
+several hosts needs, as each host&#39;s <code>_modules</code> may add its own includes.</p>
+<p>This image is meant to be used as a base: an application image <code>FROM</code>s it and
+layers on its site code only. Such an image should <strong>not</strong> set its own
+<code>ENTRYPOINT</code> — doing so replaces all of the above, and also resets the inherited
+<code>CMD</code> to null. Application-specific start-up steps go in a <code>*.sh</code> dropped into
+<code>/docker-entrypoint.d/</code>, which the entrypoint sources (in glob order, as root,
+under <code>set -e</code>) after its own setup and before it execs the <code>CMD</code>. If its own
+modules add CSS/JS includes, it should also <code>RUN quanta-build-assets</code> after
+copying its site in, so those assets land in the bundle.</p>
+<h3 id="for-windows-xamp-users">For Windows / XAMP users:<a class="prose__anchor" href="#for-windows-xamp-users" aria-label="Link to this section">#</a></h3>
+<p>As Quanta only runs on UNIX, in order to run Quanta on Windows, you will have to install a VM (VMware, VirtualBox, etc.) with your distribution of choice. </p>
+<h2 id="installation">Installation<a class="prose__anchor" href="#installation" aria-label="Link to this section">#</a></h2>
+<p>Quick kickstart guide:</p>
+<ol>
+<li><p>Clone the latest release of the Quanta repository</p>
+</li>
+<li><p>Create a host pointing to your quanta folder (i.e. myproject.com =&gt; /var/www/quanta)</p>
+</li>
+<li><p>Run Doctor:</p>
+</li>
+</ol>
+<div class="codeblock" data-lang="bash"><button class="codeblock__copy" type="button" data-copy>Copy</button><pre><code class="language-bash">./doctor myproject.com</code></pre></div>
+<p>and follow the steps until installation is completed.</p>
+<ol start="4">
+<li>run Composer:</li>
+</ol>
+<div class="codeblock" data-lang="bash"><button class="codeblock__copy" type="button" data-copy>Copy</button><pre><code class="language-bash">composer install</code></pre></div>
+<ol start="5">
+<li>Done! Check your brand new site at <a href="http://myproject" target="_blank" rel="noopener">http://myproject</a></li>
+</ol>
+<p>and start customizing it. </p>
+<p>Detailed information about Quanta&#39;s installation process is available on the website: <a href="https://www.quanta.org/installation-instructions/" target="_blank" rel="noopener">https://www.quanta.org/installation-instructions/</a></p>
+<h2 id="customization">Customization<a class="prose__anchor" href="#customization" aria-label="Link to this section">#</a></h2>
+<p>Once you have, you can start: </p>
+<ul>
+<li>structuring your folders structure -&gt; <a href="https://www.quanta.org/approaching-quantas-structure-nodes-folders-and-datajson-files/" target="_blank" rel="noopener">https://www.quanta.org/approaching-quantas-structure-nodes-folders-and-datajson-files/</a></li>
+<li>playing around with qTags -&gt; <a href="https://www.quanta.org/what-is-a-quanta-tag-qtag/" target="_blank" rel="noopener">https://www.quanta.org/what-is-a-quanta-tag-qtag/</a></li>
+<li>creating a basic layout -&gt; <a href="https://www.quanta.org/the-index-html-file/" target="_blank" rel="noopener">https://www.quanta.org/the-index-html-file/</a> </li>
+<li>building up great templates -&gt; <a href="https://www.quanta.org/the-tpl-html-file/" target="_blank" rel="noopener">https://www.quanta.org/the-tpl-html-file/</a></li>
+<li>creating a custom module -&gt; <a href="https://www.quanta.org/creating-a-custom-quanta-module/" target="_blank" rel="noopener">https://www.quanta.org/creating-a-custom-quanta-module/</a></li>
+</ul>
+<p>... and become a Quanta pro by having a look at:</p>
+<ul>
+<li>the documentation -&gt; <a href="https://www.quanta.org/documentation/" target="_blank" rel="noopener">https://www.quanta.org/documentation/</a></li>
+<li>the tutorials  -&gt; <a href="https://www.quanta.org/tutorial/" target="_blank" rel="noopener">https://www.quanta.org/tutorial/</a></li>
+</ul>
+<h2 id="documentation-site">Documentation site<a class="prose__anchor" href="#documentation-site" aria-label="Link to this section">#</a></h2>
+<p><code>docs/</code> is a small static site: a landing page, an animated walkthrough of
+Files-DB, and the documentation itself, rendered from the Markdown files that
+already live in this repository. <code>docs/site/</code> holds its source; everything else
+under <code>docs/</code> is generated from that and committed.</p>
+<p>Read it locally with:</p>
+<div class="codeblock" data-lang="bash"><button class="codeblock__copy" type="button" data-copy>Copy</button><pre><code class="language-bash">npm install           # once — the build needs one dev dependency (marked)
+npm run docs:serve    # http://localhost:4000 — rebuilds as you edit</code></pre></div>
+<p>Then open <a href="http://localhost:4000/" target="_blank" rel="noopener">http://localhost:4000/</a> and stop the server with Ctrl+C.</p>
+<p><code>npm run docs:build</code> regenerates <code>docs/</code> without serving, and <code>npm run docs:check</code>
+verifies that every internal link and anchor still resolves. Nothing is
+published anywhere yet — this is a local preview only.
+See <a href="https://github.com/quantacms/quanta/blob/master/docs/site/README.md" target="_blank" rel="noopener">docs/site/README.md</a>.</p>
+<h2 id="support">Support<a class="prose__anchor" href="#support" aria-label="Link to this section">#</a></h2>
+<p>Found any issue? Got any idea? 
+Quanta&#39;s contributors and enthusiasts are always happy to help.</p>
+<ul>
+<li>the FAQ -&gt; <a href="https://www.quanta.org/faq/" target="_blank" rel="noopener">https://www.quanta.org/faq/</a></li>
+<li>the Community -&gt; <a href="https://www.quanta.org/community/" target="_blank" rel="noopener">https://www.quanta.org/community/</a></li>
+<li>the Facebook Group -&gt; <a href="https://www.facebook.com/groups/quantacms" target="_blank" rel="noopener">https://www.facebook.com/groups/quantacms</a></li>
+</ul>
+<p>If you feel like something needs attention, don&#39;t hesitate in opening a new issue in the github repository:
+<a href="https://github.com/quantacms/quanta" target="_blank" rel="noopener">https://github.com/quantacms/quanta</a></p>
+<p>Quanta needs you to make every day new steps to become the best CMS ever created!</p>
+
+      </article>
+      <nav class="pager" aria-label="Documentation">
+        <a class="pager__link pager__link--prev" href="overview.html"><span class="pager__kind">Previous</span><span class="pager__title">Overview</span></a>
+        <a class="pager__link pager__link--next" href="files-db/"><span class="pager__kind">Next</span><span class="pager__title">The extension</span></a>
+      </nav>
+    </main>
+    <nav class="docs__toc" aria-label="On this page">
+      <p class="docs__toc-title">On this page</p>
+      <ul class="docs__toc-list">
+        <li class="docs__toc-item docs__toc-item--h2"><a href="#the-author">The Author</a></li>
+        <li class="docs__toc-item docs__toc-item--h2"><a href="#quantas-features">Quanta&#39;s Features</a></li>
+        <li class="docs__toc-item docs__toc-item--h2"><a href="#quantas-architecture">Quanta&#39;s Architecture</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#factory">Factory</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#front-controller">Front Controller</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#template-method">Template Method</a></li>
+        <li class="docs__toc-item docs__toc-item--h2"><a href="#pre-requisites">Pre-Requisites</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#general-requisites">General Requisites:</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#for-apache-users">For Apache users:</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#with-docker">With Docker:</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#for-windows-xamp-users">For Windows / XAMP users:</a></li>
+        <li class="docs__toc-item docs__toc-item--h2"><a href="#installation">Installation</a></li>
+        <li class="docs__toc-item docs__toc-item--h2"><a href="#customization">Customization</a></li>
+        <li class="docs__toc-item docs__toc-item--h2"><a href="#documentation-site">Documentation site</a></li>
+        <li class="docs__toc-item docs__toc-item--h2"><a href="#support">Support</a></li>
+      </ul>
+    </nav>
+  </div>
+  <footer class="footer">
+    <div class="footer__inner">
+      <div>
+        <a class="logo logo--sm" href="./"><svg class="logo__mark" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+      <circle cx="20" cy="20" r="4.2" fill="currentColor"/>
+      <ellipse cx="20" cy="20" rx="17" ry="7.4" fill="none" stroke="currentColor" stroke-width="2" opacity=".85" transform="rotate(-30 20 20)"/>
+      <ellipse cx="20" cy="20" rx="17" ry="7.4" fill="none" stroke="currentColor" stroke-width="2" opacity=".45" transform="rotate(30 20 20)"/>
+    </svg><span class="logo__text">Quanta<span class="logo__accent">CMS</span></span></a>
+        <p class="footer__tagline">A DB-free CMS and framework, built on the filesystem.</p>
+      </div>
+      <div class="footer__links">
+        <a href="overview.html">Documentation</a>
+        <a href="https://github.com/quantacms/quanta" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.quanta.org" target="_blank" rel="noopener">quanta.org</a>
+        <a href="https://github.com/quantacms/quanta/blob/master/LICENSE.txt" target="_blank" rel="noopener">License</a>
+      </div>
+    </div>
+    <p class="footer__note">This page is rendered from <a href="https://github.com/quantacms/quanta/blob/master/README.md" target="_blank" rel="noopener">README.md</a> in the repository.</p>
+  </footer>
+  <script src="assets/site.js" defer></script>
+</body>
+</html>
