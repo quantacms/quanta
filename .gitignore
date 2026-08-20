@@ -13,3 +13,8 @@ vendor/*
 *.swp
 composer.lock
 composer.phar
+
+# Documentation site (docs/site/ is the source; the rest of docs/ is built
+# from it and IS committed — see docs/.build-manifest)
+node_modules
+node_modules/*

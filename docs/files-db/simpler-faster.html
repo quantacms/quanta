@@ -1,0 +1,1174 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>files-db: simpler to use, and faster — Quanta CMS</title>
+  <meta name="description" content="A design review of the read path end to end — PHP caller → extension → shared memory — with the concrete changes that would make files-db cheaper to call and cheaper to run, ranked">
+  <meta property="og:title" content="files-db: simpler to use, and faster — Quanta CMS">
+  <meta property="og:description" content="A design review of the read path end to end — PHP caller → extension → shared memory — with the concrete changes that would make files-db cheaper to call and cheaper to run, ranked">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/site.css">
+  <script>
+    // Applied before first paint so a dark-mode reader never sees a light flash.
+    (function () {
+      var root = document.documentElement;
+      root.classList.remove('no-js');
+      try {
+        var saved = localStorage.getItem('quanta-theme');
+        if (saved) root.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body class="page page--docs">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="logo" href="../">
+        <svg class="logo__mark" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+      <circle cx="20" cy="20" r="4.2" fill="currentColor"/>
+      <ellipse cx="20" cy="20" rx="17" ry="7.4" fill="none" stroke="currentColor" stroke-width="2" opacity=".85" transform="rotate(-30 20 20)"/>
+      <ellipse cx="20" cy="20" rx="17" ry="7.4" fill="none" stroke="currentColor" stroke-width="2" opacity=".45" transform="rotate(30 20 20)"/>
+    </svg>
+        <span class="logo__text">Quanta<span class="logo__accent">CMS</span></span>
+      </a>
+      <button class="topbar__burger" type="button" aria-expanded="false" aria-controls="site-nav" data-nav-toggle>
+        <span class="topbar__burger-bar"></span><span class="sr-only">Menu</span>
+      </button>
+      <nav class="topnav" id="site-nav" aria-label="Main">
+        <a class="topnav__link is-active" href="../overview.html">Documentation</a>
+          <a class="topnav__link" href="../files-db.html">Files-DB</a>
+          <a class="topnav__link" href="https://www.quanta.org" target="_blank" rel="noopener">quanta.org</a>
+          <a class="topnav__link" href="https://github.com/quantacms/quanta" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode">
+        <svg viewBox="0 0 24 24" class="theme-toggle__sun" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6"/></g></svg>
+        <svg viewBox="0 0 24 24" class="theme-toggle__moon" aria-hidden="true"><path d="M20 14.2A8.2 8.2 0 0 1 9.8 4a8.4 8.4 0 1 0 10.2 10.2Z" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </header>
+  <div class="docs">
+    <input type="checkbox" id="docs-sidebar-toggle" class="docs__sidebar-checkbox">
+    <aside class="docs__sidebar" aria-label="Documentation">
+      <label class="docs__sidebar-close" for="docs-sidebar-toggle" aria-hidden="true">Close</label>
+      <nav class="docs__nav">
+        <p class="docs__navtitle">Quanta</p>
+        <ul class="docs__navlist">
+          <li><a class="docs__navlink" href="../overview.html">Overview</a></li>
+          <li><a class="docs__navlink" href="../introduction.html">Introduction &amp; install</a></li>
+        </ul>
+        <p class="docs__navtitle">Files-DB</p>
+        <ul class="docs__navlist">
+          <li><a class="docs__navlink" href="./">The extension</a></li>
+          <li><a class="docs__navlink" href="usage.html">Using Files-DB from PHP</a></li>
+          <li><a class="docs__navlink" href="how-it-works.html">How Files-DB works</a></li>
+          <li><a class="docs__navlink" href="api-contract.html">API contract</a></li>
+          <li><a class="docs__navlink" href="two-implementations.html">Two implementations</a></li>
+          <li><a class="docs__navlink is-active" aria-current="page" href="simpler-faster.html">Simpler and faster</a></li>
+        </ul>
+      </nav>
+    </aside>
+    <main class="docs__main" id="main">
+      <label class="docs__sidebar-open" for="docs-sidebar-toggle">Documentation menu</label>
+      <article class="prose">
+        <p class="prose__eyebrow">Files-DB</p>
+        <h1>files-db: simpler to use, and faster</h1>
+<p>A design review of the read path end to end — PHP caller → extension → shared
+memory — with the concrete changes that would make files-db cheaper to call and
+cheaper to run, ranked by payoff against risk.</p>
+<p>Written to answer a narrower question (&quot;can we store only the image, no JSON?&quot;),
+which turned out to be the <em>seventh</em> most valuable change on the list. The
+image-only question is answered in full in §6; the six things worth doing first
+are §4 and §5.</p>
+<p><strong>Status:</strong> implemented and measured. See §9 for what the production tree
+actually said and what each step moved — several of the estimates below were
+wrong, and the corrections are more interesting than the estimates.</p>
+<hr>
+<h2 id="1-method-and-what-is-actually-measured">1. Method, and what is actually measured<a class="prose__anchor" href="#1-method-and-what-is-actually-measured" aria-label="Link to this section">#</a></h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Claim class</th>
+<th>How it was established</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Code structure, call chains, line references</td>
+<td>Read directly from the sources below</td>
+</tr>
+<tr>
+<td>Segment size ratios (§6)</td>
+<td><code>tests/bench/image-size.py</code> — a byte-faithful re-implementation of <code>src/image.rs</code> <code>Encoder</code> + <code>src/php_abi.rs::push_zend_string</code>, run over hili&#39;s 161 tracked <code>data*.json</code></td>
+</tr>
+<tr>
+<td><code>loadJSON</code> ≈ 26% of render self-time, <code>storeNodePath</code> ≈ 13% of an admin list page</td>
+<td><strong>Quanta&#39;s own profiling notes</strong>, quoted from the code comments that record them (<code>Node.class.php:136</code>, <code>Cache.class.php:95</code>) — not re-measured here</td>
+</tr>
+<tr>
+<td>Per-read microbenchmarks (0.24 µs / 27×)</td>
+<td><code>docs/how-it-works.md:903</code>, measured on <code>php:8.2-fpm</code> — quoted, not re-measured</td>
+</tr>
+<tr>
+<td>Anything about <strong>production</strong> segment size or call volume</td>
+<td><strong>Not measured.</strong> No cluster was available. §8 lists exactly what to run</td>
+</tr>
+</tbody></table>
+</div>
+<p>Sources read: <code>files-db/src/{lib,image,model,store,shm,config,metrics,php_abi}.rs</code>,
+<code>files-db/src/bin/qdbd.rs</code>, <code>files-db/docs/{api-contract,how-it-works,usage}.md</code>,
+<code>files-db/docs/quanta_db.stub.php</code>, and the Quanta/hili call sites
+<code>FilesDb.class.php</code>, <code>Node.class.php</code>, <code>Environment.class.php</code>,
+<code>Cache.class.php</code>, <code>integrity.hook.inc</code>, <code>hili.hook.inc</code>,
+<code>hili.doctor.hook.inc</code>.</p>
+<blockquote>
+<p><strong>The corpus caveat, stated once and applying to every number in §6.</strong> The 161
+documents in hili&#39;s repo are structural nodes — components, guides, prompts,
+default data. Production content (jobs, bookings, users) is a different shape
+and almost certainly a different ratio. Every size number below is directional
+until <code>qdbstat</code> is run on prod. See §8.</p>
+</blockquote>
+<hr>
+<h2 id="2-the-shape-of-the-problem">2. The shape of the problem<a class="prose__anchor" href="#2-the-shape-of-the-problem" aria-label="Link to this section">#</a></h2>
+<p>files-db did the hard part correctly. <code>QuantaDb::getObject()</code> on a warm segment
+is one hash probe and an image walk: no <code>stat</code>, no <code>read</code>, no <code>json_decode</code>,
+and for large bodies no copy at all. Measured at 0.24 µs against 6.53 µs for the
+legacy <code>file_get_contents</code> + <code>json_decode</code> — a 27× win on the operation itself.</p>
+<p>The problem is that <strong>almost none of that 27× survives the trip out to the
+caller</strong>, because the layers above it were built to protect against the cost
+files-db removed, and they are still there, still paying.</p>
+<p>Three separate taxes, compounding:</p>
+<ol>
+<li><strong>The extension is asked the same question several times per node</strong> (§4.1) —
+once for the path, once (or twice) for the document.</li>
+<li><strong>A syscall-based cache still sits in front of the syscall-free lookup</strong>
+(§4.2) — <code>Environment::nodePath()</code> does a <code>readlink()</code> on every call to avoid
+an <code>exec(find)</code> that files-db already eliminated.</li>
+<li><strong>Every caller must implement the fallback protocol</strong> (§3) — three-state
+returns, <code>coherent()</code> checks, path-identity comparisons, try/catch. 858 lines
+of PHP wrapper, and the hot path in <code>Node::loadJSON()</code> reimplements part of it
+again inline.</li>
+</ol>
+<p>Nothing here is a defect in the extension. It is the cost of an incremental
+migration that never got to delete the thing it replaced.</p>
+<hr>
+<h2 id="3-simpler-to-use">3. Simpler to use<a class="prose__anchor" href="#3-simpler-to-use" aria-label="Link to this section">#</a></h2>
+<h3 id="31-the-three-state-contract-leaks-into-every-caller">3.1 The three-state contract leaks into every caller<a class="prose__anchor" href="#31-the-three-state-contract-leaks-into-every-caller" aria-label="Link to this section">#</a></h3>
+<p><code>FilesDb::path()</code> returns <code>string | FALSE | NULL</code>:</p>
+<ul>
+<li><code>string</code> — the path</li>
+<li><code>FALSE</code> — definitively absent <em>and the index is authoritative</em></li>
+<li><code>NULL</code> — extension absent, errored, or not coherent; <strong>caller must run its own
+lookup</strong></li>
+</ul>
+<p>That third state is the expensive one, because it is not an error path — it is a
+<em>routine</em> state that every call site must implement a complete second
+implementation for. <code>Environment::nodePath()</code> handles it
+(<code>Environment.class.php:796</code>), <code>Node::loadJSON()</code> handles it
+(<code>Node.class.php:185</code>), <code>FilesDb::children()</code> handles it
+(<code>FilesDb.class.php:486</code>), and each does so slightly differently.</p>
+<p><code>FilesDb::call()</code> (<code>FilesDb.class.php:822</code>) catches <code>\Throwable</code> and returns
+<code>NULL</code> — collapsing &quot;no such node&quot;, &quot;daemon down&quot;, &quot;stale <code>.so</code> without this
+method&quot; and &quot;corrupt document&quot; into one indistinguishable value, with the real
+cause parked in <code>$last_error</code> where, in practice, nothing reads it.</p>
+<h3 id="32-children-needs-a-translation-layer-to-be-callable-at-all">3.2 <code>children()</code> needs a translation layer to be callable at all<a class="prose__anchor" href="#32-children-needs-a-translation-layer-to-be-callable-at-all" aria-label="Link to this section">#</a></h3>
+<p><code>FilesDb::children()</code> (<code>FilesDb.class.php:486</code>) spends its first 20 lines
+deciding whether the caller&#39;s request is even <em>expressible</em> in the extension&#39;s
+vocabulary — mapping Quanta&#39;s <code>DIR_ALL</code>/<code>DIR_DIRS</code>/<code>DIR_FILES</code> × <code>symlinks</code>
+<code>no</code>/<code>only</code>/<code>NULL</code> × <code>exclude_dirs</code> onto the contract&#39;s <code>type</code> +
+<code>include_hidden</code>. When it is not expressible, it falls back to
+<code>scanDirectory()</code> — and then has to <code>array_values()</code> the result because the two
+implementations disagree about array shape in a way that changes what
+<code>json_encode()</code> produces.</p>
+<p>That is the signature of an API modelled on the <em>storage</em> rather than on the
+<em>caller</em>. The extension should grow the two or three options that make the
+common Quanta calls directly expressible, and <code>children()</code> should shrink to a
+pass-through.</p>
+<h3 id="33-the-single-most-common-operation-has-no-single-call">3.3 The single most common operation has no single call<a class="prose__anchor" href="#33-the-single-most-common-operation-has-no-single-call" aria-label="Link to this section">#</a></h3>
+<p>&quot;Load a node&#39;s document, with language fallback, verifying it is the node at
+this path&quot; is what <code>Node::loadJSON()</code> does, and it is <em>the</em> hot operation on the
+site. Today (<code>Node.class.php:160-186</code>):</p>
+<div class="codeblock" data-lang="php"><button class="codeblock__copy" type="button" data-copy>Copy</button><pre><code class="language-php">$qdb_path = $this-&gt;env-&gt;quantaDbPathFor($this-&gt;name);   // probe 1 + path String
+if (is_string($qdb_path)
+    &amp;&amp; ($qdb_path === $this-&gt;path || realpath($qdb_path) === realpath($this-&gt;path))) {
+  $json = \QuantaDb::getObject($this-&gt;name, $language);  // probe 2
+  if ($json === NULL &amp;&amp; $suffix !== &#39;&#39;) {
+    $json = \QuantaDb::getObject($this-&gt;name, NULL);      // probe 3
+  }
+  ...
+  if ($this-&gt;env-&gt;db()-&gt;coherent()) { ... }
+}</code></pre></div>
+<p>Three probes, one absolute-path <code>String</code> built in Rust and thrown away, one
+docroot rewrite, one PHP string compare, and — on the miss path — two
+<code>realpath()</code> calls. The record found by probe 1 already contains everything the
+other two probes go looking for.</p>
+<p><strong>Proposal — one call, one probe:</strong></p>
+<div class="codeblock" data-lang="php"><button class="codeblock__copy" type="button" data-copy>Copy</button><pre><code class="language-php">QuantaDb::load(string $name, array $opts = []): ?array
+// $opts: [&#39;lang&#39; =&gt; &#39;it&#39;, &#39;fallback&#39; =&gt; true, &#39;at&#39; =&gt; &#39;/path/expected&#39;, &#39;as&#39; =&gt; &#39;object&#39;|&#39;array&#39;]
+// returns [&#39;json&#39; =&gt; stdClass|array, &#39;lang&#39; =&gt; &#39;it&#39;, &#39;path&#39; =&gt; &#39;...&#39;, &#39;generation&#39; =&gt; 42]
+//   null  = no such node, or it is not the node at &#39;at&#39;</code></pre></div>
+<p><code>at</code> moves the path-identity check inside the probe that already holds the
+record — no path <code>String</code> is built unless the caller asked for one. <code>fallback</code>
+moves the language policy in beside the record that already lists every
+language. This is the change that makes the caller <em>both</em> simpler and faster,
+which is why it leads §4.</p>
+<blockquote>
+<p>The contract deliberately keeps language fallback in NodeFactory
+(&quot;No language fallback (that policy stays in NodeFactory)&quot;,
+<code>quanta_db.stub.php:47</code>). That was the right call when <code>get()</code> was a primitive.
+<code>load()</code> is explicitly not a primitive — it is the composed operation, offered
+alongside the primitives, not replacing them.</p>
+</blockquote>
+<h3 id="34-what-simpler-should-mean-concretely">3.4 What &quot;simpler&quot; should mean concretely<a class="prose__anchor" href="#34-what-simpler-should-mean-concretely" aria-label="Link to this section">#</a></h3>
+<ul>
+<li>One call for the common case; the primitives stay for everything else.</li>
+<li><strong>Coherent mode is the only mode a caller writes code for.</strong> When
+<code>db()-&gt;coherent()</code> is true — the normal state — callers should not be
+implementing a second lookup. Fallback belongs <em>inside</em> <code>FilesDb</code>, not spread
+across its callers.</li>
+<li>Errors that mean different things should be distinguishable without reading
+<code>$last_error</code>.</li>
+</ul>
+<hr>
+<h2 id="4-faster-the-changes-that-dont-need-a-format-change">4. Faster: the changes that don&#39;t need a format change<a class="prose__anchor" href="#4-faster-the-changes-that-dont-need-a-format-change" aria-label="Link to this section">#</a></h2>
+<p>Ranked by (expected payoff ÷ risk). None of these touch the segment layout.</p>
+<h3 id="41-one-probe-per-node-load-not-two-or-three">4.1 One probe per node load, not two or three<a class="prose__anchor" href="#41-one-probe-per-node-load-not-two-or-three" aria-label="Link to this section">#</a></h3>
+<p><strong>Where:</strong> <code>Node.class.php:160-186</code>, <code>Environment.class.php:876</code>,
+<code>lib.rs:707</code> (<code>resolve_node</code>), <code>lib.rs:1656</code> (<code>get_object</code>).</p>
+<p>The extension already knows this is wasteful — <code>with_shm_doc</code> carries the
+comment:</p>
+<blockquote>
+<p><em>&quot;Going through <code>resolve_node</code> first would probe twice and build an absolute
+path <code>String</code> that a shared-memory read never looks at — the path is only
+needed on the fallback path, so it is only built there.&quot;</em> (<code>lib.rs:862</code>)</p>
+</blockquote>
+<p>…and then the PHP caller reintroduces exactly that, from the outside. Every
+<code>resolve_node()</code> call does <code>cfg.root.join(rec.rel_path()).to_string_lossy() .to_string()</code> (<code>lib.rs:715</code>) — a <code>PathBuf</code> join plus a <code>String</code> allocation —
+whether or not anyone wants the path.</p>
+<p><strong>Fix:</strong> <code>QuantaDb::load()</code> per §3.3. <strong>Payoff:</strong> removes 1-2 probes, one
+<code>PathBuf</code>+<code>String</code> allocation, one docroot rewrite and one PHP string compare
+per node load, on the function Quanta&#39;s own notes put at ~26% of render
+self-time on admin list pages.</p>
+<h3 id="42-stop-putting-a-syscall-cache-in-front-of-a-syscall-free-lookup">4.2 Stop putting a syscall cache in front of a syscall-free lookup<a class="prose__anchor" href="#42-stop-putting-a-syscall-cache-in-front-of-a-syscall-free-lookup" aria-label="Link to this section">#</a></h3>
+<p><strong>Where:</strong> <code>Environment.class.php:721</code> (<code>nodePath</code>), <code>Cache.class.php:133</code>
+(<code>getStoredNodePath</code>), <code>Cache.class.php:74</code> (<code>storeNodePath</code>).</p>
+<p><code>Environment::nodePath()</code> resolves a name through four layers, in this order:</p>
+<ol>
+<li>static <code>$node_paths[$folder]</code> array (per request)</li>
+<li>a <strong>shard symlink</strong> under <code>tmp/cache/a/b/c/&lt;name&gt;</code> — <code>is_link()</code> + <code>readlink()</code></li>
+<li><code>db()-&gt;path()</code> — the hash probe</li>
+<li><code>exec(find …)</code></li>
+</ol>
+<p>Layers 2 and 4 exist to avoid each other. Layer 3 made layer 4 obsolete — but
+layer 2 was never removed, so it now costs more than the thing it protects.</p>
+<p><strong>And the static cache does not avoid it.</strong> Read the code carefully:</p>
+<div class="codeblock" data-lang="php"><button class="codeblock__copy" type="button" data-copy>Copy</button><pre><code class="language-php">if (isset($node_paths[$folder])) {
+  $node_path_link = $node_paths[$folder];   // the LINK path, not the target
+  ...
+} else {
+  $node_path_link = Cache::getStoredNodePath($this, $folder, FALSE);
+}
+$stored_target = @readlink($node_path_link);   // ← always, even on a cache hit</code></pre></div>
+<p><code>$node_paths</code> stores the <em>symlink path</em>, not the resolved target, so <strong>every</strong>
+<code>nodePath()</code> call issues a <code>readlink()</code> syscall — warm, cold, repeated within the
+same request, all of them. PHP&#39;s stat cache does not cover <code>readlink()</code>. The
+adjacent <code>is_dir()</code> is stat-cached after the first hit; the <code>readlink()</code> is not.</p>
+<p>Quanta&#39;s own profiling note (<code>Cache.class.php:95</code>) records <code>storeNodePath</code> at
+<strong>~13% of an admin list page</strong> before it was guarded. This is the same layer,
+still on the read side.</p>
+<p><strong>Fix, in two independent steps:</strong></p>
+<ul>
+<li><strong>(a) Cache the target, not the link.</strong> Store the resolved path in
+<code>$node_paths[$folder]</code> and return it directly. Pure PHP, no files-db
+involvement, removes one syscall per name per request. On a page whose own
+profiling found 168 <code>findNodePath()</code> calls, that is ~168 syscalls per render
+for nothing.</li>
+<li><strong>(b) When <code>db()-&gt;coherent()</code>, ask files-db first and skip layers 2 and 4
+entirely.</strong> The shard symlink cache only earns its keep in fallback mode,
+where <code>exec(find)</code> is the alternative. In coherent mode it is strictly
+negative: a <code>readlink()</code> (~1 µs with the syscall and dentry lookup) guarding a
+0.2 µs probe that needs no syscall at all.</li>
+</ul>
+<p>This is the largest pure-win item on the list and it does not require touching
+Rust.</p>
+<h3 id="43-find-resolves-the-same-candidate-up-to-three-times">4.3 <code>find()</code> resolves the same candidate up to three times<a class="prose__anchor" href="#43-find-resolves-the-same-candidate-up-to-three-times" aria-label="Link to this section">#</a></h3>
+<p><strong>Where:</strong> <code>lib.rs:1452</code> (<code>find_impl</code>).</p>
+<p><code>find_impl</code> walks its candidate list up to three separate times, calling
+<code>resolve_node()</code> — one probe plus one absolute-path <code>String</code> — in each:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>pass</th>
+<th>line</th>
+<th>condition</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>where</code> filter</td>
+<td><code>lib.rs:1485</code></td>
+<td><code>where</code> present</td>
+</tr>
+<tr>
+<td><code>order_by: mtime</code> / <code>json:</code></td>
+<td><code>lib.rs:1498</code> / <code>1506</code></td>
+<td>non-name ordering</td>
+</tr>
+<tr>
+<td><code>return: data</code> / <code>meta</code></td>
+<td><code>lib.rs:1535</code></td>
+<td>shaping the result</td>
+</tr>
+</tbody></table>
+</div>
+<p>A <code>find([&#39;father&#39; =&gt; x, &#39;where&#39; =&gt; …], [&#39;order_by&#39; =&gt; &#39;json:date&#39;, &#39;return&#39; =&gt; &#39;data&#39;])</code> over N candidates therefore costs <strong>3N probes and 3N path <code>String</code>
+allocations</strong> where N record views would do.</p>
+<p><strong>Fix:</strong> resolve each candidate once into a small struct carried through
+filtering, ordering and shaping. Contained, no API change, no format change.</p>
+<p><strong>Related:</strong> <code>limit</code>/<code>offset</code> are applied <em>after</em> the <code>where</code> filter loads every
+candidate&#39;s document (<code>lib.rs:1525</code>). That ordering is semantically required —
+you cannot page before you filter — but it means a <code>find</code> with <code>where</code> and
+<code>limit: 20</code> over 5 000 candidates still decodes 5 000 documents. §4.4 makes
+each of those decodes nearly free, which is the real fix.</p>
+<h3 id="44-evaluate-where-by-walking-the-image-not-by-decoding">4.4 Evaluate <code>where</code> by walking the image, not by decoding<a class="prose__anchor" href="#44-evaluate-where-by-walking-the-image-not-by-decoding" aria-label="Link to this section">#</a></h3>
+<p><strong>Where:</strong> <code>lib.rs:1485</code>, via <code>load_doc</code> → <code>parse_cached</code> → <code>serde_json::from_slice</code>.</p>
+<p><code>where</code> is equality-only (v1). Today each candidate&#39;s whole document is parsed
+into a <code>serde_json::Value</code> (or fetched from the parse cache, which then holds a
+full <code>Rc&lt;Value&gt;</code> per node), and <code>json_value_at()</code> walks that.</p>
+<p>The image can be walked directly: descend the map pairs, compare the target
+key&#39;s <code>zend_string</code> bytes, bail at the first mismatch. <strong>No parse, no
+allocation, no parse-cache entry, and early exit on the first failing
+predicate</strong> — where today&#39;s path must materialize the entire document before it
+can test one field.</p>
+<p>This is a strict improvement over the current behaviour and it is the change
+that makes <code>find(where:)</code> viable over large candidate sets. It also removes one
+of the four consumers of the raw bytes (see §6).</p>
+<h3 id="45-lineage-and-name_prefix-are-full-segment-scans">4.5 <code>lineage</code> and <code>name_prefix</code> are full segment scans<a class="prose__anchor" href="#45-lineage-and-name_prefix-are-full-segment-scans" aria-label="Link to this section">#</a></h3>
+<p><strong>Where:</strong> <code>lib.rs:1381</code> (<code>names_under</code>), <code>lib.rs:1400</code> (<code>names_by_prefix</code>).</p>
+<p>Both call <code>seg.for_each_live()</code> — a walk of <strong>every record in the segment</strong> —
+allocating a <code>String</code> per match and sorting afterwards. There is no index on
+<code>rel_path</code> prefix, so <code>find([&#39;lineage&#39; =&gt; &#39;jobs&#39;])</code> costs O(all nodes) even when
+the answer is 12 names.</p>
+<p><code>father</code>/<code>in</code> do not have this problem: they go through <code>children_impl</code>
+(<code>lib.rs:1202</code>), which reads the record&#39;s stored children list.</p>
+<p><strong>Fix (cheap):</strong> when <code>lineage</code> is combined with another criterion, evaluate the
+cheap one first and filter, rather than intersecting two fully-materialized
+sets (<code>find_candidates</code>, <code>lib.rs:1434</code>, currently builds every set in full and
+then intersects). <strong>Fix (real):</strong> have qdbd maintain a lineage index in the
+segment. That is a format change and belongs with §5.</p>
+<h3 id="46-publish_full-triples-the-daemons-peak-memory">4.6 <code>publish_full</code> triples the daemon&#39;s peak memory<a class="prose__anchor" href="#46-publish_full-triples-the-daemons-peak-memory" aria-label="Link to this section">#</a></h3>
+<p><strong>Where:</strong> <code>qdbd.rs:229</code>.</p>
+<div class="codeblock" data-lang="rust"><button class="codeblock__copy" type="button" data-copy>Copy</button><pre><code class="language-rust">let encoded: Vec&lt;(String, Vec&lt;u8&gt;)&gt; = self.model.nodes.iter()
+    .map(|(n, m)| (n.clone(), m.encode()))
+    .collect();                                     // ← whole tree, all at once
+let live: u64 = encoded.iter().map(|(_, b)| b.len() as u64).sum();
+...
+let mut w = SegmentWriter::create(…)?;              // ← new segment mapped
+for (name, bytes) in &amp;encoded { w.upsert(name, bytes)?; }
+...
+self.writer = w;                                    // ← old segment dropped here</code></pre></div>
+<p>Every record is encoded into its own <code>Vec&lt;u8&gt;</code> and the whole set is held before
+the writer is created. So during a compaction, qdbd&#39;s peak footprint is roughly:</p>
+<div class="codeblock"><button class="codeblock__copy" type="button" data-copy>Copy</button><pre><code>model (raw + image, every document)
+  + encoded copy (raw + image, every document, again)
+  + the old segment mapping
+  + the new segment mapping</code></pre></div>
+<p><code>publish_full</code> runs on boot, on <code>reindex</code>, <strong>and on every compaction</strong>
+(<code>maybe_compact</code>, <code>qdbd.rs:312</code>, called from six mutation paths). Given that this
+system has already hit a <code>/dev/shm</code> sizing wall, a transient 3-4× spike in the
+daemon during a routine compaction deserves attention.</p>
+<p><strong>Fix:</strong> size the segment with a cheap size-only pass (or an estimate plus
+grow), then stream <code>encode()</code> → <code>upsert()</code> one record at a time so only one
+record&#39;s bytes are live at once. This drops the &quot;encoded copy&quot; term entirely.</p>
+<hr>
+<h2 id="5-faster-the-one-format-change-worth-making-first">5. Faster: the one format change worth making first<a class="prose__anchor" href="#5-faster-the-one-format-change-worth-making-first" aria-label="Link to this section">#</a></h2>
+<h3 id="51-a-segment-wide-string-table">5.1 A segment-wide string table<a class="prose__anchor" href="#51-a-segment-wide-string-table" aria-label="Link to this section">#</a></h3>
+<p><strong>Where:</strong> <code>image.rs:86</code> (<code>Encoder.strings</code> — a <code>HashMap</code> <strong>per document</strong>).</p>
+<p>Strings are deduplicated <em>within</em> a document. Across a tree of same-shaped
+nodes, every single document re-emits <code>&quot;title&quot;</code>, <code>&quot;author&quot;</code>, <code>&quot;language&quot;</code>,
+<code>&quot;permissions&quot;</code>, <code>&quot;body&quot;</code> as its own 32-byte <code>zend_string</code>.</p>
+<p>Measured over hili&#39;s 161 documents (<code>tests/bench/image-size.py --dedup</code>):</p>
+<div class="codeblock"><button class="codeblock__copy" type="button" data-copy>Copy</button><pre><code>per-document string tables (today): 2,176 entries, 100,648 B
+segment-wide string table         :   970 entries,  57,872 B
+saving                            :  42,776 B  (42.5% of string bytes)
+distinct object keys in the tree  :   484</code></pre></div>
+<p><strong>42.5% of all string bytes, on 161 documents.</strong> The ratio improves with tree
+size, not with document size: 5 000 job nodes sharing ~30 keys dedup those keys
+~5 000:1, where this corpus — 161 documents of mostly <em>different</em> shapes — is
+close to the worst case for the technique.</p>
+<p>For comparison, the entire image-only proposal (§6) saves 53,945 B on the same
+corpus. <strong>A segment-wide string table is in the same league here and will be
+far ahead on production content — and unlike image-only it costs nothing in
+capability.</strong></p>
+<p><strong>Why it is tractable:</strong> the image format is already pointer-free and
+offset-addressed, and <code>Image::open()</code> already takes a slice. Strings would move
+from image-relative to segment-relative offsets, which means carrying a second
+base pointer through the reader and giving <code>Image</code> a companion arena. The
+8-alignment invariant that makes zero-copy <code>zend_string</code>s work is unchanged. It
+is a <code>layout_version</code> bump (currently 2, <code>shm.rs:32</code>), which readers already
+reject on mismatch — so rollout is a bump plus a restart, with no migration.</p>
+<p><strong>Where it gets harder:</strong> interning is currently per-document and therefore
+trivially garbage-collected — a republished record&#39;s strings die with the old
+record. A segment-wide arena needs a policy for strings that are no longer
+referenced. The honest answer is probably: don&#39;t refcount, let dead strings
+accumulate, and let the existing compaction (<code>should_compact</code>) rebuild the arena
+from scratch — which is exactly what <code>publish_full</code> already does for records.</p>
+<hr>
+<h2 id="6-the-image-only-question-in-full">6. The image-only question, in full<a class="prose__anchor" href="#6-the-image-only-question-in-full" aria-label="Link to this section">#</a></h2>
+<blockquote>
+<p><em>&quot;Store only image data, no JSON — pure PHP objects. It reduces memory. What
+else? Other problems?&quot;</em></p>
+</blockquote>
+<h3 id="61-is-it-possible">6.1 Is it possible?<a class="prose__anchor" href="#61-is-it-possible" aria-label="Link to this section">#</a></h3>
+<p>Yes. <code>get()</code> and <code>getObject()</code> are already image-first (<code>lib.rs:1631</code>, <code>1656</code>)
+and the image is a complete representation of the decoded document. Four paths
+still read the raw bytes:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>consumer</th>
+<th>line</th>
+<th>servable from the image?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>find()</code> — <code>where</code>, <code>order_by: json:</code>, <code>return: data</code></td>
+<td><code>lib.rs:1485</code>, <code>1506</code>, <code>1535</code></td>
+<td><strong>Yes, and faster</strong> — see §4.4</td>
+</tr>
+<tr>
+<td><code>update()</code> read-modify-write</td>
+<td><code>lib.rs:1826</code></td>
+<td>Yes — needs an image→<code>Value</code> reader, which already exists as <code>read_back</code> in <code>image.rs</code>&#39;s test module (~30 lines to promote)</td>
+</tr>
+<tr>
+<td><code>load_doc</code> / <code>parse_cached</code> as the image&#39;s fallback</td>
+<td><code>lib.rs:950</code>, <code>1009</code></td>
+<td>Goes away with raw</td>
+</tr>
+<tr>
+<td><strong><code>getRaw()</code></strong></td>
+<td><code>lib.rs:1682</code></td>
+<td><strong>No.</strong> Its contract is &quot;the exact bytes&quot;</td>
+</tr>
+</tbody></table>
+</div>
+<h3 id="62-the-memory-saving-is-real-but-smaller-than-expected-the-image-is-the-bigger-half">6.2 The memory saving is real, but smaller than expected — the image is the <em>bigger</em> half<a class="prose__anchor" href="#62-the-memory-saving-is-real-but-smaller-than-expected-the-image-is-the-bigger-half" aria-label="Link to this section">#</a></h3>
+<p>Measured with <code>tests/bench/image-size.py</code> over hili&#39;s 161 documents:</p>
+<div class="codeblock"><button class="codeblock__copy" type="button" data-copy>Copy</button><pre><code>docs                 : 161
+raw   total          : 53,945 B
+image total          : 136,224 B   (2.53x raw)
+segment doc payload  : 190,169 B   (raw + image, today)
+image-only would save: 53,945 B    (28.4% of doc payload)</code></pre></div>
+<p>The image is <strong>2.5× the JSON</strong>, not half of it. And the driver is the <em>count of
+distinct strings</em>, not the byte count — every string pays a 24-byte
+<code>zend_string</code> header padded to 8:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th align="right">ratio</th>
+<th>document</th>
+<th>why</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">4.96×</td>
+<td><code>_country_phone_numbers/data.json</code></td>
+<td>410 distinct strings → 13,120 B of headers for ~2 KB of text</td>
+</tr>
+<tr>
+<td align="right">4.60×</td>
+<td><code>_country_codes/data.json</code></td>
+<td>468 distinct strings → 14,976 B</td>
+</tr>
+<tr>
+<td align="right">1.14×</td>
+<td><code>notification-send-link/data_it.json</code></td>
+<td>16 strings, one of them a long body</td>
+</tr>
+</tbody></table>
+</div>
+<p>By size bucket:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>bucket</th>
+<th align="right">docs</th>
+<th align="right">raw</th>
+<th align="right">image</th>
+<th align="right">img/raw</th>
+<th align="right">image-only saves</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&lt; 128 B</td>
+<td align="right">79</td>
+<td align="right">3,837</td>
+<td align="right">15,932</td>
+<td align="right">4.15×</td>
+<td align="right">19.4%</td>
+</tr>
+<tr>
+<td>128 B – 512 B</td>
+<td align="right">54</td>
+<td align="right">14,282</td>
+<td align="right">42,228</td>
+<td align="right">2.96×</td>
+<td align="right">25.3%</td>
+</tr>
+<tr>
+<td>512 B – 2 K</td>
+<td align="right">25</td>
+<td align="right">24,195</td>
+<td align="right">35,392</td>
+<td align="right">1.46×</td>
+<td align="right">40.6%</td>
+</tr>
+<tr>
+<td>2 K – 16 K</td>
+<td align="right">3</td>
+<td align="right">11,631</td>
+<td align="right">42,672</td>
+<td align="right">3.67×</td>
+<td align="right">21.4%</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>So the answer to &quot;does it reduce memory&quot; is: it depends entirely on document
+shape.</strong> Long-text documents → image ≈ 1.1× raw → dropping raw saves ~48%.
+Many-short-fields documents — which is what job, booking and user nodes look
+like — → image ≈ 3-5× raw → dropping raw saves ~20%, and leaves the expensive
+half untouched. That last case is the one §5.1 attacks directly.</p>
+<p><strong>The saving is doubled, though</strong>, and this is the underrated half of the idea:
+qdbd carries <code>DocModel.raw</code> in its own heap for the life of the model
+(<code>model.rs:20</code>) purely to feed <code>encode()</code> on every republish. Drop raw from the
+record and the model can drop it too — the daemon&#39;s RSS falls by the same amount
+as the segment, and every <code>publish_node</code>/<code>publish_full</code> moves ~28% fewer bytes
+(compounding with §4.6).</p>
+<h3 id="63-problem-1-getraw-loses-byte-fidelity-and-it-has-live-callers">6.3 Problem 1 — <code>getRaw()</code> loses byte fidelity, and it has live callers<a class="prose__anchor" href="#63-problem-1-getraw-loses-byte-fidelity-and-it-has-live-callers" aria-label="Link to this section">#</a></h3>
+<p>Re-serializing from the image is <strong>not</strong> byte-identical to the file:</p>
+<ul>
+<li>escaping normalizes — PHP&#39;s <code>\/</code> and <code>\uXXXX</code> vs serde&#39;s neither. This is
+precisely the hazard <code>putRaw()</code>&#39;s own doc comment exists to warn about
+(<code>lib.rs:1774</code>).</li>
+<li>whitespace and indentation are gone</li>
+<li>float formatting changes; integers beyond <code>i64</code> already collapsed to <code>f64</code>
+(<code>image.rs:138</code>)</li>
+<li>duplicate keys collapsed to last-wins</li>
+<li>key order <em>is</em> preserved (serde with <code>preserve_order</code>) — that one is safe</li>
+</ul>
+<p>And the <code>getRaw()</code> + <code>putRaw()</code> pair exists specifically to move a document
+without rewriting it:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>call site</th>
+<th>what it does</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>hili.hook.inc:1002</code></td>
+<td>renames <code>data_&lt;lang&gt;.json</code> → <code>data.json</code> byte-for-byte</td>
+</tr>
+<tr>
+<td><code>integrity.hook.inc:154,229,259</code></td>
+<td>the same repair in Quanta core</td>
+</tr>
+<tr>
+<td><code>hili.doctor.hook.inc:838,866</code></td>
+<td><code>str_replace($old_name, $new_name, $json_content)</code> <strong>on the raw string</strong>, then <code>putRaw()</code></td>
+</tr>
+</tbody></table>
+</div>
+<p>That last one is the sharp edge. It does textual substitution on the raw
+document during a node rename. Feed it re-serialized JSON and the doctor rewrites
+the escaping of every document it touches — a spurious diff on every file, and
+<code>\/</code>-escaped URLs come back unescaped.</p>
+<p><strong>Mitigation, and it is a good one:</strong> let <code>getRaw()</code> fall back to a disk read.
+The branch already exists (<code>load_raw_by_name</code>, <code>lib.rs:1065</code>). <code>getRaw()</code> is
+integrity/doctor/migration code, not the page-render path — it can afford an
+<code>open</code>+<code>read</code>. This is the one design decision to make consciously, and the
+answer is straightforward.</p>
+<h3 id="64-problem-2-un-imageable-documents-lose-their-in-memory-copy-entirely">6.4 Problem 2 — un-imageable documents lose their in-memory copy entirely<a class="prose__anchor" href="#64-problem-2-un-imageable-documents-lose-their-in-memory-copy-entirely" aria-label="Link to this section">#</a></h3>
+<p>Today a document that cannot be imaged still serves from the segment via
+raw + parse-cache. With image-only, three classes fall all the way to disk on
+<strong>every</strong> read:</p>
+<ul>
+<li>larger than <code>image_max_doc_kb</code> (256 KB default, <code>config.rs:50</code>)</li>
+<li>deeper than <code>MAX_DEPTH</code> = 512, or a container over <code>MAX_COUNT</code> = 16 M
+(<code>image.rs:30,34</code>)</li>
+<li>corrupt (already has no raw — no change)</li>
+</ul>
+<p>Correctness is preserved; it is a performance cliff.</p>
+<p><strong>Fix:</strong> raise the cap to effectively unlimited. Its stated rationale <em>inverts</em>
+under image-only — the comment says <em>&quot;the image roughly doubles a document&#39;s
+footprint&quot;</em> (<code>config.rs:47-50</code>), but with no raw stored, imaging a large document
+becomes the <em>cheaper</em> option, not the more expensive one. And files-db&#39;s own
+benchmark already shows the image winning at that size: 205 KB document, 3.03 µs
+imaged vs 3.22 µs parsed, <strong>0.46 µs</strong> with zero-copy (<code>how-it-works.md:903</code>).</p>
+<h3 id="65-problem-3-a-php-abi-mismatch-stops-being-a-slowdown-and-becomes-a-cliff">6.5 Problem 3 — a PHP ABI mismatch stops being a slowdown and becomes a cliff<a class="prose__anchor" href="#65-problem-3-a-php-abi-mismatch-stops-being-a-slowdown-and-becomes-a-cliff" aria-label="Link to this section">#</a></h3>
+<p><code>check_php_abi()</code> + <code>hash_selftest()</code> (<code>lib.rs:2329</code>) runs at MINIT and sets
+<code>IMAGE_ABI_OK</code>. It is a genuinely good check — it makes the <em>real</em> engine hash a
+corpus and compares against the Rust port, catching the silent <code>char</code>-signedness
+class of bug.</p>
+<p>But note what the two states mean:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th><code>IMAGE_ABI_OK</code></th>
+<th>today</th>
+<th>image-only</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>true</code></td>
+<td>image path</td>
+<td>image path</td>
+</tr>
+<tr>
+<td><code>false</code></td>
+<td>parse the raw bytes — correct, just slower</td>
+<td><strong>every document read in the pod goes to disk</strong></td>
+</tr>
+</tbody></table>
+</div>
+<p>Same for <code>quanta_db.image=0</code>, which turns from a fast-path kill switch into a
+switch that disables the database&#39;s entire reason for existing.</p>
+<p>This matters more than it looks, because <strong><code>qdbd</code> does not link PHP</strong> —
+<code>image.rs</code> and <code>php_abi.rs</code> are PHP-free by design, so the daemon bakes an
+<em>assumed</em> <code>zend_string</code> layout that the extension verifies later, in a different
+process. Image-only makes the daemon and the PHP build version-coupled, and
+files-db already has a documented failure mode where it degrades silently and
+nobody notices until latency moves.</p>
+<p><strong>Mitigation:</strong> <code>IMAGE_ABI_OK == false</code> must become a loud, alarmed condition —
+surfaced at the top of <code>qdbstat</code>, not buried as a counter — and ideally checked
+at deploy time rather than discovered at runtime.</p>
+<h3 id="66-what-does-not-break">6.6 What does <em>not</em> break<a class="prose__anchor" href="#66-what-does-not-break" aria-label="Link to this section">#</a></h3>
+<p>Worth stating, because it bounds the whole risk:</p>
+<ul>
+<li><strong>Files on disk are untouched and remain the source of truth.</strong> This is not
+&quot;no JSON&quot; — it is &quot;no JSON <em>in the shared-memory cache</em>&quot;. Recovery from any
+image problem is a <code>reindex</code>.</li>
+<li><code>put()</code> / <code>putRaw()</code> still take JSON and write JSON. Only the read cache
+changes.</li>
+<li>Corrupt detection is unaffected: qdbd parses every document anyway to set
+<code>corrupt</code> (<code>model.rs:load_docs</code>), which is also why building the image is
+nearly free — it reuses that <code>Value</code>.</li>
+<li>One contained fix needed: <code>with_shm_image</code> currently returns <code>None</code> on a
+corrupt language <em>on purpose</em>, so the raw path raises <code>CORRUPT_JSON</code> and the
+error text stays in one place (<code>lib.rs:817</code>). With no raw path, that error has
+to be raised from the image path directly.</li>
+<li>Rollout is a <code>layout_version</code> bump; readers reject foreign versions, so it is
+a restart, not a migration.</li>
+</ul>
+<h3 id="67-verdict">6.7 Verdict<a class="prose__anchor" href="#67-verdict" aria-label="Link to this section">#</a></h3>
+<p>Worth doing — <strong>third</strong>, not first. It is the smallest of the three memory
+levers on shapes that look like production content (§6.2), it is the only one
+that costs a capability (<code>getRaw()</code> fidelity, §6.3), and it removes the middle
+rung of the degradation ladder (§6.5). Do §4.4 first (which removes three of the
+four raw consumers for free and makes <code>find</code> faster), then §5.1 (which is the
+bigger memory win and costs nothing), and then reassess whether the remaining
+~20-28% is worth the blast radius.</p>
+<hr>
+<h2 id="7-sequenced-plan">7. Sequenced plan<a class="prose__anchor" href="#7-sequenced-plan" aria-label="Link to this section">#</a></h2>
+<p>Each step is independently shippable and independently measurable.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Change</th>
+<th>§</th>
+<th>Touches</th>
+<th>Format change?</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>Cache the resolved target, not the symlink path, in <code>Environment::nodePath()</code></td>
+<td>4.2a</td>
+<td>PHP only</td>
+<td>No</td>
+<td>−1 syscall per name per request</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Skip the shard-symlink cache when <code>db()-&gt;coherent()</code></td>
+<td>4.2b</td>
+<td>PHP only</td>
+<td>No</td>
+<td>−1 to −3 syscalls per cold name; deletes a layer</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>QuantaDb::load()</code> — one probe, path check + language fallback inside</td>
+<td>3.3, 4.1</td>
+<td>Rust + PHP</td>
+<td>No</td>
+<td>−1 to −2 probes and one <code>String</code> alloc per node load, on the ~26% function</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>find_impl</code>: resolve each candidate once</td>
+<td>4.3</td>
+<td>Rust</td>
+<td>No</td>
+<td>−2N probes on filtered finds</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Evaluate <code>where</code> by walking the image</td>
+<td>4.4</td>
+<td>Rust</td>
+<td>No</td>
+<td><code>find(where:)</code> stops decoding whole documents; removes 3 of 4 raw consumers</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Stream <code>publish_full</code> instead of collecting</td>
+<td>4.6</td>
+<td>Rust</td>
+<td>No</td>
+<td>Removes a full-tree copy from the daemon&#39;s compaction peak</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Segment-wide string table</td>
+<td>5.1</td>
+<td>Rust</td>
+<td><strong>Yes</strong> (v3)</td>
+<td>42.5% of string bytes on this corpus; more on production shapes</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Drop raw from the record</td>
+<td>6</td>
+<td>Rust</td>
+<td><strong>Yes</strong> (v4)</td>
+<td>~20-28% of doc payload on production-like shapes; same again off qdbd&#39;s RSS</td>
+</tr>
+</tbody></table>
+</div>
+<p>Steps 1-2 are pure PHP and need no coordination with the extension at all.
+Steps 3-6 are behaviour-preserving. Steps 7-8 are the format changes and should
+land in that order — 7 is strictly better value and, by shrinking the string
+half, it also tells you exactly what 8 is still worth.</p>
+<p>Steps 7 and 8 can share a single <code>layout_version</code> bump if they land together;
+the table separates them because 7 should not wait for a decision on 8.</p>
+<hr>
+<h2 id="8-measure-these-first">8. Measure these first<a class="prose__anchor" href="#8-measure-these-first" aria-label="Link to this section">#</a></h2>
+<p>Nothing above needs a decision before these three numbers exist. All are cheap.</p>
+<p><strong>1. The real image-to-raw ratio on production.</strong> <code>qdbstat</code> already reports
+<code>doc_bytes</code> and <code>img_bytes</code> separately (<code>qdbstat.rs:521-535</code> — the <code>images</code> row
+prints image bytes as a percentage of document bytes). One command decides
+whether §6 is a 45% win or a 20% one:</p>
+<div class="codeblock" data-lang="sh"><button class="codeblock__copy" type="button" data-copy>Copy</button><pre><code class="language-sh">kubectl exec deploy/hili -- qdbstat            # the &#39;images&#39; row
+kubectl exec deploy/hili -- qdbstat --json     # doc_bytes / img_bytes / nodes</code></pre></div>
+<p><strong>2. The same modelling against the production tree</strong>, which also gives the
+per-document breakdown <code>qdbstat</code> cannot:</p>
+<div class="codeblock" data-lang="sh"><button class="codeblock__copy" type="button" data-copy>Copy</button><pre><code class="language-sh">kubectl exec deploy/hili -- tar cf - /var/www/html/docroot --include=&#39;data*.json&#39; | tar xf - -C /tmp/prod-docs
+tests/bench/image-size.py /tmp/prod-docs --per-doc --dedup</code></pre></div>
+<p>The <code>--dedup</code> line is the one that sizes §5.1, which is the change most likely
+to matter most.</p>
+<p><strong>3. Probes and syscalls per render on <code>/it/adm-jobs-list/</code>.</strong> <code>qdbstat</code> counters
+before and after one request give <code>shm_hit</code>, <code>index_serve</code>, <code>img_serve</code>,
+<code>img_absent</code>, <code>fallback_read</code>. The gap between <code>shm_hit</code> and the number of nodes
+actually rendered is the size of the prize in §4.1 and §4.3. <code>strace -c -e trace=readlink,stat,openat</code> on one fpm worker for one request sizes §4.2
+directly.</p>
+<p>The existing harness in <code>hili/docs/perf/qtag/README.md</code> already drives that
+exact page against the local k3d cluster and records before/after, so steps 1-3
+of §7 can be measured with <code>bench-qtag-all.sh</code> without new tooling.</p>
+<hr>
+<h2 id="appendix-reproducing-the-size-numbers">Appendix — reproducing the size numbers<a class="prose__anchor" href="#appendix-reproducing-the-size-numbers" aria-label="Link to this section">#</a></h2>
+<p><code>tests/bench/image-size.py</code> re-implements <code>image.rs</code>&#39;s <code>Encoder</code> and
+<code>php_abi::push_zend_string</code> byte for byte, so it models segment cost without a
+daemon or a cluster:</p>
+<div class="codeblock" data-lang="sh"><button class="codeblock__copy" type="button" data-copy>Copy</button><pre><code class="language-sh">tests/bench/image-size.py /path/to/docroot            # raw vs image totals
+tests/bench/image-size.py /path/to/docroot --per-doc  # per-document ratios, worst first
+tests/bench/image-size.py /path/to/docroot --dedup    # segment-wide string table saving</code></pre></div>
+<p>Every number in §6.2 and §5.1 came from that script run against
+<code>/home/daylioti/adalot/hili</code>. If the encoder changes, the script must change
+with it — it is a model, not a binding.</p>
+<hr>
+<h2 id="9-what-actually-happened">9. What actually happened<a class="prose__anchor" href="#9-what-actually-happened" aria-label="Link to this section">#</a></h2>
+<p>Everything in §7 was implemented and measured on the local k3d cluster against a
+<strong>restore of hili production</strong> (105,755 nodes, 111,124 documents, 39.7 MB of
+JSON on disk) — not the 161-document repo corpus §1 warned about. The harness is
+<code>hili/docs/perf/filesdb/README.md</code>; the target page is <code>/it/adm-jobs-list/</code>
+(4,990 rows, 6.4 MB of HTML), 30 timed renders per variant, no CPU quota.</p>
+<p>Three builds: <strong><code>fdb0</code></strong> master, <strong><code>fdb1</code></strong> steps 1-7, <strong><code>fdb3</code></strong> steps 1-8.</p>
+<h3 id="91-memory">9.1 Memory<a class="prose__anchor" href="#91-memory" aria-label="Link to this section">#</a></h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th align="right"><code>fdb0</code></th>
+<th align="right"><code>fdb3</code></th>
+<th align="right">change</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>raw JSON resident in the segment</td>
+<td align="right">39.7 MB</td>
+<td align="right"><strong>0</strong></td>
+<td align="right">−100%</td>
+</tr>
+<tr>
+<td>pre-decoded images</td>
+<td align="right">118.4 MB</td>
+<td align="right">37.1 MB</td>
+<td align="right"><strong>−68.6%</strong></td>
+</tr>
+<tr>
+<td>shared string table</td>
+<td align="right">—</td>
+<td align="right">9.4 MB (87,590 entries)</td>
+<td align="right">new</td>
+</tr>
+<tr>
+<td><strong>segment arena used</strong></td>
+<td align="right"><strong>194.5 MB</strong></td>
+<td align="right"><strong>82.8 MB</strong></td>
+<td align="right"><strong>−57.4%</strong></td>
+</tr>
+<tr>
+<td>segment file on <code>/dev/shm</code></td>
+<td align="right">386.0 MB</td>
+<td align="right">165.8 MB</td>
+<td align="right">−57.0%</td>
+</tr>
+<tr>
+<td><strong><code>qdbd</code> RSS</strong></td>
+<td align="right"><strong>796.3 MB</strong></td>
+<td align="right"><strong>288.5 MB</strong></td>
+<td align="right"><strong>−63.8%</strong></td>
+</tr>
+<tr>
+<td>php-fpm worker RSS (6 workers, after load)</td>
+<td align="right">2034.7 MB</td>
+<td align="right">1498.2 MB</td>
+<td align="right">−26.4%</td>
+</tr>
+<tr>
+<td>container <code>memory.current</code></td>
+<td align="right">954.3 MB</td>
+<td align="right">546.2 MB</td>
+<td align="right">−42.8%</td>
+</tr>
+</tbody></table>
+</div>
+<p>The image is now <strong>94% of the JSON it represents</strong>, where it was <strong>298%</strong>.</p>
+<h3 id="92-speed">9.2 Speed<a class="prose__anchor" href="#92-speed" aria-label="Link to this section">#</a></h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th align="right"><code>fdb0</code></th>
+<th align="right"><code>fdb3</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>render p50</td>
+<td align="right">1497.8 ms</td>
+<td align="right">1401.0 ms (<strong>−6.5%</strong>)</td>
+</tr>
+<tr>
+<td>render mean</td>
+<td align="right">1498.6 ms</td>
+<td align="right">1399.0 ms (−6.6%)</td>
+</tr>
+<tr>
+<td>PHP CPU per render — <strong>system</strong></td>
+<td align="right">129.6 ms</td>
+<td align="right">62.6 ms (<strong>−51.7%</strong>)</td>
+</tr>
+<tr>
+<td>PHP CPU per render — user</td>
+<td align="right">1347.7 ms</td>
+<td align="right">1314.0 ms (−2.5%)</td>
+</tr>
+<tr>
+<td>pod cgroup CPU per request</td>
+<td align="right">1622.7 ms</td>
+<td align="right">1527.9 ms (−5.8%)</td>
+</tr>
+<tr>
+<td>throughput, 4 concurrent</td>
+<td align="right">2.36 req/s</td>
+<td align="right">2.52 req/s (+6.8%)</td>
+</tr>
+<tr>
+<td>segment probes per render</td>
+<td align="right">58,436</td>
+<td align="right">41,045 (−29.8%)</td>
+</tr>
+<tr>
+<td>documents served per render</td>
+<td align="right">23,282</td>
+<td align="right">23,285 (unchanged — same work)</td>
+</tr>
+<tr>
+<td>PHP peak memory per render</td>
+<td align="right">312.2 MB</td>
+<td align="right">312.2 MB (unchanged)</td>
+</tr>
+<tr>
+<td>masked body sha256</td>
+<td align="right"><code>fd118b15b978…</code></td>
+<td align="right"><code>fd118b15b978…</code> (<strong>identical</strong>)</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>System CPU halved.</strong> That is the whole story of steps 1-2: the <code>readlink()</code>
+per name per request is gone, and it was 67 ms of every render. User CPU barely
+moved, which is the honest read on steps 3-5 — see §9.4.</p>
+<h3 id="93-where-the-estimates-were-wrong">9.3 Where the estimates were wrong<a class="prose__anchor" href="#93-where-the-estimates-were-wrong" aria-label="Link to this section">#</a></h3>
+<ul>
+<li><strong>§5.1 was badly understated.</strong> The 161-document corpus predicted a 42.5%
+saving on string bytes. Production gave <strong>89.0%</strong>: 2,112,806 per-document
+<code>zend_string</code>s (89.5 MB) collapsed to 87,590 shared entries (9.8 MB). The doc
+said &quot;the ratio improves with tree size&quot; — it improves much faster than that,
+because <em>values</em> dedup nearly as well as keys (statuses, dates, language
+codes, IDs repeat across a tree of same-shaped nodes).</li>
+<li><strong>§6 was understated too, but only because §5.1 landed first.</strong> Dropping raw
+was projected at 20-28% of doc payload. Against the <em>already shrunken</em> payload
+it removed 39.7 MB of 122.6 MB — <strong>32%</strong> — and took the same again off the
+daemon&#39;s heap.</li>
+<li><strong>§4.1&#39;s premise was right, its size wrong.</strong> The probes were real (58,436 per
+render against 23,282 documents, 2.5:1) and are now 41,045. But the extension
+was never the bottleneck: measured read time was <strong>3.3 ms inside a 1,498 ms
+render, 0.2%</strong>. Removing two thirds of the redundant probes could not have
+produced 26% of anything.</li>
+</ul>
+<h3 id="94-what-one-render-actually-asks-for-before-and-after">9.4 What one render actually asks for, before and after<a class="prose__anchor" href="#94-what-one-render-actually-asks-for-before-and-after" aria-label="Link to this section">#</a></h3>
+<p><code>hili/scripts/bench-filesdb-counters.py</code> instruments the three PHP entry points
+and takes exactly one authenticated render:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>per render</th>
+<th align="right"><code>fdb0</code></th>
+<th align="right"><code>fdb3</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>nodePath()</code> calls</td>
+<td align="right">5,761</td>
+<td align="right">5,762</td>
+</tr>
+<tr>
+<td>— <code>readlink()</code> syscalls issued</td>
+<td align="right"><strong>5,760</strong></td>
+<td align="right"><strong>0</strong></td>
+</tr>
+<tr>
+<td>— reached <code>db()-&gt;path()</code></td>
+<td align="right">4</td>
+<td align="right">5,757</td>
+</tr>
+<tr>
+<td>— reached <code>exec(find)</code></td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td>— shard symlinks written</td>
+<td align="right">1</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td><code>loadJSON()</code> calls</td>
+<td align="right">22,917</td>
+<td align="right">22,920</td>
+</tr>
+<tr>
+<td>— path-identity probes</td>
+<td align="right">22,917</td>
+<td align="right"><strong>0</strong> (folded into the probe)</td>
+</tr>
+<tr>
+<td>— <code>getObject()</code> calls</td>
+<td align="right">45,746</td>
+<td align="right"><strong>0</strong></td>
+</tr>
+<tr>
+<td>— <code>load()</code> calls</td>
+<td align="right">—</td>
+<td align="right">22,920</td>
+</tr>
+<tr>
+<td>— of those, a doomed second language lookup</td>
+<td align="right">22,834</td>
+<td align="right"><strong>0</strong></td>
+</tr>
+<tr>
+<td>— <code>resolvesTo()</code> confirmations</td>
+<td align="right">—</td>
+<td align="right">51</td>
+</tr>
+<tr>
+<td><code>FilesDb::path()</code> calls (all callers)</td>
+<td align="right">28,713</td>
+<td align="right">11,601</td>
+</tr>
+<tr>
+<td>segment probes</td>
+<td align="right">57,376</td>
+<td align="right">40,300</td>
+</tr>
+<tr>
+<td>documents served</td>
+<td align="right">22,861</td>
+<td align="right">22,864</td>
+</tr>
+</tbody></table>
+</div>
+<p>Two lines carry the result. <strong><code>readlink</code> 5,760 → 0</strong> is §4.2, and it is the
+−51.7% system CPU. <strong>68,663 extension crossings for document loads → 22,920</strong> is
+§3.3/§4.1: three calls per node became one, and the 22,834 guaranteed-miss
+lookups stopped being issued at all. The documents served is unchanged to within
+3, which is the check that none of it changed what the page reads.</p>
+<p>The <code>resolvesTo()</code> row is worth noting: <code>load()</code> returns NULL for &quot;no such
+node&quot;, &quot;not the node at <code>at</code>&quot; and &quot;no document&quot; alike, so <code>Node::loadJSON</code> has
+to confirm before treating that as an empty node. It costs a second probe — 51
+times per render (0.2% of loads), against the 22,917 it removed.</p>
+<p>Net PHP→extension crossings: <strong>74,459 → 34,521, −54%</strong>.</p>
+<p>Where that shows up is worth being precise about. This page&#39;s render is
+dominated by the 22,920 document materialisations themselves, not by the path
+resolution the change removed — so the p50 win is 6.5%, not 50%. The saving is
+in syscalls and FFI crossings, which is why it lands almost entirely in SYSTEM
+CPU (−51.7%) rather than user CPU (−2.5%), and why the concurrent-throughput
+number (+6.8%) moves more than the sequential one.</p>
+<h3 id="95-the-finding-the-plan-missed">9.5 The finding the plan missed<a class="prose__anchor" href="#95-the-finding-the-plan-missed" aria-label="Link to this section">#</a></h3>
+<p>Instrumenting the PHP side of one render (<code>hili/scripts/bench-filesdb-counters.py</code>)
+found the actual shape of the load:</p>
+<div class="codeblock"><button class="codeblock__copy" type="button" data-copy>Copy</button><pre><code>loadJSON_calls          22,917   for 5,755 DISTINCT nodes  -&gt; each node ~4x
+loadJSON_getobject      45,746   of which 22,834 (99.7%) were guaranteed misses</code></pre></div>
+<p>Two separate problems, only one of which §4.1 saw:</p>
+<ol>
+<li><strong>Every language-suffixed lookup missed and repeated.</strong> <code>getObject($name, &#39;it&#39;)</code> found nothing for 99.7% of nodes and immediately asked again for the
+neutral document — so <em>half of all document lookups were known-doomed before
+they were issued</em>. <code>load()</code>&#39;s <code>fallback</code> fixes this by construction: the
+record&#39;s language list is right there in the probe.</li>
+<li><strong>Each node&#39;s document is loaded ~4 times per render.</strong> Nothing in §7
+addresses this, and it is the largest remaining item: a per-request memo in
+<code>Node::loadJSON</code> would remove ~17,000 loads and ~17,000 probes per render.
+It was left alone deliberately — node reloads after a write are semantically
+load-bearing, so this needs its own invalidation design, not a cache slapped
+on the getter.</li>
+</ol>
+<h3 id="96-decisions-taken-that-the-plan-left-open">9.6 Decisions taken that the plan left open<a class="prose__anchor" href="#96-decisions-taken-that-the-plan-left-open" aria-label="Link to this section">#</a></h3>
+<ul>
+<li><strong>A document is stored as its image OR its raw bytes, never both.</strong> §6.4
+worried about un-imageable documents falling to disk on every read; instead
+they keep their raw JSON, so the segment can always answer. The saving is
+unaffected (production images every document), and the cliff never exists.
+<code>image_max_doc_kb</code> was raised 256 KB → 64 MB regardless, per §6.4.</li>
+<li><strong>§6.5&#39;s degradation ladder is real and is now documented, not silent.</strong>
+<code>quanta_db.image=0</code> on a <em>worker</em> while the daemon still images means that
+worker has nothing in shared memory it will use — correct results, but a
+syscall per read. It is a deployment-wide setting now: give <code>qdbd</code>
+<code>QUANTA_DB_IMAGE=0</code> too and it ships raw JSON again. <code>qdbstat</code>&#39;s STORAGE
+section reports <code>raw json</code> so the state is visible rather than inferred.</li>
+<li><strong><code>getRaw()</code> reads the file</strong> (§6.3&#39;s recommended mitigation). It also fixed a
+wart: in daemon mode it used to return <code>&#39;&#39;</code> for a corrupt document — the one
+call whose purpose is inspecting a broken document could not show it to you.</li>
+<li><strong>String IDs are never renumbered.</strong> A string no longer referenced keeps its
+slot in the daemon&#39;s interner until restart, but not its bytes in the segment:
+<code>resolve</code> places a string only when a record being written asks for it, so
+every compaction drops the unreferenced ones. Dead <em>string</em> bytes are not
+counted toward <code>should_compact</code>, so churn is bounded by genuinely new content
+plus the existing ArenaFull trigger — worth revisiting if a long-lived daemon
+ever shows arena growth without node growth.</li>
+<li><strong><code>avg_read_ms</code> changed scope.</strong> <code>load()</code> now times the whole segment read
+including materialising the document into zvals (~2.1 µs/document), where the
+old counter timed the byte fetch alone (~0.14 µs). It is the more honest
+number, but it is NOT comparable with the 0.24 µs figure in
+<code>how-it-works.md</code> — different operation, not a regression.</li>
+</ul>
+<h3 id="97-test-suite-changes-worth-knowing-about">9.7 Test-suite changes worth knowing about<a class="prose__anchor" href="#97-test-suite-changes-worth-knowing-about" aria-label="Link to this section">#</a></h3>
+<p>Three conformance tests encoded the old contract and were updated, each for a
+reason that is itself a finding:</p>
+<ul>
+<li><code>08_compaction.php</code> seeded 400 documents with an <strong>identical</strong> 800-byte pad.
+Tree-wide interning stores that once, so the arena stopped filling and the
+test passed every correctness assertion while never compacting. The pad is now
+unique per node and large enough to actually fill a 1 MB arena.</li>
+<li><code>10_object_reads.php</code> asserted <code>getRaw()</code> returns <code>&#39;&#39;</code> for a corrupt document
+in daemon mode. It returns the real bytes now.</li>
+<li><code>13_image_off.php</code> asserted &quot;no filesystem read&quot; with images off. That is no
+longer true when only the reader has them off — see §9.6.</li>
+</ul>
+<p><code>05_external_reindex.php</code> remains intermittently flaky in daemon mode (the
+inotify race its own <code>qdb_settle</code> comment documents); it failed once in ~10 runs
+before and after this work.</p>
+
+      </article>
+      <nav class="pager" aria-label="Documentation">
+        <a class="pager__link pager__link--prev" href="two-implementations.html"><span class="pager__kind">Previous</span><span class="pager__title">Two implementations</span></a>
+        <span></span>
+      </nav>
+    </main>
+    <nav class="docs__toc" aria-label="On this page">
+      <p class="docs__toc-title">On this page</p>
+      <ul class="docs__toc-list">
+        <li class="docs__toc-item docs__toc-item--h2"><a href="#1-method-and-what-is-actually-measured">1. Method, and what is actually measured</a></li>
+        <li class="docs__toc-item docs__toc-item--h2"><a href="#2-the-shape-of-the-problem">2. The shape of the problem</a></li>
+        <li class="docs__toc-item docs__toc-item--h2"><a href="#3-simpler-to-use">3. Simpler to use</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#31-the-three-state-contract-leaks-into-every-caller">3.1 The three-state contract leaks into every caller</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#32-children-needs-a-translation-layer-to-be-callable-at-all">3.2 children() needs a translation layer to be callable at all</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#33-the-single-most-common-operation-has-no-single-call">3.3 The single most common operation has no single call</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#34-what-simpler-should-mean-concretely">3.4 What &quot;simpler&quot; should mean concretely</a></li>
+        <li class="docs__toc-item docs__toc-item--h2"><a href="#4-faster-the-changes-that-dont-need-a-format-change">4. Faster: the changes that don&#39;t need a format change</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#41-one-probe-per-node-load-not-two-or-three">4.1 One probe per node load, not two or three</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#42-stop-putting-a-syscall-cache-in-front-of-a-syscall-free-lookup">4.2 Stop putting a syscall cache in front of a syscall-free lookup</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#43-find-resolves-the-same-candidate-up-to-three-times">4.3 find() resolves the same candidate up to three times</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#44-evaluate-where-by-walking-the-image-not-by-decoding">4.4 Evaluate where by walking the image, not by decoding</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#45-lineage-and-name_prefix-are-full-segment-scans">4.5 lineage and name_prefix are full segment scans</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#46-publish_full-triples-the-daemons-peak-memory">4.6 publish_full triples the daemon&#39;s peak memory</a></li>
+        <li class="docs__toc-item docs__toc-item--h2"><a href="#5-faster-the-one-format-change-worth-making-first">5. Faster: the one format change worth making first</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#51-a-segment-wide-string-table">5.1 A segment-wide string table</a></li>
+        <li class="docs__toc-item docs__toc-item--h2"><a href="#6-the-image-only-question-in-full">6. The image-only question, in full</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#61-is-it-possible">6.1 Is it possible?</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#62-the-memory-saving-is-real-but-smaller-than-expected-the-image-is-the-bigger-half">6.2 The memory saving is real, but smaller than expected — the image is the bigger half</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#63-problem-1-getraw-loses-byte-fidelity-and-it-has-live-callers">6.3 Problem 1 — getRaw() loses byte fidelity, and it has live callers</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#64-problem-2-un-imageable-documents-lose-their-in-memory-copy-entirely">6.4 Problem 2 — un-imageable documents lose their in-memory copy entirely</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#65-problem-3-a-php-abi-mismatch-stops-being-a-slowdown-and-becomes-a-cliff">6.5 Problem 3 — a PHP ABI mismatch stops being a slowdown and becomes a cliff</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#66-what-does-not-break">6.6 What does not break</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#67-verdict">6.7 Verdict</a></li>
+        <li class="docs__toc-item docs__toc-item--h2"><a href="#7-sequenced-plan">7. Sequenced plan</a></li>
+        <li class="docs__toc-item docs__toc-item--h2"><a href="#8-measure-these-first">8. Measure these first</a></li>
+        <li class="docs__toc-item docs__toc-item--h2"><a href="#appendix-reproducing-the-size-numbers">Appendix — reproducing the size numbers</a></li>
+        <li class="docs__toc-item docs__toc-item--h2"><a href="#9-what-actually-happened">9. What actually happened</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#91-memory">9.1 Memory</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#92-speed">9.2 Speed</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#93-where-the-estimates-were-wrong">9.3 Where the estimates were wrong</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#94-what-one-render-actually-asks-for-before-and-after">9.4 What one render actually asks for, before and after</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#95-the-finding-the-plan-missed">9.5 The finding the plan missed</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#96-decisions-taken-that-the-plan-left-open">9.6 Decisions taken that the plan left open</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#97-test-suite-changes-worth-knowing-about">9.7 Test-suite changes worth knowing about</a></li>
+      </ul>
+    </nav>
+  </div>
+  <footer class="footer">
+    <div class="footer__inner">
+      <div>
+        <a class="logo logo--sm" href="../"><svg class="logo__mark" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+      <circle cx="20" cy="20" r="4.2" fill="currentColor"/>
+      <ellipse cx="20" cy="20" rx="17" ry="7.4" fill="none" stroke="currentColor" stroke-width="2" opacity=".85" transform="rotate(-30 20 20)"/>
+      <ellipse cx="20" cy="20" rx="17" ry="7.4" fill="none" stroke="currentColor" stroke-width="2" opacity=".45" transform="rotate(30 20 20)"/>
+    </svg><span class="logo__text">Quanta<span class="logo__accent">CMS</span></span></a>
+        <p class="footer__tagline">A DB-free CMS and framework, built on the filesystem.</p>
+      </div>
+      <div class="footer__links">
+        <a href="../overview.html">Documentation</a>
+        <a href="https://github.com/quantacms/quanta" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.quanta.org" target="_blank" rel="noopener">quanta.org</a>
+        <a href="https://github.com/quantacms/quanta/blob/master/LICENSE.txt" target="_blank" rel="noopener">License</a>
+      </div>
+    </div>
+    <p class="footer__note">This page is rendered from <a href="https://github.com/quantacms/quanta/blob/master/files-db/docs/simpler-faster.md" target="_blank" rel="noopener">files-db/docs/simpler-faster.md</a> in the repository.</p>
+  </footer>
+  <script src="../assets/site.js" defer></script>
+</body>
+</html>

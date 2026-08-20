@@ -1,0 +1,517 @@
+<!-- title: Files-DB, step by step -->
+<!-- description: An animated walkthrough of Quanta's Files-DB: how the qdbd daemon turns a tree of data.json files into a shared-memory index, and what happens inside a PHP worker when it reads and writes a node. -->
+<!-- variant: home -->
+<!-- assets: files-db.css, files-db.js -->
+
+    <section class="fdb-intro">
+      <div class="fdb-intro__inner">
+        <p class="section__eyebrow">Files-DB</p>
+        <h1>A folder is the record.<br>Reading it should cost nothing.</h1>
+        <p class="fdb-intro__lead">
+          Quanta keeps every node in its own directory, with its own
+          <code>data.json</code>. That is wonderful to version, to diff and to
+          <code>grep</code> — and it used to mean an <code>exec(find)</code> and a
+          <code>json_decode</code> every time a page needed a node.
+        </p>
+        <p class="fdb-intro__lead">
+          <b>Files-DB</b> is a PHP extension written in Rust, plus a daemon
+          called <code>qdbd</code>. The daemon reads the tree once and publishes
+          it into shared memory; every PHP worker maps that memory read-only and
+          answers a lookup with a hash probe. The files never stop being the
+          truth.
+        </p>
+        <ul class="fdb-facts">
+          <li><b>16–279×</b> faster than reading and decoding the file</li>
+          <li><b>0</b> syscalls on a read</li>
+          <li><b>0</b> data migration — it is still just folders</li>
+          <li><b>Falls back</b> to the filesystem if the daemon is gone</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" id="walkthrough">
+      <div class="section__head">
+        <h2>Watch it happen</h2>
+        <p>
+          Three moments in the life of one node — <code>first-post</code>. Press
+          play, or step through them yourself.
+        </p>
+      </div>
+
+      <div class="fdb" data-fdb>
+        <div class="fdb__tabs" role="tablist" aria-label="Walkthrough">
+          <button class="fdb__tab" type="button" role="tab" id="fdb-tab-boot" data-tab="boot" aria-controls="fdb-track-boot" aria-selected="true">
+            <span class="fdb__tab-num">1</span>
+            <span class="fdb__tab-label">The daemon starts<em>qdbd reads the tree</em></span>
+          </button>
+          <button class="fdb__tab" type="button" role="tab" id="fdb-tab-read" data-tab="read" aria-controls="fdb-track-read" aria-selected="false">
+            <span class="fdb__tab-num">2</span>
+            <span class="fdb__tab-label">A page reads a node<em>QuantaDb::get()</em></span>
+          </button>
+          <button class="fdb__tab" type="button" role="tab" id="fdb-tab-write" data-tab="write" aria-controls="fdb-track-write" aria-selected="false">
+            <span class="fdb__tab-num">3</span>
+            <span class="fdb__tab-label">Someone edits it<em>QuantaDb::update()</em></span>
+          </button>
+        </div>
+
+        <div class="fdb__grid">
+          <!-- ---------------------------------------------------------- --
+           -- The stage. One diagram for all three tracks: the boxes and  --
+           -- the arrows never move, only what is lit up changes.         --
+           -- ---------------------------------------------------------- -->
+          <div class="fdb__col">
+            <div class="fdb__stage">
+              <div class="fdb__stage-scroll">
+                <svg class="fdb-map" viewBox="0 0 820 440" role="img" aria-label="Diagram: files on disk, the qdbd daemon, the shared memory segment and a PHP worker, and the arrows between them.">
+                  <g class="fdb-edge" data-edge="scan">
+                    <path class="fdb-edge__line" d="M322 84 H492"/>
+                    <path class="fdb-edge__pulse" d="M322 84 H492" pathLength="100"/>
+                    <polygon class="fdb-edge__head" points="498,84 486,78 486,90"/>
+                    <text class="fdb-edge__label" x="407" y="72" text-anchor="middle">boot scan · inotify</text>
+                  </g>
+                  <g class="fdb-edge" data-edge="publish">
+                    <path class="fdb-edge__line" d="M700 158 V276"/>
+                    <path class="fdb-edge__pulse" d="M700 158 V276" pathLength="100"/>
+                    <polygon class="fdb-edge__head" points="700,282 694,270 706,270"/>
+                    <text class="fdb-edge__label" x="714" y="212">publish</text>
+                    <text class="fdb-edge__label fdb-edge__label--dim" x="714" y="228">single writer</text>
+                  </g>
+                  <g class="fdb-edge" data-edge="map">
+                    <path class="fdb-edge__line" d="M498 356 H328"/>
+                    <path class="fdb-edge__pulse" d="M498 356 H328" pathLength="100"/>
+                    <polygon class="fdb-edge__head" points="322,356 334,350 334,362"/>
+                    <text class="fdb-edge__label" x="410" y="384" text-anchor="middle">mmap PROT_READ</text>
+                    <text class="fdb-edge__label fdb-edge__label--dim" x="410" y="400" text-anchor="middle">no IPC, no syscall</text>
+                  </g>
+                  <g class="fdb-edge" data-edge="fsync">
+                    <path class="fdb-edge__line" d="M120 282 V164"/>
+                    <path class="fdb-edge__pulse" d="M120 282 V164" pathLength="100"/>
+                    <polygon class="fdb-edge__head" points="120,158 114,170 126,170"/>
+                    <text class="fdb-edge__label" x="106" y="212" text-anchor="end">write: flock</text>
+                    <text class="fdb-edge__label fdb-edge__label--dim" x="106" y="228" text-anchor="end">fsync + rename</text>
+                  </g>
+                  <g class="fdb-edge" data-edge="socket">
+                    <path class="fdb-edge__line" d="M330 296 L486 170"/>
+                    <path class="fdb-edge__pulse" d="M330 296 L486 170" pathLength="100"/>
+                    <polygon class="fdb-edge__head" points="492,164 486,177 478,168"/>
+                    <rect class="fdb-edge__chip" x="345" y="218" width="132" height="26" rx="13"/>
+                    <text class="fdb-edge__label fdb-edge__label--chip" x="411" y="235" text-anchor="middle">unix socket</text>
+                  </g>
+
+                  <g class="fdb-node" data-node="disk">
+                    <rect x="36" y="34" width="286" height="124" rx="16"/>
+                    <circle class="fdb-node__dot" cx="62" cy="64" r="5"/>
+                    <text class="fdb-node__title" x="78" y="69">Files on disk</text>
+                    <text class="fdb-node__sub" x="62" y="92">the source of truth</text>
+                    <text class="fdb-node__mono" x="62" y="118">db/home/blog/first-post/</text>
+                    <text class="fdb-node__mono fdb-node__mono--soft" x="62" y="138">└─ data.json</text>
+                  </g>
+                  <g class="fdb-node" data-node="qdbd">
+                    <rect x="498" y="34" width="286" height="124" rx="16"/>
+                    <circle class="fdb-node__dot" cx="524" cy="64" r="5"/>
+                    <text class="fdb-node__title" x="540" y="69">qdbd</text>
+                    <text class="fdb-node__sub" x="524" y="92">one daemon, the single writer</text>
+                    <text class="fdb-node__mono" x="524" y="118">watch · parse · index</text>
+                    <text class="fdb-node__mono fdb-node__mono--soft" x="524" y="138">never in the read path</text>
+                  </g>
+                  <g class="fdb-node" data-node="shm">
+                    <rect x="498" y="282" width="286" height="124" rx="16"/>
+                    <circle class="fdb-node__dot" cx="524" cy="312" r="5"/>
+                    <text class="fdb-node__title" x="540" y="317">data.1.shm</text>
+                    <text class="fdb-node__sub" x="524" y="340">shared memory, on tmpfs</text>
+                    <text class="fdb-node__mono" x="524" y="366">slots → records → images</text>
+                    <text class="fdb-node__mono fdb-node__mono--soft" x="524" y="386">/dev/shm/quanta_db/4f2c9a1b/</text>
+                  </g>
+                  <g class="fdb-node" data-node="php">
+                    <rect x="36" y="282" width="286" height="124" rx="16"/>
+                    <circle class="fdb-node__dot" cx="62" cy="312" r="5"/>
+                    <text class="fdb-node__title" x="78" y="317">PHP worker</text>
+                    <text class="fdb-node__sub" x="62" y="340">quanta_db.so — one of N</text>
+                    <text class="fdb-node__mono" x="62" y="366">QuantaDb::get('first-post')</text>
+                    <text class="fdb-node__mono fdb-node__mono--soft" x="62" y="386">maps the segment read-only</text>
+                  </g>
+                </svg>
+              </div>
+            </div>
+
+          <!-- ------------------------------------------------------------ --
+           -- The script. Without JavaScript this is simply a numbered list --
+           -- of what happens; with it, one step at a time drives the       --
+           -- diagram, the code highlight and the panel above.              --
+           -- ------------------------------------------------------------ -->
+          <div class="fdb__caption">
+            <ol class="fdb__steps" data-steps="boot" id="fdb-track-boot" role="tabpanel" aria-labelledby="fdb-tab-boot">
+              <li class="fdb__step" data-nodes="qdbd" data-lines="1,2,3,6" data-panel="tree">
+                <h3>One daemon, one root</h3>
+                <p><code>qdbd</code> is told nothing except where the data lives. Everything else — the socket, the lock directory, the segment path — is derived from that one path, so the extension, the daemon and <code>qdbstat</code> all find each other without a registry.</p>
+              </li>
+              <li class="fdb__step" data-nodes="disk qdbd" data-edge="scan" data-lines="8" data-panel="tree">
+                <h3>Watch first, look second</h3>
+                <p>Stale segments are deleted, the epoch number is bumped so it is never reused, and the <code>inotify</code> watches go on <em>before</em> the scan starts. Reading first would miss a node created halfway through — and could catch a file mid-write, at zero bytes.</p>
+              </li>
+              <li class="fdb__step" data-nodes="disk qdbd" data-edge="scan" data-lines="9" data-panel="json">
+                <h3>Read the whole tree, once</h3>
+                <p>Every directory becomes a record: its name, its father, its children, its symlinks. Every <code>data.json</code> and <code>data_&lt;lang&gt;.json</code> is parsed — which is also how corruption is found early rather than on a Tuesday afternoon.</p>
+              </li>
+              <li class="fdb__step" data-nodes="qdbd" data-lines="9" data-panel="image">
+                <h3>Keep the decoded form, not just the bytes</h3>
+                <p>Since the daemon has parsed the document anyway, it stores the result: a pre-decoded <b>image</b> laid out so PHP can adopt it as-is. This is where the 27× on a small document and the 279× on a big one come from.</p>
+              </li>
+              <li class="fdb__step" data-nodes="qdbd shm" data-edge="publish" data-lines="10" data-panel="slots">
+                <h3>Publish the segment</h3>
+                <p>The whole index is written into one file on <code>tmpfs</code>: a hash slot array pointing into an arena of records. <code>qdbd</code> is the only process that ever writes it, which is why readers need no lock and can never see a half-written record.</p>
+              </li>
+              <li class="fdb__step" data-nodes="qdbd shm" data-lines="11" data-panel="arena">
+                <h3>Only now, open the door</h3>
+                <p>The socket is bound last and the coherence flag is raised, so a successful connect always implies "already serving". From here the daemon sits in a poll loop on <code>inotify</code> and client writes, with a one-second heartbeat.</p>
+              </li>
+            </ol>
+
+            <ol class="fdb__steps" data-steps="read" id="fdb-track-read" role="tabpanel" aria-labelledby="fdb-tab-read">
+              <li class="fdb__step" data-nodes="php shm" data-edge="map" data-lines="1" data-panel="slots">
+                <h3>The worker maps the segment</h3>
+                <p>On its first call the process opens the active segment and <code>mmap</code>s it <code>PROT_READ</code>. That is the entire setup: no connection, no handshake, no session. The daemon is not in the read path and cannot slow it down.</p>
+              </li>
+              <li class="fdb__step" data-nodes="php" data-lines="4" data-panel="arena">
+                <h3>Is the index trustworthy?</h3>
+                <p>A read first glances at the control arena: the coherence flag set, and a heartbeat less than five seconds old. If either fails, everything below is skipped and Quanta's original filesystem code runs instead — the same answers, the old speed.</p>
+              </li>
+              <li class="fdb__step" data-nodes="php" data-lines="4" data-panel="hash">
+                <h3>The name is the address</h3>
+                <p>Node names are globally unique in Quanta, so the name hashes straight to a slot: sixteen bits become a tag, the rest an index. Where this used to be an <code>exec(find)</code> across the tree, it is now one multiplication and a mask.</p>
+              </li>
+              <li class="fdb__step" data-nodes="shm php" data-edge="map" data-lines="4" data-panel="slots" data-mark="5">
+                <h3>One probe</h3>
+                <p>Slot 5's tag matches, so the offset is followed into the arena and the <em>full</em> hash and the <em>full</em> name are compared. A tag collision therefore just continues the probe; it can never return the wrong node. A torn slot can only produce a miss, and a miss falls back.</p>
+              </li>
+              <li class="fdb__step" data-nodes="shm php" data-edge="map" data-lines="5" data-panel="image">
+                <h3>The document is already decoded</h3>
+                <p>The record carries the image, so PHP walks it directly into values: no <code>open</code>, no <code>read</code>, no tokenizing, no UTF-8 revalidation. With zero-copy on, the strings are not even copied — the zvals point into the mapping, which is why a 205 KB document costs the same as a small one.</p>
+              </li>
+              <li class="fdb__step" data-nodes="php" data-lines="5,8" data-panel="result">
+                <h3>Exactly what json_decode would have returned</h3>
+                <p>Same array, same types, same nesting — the call site does not know or care where it came from. That is the whole trick: the fast path had to be invisible, or it could not have been dropped underneath code that already worked.</p>
+              </li>
+              <li class="fdb__step" data-nodes="php shm" data-lines="10" data-panel="absent">
+                <h3>And when the node isn't there</h3>
+                <p>Under a coherent daemon a miss is an <b>authoritative absence</b>: the answer is <code>null</code> without touching the disk at all. Quanta asks about names that do not exist constantly — every field it is not sure about — and each of those used to be a walk of the tree.</p>
+              </li>
+            </ol>
+
+            <ol class="fdb__steps" data-steps="write" id="fdb-track-write" role="tabpanel" aria-labelledby="fdb-tab-write">
+              <li class="fdb__step" data-nodes="php" data-lines="4" data-panel="json">
+                <h3>Take the lock, read the document</h3>
+                <p><code>update()</code> holds a per-node <code>flock</code> across the whole callback, so the read-modify-write cannot interleave with another request doing the same thing. Two editors saving at once produce two saves, not one lost one.</p>
+              </li>
+              <li class="fdb__step" data-nodes="php disk" data-edge="fsync" data-lines="5,6,7,8" data-panel="atomic">
+                <h3>Disk first — always</h3>
+                <p>The new document goes to a temporary file, is <code>fsync</code>ed, and is moved into place with an atomic <code>rename</code>. The file is the source of truth, so it is what has to survive the power cut; shared memory is only ever a derived copy.</p>
+              </li>
+              <li class="fdb__step" data-nodes="php qdbd" data-edge="socket" data-lines="4-8" data-panel="wire">
+                <h3>Tell the daemon</h3>
+                <p>Only after the bytes are safely on disk does the worker send a short frame over the unix socket. Its own <code>inotify</code> would have caught the change anyway — the socket is what makes the timing predictable instead of eventual.</p>
+              </li>
+              <li class="fdb__step" data-nodes="qdbd shm" data-edge="publish" data-lines="4-8" data-panel="slots" data-mark="5">
+                <h3>A new record, then a pointer flip</h3>
+                <p>The daemon re-reads the file, bumps the node's generation — the cache key every worker checks — appends a fresh record to the arena, and only then points the slot at it. Readers see the old record or the new one, never a mixture. The old bytes become garbage, reclaimed at the next compaction.</p>
+              </li>
+              <li class="fdb__step" data-nodes="qdbd php" data-edge="socket" data-lines="10-12" data-panel="ack">
+                <h3>Acknowledge after publishing</h3>
+                <p>This ordering is the point of the whole channel. When <code>update()</code> returns, the change is already visible in shared memory, so the <em>next</em> request — in a different process, on a different core — reads the new title. No polling, no TTL, no "eventually".</p>
+              </li>
+              <li class="fdb__step" data-nodes="php disk" data-lines="4-8" data-panel="fallback">
+                <h3>What if the daemon died mid-write?</h3>
+                <p>The write is already on disk, so nothing is lost. The worker waits 250 ms for an ack it will not get, marks the index incoherent, and everyone quietly goes back to reading files. When <code>qdbd</code> comes back it rescans and republishes, and the fast path resumes.</p>
+              </li>
+            </ol>
+
+            <div class="fdb__controls" hidden data-controls>
+              <button class="fdb__btn" type="button" data-prev aria-label="Previous step">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="fdb__btn fdb__btn--play" type="button" data-play aria-label="Play">
+                <svg class="fdb__icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>
+                <svg class="fdb__icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5h3v14H8zM13 5h3v14h-3z" fill="currentColor"/></svg>
+              </button>
+              <button class="fdb__btn" type="button" data-next aria-label="Next step">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="fdb__dots" data-dots></div>
+              <p class="fdb__count" data-count aria-live="polite"></p>
+            </div>
+          </div>
+          </div>
+
+          <!-- ---------------------------------------------------------- --
+           -- The side: the code for the active track, and one data panel --
+           -- chosen by the active step.                                  --
+           -- ---------------------------------------------------------- -->
+          <div class="fdb__side">
+            <div class="fdb__code" data-code-track="boot">
+              <div class="fdb__card-bar"><span></span><span></span><span></span><em>the container starts</em></div>
+              <pre class="fdb__code-body"><code data-code><i># php.ini — one setting is all it needs</i>
+extension      = quanta_db.so
+quanta_db.root = /var/www/example/db
+
+<i># supervisord starts one daemon per container</i>
+<b>$ qdbd</b>
+qdbd: root /var/www/example/db (4f2c9a1b)
+qdbd: watching 12 483 directories (inotify)
+qdbd: scanned 12 483 nodes, 9 210 docs, 214 ms
+qdbd: published data.1.shm (18.4 MB)
+qdbd: coherent=1, listening on qdbd.sock</code></pre>
+            </div>
+
+            <div class="fdb__code" data-code-track="read">
+              <div class="fdb__card-bar"><span></span><span></span><span></span><em>modules/blog/blog.qtags.inc</em></div>
+              <pre class="fdb__code-body"><code data-code>&lt;?php
+<i>// Rendering /blog/first-post</i>
+
+$dir  = QuantaDb::<b>path</b>('first-post');
+$doc  = QuantaDb::<b>get</b>('first-post');
+$kids = QuantaDb::<b>children</b>('blog');
+
+print $doc['title'];      <i>// Hello world</i>
+
+QuantaDb::<b>get</b>('nope');    <i>// null</i></code></pre>
+            </div>
+
+            <div class="fdb__code" data-code-track="write">
+              <div class="fdb__card-bar"><span></span><span></span><span></span><em>inline editing, in the Shadow backend</em></div>
+              <pre class="fdb__code-body"><code data-code>&lt;?php
+<i>// The only correct read-modify-write: the</i>
+<i>// lock is held for the whole callback.</i>
+QuantaDb::<b>update</b>('first-post', function ($doc) {
+    $doc['title']  = 'Hello, Quanta';
+    $doc['status'] = 'published';
+    return $doc;
+});
+
+<i>// Any other PHP worker, the next request:</i>
+QuantaDb::<b>get</b>('first-post')['title'];
+<i>// → 'Hello, Quanta'</i></code></pre>
+            </div>
+
+            <div class="fdb__data">
+              <div class="fdb__panel" data-panel="tree">
+                <div class="fdb__panel-head">the tree on disk</div>
+                <pre class="fdb__panel-body"><code>db/
+└── <b>home</b>/
+    ├── data.json
+    └── <b>blog</b>/
+        ├── data.json
+        └── <b>first-post</b>/
+            ├── data.json
+            ├── data_it.json
+            └── files/cover.jpg</code></pre>
+                <p class="fdb__panel-note">Every directory is a node. Its basename is the key, and it is unique across the whole tree.</p>
+              </div>
+
+              <div class="fdb__panel" data-panel="json" hidden>
+                <div class="fdb__panel-head">db/home/blog/first-post/data.json</div>
+                <pre class="fdb__panel-body"><code>{
+  <c-k>"title"</c-k>:  <c-s>"Hello world"</c-s>,
+  <c-k>"author"</c-k>: <c-s>"aldo"</c-s>,
+  <c-k>"status"</c-k>: <c-s>"published"</c-s>,
+  <c-k>"weight"</c-k>: <c-n>3</c-n>
+}</code></pre>
+                <p class="fdb__panel-note">86 bytes. The daemon parses this exactly once, when it appears or changes — not once per request, per worker.</p>
+              </div>
+
+              <div class="fdb__panel" data-panel="image" hidden>
+                <div class="fdb__panel-head">the record in shared memory</div>
+                <dl class="fdb__kv">
+                  <dt>name</dt><dd>first-post</dd>
+                  <dt>father</dt><dd>blog</dd>
+                  <dt>generation</dt><dd>7</dd>
+                  <dt>doc <span>null</span></dt><dd>raw 86 B <em>+</em> image 168 B</dd>
+                  <dt>doc <span>it</span></dt><dd>raw 94 B <em>+</em> image 180 B</dd>
+                </dl>
+                <p class="fdb__panel-note">
+                  The <b>image</b> is the JSON already decoded: a flat, pointer-free
+                  encoding whose strings are ready-made PHP <code>zend_string</code>s,
+                  8-aligned, with the hash precomputed. Reading it is a walk, not a parse.
+                </p>
+              </div>
+
+              <div class="fdb__panel" data-panel="slots" hidden>
+                <div class="fdb__panel-head">the slot table</div>
+                <table class="fdb__slots">
+                  <thead><tr><th>slot</th><th>tag</th><th>record</th></tr></thead>
+                  <tbody>
+                    <tr data-slot="3"><td>3</td><td>0x1f4a…</td><td>home</td></tr>
+                    <tr data-slot="4"><td>4</td><td>—</td><td class="is-empty">empty</td></tr>
+                    <tr data-slot="5"><td>5</td><td>0xa93c…</td><td>first-post</td></tr>
+                    <tr data-slot="6"><td>6</td><td>0x77e1…</td><td>blog</td></tr>
+                  </tbody>
+                </table>
+                <p class="fdb__panel-note">One open-addressed array of 64-bit slots: 16 bits of hash tag, 48 bits of offset into the record arena.</p>
+              </div>
+
+              <div class="fdb__panel" data-panel="arena" hidden>
+                <div class="fdb__panel-head">metrics.shm — the control arena</div>
+                <dl class="fdb__kv">
+                  <dt>coherent</dt><dd class="is-good">1</dd>
+                  <dt>data_epoch</dt><dd>1</dd>
+                  <dt>heartbeat</dt><dd>0.4 s ago</dd>
+                  <dt>daemon_pid</dt><dd>31</dd>
+                  <dt>reads</dt><dd>4 812 934</dd>
+                </dl>
+                <p class="fdb__panel-note">4 KB, mapped read-write by everyone. It is a control plane, not a statistics page: this is what <code>coherent()</code> reads, and what <code>qdbstat</code> shows.</p>
+              </div>
+
+              <div class="fdb__panel" data-panel="hash" hidden>
+                <div class="fdb__panel-head">name → slot</div>
+                <pre class="fdb__panel-body"><code>fnv1a(<c-s>"first-post"</c-s>)
+      = 0xa93c5b1e77c40219
+
+tag = hash &amp; 0xffff_0000_0000_0000
+    = 0xa93c…
+
+i   = hash &amp; (slot_count - 1)
+    = <c-n>5</c-n></code></pre>
+                <p class="fdb__panel-note">No path is built and no directory is listed. The name <em>is</em> the address.</p>
+              </div>
+
+              <div class="fdb__panel" data-panel="result" hidden>
+                <div class="fdb__panel-head">what $doc holds</div>
+                <pre class="fdb__panel-body"><code>[
+  <c-k>'title'</c-k>  =&gt; <c-s>'Hello world'</c-s>,
+  <c-k>'author'</c-k> =&gt; <c-s>'aldo'</c-s>,
+  <c-k>'status'</c-k> =&gt; <c-s>'published'</c-s>,
+  <c-k>'weight'</c-k> =&gt; <c-n>3</c-n>,
+]</code></pre>
+                <p class="fdb__panel-label">time for one read of this document</p>
+                <ul class="fdb__bars">
+                  <li><span class="fdb__bar-label">file_get_contents + json_decode</span><span class="fdb__bar"><i style="width:100%"></i></span><b>6.53 µs</b></li>
+                  <li class="is-fast"><span class="fdb__bar-label">QuantaDb::get()</span><span class="fdb__bar"><i style="width:3.8%"></i></span><b>0.25 µs</b></li>
+                </ul>
+              </div>
+
+              <div class="fdb__panel" data-panel="absent" hidden>
+                <div class="fdb__panel-head">a name that does not exist</div>
+                <pre class="fdb__panel-body"><code>QuantaDb::get(<c-s>'no-such-node'</c-s>);
+<i>// null</i>
+
+stat()  <c-n>0</c-n>
+open()  <c-n>0</c-n>
+read()  <c-n>0</c-n></code></pre>
+                <p class="fdb__panel-note">The daemon's watches already reflect anything created behind Quanta's back, so a miss is <b>proof of absence</b> — not a reason to go and look.</p>
+              </div>
+
+              <div class="fdb__panel" data-panel="atomic" hidden>
+                <div class="fdb__panel-head">how the file is replaced</div>
+                <pre class="fdb__panel-body"><code>1  flock   locks/first-post.lock
+2  write   .data.json.tmp.7f3
+3  fsync
+4  rename  → data.json      <i>(atomic)</i>
+5  unlock</code></pre>
+                <p class="fdb__panel-note">A concurrent reader sees either all of the old bytes or all of the new ones. Half a document is not one of the outcomes — which the legacy <code>fopen('w+')</code> could not promise.</p>
+              </div>
+
+              <div class="fdb__panel" data-panel="wire" hidden>
+                <div class="fdb__panel-head">over qdbd.sock</div>
+                <pre class="fdb__panel-body"><code><i>// 4-byte LE length prefix, then JSON</i>
+→ 46  {<c-k>"op"</c-k>:<c-s>"upsert"</c-s>,
+       <c-k>"name"</c-k>:<c-s>"first-post"</c-s>,
+       <c-k>"lang"</c-k>:null}</code></pre>
+                <p class="fdb__panel-note">The payload is a notification, not the data: the daemon goes and re-reads the file it was told about, so it can never publish something the disk does not have.</p>
+              </div>
+
+              <div class="fdb__panel" data-panel="ack" hidden>
+                <div class="fdb__panel-head">the ack comes last</div>
+                <pre class="fdb__panel-body"><code>← 38  {<c-k>"ok"</c-k>:true,
+       <c-k>"epoch"</c-k>:<c-n>1</c-n>,
+       <c-k>"generation"</c-k>:<c-n>8</c-n>}
+
+<i>// published, THEN acked</i></code></pre>
+                <p class="fdb__panel-note">Because the ack is sent after the record is visible, <code>update()</code> returning means every other worker can already see the new title. That is read-your-writes across processes, with nobody polling anything.</p>
+              </div>
+
+              <div class="fdb__panel" data-panel="fallback" hidden>
+                <div class="fdb__panel-head">if the ack never arrives</div>
+                <dl class="fdb__kv">
+                  <dt>on disk</dt><dd class="is-good">already written</dd>
+                  <dt>coherent</dt><dd class="is-warn">0</dd>
+                  <dt>reads</dt><dd>filesystem walk</dd>
+                </dl>
+                <p class="fdb__panel-note">Past <code>write_ack_timeout_ms</code> (250 ms) coherence is poisoned and every worker goes back to walking the tree, exactly as Quanta did before the extension existed. Slower. Never wrong.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="section section--alt" id="promises">
+      <div class="section__head">
+        <h2>What that buys, and what it costs</h2>
+        <p>The design is chosen so that the interesting failure modes are boring ones.</p>
+      </div>
+      <div class="grid grid--features">
+        <article class="card">
+          <h3>Nothing to migrate</h3>
+          <p>Everything in shared memory is derived from the files and can be rebuilt at any moment. Delete the segment, restart the daemon, and you are back where you were.</p>
+        </article>
+        <article class="card">
+          <h3>Never load-bearing</h3>
+          <p>Every call site keeps its original filesystem code as a fallback, and a test suite runs the same assertions with the daemon, without it, and without the extension loaded at all.</p>
+        </article>
+        <article class="card">
+          <h3>Read your own writes</h3>
+          <p>The daemon acks only after the change is published, so a write in one process is visible to the next request in another. No cache TTL to tune.</p>
+        </article>
+        <article class="card">
+          <h3>A miss is an answer</h3>
+          <p>With a coherent index, "no such node" is returned without a single syscall — which matters, because asking about names that do not exist is something a CMS does all day.</p>
+        </article>
+        <article class="card">
+          <h3>Writes are atomic</h3>
+          <p>Lock, temp file, <code>fsync</code>, rename. A crash leaves the old document or the new one, and a concurrent reader never sees a half-written file.</p>
+        </article>
+        <article class="card">
+          <h3>Per-pod, not per-cluster</h3>
+          <p>The segment and the counters live in the pod's own memory. <code>qdbstat</code> reports the pod it runs in; there is deliberately no aggregated view.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="numbers">
+      <div class="section__head">
+        <h2>Measured, not estimated</h2>
+        <p>
+          One <code>Node::loadJSON</code>-equivalent read, 20 000 iterations,
+          against a live daemon. The last column is the default configuration.
+        </p>
+      </div>
+      <div class="table-wrap">
+        <table class="fdb-table">
+          <thead>
+            <tr><th>document</th><th>legacy read + decode</th><th>image off</th><th>image on</th><th>image + zero-copy</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>48 B</td><td>6.53 µs</td><td>0.36 µs</td><td>0.25 µs</td><td><b>0.24 µs</b> <span class="fdb-table__x">27×</span></td></tr>
+            <tr><td>437 B</td><td>7.19 µs</td><td>0.64 µs</td><td>0.48 µs</td><td><b>0.44 µs</b> <span class="fdb-table__x">16×</span></td></tr>
+            <tr><td>205 KB</td><td>129.6 µs</td><td>3.22 µs</td><td>3.03 µs</td><td><b>0.46 µs</b> <span class="fdb-table__x">279×</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="fdb-note">
+        A benchmark taken without a daemon running measures the fallback path and
+        tells you nothing about any of this — which is why the suite refuses to
+        report a number before checking that the mode really is <code>shm</code>.
+      </p>
+    </section>
+
+    <section class="cta">
+      <div class="cta__inner">
+        <h2>Read the real thing</h2>
+        <p>Every claim on this page is spelled out, with the code that backs it, in the documentation next to the extension.</p>
+        <div class="hero__actions">
+          <a class="btn btn--primary" href="{{link:files-db/usage.html}}">Using it from PHP</a>
+          <a class="btn btn--ghost" href="{{link:files-db/how-it-works.html}}">How it works</a>
+          <a class="btn btn--ghost" href="{{link:files-db/api-contract.html}}">The contract</a>
+        </div>
+      </div>
+    </section>
