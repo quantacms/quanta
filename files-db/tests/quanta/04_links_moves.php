@@ -118,6 +118,47 @@ ok_ext(fn() => realpath("$db/home/cats/$job_name") === realpath($dst),
 // Moving again is a no-op: the source is gone.
 eq(Job::safeMove($src, $dst, TRUE, $env, $job_name), TRUE, 'safeMove on a vanished source is a success');
 
+// A move the node database RAISES on, for a reason that is not a lost race,
+// must still finish on the filesystem.
+//
+// In production that reason is EXDEV: HILI gives each job father (_jobs_todo,
+// _jobs_done, _jobs_unknown, _jobs_archived) its own hostPath volume, and
+// rename(2) refuses to cross a mount boundary even when both sides live on one
+// filesystem. A test cannot mount anything, so it reaches the same branch with
+// a father the database can no longer resolve — a raise either way, with the
+// job still sitting in _jobs_todo afterwards and `mv -T` the only thing left
+// that can move it.
+//
+// Regression: while this branch answered FALSE instead of falling through, no
+// job ever left _jobs_todo again on any deployment. Job::run() reported that
+// with a Message, which on a non-production site serializes itself — $env
+// included — into the session, and $env reaches FilesDb::$last_error, by then
+// holding the very \QuantaDbException the move had raised. PHP refuses to
+// serialize an exception, so a logged warning became an uncaught fatal and
+// every job-running API endpoint answered 500.
+seed($db, 'home/_jobs_stuck', array('title' => 'Stuck'));
+$job2 = 'job-' . bin2hex(random_bytes(3));
+seed($db, "home/_jobs_todo/$job2", array('type' => 'test'));
+clearstatcache(TRUE);
+// Leave the father's name known but unresolvable: its directory moves out of
+// the tree the database owns and a symlink takes its place. Neither a walk nor
+// an index can call that a node, so move() raises whoever is serving — while
+// the path still works for anything that just follows the link, which is what
+// the fallback does.
+$stuck_real = sys_get_temp_dir() . '/qdbq-stuck-' . bin2hex(random_bytes(4));
+exec('mv -T ' . escapeshellarg("$db/home/_jobs_stuck") . ' ' . escapeshellarg($stuck_real));
+symlink($stuck_real, "$db/home/_jobs_stuck");
+clearstatcache(TRUE);
+
+$src2 = "$db/home/_jobs_todo/$job2";
+$dst2 = "$db/home/_jobs_stuck/$job2";
+eq(Job::safeMove($src2, $dst2, TRUE, $env, $job2), TRUE,
+    'safeMove falls back to the filesystem when the database move raises');
+clearstatcache(TRUE);
+ok(!is_dir($src2), 'the fallback emptied the source');
+ok(is_dir("$stuck_real/$job2"), 'the fallback filled the destination');
+exec('rm -rf ' . escapeshellarg($stuck_real));
+
 // ── getCandidatePath ─────────────────────────────────────────────────────────
 $free = $env->getCandidatePath('a-name-nobody-has-taken');
 eq($free, 'a-name-nobody-has-taken', 'a free name is returned unchanged');
