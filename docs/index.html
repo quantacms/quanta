@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quanta CMS</title>
+  <meta name="description" content="Quanta is an open source, 100% filesystem-based CMS and PHP framework: no SQL, nodes as folders, Qtags as markup, and a Rust extension that keeps the whole node tree in shared memory.">
+  <meta property="og:title" content="Quanta CMS">
+  <meta property="og:description" content="Quanta is an open source, 100% filesystem-based CMS and PHP framework: no SQL, nodes as folders, Qtags as markup, and a Rust extension that keeps the whole node tree in shared memory.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/site.css">
+  <script>
+    // Applied before first paint so a dark-mode reader never sees a light flash.
+    (function () {
+      var root = document.documentElement;
+      root.classList.remove('no-js');
+      try {
+        var saved = localStorage.getItem('quanta-theme');
+        if (saved) root.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body class="page page--home">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="logo" href="./">
+        <svg class="logo__mark" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+      <circle cx="20" cy="20" r="4.2" fill="currentColor"/>
+      <ellipse cx="20" cy="20" rx="17" ry="7.4" fill="none" stroke="currentColor" stroke-width="2" opacity=".85" transform="rotate(-30 20 20)"/>
+      <ellipse cx="20" cy="20" rx="17" ry="7.4" fill="none" stroke="currentColor" stroke-width="2" opacity=".45" transform="rotate(30 20 20)"/>
+    </svg>
+        <span class="logo__text">Quanta<span class="logo__accent">CMS</span></span>
+      </a>
+      <button class="topbar__burger" type="button" aria-expanded="false" aria-controls="site-nav" data-nav-toggle>
+        <span class="topbar__burger-bar"></span><span class="sr-only">Menu</span>
+      </button>
+      <nav class="topnav" id="site-nav" aria-label="Main">
+        <a class="topnav__link" href="overview.html">Documentation</a>
+          <a class="topnav__link" href="files-db.html">Files-DB</a>
+          <a class="topnav__link" href="https://www.quanta.org" target="_blank" rel="noopener">quanta.org</a>
+          <a class="topnav__link" href="https://github.com/quantacms/quanta" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode">
+        <svg viewBox="0 0 24 24" class="theme-toggle__sun" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6"/></g></svg>
+        <svg viewBox="0 0 24 24" class="theme-toggle__moon" aria-hidden="true"><path d="M20 14.2A8.2 8.2 0 0 1 9.8 4a8.4 8.4 0 1 0 10.2 10.2Z" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </header>
+  <main id="main">
+    <section class="hero">
+      <div class="hero__inner">
+        <div class="hero__text">
+          <p class="hero__eyebrow">Open source · PHP 8.5 · No SQL</p>
+          <h1 class="hero__title">The CMS whose database <span class="grad">is the filesystem</span></h1>
+          <p class="hero__lead">
+            Quanta is a CMS and framework for developers. Every node is a folder,
+            every folder holds its own JSON, and there is no SQL anywhere in the
+            stack — so content is versionable, portable and readable with <code>ls</code>.
+          </p>
+          <div class="hero__actions">
+            <a class="btn btn--primary" href="introduction.html">Get started</a>
+            <a class="btn" href="overview.html">Read the docs</a>
+          </div>
+          <p class="hero__meta">Originally designed by Aldo Tripiciano in 2014 · free and open source</p>
+        </div>
+        <div class="hero__panel" aria-hidden="true">
+          <div class="panel">
+            <div class="panel__bar"><span></span><span></span><span></span><em>db/</em></div>
+<pre class="panel__body"><code>db/
+└── <b>home</b>/
+    ├── data.json          <i># the node</i>
+    ├── data_it.json       <i># its translation</i>
+    └── <b>blog</b>/
+        └── <b>first-post</b>/
+            ├── data.json
+            └── cover.jpg
+
+<i># a page is a template plus Qtags</i>
+&lt;h1&gt;[NODE_TITLE]&lt;/h1&gt;
+[BLOCK:menu|title=Main menu]
+[LIST:blog|limit=5]</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <div class="section__head">
+        <h2>Built for developers, not for a schema</h2>
+        <p>Everything below ships out of the box, in the repository you just cloned.</p>
+      </div>
+      <div class="grid grid--features">
+        <article class="card">
+          <h3>Filesystem database</h3>
+          <p>A hierarchical tree of folders with JSON data and metadata. No SQL, no migrations, no schema to keep in step with your content.</p>
+        </article>
+        <article class="card">
+          <h3>Qtags</h3>
+          <p>An agnostic markup language of nestable tags encapsulated in templates — blogs, carousels, galleries, maps, sitemaps and widgets without writing controllers.</p>
+        </article>
+        <article class="card">
+          <h3>Inline editing</h3>
+          <p>Content is edited in place, on the page, through the customizable “Shadow” backend that also renders overlay forms.</p>
+        </article>
+        <article class="card">
+          <h3>Doctor</h3>
+          <p>One batch tool for installing, updating, diagnosing and repairing a site — including asset aggregation and cache maintenance.</p>
+        </article>
+        <article class="card">
+          <h3>Templates you can override</h3>
+          <p>A template engine where an individual entity, or a whole class of them, can override a single template file. CSS Grid is supported natively by Qtags.</p>
+        </article>
+        <article class="card">
+          <h3>Access control per node</h3>
+          <p>Roles and permissions apply at node level, alongside workflow statuses (draft → published), taxonomy, users and forms.</p>
+        </article>
+        <article class="card">
+          <h3>Multilingual</h3>
+          <p>Translations live next to the content they translate: <code>data_&lt;lang&gt;.json</code> in the same folder as the node.</p>
+        </article>
+        <article class="card">
+          <h3>Installation profiles</h3>
+          <p>Pre-defined profiles bundle modules, themes and starting entities, so a new site begins with something real rather than an empty tree.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section--alt" id="files-db">
+      <div class="split">
+        <div class="split__text">
+          <p class="section__eyebrow">Files-DB</p>
+          <h2>A Rust extension that makes the filesystem fast</h2>
+          <p>
+            <code>quanta_db</code> is a PHP extension whose daemon keeps the whole
+            node tree — paths, fathers, children, links and the JSON documents
+            themselves — in a shared-memory segment that every PHP worker maps
+            read-only. A lookup becomes a hash probe instead of an <code>exec(find)</code>.</p>
+          <p>
+            Writes go to disk first (flock, fsync, atomic rename) and only then to
+            the daemon, which acks after publishing — so you read your own writes
+            across processes.
+          </p>
+          <p class="split__note">
+            It is never load-bearing: with the daemon down, Quanta falls back to
+            the original filesystem code and behaves exactly as it always did.
+            Files stay the source of truth, so there is no data migration.
+          </p>
+          <div class="hero__actions">
+            <a class="btn btn--primary" href="files-db.html">See it step by step</a>
+            <a class="btn btn--ghost" href="files-db/">Read the docs</a>
+          </div>
+        </div>
+        <div class="split__panel">
+          <ul class="stack">
+            <li><span class="stack__label">Source of truth</span><span class="stack__body">Files on disk — <code>data.json</code> per folder</span></li>
+            <li class="stack__arrow" aria-hidden="true">↓</li>
+            <li><span class="stack__label">qdbd</span><span class="stack__body">Single writer, watches the tree, publishes segments</span></li>
+            <li class="stack__arrow" aria-hidden="true">↓</li>
+            <li><span class="stack__label">Shared memory</span><span class="stack__body">Read-only map in every PHP worker</span></li>
+            <li class="stack__arrow" aria-hidden="true">↓</li>
+            <li><span class="stack__label">QuantaDb</span><span class="stack__body">The PHP API — <code>get</code>, <code>put</code>, <code>update</code>, <code>find</code> …</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="architecture">
+      <div class="section__head">
+        <h2>Modular, object-oriented, not MVC</h2>
+        <p>Quanta leans on three patterns instead of a framework-shaped hierarchy.</p>
+      </div>
+      <div class="grid grid--three">
+        <article class="card card--num" data-num="01">
+          <h3>Factory</h3>
+          <p>Nodes, pages, templates and Qtags are constructed and manipulated through static methods on factory classes, autoloaded at run time.</p>
+        </article>
+        <article class="card card--num" data-num="02">
+          <h3>Front controller</h3>
+          <p>Every request that is not a static file goes through <code>boot.php</code>, which processes it, bootstraps Quanta and renders.</p>
+        </article>
+        <article class="card card--num" data-num="03">
+          <h3>Template method</h3>
+          <p>Hook functions let custom modules intercept any phase of the loading process, manipulate the data and change standard behaviour.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section--alt" id="start">
+      <div class="split split--reverse">
+        <div class="split__text">
+          <h2>Up and running in four steps</h2>
+          <p>Quanta runs on any UNIX-based OS with PHP 8.5+ (GD and CURL), Apache 2.4+ or Nginx 1.15+, and Composer. Apache needs <code>rewrite</code> and <code>headers</code>.</p>
+          <a class="btn btn--ghost" href="introduction.html">Full installation notes</a>
+        </div>
+        <div class="split__panel">
+          <div class="panel">
+            <div class="panel__bar"><span></span><span></span><span></span><em>bash</em></div>
+<pre class="panel__body"><code><i># 1. clone the latest release</i>
+git clone https://github.com/quantacms/quanta.git
+
+<i># 2. point a host at the folder</i>
+<i>#    myproject.com =&gt; /var/www/quanta</i>
+
+<i># 3. install the site</i>
+./doctor myproject.com
+
+<i># 4. pull the PHP dependencies</i>
+composer install</code></pre>
+          </div>
+          <p class="panel__caption">Prefer containers? The <code>Dockerfile</code> at the repo root builds an nginx + php-fpm image, configured entirely through environment variables.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta">
+      <div class="cta__inner">
+        <h2>Start with the documentation</h2>
+        <p>The docs are rendered straight from the Markdown in the repository — what you read here is what sits next to the code.</p>
+        <div class="hero__actions">
+          <a class="btn btn--primary" href="overview.html">Documentation</a>
+          <a class="btn btn--ghost" href="https://github.com/quantacms/quanta" target="_blank" rel="noopener">View on GitHub</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+  <footer class="footer">
+    <div class="footer__inner">
+      <div>
+        <a class="logo logo--sm" href="./"><svg class="logo__mark" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+      <circle cx="20" cy="20" r="4.2" fill="currentColor"/>
+      <ellipse cx="20" cy="20" rx="17" ry="7.4" fill="none" stroke="currentColor" stroke-width="2" opacity=".85" transform="rotate(-30 20 20)"/>
+      <ellipse cx="20" cy="20" rx="17" ry="7.4" fill="none" stroke="currentColor" stroke-width="2" opacity=".45" transform="rotate(30 20 20)"/>
+    </svg><span class="logo__text">Quanta<span class="logo__accent">CMS</span></span></a>
+        <p class="footer__tagline">A DB-free CMS and framework, built on the filesystem.</p>
+      </div>
+      <div class="footer__links">
+        <a href="overview.html">Documentation</a>
+        <a href="https://github.com/quantacms/quanta" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.quanta.org" target="_blank" rel="noopener">quanta.org</a>
+        <a href="https://github.com/quantacms/quanta/blob/master/LICENSE.txt" target="_blank" rel="noopener">License</a>
+      </div>
+    </div>
+    <p class="footer__note">Quanta is free and open source software.</p>
+  </footer>
+  <script src="assets/site.js" defer></script>
+</body>
+</html>

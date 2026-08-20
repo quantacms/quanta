@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quanta Documentation — Quanta CMS</title>
+  <meta name="description" content="Quanta is 100% filesystem-based: every node is a directory, and its content lives in a data.json (plus data&lt;lang&gt;.json for translations) inside it. There is no SQL and no separate">
+  <meta property="og:title" content="Quanta Documentation — Quanta CMS">
+  <meta property="og:description" content="Quanta is 100% filesystem-based: every node is a directory, and its content lives in a data.json (plus data&lt;lang&gt;.json for translations) inside it. There is no SQL and no separate">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/site.css">
+  <script>
+    // Applied before first paint so a dark-mode reader never sees a light flash.
+    (function () {
+      var root = document.documentElement;
+      root.classList.remove('no-js');
+      try {
+        var saved = localStorage.getItem('quanta-theme');
+        if (saved) root.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body class="page page--docs">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="logo" href="./">
+        <svg class="logo__mark" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+      <circle cx="20" cy="20" r="4.2" fill="currentColor"/>
+      <ellipse cx="20" cy="20" rx="17" ry="7.4" fill="none" stroke="currentColor" stroke-width="2" opacity=".85" transform="rotate(-30 20 20)"/>
+      <ellipse cx="20" cy="20" rx="17" ry="7.4" fill="none" stroke="currentColor" stroke-width="2" opacity=".45" transform="rotate(30 20 20)"/>
+    </svg>
+        <span class="logo__text">Quanta<span class="logo__accent">CMS</span></span>
+      </a>
+      <button class="topbar__burger" type="button" aria-expanded="false" aria-controls="site-nav" data-nav-toggle>
+        <span class="topbar__burger-bar"></span><span class="sr-only">Menu</span>
+      </button>
+      <nav class="topnav" id="site-nav" aria-label="Main">
+        <a class="topnav__link is-active" href="overview.html">Documentation</a>
+          <a class="topnav__link" href="files-db.html">Files-DB</a>
+          <a class="topnav__link" href="https://www.quanta.org" target="_blank" rel="noopener">quanta.org</a>
+          <a class="topnav__link" href="https://github.com/quantacms/quanta" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode">
+        <svg viewBox="0 0 24 24" class="theme-toggle__sun" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6"/></g></svg>
+        <svg viewBox="0 0 24 24" class="theme-toggle__moon" aria-hidden="true"><path d="M20 14.2A8.2 8.2 0 0 1 9.8 4a8.4 8.4 0 1 0 10.2 10.2Z" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </header>
+  <div class="docs">
+    <input type="checkbox" id="docs-sidebar-toggle" class="docs__sidebar-checkbox">
+    <aside class="docs__sidebar" aria-label="Documentation">
+      <label class="docs__sidebar-close" for="docs-sidebar-toggle" aria-hidden="true">Close</label>
+      <nav class="docs__nav">
+        <p class="docs__navtitle">Quanta</p>
+        <ul class="docs__navlist">
+          <li><a class="docs__navlink is-active" aria-current="page" href="overview.html">Overview</a></li>
+          <li><a class="docs__navlink" href="introduction.html">Introduction &amp; install</a></li>
+        </ul>
+        <p class="docs__navtitle">Files-DB</p>
+        <ul class="docs__navlist">
+          <li><a class="docs__navlink" href="files-db/">The extension</a></li>
+          <li><a class="docs__navlink" href="files-db/usage.html">Using Files-DB from PHP</a></li>
+          <li><a class="docs__navlink" href="files-db/how-it-works.html">How Files-DB works</a></li>
+          <li><a class="docs__navlink" href="files-db/api-contract.html">API contract</a></li>
+          <li><a class="docs__navlink" href="files-db/two-implementations.html">Two implementations</a></li>
+          <li><a class="docs__navlink" href="files-db/simpler-faster.html">Simpler and faster</a></li>
+        </ul>
+      </nav>
+    </aside>
+    <main class="docs__main" id="main">
+      <label class="docs__sidebar-open" for="docs-sidebar-toggle">Documentation menu</label>
+      <article class="prose">
+        <p class="prose__eyebrow">Quanta</p>
+        <h1>Quanta Documentation</h1>
+<h2 id="the-database">The database<a class="prose__anchor" href="#the-database" aria-label="Link to this section">#</a></h2>
+<p>Quanta is 100% filesystem-based: every node is a directory, and its content
+lives in a <code>data.json</code> (plus <code>data_&lt;lang&gt;.json</code> for translations) inside it.
+There is no SQL and no separate schema — the filesystem is the single source of
+truth.</p>
+<p>The <code>quanta_db</code> PHP extension (&quot;Files-DB&quot;) is a fast path onto exactly those
+files: a daemon keeps the whole tree in shared memory so a node lookup is a hash
+probe instead of an <code>exec(find)</code>, and writes become atomic and locked. It is
+never load-bearing — when it is absent or its daemon is down, Quanta falls back
+to the original filesystem code and behaves exactly as it always did.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Document</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="files-db/usage.html">Using Files-DB from PHP</a></td>
+<td>How to read and write nodes through the <code>QuantaDb</code> API — methods, options, errors, recipes, and how Quanta&#39;s own <code>Node</code>/<code>NodeFactory</code>/<code>Environment</code> classes use it.</td>
+</tr>
+<tr>
+<td><a href="files-db/how-it-works.html">How Files-DB works</a></td>
+<td>Internals — the daemon, the shared-memory layout, the read and write paths, coherence and fallback.</td>
+</tr>
+<tr>
+<td><a href="files-db/api-contract.html">API contract</a></td>
+<td>The normative, versioned specification.</td>
+</tr>
+<tr>
+<td><a href="files-db/">files-db README</a></td>
+<td>Building, testing, benchmarking, and running <code>qdbd</code> / <code>qdbstat</code>.</td>
+</tr>
+</tbody></table>
+</div>
+<hr>
+<p>For more information about Quanta, visit the
+<a href="https://www.quanta.org" target="_blank" rel="noopener">official website</a>.</p>
+
+      </article>
+      <nav class="pager" aria-label="Documentation">
+        <span></span>
+        <a class="pager__link pager__link--next" href="introduction.html"><span class="pager__kind">Next</span><span class="pager__title">Introduction &amp; install</span></a>
+      </nav>
+    </main>
+    <nav class="docs__toc" aria-label="On this page">
+
+    </nav>
+  </div>
+  <footer class="footer">
+    <div class="footer__inner">
+      <div>
+        <a class="logo logo--sm" href="./"><svg class="logo__mark" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+      <circle cx="20" cy="20" r="4.2" fill="currentColor"/>
+      <ellipse cx="20" cy="20" rx="17" ry="7.4" fill="none" stroke="currentColor" stroke-width="2" opacity=".85" transform="rotate(-30 20 20)"/>
+      <ellipse cx="20" cy="20" rx="17" ry="7.4" fill="none" stroke="currentColor" stroke-width="2" opacity=".45" transform="rotate(30 20 20)"/>
+    </svg><span class="logo__text">Quanta<span class="logo__accent">CMS</span></span></a>
+        <p class="footer__tagline">A DB-free CMS and framework, built on the filesystem.</p>
+      </div>
+      <div class="footer__links">
+        <a href="overview.html">Documentation</a>
+        <a href="https://github.com/quantacms/quanta" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.quanta.org" target="_blank" rel="noopener">quanta.org</a>
+        <a href="https://github.com/quantacms/quanta/blob/master/LICENSE.txt" target="_blank" rel="noopener">License</a>
+      </div>
+    </div>
+    <p class="footer__note">This page is rendered from <a href="https://github.com/quantacms/quanta/blob/master/docs/README.md" target="_blank" rel="noopener">docs/README.md</a> in the repository.</p>
+  </footer>
+  <script src="assets/site.js" defer></script>
+</body>
+</html>
