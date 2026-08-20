@@ -99,6 +99,33 @@ class Message {
   }
 
   /**
+   * The properties that go into the session.
+   *
+   * Everything except $env. The Environment is a constructor argument, used
+   * here and nowhere after — burnMessages() reads only body, type, key and
+   * style — and serializing it was never merely wasteful:
+   *
+   *   - it drags the whole environment (class map, data, the node database
+   *     instance) into $_SESSION on every screen message, and
+   *   - it is *fatal* the moment anything reachable from it refuses to
+   *     serialize. FilesDb keeps the exception behind its last swallowed
+   *     failure in $last_error, and under the native extension that is a
+   *     \QuantaDbException — a PHP-level exception object, which the engine
+   *     forbids serializing. So one node-database failure turned every
+   *     subsequent `new Message(...)` into an uncaught
+   *     "Serialization of 'QuantaDbException' is not allowed", i.e. a warning
+   *     the caller wanted logged became a 500.
+   *
+   * Excluding it costs nothing and removes both problems. A message restored
+   * from the session has no $env; nothing reads one.
+   *
+   * @return array
+   */
+  public function __sleep() {
+    return array('body', 'module', 'type', 'severity', 'key', 'style');
+  }
+
+  /**
    * Fetch from the Session all the existing messages of a given type.
    *
    * @param string $type
