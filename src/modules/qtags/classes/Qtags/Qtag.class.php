@@ -37,6 +37,14 @@ class Qtag implements \Quanta\Common\Cacheable {
   public $delimiters;
 
   /**
+   * @var string|null $markup
+   *   The exact source string this Qtag was parsed from, e.g. "[TITLE|x=1:y]".
+   *   Set by QtagFactory::parseQTag(); NULL for Qtags built by hand.
+   * @see Qtag::cacheTag()
+   */
+  public $markup = NULL;
+
+  /**
    * @var array $attributes
    *   The Qtag's attributes.
    */
@@ -139,8 +147,14 @@ class Qtag implements \Quanta\Common\Cacheable {
     // change access rules or perform other interactions.
     $this->env->hook('qtag_preload', $vars);
 
-    // Default empty string value for the Qtag.
-    $this->html = '';
+    // Default empty string value for the Qtag - but only for a Qtag that has
+    // not rendered yet. The render below is guarded by !$this->rendered, so
+    // blanking unconditionally would empty an already-rendered Qtag and then
+    // decline to rebuild it: __toString() calls load() every time, and would
+    // print the empty string for anything preload() had already rendered.
+    if (!$this->rendered) {
+      $this->html = '';
+    }
 
     // Check that current user has access to the qtag. Empty the qtag if it's not.
     if ($this->getAccess() && !$this->rendered) {
@@ -338,14 +352,27 @@ class Qtag implements \Quanta\Common\Cacheable {
   public function cacheTag() {
     static $hashed = array();
 
+    // The markup a Qtag was parsed from IS its identity: tag, attributes and
+    // target were all decoded out of that one string, so it is the same key
+    // the json_encode below computes -- without encoding anything. Qtags built
+    // directly, not through QtagFactory::parseQTag(), have no markup and fall
+    // through to the original path.
+    if ($this->markup !== NULL) {
+      return $this->markup;
+    }
+
     $tagSerialized = json_encode($this->tag);
     $attributesSerialized = json_encode($this->attributes);
     $targetSerialized = json_encode($this->target);
     $combinedString = $tagSerialized . '_' . $attributesSerialized . '_' . $targetSerialized;
 
     if (!isset($hashed[$combinedString])) {
-      // Using crc32 for fast hashing
-      $hash = hash('crc32', $combinedString);
+      // xxh64, not crc32: this value keys a cache of rendered HTML, so a
+      // collision serves one Qtag's output in another's place. crc32's 32-bit
+      // space puts that within reach of a single large page - a 1% chance at
+      // ~77k distinct keys, and a list page can carry tens of thousands.
+      // xxh64 is in the same speed class and moves it out of reach.
+      $hash = hash('xxh64', $combinedString);
       $hashed[$combinedString] = $hash;
     } else {
       $hash = $hashed[$combinedString];
