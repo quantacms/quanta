@@ -33,8 +33,15 @@ class User extends Node {
 
   /**
    * Load the user object.
+   *
+   * This overrides Node::load() completely and never calls the parent, so it
+   * keeps no loaded-signature and always reloads: $force is accepted for
+   * signature compatibility and has nothing here to skip.
+   *
+   * @param bool $force
+   *   Unused. @see Node::load()
    */
-  public function load() {
+  public function load($force = FALSE) {
 
     if ($this->exists && (strlen($this->name) > 0)) {
       $this->loadJSON();
