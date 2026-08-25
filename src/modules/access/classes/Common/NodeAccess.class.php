@@ -35,13 +35,23 @@ class NodeAccess extends Access implements \Quanta\Common\Cacheable  {
       $action = \Quanta\Common\Node::NODE_ACTION_EDIT;
     }
 
-    if (!isset($access_checked[$action][$vars['node']->getName()])) {
+    // The verdict depends on WHO is asking, so the actor belongs in the key.
+    // Access::__construct() accepts an explicit $vars['user'] and falls back
+    // to the current user, so two checks for the same node and action can
+    // legitimately concern two different users; keyed on node and action
+    // alone, the second would be answered with the first one's verdict.
+    // UserFactory::current() memoises statically, so this costs nothing.
+    $actor = isset($vars['user']) ? $vars['user'] : UserFactory::current($env);
+    $actor_name = $actor->getName();
+    $node_name = $vars['node']->getName();
+
+    if (!isset($access_checked[$action][$actor_name][$node_name])) {
       $access = new NodeAccess($env, $action, $vars);
       $can_access = $access->checkAction();
-      $access_checked[$action][$vars['node']->getName()] = $can_access;
+      $access_checked[$action][$actor_name][$node_name] = $can_access;
     }
     else {
-      $can_access = $access_checked[$action][$vars['node']->getName()];
+      $can_access = $access_checked[$action][$actor_name][$node_name];
     }
     return $can_access;
 
@@ -70,16 +80,23 @@ class NodeAccess extends Access implements \Quanta\Common\Cacheable  {
         case \Quanta\Common\Node::NODE_ACTION_ADD:
         case \Quanta\Common\Node::NODE_ACTION_DUPLICATE:
   
-          $permissions = $this->node->getPermissions();
+          $node_is_object = is_object($this->node);
 
           // If node doesn't exist, allow no permission to it.
-          if ((!is_object($this->node) || !$this->node->exists) && $this->getAction() != \Quanta\Common\Node::NODE_ACTION_ADD) {
+          if ((!$node_is_object || !$this->node->exists) && $this->getAction() != \Quanta\Common\Node::NODE_ACTION_ADD) {
             new Message($this->env,
-              t('Error: trying to perform the !action action on a non existing node !node.', array('!node' => $this->node->name,
+              t('Error: trying to perform the !action action on a non existing node !node.', array(
+                '!node' => $node_is_object ? $this->node->name : '(none)',
                 '!action' => $this->getAction())),
               \Quanta\Common\Message::MESSAGE_WARNING
             );
-          } else {
+          } elseif ($node_is_object) {
+            // Permissions are read inside the guard, not before it: the guard
+            // is there because $this->node may not be an object, and
+            // getPermissions() on a non-object is a fatal. A non-object node
+            // denies access instead of ending the request.
+            $permissions = $this->node->getPermissions();
+
             // Conversion to array as of new approach to values.
             if (!is_array($permissions[$this->getAction()])) {
               $permissions[$this->getAction()] = array($permissions[$this->getAction()]);
@@ -137,11 +154,19 @@ class NodeAccess extends Access implements \Quanta\Common\Cacheable  {
 
     $nodeName = json_encode($this->node->name);
     $accessType = json_encode($this->getAction());
-    $combinedString = 'access_' . $nodeName . '_' . $accessType;
+    // The actor is part of the identity of an access verdict. Without it this
+    // request-scoped cache answers "can this user edit X?" with whatever
+    // verdict was reached for the previous user to ask about X.
+    // @see NodeAccess::check()
+    $actorName = json_encode(is_object($this->actor) ? $this->actor->getName() : '');
+    $combinedString = 'access_' . $nodeName . '_' . $accessType . '_' . $actorName;
 
     if (!isset($hashed[$combinedString])) {
-      // Using crc32 for fast hashing
-      $hash = hash('crc32', $combinedString);
+      // xxh64, not crc32: this hash keys an ACCESS VERDICT, so a collision
+      // hands one node's answer to another node's question. A 32-bit space is
+      // not an acceptable place for that to be decided, and xxh64 is in the
+      // same speed class.
+      $hash = hash('xxh64', $combinedString);
       $hashed[$combinedString] = $hash;
     } else {
       $hash = $hashed[$combinedString];

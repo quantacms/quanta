@@ -7,6 +7,29 @@ namespace Quanta\Common;
  *
  */
 class QtagFactory {
+
+  /**
+   * Maximum number of substitution passes transformCodeTags() will run before
+   * giving up on reaching a fixpoint.
+   *
+   * A pass corresponds to one level of Qtag nesting: a Qtag that renders to
+   * markup containing further Qtags needs one more pass than the markup it
+   * came from. Templates nest a handful of levels deep (index.html -> node
+   * template -> list template -> row Qtags), so this bound is far above
+   * anything legitimate and only fires on a Qtag that renders its own markup.
+   */
+  const MAX_TRANSFORM_PASSES = 100;
+
+  /**
+   * Returned by resolveMarkup() for markup that must be left exactly as it is:
+   * a deferred runlast Qtag, or a string that did not parse into a Qtag.
+   *
+   * Deliberately distinct from NULL, which is what a Qtag that rendered nothing
+   * returns and which substitutes an empty string. Contains a NUL byte so no
+   * rendered HTML can collide with it.
+   */
+  const MARKUP_UNRESOLVED = "\0qtag-unresolved";
+
   /**
    * Searches for qtags in html, triggers the qTag function and converts them.
    * Will look for all qtag_TAG functions in modules, and use it to replace the tag
@@ -29,11 +52,36 @@ class QtagFactory {
    *
    */
   public static function checkCodeTags(Environment &$env, $html, array $options = array(), $regex_options = 's') {
-    $check_tags = array();
     $replacing = array();
-    // Markup of every Qtag string already handled in this pass -- see the loop.
-    $seen = array();
-    // Find all qtags using regular expressions (both { and [ bracket types are valid for now).
+    foreach (QtagFactory::qtagRegexes($options, $regex_options) as $regex => $delimiters) {
+      preg_match_all($regex, $html, $matches);
+      foreach ($matches[0] as $tag_full) {
+        // A page repeats the same markup constantly, and a Qtag's markup is
+        // its entire input: occurrences 2..N of a string resolve to the value
+        // $replacing already holds, in the same slot.
+        if (isset($replacing[$tag_full])) {
+          continue;
+        }
+        $replace = QtagFactory::resolveMarkup($env, $tag_full, $delimiters, $options);
+        if ($replace !== self::MARKUP_UNRESOLVED) {
+          $replacing[$tag_full] = $replace;
+        }
+      }
+    }
+    return array('replaces' => $replacing);
+  }
+
+  /**
+   * Build the Qtag-matching regexes for a set of delimiters.
+   *
+   * The character class excludes BOTH bracket types, so a regex only ever
+   * matches an innermost Qtag -- which is what makes nesting work by repeated
+   * passes rather than by parsing.
+   *
+   * @return array
+   *   Regex => delimiters (open, close, attribute separator).
+   */
+  protected static function qtagRegexes(array $options, $regex_options = 's') {
     $regexs = array();
     $qtag_delimiters = isset($options['qtag_delimiters']) ? $options['qtag_delimiters'] : array('[]', '{}');
     foreach ($qtag_delimiters as $qtag_delimiter) {
@@ -42,55 +90,70 @@ class QtagFactory {
       // Default regex option is "greedy".
       $regexs['/\\' . $qtag_del_open . '[A-Z][^\[\]\{\}]+\\' . $qtag_del_close . '/' . $regex_options] = array($qtag_del_open, $qtag_del_close, '|');
     }
-    // Run the regular expression: find all the [QTAGS] in the page.
-    foreach ($regexs as $regex => $delimiters) {
-      preg_match_all($regex, $html, $matches);
-      // Cycle all the matched Qtags.
-      foreach ($matches[0] as $tag_full) {
-        // preg_match_all returns every occurrence, and a page repeats the same
-        // markup constantly. A Qtag's markup is its entire input, so
-        // occurrences 2..N only recompute a value $replacing already holds,
-        // into the same slot -- and the single str_replace below applies that
-        // one entry page-wide anyway. Skipping them here rather than leaving
-        // them to Qtag::preload()'s cache is what makes them free: that cache
-        // can only answer once the object is built and its key serialized.
-        //
-        // Keyed on the full markup, because the runlast / showtag / highlight
-        // branches below decide per string: identical strings take identical
-        // branches, so the first one settles it for all of them.
-        if (isset($seen[$tag_full])) {
-          continue;
-        }
-        $seen[$tag_full] = TRUE;
-        // Parse each Qtag.
-        $qtag = QtagFactory::parseQTag($env, $tag_full, $delimiters);
-        // Replace the Qtag in the HTML only if it's a valid Qtag.
-        if ($qtag) {
-          // The runlast attribute identifies those Qtags that should be rendered only AFTER all the other Qtags
-          // have been loaded.
-          if (!empty($qtag->getAttribute('runlast')) && empty($options['runlast'])) {
-            continue;
-          }
-          // Show the Qtag - don't render it.
-          elseif (isset($qtag->attributes['showtag'])) {
-            $replacing[$tag_full] = Api::string_normalize(str_replace('|showtag', '', $tag_full));
-          }
-          // Show the Qtag - don't render it, and highlight it for readability.
-          elseif (isset($qtag->attributes['highlight'])) {
-            $replacing[$tag_full] = $qtag->highlight();
-          }
-          // Replace the Qtag with its rendered HTML.
-          else {
-	    $qtag->preload();
-	    $replacing[$tag_full] = $qtag->getHtml();
-          }
-        }
+    return $regexs;
+  }
 
-      }
+  /**
+   * Resolve one Qtag markup string to the text that should stand in its place.
+   *
+   * @param Environment $env
+   *   The Environment.
+   * @param string $tag_full
+   *   The full markup, e.g. "[TITLE|x=1:y]".
+   * @param array $delimiters
+   *   The delimiters the markup was matched with.
+   * @param array $options
+   *   Transform options; 'runlast' selects the deferred phase.
+   *
+   * @return mixed
+   *   The replacement (string, array, or NULL for a Qtag that rendered
+   *   nothing), or self::MARKUP_UNRESOLVED to leave the markup untouched.
+   */
+  protected static function resolveMarkup(Environment &$env, $tag_full, $delimiters, array $options) {
+    // Same markup, already resolved earlier in this request: reuse the outcome
+    // without rebuilding anything. Qtag::preload() also caches rendered HTML
+    // on this identity, but only once the string has been parsed and an object
+    // constructed - memoising here skips both.
+    //
+    // The bin carries the runlast flag because that option, not the markup,
+    // decides whether a runlast Qtag renders or is deferred.
+    $memo_bin = empty($options['runlast']) ? 'qtag_markup' : 'qtag_markup_runlast';
+    $memo = \Quanta\Common\Cache::get($env, $memo_bin, $tag_full);
+    if ($memo !== FALSE) {
+      return $memo;
     }
-    $check_tags['replaces'] = $replacing;
-    return $check_tags;
 
+    $qtag = QtagFactory::parseQTag($env, $tag_full, $delimiters);
+    if (!$qtag) {
+      \Quanta\Common\Cache::set($env, $memo_bin, $tag_full, self::MARKUP_UNRESOLVED);
+      return self::MARKUP_UNRESOLVED;
+    }
+
+    // The runlast attribute identifies those Qtags that should be rendered only
+    // AFTER all the other Qtags have been loaded.
+    if (!empty($qtag->getAttribute('runlast')) && empty($options['runlast'])) {
+      \Quanta\Common\Cache::set($env, $memo_bin, $tag_full, self::MARKUP_UNRESOLVED);
+      return self::MARKUP_UNRESOLVED;
+    }
+    // Show the Qtag - don't render it.
+    elseif (isset($qtag->attributes['showtag'])) {
+      $replace = Api::string_normalize(str_replace('|showtag', '', $tag_full));
+    }
+    // Show the Qtag - don't render it, and highlight it for readability.
+    elseif (isset($qtag->attributes['highlight'])) {
+      $replace = $qtag->highlight();
+    }
+    // Replace the Qtag with its rendered HTML.
+    else {
+      $qtag->preload();
+      $replace = $qtag->getHtml();
+    }
+
+    // A Qtag that rendered NULL is memoised too, as NULL: it substitutes an
+    // empty string, which is a different outcome from MARKUP_UNRESOLVED and
+    // must not send the Qtag back through render() on the next pass.
+    \Quanta\Common\Cache::set($env, $memo_bin, $tag_full, $replace);
+    return $replace;
   }
 
   /**
@@ -110,34 +173,69 @@ class QtagFactory {
    */
   public static function transformCodeTags(&$env, $html, $options = array()) {
     $transformed = 0;
+    $regexs = QtagFactory::qtagRegexes($options);
+
     // After rendering all Qtags in a page, the result could still contain
     // other Qtags, derived from the first conversion cycle.
     // For this reason, keep looping until all Qtags are rendered.
     while (TRUE) {
-      $transformed++;
-      // Parse all the Qtags in the given html.
-      $check_tags = (QtagFactory::checkCodeTags($env, $html, $options));
-
-      if (empty($check_tags['replaces'])) {
+      // A Qtag whose rendered output contains its own markup would spin this
+      // loop until max_execution_time kills the request and the whole page is
+      // lost. Giving up instead renders the page with that markup still
+      // visible, which is diagnosable rather than blank.
+      if ($transformed >= self::MAX_TRANSFORM_PASSES) {
+        new Message($env, t(
+          'Qtag rendering did not settle after !max passes. Some Qtags were left unrendered - check for a Qtag whose output contains its own markup.',
+          array('!max' => self::MAX_TRANSFORM_PASSES)
+        ), Message::MESSAGE_WARNING);
         break;
       }
+      $transformed++;
 
-      // Do all the Qtag replacements in the given html.
-      foreach ($check_tags['replaces'] as $qtag => $replace) {
-        if (is_array($replace)) {
-          $replace = implode(\Quanta\Common\Environment::GLOBAL_SEPARATOR, $replace);
-        }
-        if ($replace == NULL) {
-            $replace = '';
+      // Scan and substitute in ONE pass over the subject, per delimiter.
+      //
+      // Collecting the replacements first and then applying them with a
+      // str_replace per distinct Qtag costs O(distinct x subject): the whole
+      // page is rebuilt once per Qtag it contains. preg_replace_callback walks
+      // the subject once and splices as it goes, so the cost no longer depends
+      // on how many distinct Qtags the page has. strtr() batches the same work
+      // and is far worse here - it probes every position for a key of each
+      // length it knows, and a page carries thousands of distinct markup
+      // lengths.
+      //
+      // The callback fires in scan order, so Qtags render in document order.
+      // preg_replace_callback does not re-scan replacement text, so Qtags
+      // revealed by a substitution are picked up on the next turn of this
+      // loop: that is what makes the fixpoint.
+      $changed = FALSE;
+      foreach ($regexs as $regex => $delimiters) {
+        $result = preg_replace_callback($regex, function ($match) use (&$env, $delimiters, $options, &$changed) {
+          $replace = QtagFactory::resolveMarkup($env, $match[0], $delimiters, $options);
+          if ($replace === self::MARKUP_UNRESOLVED) {
+            // Deferred runlast, or not a Qtag at all: leave the markup alone.
+            return $match[0];
           }
-          $html = str_replace($qtag, $replace, $html);
-        
-      } 
+          $changed = TRUE;
+          if (is_array($replace)) {
+            $replace = implode(\Quanta\Common\Environment::GLOBAL_SEPARATOR, $replace);
+          }
+          return ($replace == NULL) ? '' : $replace;
+        }, $html);
 
+        // preg_replace_callback returns NULL on failure (PREG_BACKTRACK_LIMIT
+        // and friends). Keeping the subject is the safe outcome: the page
+        // renders with markup still in it instead of being silently emptied.
+        if ($result !== NULL) {
+          $html = $result;
+        }
+      }
+
+      if (!$changed) {
+        break;
+      }
     }
     return $html;
   }
-
 
   /**
    * Remove all qtags elements from the string (all [elements] within brackets).
@@ -211,6 +309,8 @@ class QtagFactory {
 
     // Parse the qTag.
     $qtag = QtagFactory::buildQTag($env, $tag_name, $qtag_attributes, $target, $delimiters);
+    // Hand the object the string it came from, so cacheTag() can key on it.
+    $qtag->markup = $tag_full;
     return $qtag;
   }
 
