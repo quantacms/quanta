@@ -47,6 +47,30 @@ eq(QuantaDb::exists('leaver'), false, 'exists false after leaving the tree');
 ok(str_ends_with((string) QuantaDb::path('ext2'), '/home/sub/ext2'),
     'the in-tree move was not swept up with it');
 
+// External in-tree RENAME. The basename changes, so unlike the move above this
+// is not one node changing place: the old NAME stops existing and a new one
+// appears. Both halves land inside the tree and share a rename cookie, so
+// pairing on the cookie alone concludes "only changed place" and leaves the old
+// key behind — a node resolving to a path that is gone, which nothing clears
+// until the next full reconcile (and so never, at a long --resync-secs).
+rename("$root/home/sub/ext2", "$root/home/sub/ext2r");
+eq_eventually(fn() => QuantaDb::path('ext2'), null, 'renamed-away name -> null');
+eq(QuantaDb::exists('ext2'), false, 'exists false for the name that was renamed away');
+ok_eventually(
+    fn() => str_ends_with((string) QuantaDb::path('ext2r'), '/home/sub/ext2r'),
+    'renamed node present under its new name'
+);
+eq(QuantaDb::meta('ext2r')['father'], 'sub', 'father intact across the rename');
+
+// Rename back: restores the tree for the counts below, and pins the reverse
+// direction — the interim name has to be retired just the same.
+rename("$root/home/sub/ext2r", "$root/home/sub/ext2");
+eq_eventually(fn() => QuantaDb::path('ext2r'), null, 'rename back retires the interim name');
+ok_eventually(
+    fn() => str_ends_with((string) QuantaDb::path('ext2'), '/home/sub/ext2'),
+    'node restored under its original name'
+);
+
 // --- Build a small tree for reindex checks. ---------------------------------
 QuantaDb::put('ext3', ['v' => 3], ['father' => 'sub'], );
 QuantaDb::put('cont', [], ['father' => 'home']);

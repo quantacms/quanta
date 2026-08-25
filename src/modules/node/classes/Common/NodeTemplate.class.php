@@ -78,6 +78,38 @@ class NodeTemplate extends DataContainer {
   }
 
   /**
+   * is_file() / file_exists() on a template candidate, remembered for the rest
+   * of the request.
+   *
+   * buildTemplate() walks the node's lineage probing a fixed ladder of
+   * candidate files at every level, and does so for every node rendered on the
+   * page. Siblings - the rows of a list - share every ancestor above them and
+   * re-ask the identical question for each row, so a shared ancestor's ladder
+   * is stat()ed once per row.
+   *
+   * Templates are files on disk that a request does not create, so an answer
+   * cannot go stale within one: no code path writes a template and then
+   * renders through it, doctor and the editors work on node documents.
+   *
+   * @param string $file
+   *   The candidate template file.
+   *
+   * @param bool $regular_file
+   *   TRUE to answer is_file() (rejects directories), FALSE for file_exists().
+   *
+   * @return bool
+   *   Whether the candidate is there.
+   */
+  protected static function templateExists($file, $regular_file = TRUE) {
+    static $memo = array();
+    $key = ($regular_file ? 'f:' : 'e:') . $file;
+    if (!isset($memo[$key])) {
+      $memo[$key] = $regular_file ? is_file($file) : file_exists($file);
+    }
+    return $memo[$key];
+  }
+
+  /**
    * Generate the template for displaying the node.
    *
    * Eventually node will use tpl.html files (with dashed depth).
@@ -94,10 +126,10 @@ class NodeTemplate extends DataContainer {
       $this->setData('tpl_file', $this->module . '/tpl/' . $this->tpl . '.tpl.php');
     }
     // If the current node has a TPL set use that directly and don't look for others.
-    elseif (is_file($this->node->path . '/tpl.html')) {
+    elseif (self::templateExists($this->node->path . '/tpl.html')) {
       $this->setData('tpl_file', $this->node->path . '/tpl.html');
     }
-    elseif (is_file($this->env->dir['tpl'] . '/' . $this->node->name . '_tpl.html')) {
+    elseif (self::templateExists($this->env->dir['tpl'] . '/' . $this->node->name . '_tpl.html')) {
     	$this->setData('tpl_file', $this->env->dir['tpl'] . '/' . $this->node->name . '_tpl.html');
     }
     else {
@@ -106,37 +138,32 @@ class NodeTemplate extends DataContainer {
 
         // Priority 2: tpl with levels (sub-level).
         // Check it only if the folder is an anchestor of current node folder.
-        if ($tpl_sublevel > 0) {
-          $min = '';
-          // We support 5 levels of sub-level templates for now.
-          // level 1 = tpl^.html
-          // level 2 = tpl--.html
-          // etc...
-          // "node/subnode/tpl-" has priority over "node/tpl--"
-          for ($i = 1; $i <= 5; $i++) {
-            $min .= '-';
-            $file = $lineage->path . '/tpl' . $min . '.html';
-            $file_tpl = $this->env->dir['tpl'] . '/' . $lineage->name . '_tpl' . $min . '.html';
-	          if ($tpl_sublevel == $i) {
-		          if (file_exists($file)) {
-              // tpl matches sublevel and distance form current node position: add it!
-		          $tpl[$tpl_sublevel] = $file;
-		        }
-		        elseif (file_exists($file_tpl)) {
-		          $tpl[$tpl_sublevel] = $file_tpl;
-		        }
-		        else {
-		        }
-            }
+        // We support 5 levels of sub-level templates for now.
+        // level 1 = tpl-.html
+        // level 2 = tpl--.html
+        // etc...
+        // "node/subnode/tpl-" has priority over "node/tpl--"
+        // Only the candidate whose dash count equals the current sublevel can
+        // match, so there is exactly one file to probe per lineage level.
+        if ($tpl_sublevel > 0 && $tpl_sublevel <= 5) {
+          $min = str_repeat('-', $tpl_sublevel);
+          $file = $lineage->path . '/tpl' . $min . '.html';
+          $file_tpl = $this->env->dir['tpl'] . '/' . $lineage->name . '_tpl' . $min . '.html';
+          if (self::templateExists($file, FALSE)) {
+            // tpl matches sublevel and distance form current node position: add it!
+            $tpl[$tpl_sublevel] = $file;
+          }
+          elseif (self::templateExists($file_tpl, FALSE)) {
+            $tpl[$tpl_sublevel] = $file_tpl;
           }
         }
 
         // Priority 3: tpl "catch all".
         // If tpl^.html exists - template applies to all sublevels of the node.
-        if (!isset($tpl_catch_all) && is_file($lineage->path . '/tpl^.html')) {
+        if (!isset($tpl_catch_all) && self::templateExists($lineage->path . '/tpl^.html')) {
           $tpl_catch_all = $lineage->path . '/tpl^.html';
 	      }
-	      elseif (!isset($tpl_catch_all) && is_file($this->env->dir['tpl'] . '/' . $lineage->name . '_tpl^.html')) {
+	      elseif (!isset($tpl_catch_all) && self::templateExists($this->env->dir['tpl'] . '/' . $lineage->name . '_tpl^.html')) {
           $tpl_catch_all = $this->env->dir['tpl'] . '/' . $lineage->name . '_tpl^.html';
 	      }
 

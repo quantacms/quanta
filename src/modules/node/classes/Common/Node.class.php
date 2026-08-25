@@ -42,6 +42,14 @@ class Node extends JSONDataContainer implements Cacheable {
   public $forbidden = FALSE;
 
   /**
+   * Identity of the state buildContent() last ran against, NULL if it has not
+   * run for this object yet.
+   *
+   * @see Node::load()
+   */
+  private $loaded_signature = NULL;
+
+  /**
    * Constructs a node object.
    *
    * @param Environment $env
@@ -303,8 +311,12 @@ class Node extends JSONDataContainer implements Cacheable {
 
   /**
    * Load node with its internal variables.
+   *
+   * @param bool $force
+   *   Rebuild the node's content even if it has already been built against
+   *   the same language and path. @see Node::$loaded_signature
    */
-  public function load() {
+  public function load($force = FALSE) {
     // TODO: following code should not be here. Moved from former hook node load.
     // When saving a node, select the pre-created temporary files dir.
     if (!empty($_REQUEST['json']) && ($json = json_decode($_REQUEST['json'])) && isset($json->tmp_files_dir)) {
@@ -321,7 +333,26 @@ class Node extends JSONDataContainer implements Cacheable {
 
     //TODO: find a better way to check node existence.
     if ($this->exists) {
-      $this->buildContent();
+      // Build the content only when this object has not already been built
+      // against exactly this language and path.
+      //
+      // Every node that misses the request cache is loaded at least twice and
+      // usually three times, all on the SAME object and all but the last with
+      // identical state: the constructor ends with $this->load(), then
+      // NodeFactory::load() calls $node->load() again, and a node with no
+      // document in the requested language gets setLanguage($fallback) and a
+      // third call. Only that last call looks at different state; the
+      // signature lets it through and stops the duplicate.
+      //
+      // This is not a cache and holds nothing across objects: a Node still
+      // owns its own json, so nothing can alias or leak between nodes. It only
+      // declines to redo work THIS object has already done. save() clears the
+      // signature, so a write is still followed by a real reload.
+      $signature = $this->getLanguage() . "\0" . $this->path;
+      if ($force || $this->loaded_signature !== $signature) {
+        $this->buildContent();
+        $this->loaded_signature = $signature;
+      }
     }
 
     // TODO: what to do when no timestamp has been set?
@@ -444,6 +475,11 @@ class Node extends JSONDataContainer implements Cacheable {
     }
 
     $vars = array('node' => &$this, 'action' => $this->env->getData('action'));
+
+    // The document on disk is about to change, so whatever load() built is no
+    // longer what a reader would find. Dropping the signature keeps "reload
+    // after a write" meaning a real reload. @see Node::load()
+    $this->loaded_signature = NULL;
 
     // Run node save hooks.
     $this->env->hook('node_save', $vars);
