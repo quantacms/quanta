@@ -869,6 +869,26 @@ impl SegmentWriter {
         let path = segment_file(dir, epoch);
         let cpath = CString::new(path.as_os_str().as_bytes())
             .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "path contains NUL"))?;
+        let slots_off = HEADER_SIZE;
+        let arena_off = {
+            let end = slots_off + slot_count * 8;
+            end.div_ceil(4096) * 4096
+        };
+        let seg_size = seg_size.max(arena_off + 4096);
+
+        // Refuse to build a segment the filesystem cannot back.
+        //
+        // `ftruncate` on tmpfs is sparse: it reserves nothing, so an oversized
+        // segment is accepted here and only fails later, on the first write
+        // that touches an unbacked page -- as SIGBUS, which cannot be caught
+        // and takes the whole daemon with it. Checking up front converts that
+        // into an ordinary io::Error the caller already propagates, so the
+        // daemon logs, stays alive, and keeps serving the segment it has.
+        //
+        // Free space is measured with the current segment still on disk, which
+        // is correct: a compaction holds the old and the new one at once.
+        check_space_for(dir, seg_size)?;
+
         // O_EXCL: an epoch is written exactly once; a leftover file from a
         // crashed daemon is removed first (it was never published as current).
         let _ = std::fs::remove_file(&path);
@@ -878,12 +898,6 @@ impl SegmentWriter {
         if fd < 0 {
             return Err(io::Error::last_os_error());
         }
-        let slots_off = HEADER_SIZE;
-        let arena_off = {
-            let end = slots_off + slot_count * 8;
-            end.div_ceil(4096) * 4096
-        };
-        let seg_size = seg_size.max(arena_off + 4096);
         if unsafe { libc::ftruncate(fd, seg_size as libc::off_t) } != 0 {
             let e = io::Error::last_os_error();
             unsafe { libc::close(fd) };
@@ -1127,6 +1141,57 @@ pub fn slot_count_for(nodes: u64) -> u64 {
     (nodes.saturating_mul(4)).max(8192).next_power_of_two()
 }
 
+/// Headroom demanded on top of a segment before we agree to build it, so a
+/// segment that only *just* fits does not leave the filesystem with no room for
+/// the metrics arena or a leftover epoch file.
+const SEG_SPACE_MARGIN: u64 = 8 << 20;
+
+/// Fail unless `dir`'s filesystem can currently back `need` bytes.
+///
+/// This is the guard that turns shm exhaustion from an uncatchable SIGBUS on
+/// first page touch into a plain `StorageFull` error. It is advisory -- another
+/// writer can consume the space between the check and the write -- but the
+/// daemon is the single writer of segments, so in practice the only racing
+/// consumer is the rest of the pod.
+pub fn check_space_for(dir: &Path, need: u64) -> io::Result<()> {
+    let cdir = CString::new(dir.as_os_str().as_bytes())
+        .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "path contains NUL"))?;
+    let mut st: libc::statvfs = unsafe { std::mem::zeroed() };
+    if unsafe { libc::statvfs(cdir.as_ptr(), &mut st) } != 0 {
+        // Cannot tell: do not invent a failure, let the write decide as before.
+        return Ok(());
+    }
+    // `f_bavail` counts units of `f_frsize` (POSIX), with `f_bsize` as the
+    // fallback for the filesystems that leave `f_frsize` unset.
+    //
+    // The conversions widen `c_ulong`, which is 32-bit on a 32-bit target. On
+    // the 64-bit targets this actually ships to they are no-ops, which is what
+    // the allow is for — dropping them to satisfy the lint would leave the
+    // multiplication below silently overflow-prone anywhere else.
+    #[allow(clippy::useless_conversion)]
+    let (unit, avail): (u64, u64) = (
+        if st.f_frsize > 0 { st.f_frsize.into() } else { st.f_bsize.into() },
+        st.f_bavail.into(),
+    );
+    let avail = avail.saturating_mul(unit);
+    let want = need.saturating_add(SEG_SPACE_MARGIN);
+    if avail < want {
+        return Err(io::Error::new(
+            io::ErrorKind::StorageFull,
+            format!(
+                "segment needs {} bytes (+{} margin) but {} has only {} free -- \
+                 refusing to build it rather than taking SIGBUS on first touch; \
+                 raise the /dev/shm size limit (>= 4x live bytes)",
+                need,
+                SEG_SPACE_MARGIN,
+                dir.display(),
+                avail
+            ),
+        ));
+    }
+    Ok(())
+}
+
 /// Segment byte budget: enough for the live payload twice over plus the slot
 /// directory, floored by the configured budget (sparse until touched).
 pub fn seg_size_for(live_bytes: u64, slot_count: u64, budget_bytes: u64) -> u64 {
@@ -1141,6 +1206,32 @@ pub fn seg_size_for(live_bytes: u64, slot_count: u64, budget_bytes: u64) -> u64 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn space_check_passes_when_the_filesystem_has_room() {
+        // /tmp is not going to be 8MB from full in CI; a small ask must pass.
+        assert!(check_space_for(Path::new("/tmp"), 1024).is_ok());
+    }
+
+    #[test]
+    fn space_check_refuses_an_impossible_segment() {
+        // The guard that replaces SIGBUS-on-first-touch: an ask no filesystem
+        // can satisfy must come back as StorageFull, not as a successful
+        // sparse allocation that faults later.
+        let e = check_space_for(Path::new("/tmp"), u64::MAX / 2)
+            .expect_err("an impossible segment must be refused");
+        assert_eq!(e.kind(), io::ErrorKind::StorageFull);
+        // The message has to say what to do -- it is the only breadcrumb the
+        // operator gets when the daemon stops publishing.
+        assert!(e.to_string().contains("/dev/shm"), "message must name the fix: {e}");
+    }
+
+    #[test]
+    fn space_check_is_silent_when_it_cannot_measure() {
+        // An unstattable path must not invent a failure: fall through to the
+        // old behaviour rather than refusing to build a segment that may fit.
+        assert!(check_space_for(Path::new("/definitely/not/a/real/path"), 1024).is_ok());
+    }
 
     fn tmpdir(tag: &str) -> PathBuf {
         let d = std::env::temp_dir().join(format!("qdb_shm_{tag}_{}", std::process::id()));

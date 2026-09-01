@@ -22,9 +22,32 @@ const MAX_ENTRIES: usize = 2048;
 /// Cap on the per-process known-absent set (see the negative cache below).
 const NEG_MAX_ENTRIES: usize = 8192;
 
-/// How long a fallback tree snapshot stays fresh before the next read rebuilds
-/// it. Short: fallback mode is a degraded state, not the design point.
-const SNAP_TTL: Duration = Duration::from_secs(2);
+/// Floor for how long a fallback tree snapshot stays fresh. Short, because
+/// fallback is a degraded state, not the design point -- but see `snap_ttl()`:
+/// on a large tree the floor alone is a self-inflicted outage, because a walk
+/// that costs seconds cannot be repeated every two of them.
+const SNAP_TTL_MIN: Duration = Duration::from_secs(2);
+
+/// Ceiling for the adaptive snapshot TTL. Past this the snapshot is too far
+/// behind the filesystem to be worth keeping regardless of what it cost.
+const SNAP_TTL_MAX: Duration = Duration::from_secs(60);
+
+/// How many times its own build cost a snapshot is allowed to serve for. At 10x
+/// the walk occupies at most ~10% of a worker's time, so a permanently absent
+/// daemon degrades throughput by a bounded fraction instead of unboundedly.
+const SNAP_TTL_COST_FACTOR: u32 = 10;
+
+/// Freshness budget for a snapshot that took `cost` to build.
+///
+/// A fixed 2s TTL assumes the walk is cheap. Once a tree is large enough that a
+/// walk costs seconds, that assumption inverts: every worker spends most of its
+/// time rebuilding, and requests that should take milliseconds take tens of
+/// seconds. Scaling the TTL by the observed cost keeps small trees at the 2s
+/// floor (cost ~0) while letting a large one back off automatically, with no
+/// tuning knob to get wrong per deployment.
+fn snap_ttl(cost: Duration) -> Duration {
+    (cost * SNAP_TTL_COST_FACTOR).clamp(SNAP_TTL_MIN, SNAP_TTL_MAX)
+}
 
 /// One parse-cache entry. Keyed by the hashes of (name, lang) so a lookup costs
 /// no allocation — the previous `HashMap<(String, String), _>` built two owned
@@ -167,11 +190,19 @@ pub struct SnapEntry {
 
 struct Snapshot {
     built: Instant,
+    /// Wall-clock the walk took. Drives both the adaptive TTL and the
+    /// rebuild-coalescing window in `snap_rebuild`.
+    cost: Duration,
+    /// True when this snapshot came from a forced self-heal walk rather than a
+    /// TTL refresh. Only such a snapshot may coalesce a further self-heal: see
+    /// `snap_coalesce`.
+    healed: bool,
     nodes: HashMap<String, SnapEntry>,
     links: Vec<(String, String)>,
 }
 
 fn snap_build(cfg: &Config) -> Snapshot {
+    let started = Instant::now();
     let (nodes, links) = model::walk_dedup(cfg, &cfg.root);
     let mut map = HashMap::with_capacity(nodes.len());
     for n in nodes {
@@ -183,8 +214,11 @@ fn snap_build(cfg: &Config) -> Snapshot {
             },
         );
     }
+    let built = Instant::now();
     Snapshot {
-        built: Instant::now(),
+        built,
+        cost: built.saturating_duration_since(started),
+        healed: false,
         nodes: map,
         links,
     }
@@ -195,7 +229,7 @@ fn with_fresh_snap<T>(cfg: &Config, f: impl FnOnce(&Snapshot) -> T) -> T {
         let mut opt = s.borrow_mut();
         let stale = opt
             .as_ref()
-            .map(|s| s.built.elapsed() >= SNAP_TTL)
+            .map(|s| s.built.elapsed() >= snap_ttl(s.cost))
             .unwrap_or(true);
         if stale {
             *opt = Some(snap_build(cfg));
@@ -209,10 +243,50 @@ pub fn snap_lookup(cfg: &Config, name: &str) -> Option<SnapEntry> {
     with_fresh_snap(cfg, |s| s.nodes.get(name).cloned())
 }
 
+/// May a forced self-heal walk be skipped, given the current snapshot?
+///
+/// Split out as a pure function so the policy is testable without a tree or a
+/// clock (the same reason `metrics::flap_verdict` is factored out).
+///
+/// `healed` is the load-bearing term, and it is not an optimisation — it is
+/// what keeps the coalescing honest. A caller reaching `snap_rebuild` has just
+/// been failed by the *current* snapshot, so that snapshot is by definition not
+/// good enough to answer with; age alone would let it answer anyway. Only a
+/// snapshot that is itself the product of an earlier self-heal walk represents
+/// evidence the caller has not already seen, and only that one may be reused.
+fn snap_coalesce(healed: bool, age: Duration, cost: Duration) -> bool {
+    healed && age < cost
+}
+
 /// Force a fresh walk NOW — the self-heal step when a lookup missed or the
 /// stored path went stale (external create/move/delete).
+///
+/// Repeat self-heals are coalesced against the last walk's own cost: a snapshot
+/// younger than the time a walk takes is already as fresh as a new walk could
+/// make it, so rebuilding again answers the same question at the same price.
+/// This matters because the caller is a *per-miss* self-heal — one page render
+/// that misses thousands of names would otherwise pay for thousands of full
+/// tree walks. On a small tree the cost is ~0, no rebuild is ever skipped, and
+/// behaviour is unchanged.
+///
+/// The *first* self-heal after any TTL rebuild always walks — see
+/// `snap_coalesce`. Skipping it would collapse two independent looks at the
+/// tree into one, and the second look is not redundant: a walk that raced an
+/// external rename can miss a node that exists, and the caller condemns the
+/// name (negative cache) on the strength of this answer. One un-coalesced walk
+/// per `snap_ttl` bounds the cost at ~10% while keeping that second look.
 pub fn snap_rebuild(cfg: &Config) {
-    SNAP.with(|s| *s.borrow_mut() = Some(snap_build(cfg)));
+    SNAP.with(|s| {
+        let mut opt = s.borrow_mut();
+        if let Some(cur) = opt.as_ref() {
+            if snap_coalesce(cur.healed, cur.built.elapsed(), cur.cost) {
+                return;
+            }
+        }
+        let mut snap = snap_build(cfg);
+        snap.healed = true;
+        *opt = Some(snap);
+    });
 }
 
 /// Lookup without freshness handling (right after `snap_rebuild`).
@@ -317,4 +391,64 @@ pub fn gen_note_write(name: &str) -> i64 {
 /// matching the old index's initial generation).
 pub fn gen_of(name: &str) -> i64 {
     GENS.with(|c| c.borrow().get(name).copied().unwrap_or(1))
+}
+
+#[cfg(test)]
+mod snap_policy_tests {
+    use super::*;
+
+    #[test]
+    fn a_cheap_walk_keeps_the_floor() {
+        // Small trees must behave exactly as before: the 2s floor, unchanged.
+        assert_eq!(snap_ttl(Duration::ZERO), SNAP_TTL_MIN);
+        assert_eq!(snap_ttl(Duration::from_millis(1)), SNAP_TTL_MIN);
+        assert_eq!(snap_ttl(Duration::from_millis(199)), SNAP_TTL_MIN);
+    }
+
+    #[test]
+    fn an_expensive_walk_backs_off() {
+        // Past the floor the snapshot serves for 10x what it cost, so the walk
+        // stays a bounded fraction of a worker's time instead of all of it.
+        assert_eq!(snap_ttl(Duration::from_secs(1)), Duration::from_secs(10));
+        assert_eq!(snap_ttl(Duration::from_secs(3)), Duration::from_secs(30));
+    }
+
+    #[test]
+    fn the_backoff_is_capped() {
+        // However expensive the walk, a snapshot this old is not worth keeping.
+        assert_eq!(snap_ttl(Duration::from_secs(30)), SNAP_TTL_MAX);
+        assert_eq!(snap_ttl(Duration::from_secs(600)), SNAP_TTL_MAX);
+    }
+
+    #[test]
+    fn the_first_self_heal_after_a_ttl_refresh_always_walks() {
+        // The caller has just been failed by this very snapshot, so reusing it
+        // would answer a miss with the evidence that produced the miss. A walk
+        // that raced a rename gets a second, independent look before the caller
+        // condemns the name — which is what `04_concurrency.php` scenario 11
+        // exercises.
+        let cost = Duration::from_secs(5);
+        assert!(!snap_coalesce(false, Duration::ZERO, cost));
+        assert!(!snap_coalesce(false, cost * 2, cost));
+    }
+
+    #[test]
+    fn repeat_self_heals_within_one_walk_are_coalesced() {
+        // The case this exists for: a render missing thousands of names must
+        // buy one tree walk, not thousands.
+        let cost = Duration::from_secs(5);
+        assert!(snap_coalesce(true, Duration::ZERO, cost));
+        assert!(snap_coalesce(true, Duration::from_secs(4), cost));
+        // Past one walk's worth of age a new walk really can say something new.
+        assert!(!snap_coalesce(true, cost, cost));
+        assert!(!snap_coalesce(true, Duration::from_secs(9), cost));
+    }
+
+    #[test]
+    fn a_cheap_walk_is_never_coalesced() {
+        // Small trees keep the old unconditional-rebuild behaviour exactly:
+        // cost ~0 means no age is ever below it.
+        assert!(!snap_coalesce(true, Duration::ZERO, Duration::ZERO));
+        assert!(!snap_coalesce(true, Duration::from_nanos(1), Duration::ZERO));
+    }
 }

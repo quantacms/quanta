@@ -19,7 +19,7 @@ use std::path::Path;
 use std::ptr;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::OnceLock;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 /// One page is far larger than the struct; keeps the mapping simple.
 const SIZE: usize = 4096;
@@ -418,16 +418,213 @@ pub fn neg_hit() {
 // Watcher coherence (read by the extension, written by qdbwatch)
 // ---------------------------------------------------------------------------
 
+/// A daemon is treated as flapping once it has dropped coherence this many
+/// times inside `FLAP_WINDOW`. Deliberately above what the test suite can
+/// produce: `07_daemon_failure.php` reaches three drops (the `fresh_env`
+/// restart, the SIGTERM, and the SIGKILL whose failed ack poisons coherence),
+/// and a clean stop/restart must always recover instantly.
+const FLAP_EPISODES: u32 = 5;
+
+/// Window over which coherence drops are counted toward the flap verdict.
+const FLAP_WINDOW: Duration = Duration::from_secs(60);
+
+/// Once flapping, require this much *continuous* coherence before trusting the
+/// index again, so a worker latches into fallback instead of being dragged back
+/// onto a segment that is about to disappear.
+///
+/// Held under the harness's 10s coherence deadline (`tests/php/_harness.php`,
+/// `qdb_daemon_start`) so that even if a test ever did trip the flap verdict,
+/// the wait still succeeds rather than failing the suite. That bounds how hard
+/// this can damp: it fully covers the pathological respawn loop (sub-second
+/// lifetimes) and only partly covers the slower one.
+const FLAP_SETTLE: Duration = Duration::from_secs(8);
+
+thread_local! {
+    /// Per-worker view of daemon stability. Not shared state: each worker forms
+    /// its own verdict from what it observes, so there is no arena layout
+    /// change and no cross-process coordination to get wrong.
+    static FLAP: std::cell::RefCell<FlapState> = const {
+        std::cell::RefCell::new(FlapState { episodes: 0, first_seen: None, last_drop: None, was_coherent: true })
+    };
+}
+
+struct FlapState {
+    episodes: u32,
+    first_seen: Option<Instant>,
+    last_drop: Option<Instant>,
+    was_coherent: bool,
+}
+
 /// True when a healthy watcher is keeping the index authoritative: the coherent
 /// flag is set and the heartbeat is fresh. When false, callers must fall back to
 /// the filesystem self-heal (fs_search). Never blocks and never errors.
+///
+/// Damped against a *flapping* daemon. The raw flag is re-asserted by qdbd on
+/// every ~1s loop tick, so a daemon that cores every ~12s re-arms coherence
+/// between each crash and drags every worker back onto a segment it is about to
+/// lose -- paying the full cost of both modes and settling into neither. After
+/// `FLAP_EPISODES` drops within `FLAP_WINDOW` this reports false until the
+/// daemon has held coherence for `FLAP_SETTLE`. A single restart is unaffected.
 pub fn index_coherent() -> bool {
-    match arena() {
+    let raw = match arena() {
         Some(m) => {
             m.watch_coherent.load(REL) == 1
                 && now_unix().saturating_sub(m.watch_heartbeat_unix.load(REL)) <= COHERENCE_MAX_STALE
         }
         None => false,
+    };
+    let now = Instant::now();
+    FLAP.with(|c| flap_verdict(&mut c.borrow_mut(), raw, now))
+}
+
+/// The damping state machine, split out so it can be tested without an arena.
+///
+/// `raw` is what the shared flag says; the return value is what the caller
+/// should believe. Time is injected so the tests can step it deterministically.
+fn flap_verdict(f: &mut FlapState, raw: bool, now: Instant) -> bool {
+    // Age out a stale verdict so a daemon that has since settled is not held in
+    // fallback forever.
+    if let Some(first) = f.first_seen {
+        if now.saturating_duration_since(first) > FLAP_WINDOW && !raw {
+            f.episodes = 0;
+            f.first_seen = None;
+        }
+    }
+
+    if !raw {
+        if f.was_coherent {
+            // A falling edge: one episode. Counting edges rather than samples is
+            // what keeps a long outage from reading as a flap.
+            f.episodes = f.episodes.saturating_add(1);
+            f.first_seen.get_or_insert(now);
+        }
+        f.was_coherent = false;
+        f.last_drop = Some(now);
+        return false;
+    }
+
+    f.was_coherent = true;
+
+    // Note this does NOT re-check `first_seen` against `FLAP_WINDOW`. The window
+    // bounds how drops are *counted*, not how long a verdict already reached
+    // survives: expiring it here would release a latched worker back onto the
+    // segment after however much of `FLAP_SETTLE` happened to fall inside the
+    // window, which is not the "continuous coherence" the settle promises. The
+    // verdict is still bounded — the settle clause below always clears it after
+    // `FLAP_SETTLE`, and the aging branch above clears it during a long outage.
+    let flapping = f.episodes >= FLAP_EPISODES;
+    if flapping {
+        if let Some(d) = f.last_drop {
+            if now.saturating_duration_since(d) < FLAP_SETTLE {
+                return false;
+            }
+        }
+        // Settled long enough: clear the verdict and trust it again.
+        f.episodes = 0;
+        f.first_seen = None;
+    }
+    true
+}
+
+#[cfg(test)]
+mod flap_tests {
+    use super::*;
+
+    fn fresh() -> FlapState {
+        FlapState {
+            episodes: 0,
+            first_seen: None,
+            last_drop: None,
+            was_coherent: true,
+        }
+    }
+
+    #[test]
+    fn healthy_daemon_is_trusted_on_the_first_call() {
+        // A worker that has never seen a drop must not start in fallback.
+        let mut f = fresh();
+        assert!(flap_verdict(&mut f, true, Instant::now()));
+    }
+
+    #[test]
+    fn a_few_restarts_recover_instantly() {
+        // The shape `07_daemon_failure.php` produces: the fresh_env restart, the
+        // SIGTERM, and the SIGKILL whose failed ack poisons coherence. Each must
+        // be trusted again immediately, or the harness's 10s wait fails.
+        let t0 = Instant::now();
+        let mut f = fresh();
+        for i in 0..3 {
+            let drop = t0 + Duration::from_secs(i * 2);
+            assert!(!flap_verdict(&mut f, false, drop));
+            assert!(
+                flap_verdict(&mut f, true, drop + Duration::from_millis(50)),
+                "restart {i} must recover instantly"
+            );
+        }
+    }
+
+    #[test]
+    fn a_crash_loop_latches_into_fallback() {
+        let t0 = Instant::now();
+        let mut f = fresh();
+        let mut t = 0;
+        for _ in 0..FLAP_EPISODES {
+            flap_verdict(&mut f, false, t0 + Duration::from_secs(t));
+            t += 1;
+            flap_verdict(&mut f, true, t0 + Duration::from_secs(t));
+            t += 1;
+        }
+        let drop = t0 + Duration::from_secs(t);
+        flap_verdict(&mut f, false, drop);
+        assert!(!flap_verdict(&mut f, true, drop + Duration::from_secs(1)));
+        assert!(!flap_verdict(&mut f, true, drop + FLAP_SETTLE - Duration::from_secs(1)));
+        assert!(flap_verdict(&mut f, true, drop + FLAP_SETTLE));
+    }
+
+    #[test]
+    fn the_settle_is_not_cut_short_by_the_counting_window() {
+        // A burst of drops, then a long outage, then recovery so late that the
+        // 60s counting window expires mid-settle. The worker must still serve
+        // the full FLAP_SETTLE of continuous coherence: the window governs how
+        // drops are counted, not how long an existing verdict lasts.
+        let t0 = Instant::now();
+        let mut f = fresh();
+        for i in 0..FLAP_EPISODES {
+            flap_verdict(&mut f, false, t0 + Duration::from_secs(u64::from(i)));
+            flap_verdict(&mut f, true, t0 + Duration::from_millis(u64::from(i) * 1000 + 500));
+        }
+        // Daemon stays down until just inside the window, then comes back.
+        let back = t0 + Duration::from_secs(58);
+        assert!(!flap_verdict(&mut f, false, back - Duration::from_millis(1)));
+        assert!(!flap_verdict(&mut f, true, back));
+        // t0+61 is past FLAP_WINDOW but only 3s of continuous coherence.
+        assert!(
+            !flap_verdict(&mut f, true, t0 + Duration::from_secs(61)),
+            "window expiry must not release a latched worker early"
+        );
+        // Once the settle really is served, trust returns.
+        assert!(flap_verdict(&mut f, true, back + FLAP_SETTLE));
+    }
+
+    #[test]
+    fn settle_stays_under_the_harness_deadline() {
+        // tests/php/_harness.php gives qdb_daemon_start 10s to see coherence.
+        // Damping must never be able to outlast that, even if a test trips it.
+        assert!(FLAP_SETTLE < Duration::from_secs(10));
+    }
+
+    #[test]
+    fn a_settled_daemon_is_trusted_again() {
+        let t0 = Instant::now();
+        let mut f = fresh();
+        let mut t = 0;
+        for _ in 0..FLAP_EPISODES {
+            flap_verdict(&mut f, false, t0 + Duration::from_secs(t));
+            t += 1;
+            flap_verdict(&mut f, true, t0 + Duration::from_secs(t));
+            t += 1;
+        }
+        assert!(flap_verdict(&mut f, true, t0 + Duration::from_secs(t + 300)));
     }
 }
 
