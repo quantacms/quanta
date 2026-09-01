@@ -68,6 +68,71 @@ require_once __DIR__ . '/FilesDbException.class.php';
 class FilesDb {
 
   /**
+   * Wall-clock seconds a fallback `find` walk may run before it is killed.
+   *
+   * This search only happens when the node index is unavailable. Uncapped it
+   * walks the entire docroot, which on a large site is well over a hundred
+   * thousand directories, and several of those in one request is enough to run
+   * the request into max_execution_time.
+   */
+  const SEARCH_TIMEOUT_SECONDS = 5;
+
+  /**
+   * Wall-clock seconds one REQUEST may spend on fallback docroot walks, total.
+   *
+   * SEARCH_TIMEOUT_SECONDS bounds one walk; it does not bound a render, and it
+   * is the aggregate that kills the request. Worse, a walk that is CUT SHORT is
+   * deliberately not memoized (see the `$complete` handling in resolve()) — the
+   * right call, since a truncated walk proves no absence, but it means a name
+   * that times out costs another full SEARCH_TIMEOUT_SECONDS every time it is
+   * asked for. Six of those spend PHP's whole 30s max_execution_time on find(1)
+   * and the worker is then held to the fpm terminate timeout.
+   *
+   * Past this budget, search() reports "did not finish" and returns nothing, so
+   * resolve() falls through to FALSE without recording an absence — the exact
+   * shape a timeout already produces, minus the cost. That is the same trade
+   * FastDirList::REQUEST_WALK_BUDGET_SECONDS makes one layer up, and for the
+   * same reason: a degraded page that renders beats a 500 that holds a worker.
+   */
+  const SEARCH_REQUEST_BUDGET_SECONDS = 10.0;
+
+  /**
+   * Seconds spent in fallback docroot walks so far.
+   *
+   * Static because the budget is per request, not per FilesDb instance. Static
+   * IS per request under php-fpm, which tears the execution context down
+   * between requests — the same assumption, and the same caveat for any
+   * long-lived SAPI, as FastDirList::$walk_spent.
+   *
+   * @var float
+   */
+  private static $search_spent = 0.0;
+
+  /**
+   * Whether budget exhaustion has already been logged this request.
+   *
+   * Once, not once per name: past the budget every remaining lookup would fire
+   * the same line, and a degraded render resolves thousands of them.
+   *
+   * @var bool
+   */
+  private static $search_budget_reported = FALSE;
+
+  /**
+   * Whether this process has established that there is no `timeout` binary.
+   *
+   * Static, and deliberately so: it describes the IMAGE, not the tree. Whether
+   * coreutils shipped /usr/bin/timeout cannot change between two calls in the
+   * same process, so there is nothing here for forget() to invalidate — this is
+   * not the second negative cache search() must not grow (see the comment
+   * there). It exists only so a docroot search does not pay a doomed extra fork
+   * per lookup once the first one has already told us the answer.
+   *
+   * @var bool
+   */
+  private static $search_timeout_missing = FALSE;
+
+  /**
    * Sentinel for "this dot path is not in the document".
    *
    * A stored null is a value; an absent key is not, and where(['x' => NULL])
@@ -360,8 +425,20 @@ class FilesDb {
     if ($node_path == FALSE) {
       // Use find to locate the node's directory in the file system.
       // TODO: run a sanity check that there is only one folder or throw error?
-      $results = $this->search($name);
+      $complete = TRUE;
+      $results = $this->search($name, $complete);
       $found_folders = array();
+
+      if (!$complete && empty($results)) {
+        // The walk was cut short (the timeout fired, or it could not run), so
+        // it never got far enough to say the node is absent. Answer FALSE for
+        // this call and record nothing: markMissing() would blind the rest of
+        // the request, and the '__MISSING__' marker below is worse still — it
+        // is on disk, so it would blind every LATER request too, until a write
+        // to that exact name happened to forget() it. A slow lookup that has to
+        // be repeated is the right price for not inventing an absence.
+        return FALSE;
+      }
 
       if (empty($results)) {
         // The negative marker goes on disk (so the next request skips the find)
@@ -378,6 +455,12 @@ class FilesDb {
       }
 
       if (empty($found_folders)) {
+        // Same reasoning as above: the walk printed something, but nothing that
+        // survived the is_dir/is_link filter. If it was truncated, the entry
+        // that would have survived may simply not have been reached yet.
+        if (!$complete) {
+          return FALSE;
+        }
         Cache::storeNodePath($this->env, '__MISSING__', TRUE, $name);
         return $this->markMissing($name);
       }
@@ -426,18 +509,96 @@ class FilesDb {
    *
    * @param string $name
    *   The node name.
+   * @param bool $complete
+   *   Out. TRUE when the walk ran to the end, so an empty result really means
+   *   "not in the docroot". FALSE when it was cut short — the timeout fired, or
+   *   the command could not be run at all — in which case an empty result means
+   *   nothing and the caller must NOT record an absence from it. resolve()
+   *   writes a '__MISSING__' marker into the shard cache on an empty result,
+   *   and that marker outlives the request: a truncated walk memoized as a miss
+   *   would hide a node that is really there from every later request until
+   *   something happened to forget() the name. Defaults to TRUE so an override
+   *   that does not take the argument still reads as authoritative.
    *
    * @return array
    *   Candidate paths.
    */
-  protected function search($name) {
+  protected function search($name, &$complete = TRUE) {
     // TODO: cleaner way to exclude folders in _modules.
+    $complete = TRUE;
     if (empty($name)) {
       return array();
     }
-    $findcmd = 'find ' . $this->env->dir['docroot'] . '/ -type d -name "' . $name . '"'
-      . ' -not -path */_modules* -not -path *.git*';
-    exec($findcmd, $results);
+    // Repeated failed searches are already suppressed one level up: path()
+    // short-circuits on $this->missing (see :245), which resolve() populates and
+    // forget() invalidates. Do NOT add a second negative cache here -- an
+    // earlier attempt at one bypassed forget(), so a node created or renamed
+    // mid-request stayed invisible for the rest of it, and
+    // tests/quanta/07_filesdb_writes.php caught exactly that.
+    //
+    // `timeout` bounds the walk so a degraded lookup cannot run into PHP's
+    // max_execution_time and turn a slow page into a 500. This search walks the
+    // whole docroot and only runs when the node index cannot answer, which is
+    // exactly when it is least affordable.
+    //
+    // escapeshellarg because $name reaches here from request-derived node names,
+    // and this path is the least-exercised one in the codebase. Quoting the
+    // -not -path patterns also stops the shell globbing them against the cwd.
+    $findcmd = 'find '
+      . escapeshellarg($this->env->dir['docroot'] . '/')
+      . ' -type d -name ' . escapeshellarg($name)
+      . ' -not -path ' . escapeshellarg('*/_modules*')
+      . ' -not -path ' . escapeshellarg('*.git*');
+
+    // Request-wide budget spent: stop walking. Reported as an unfinished walk,
+    // never as an absence — the caller must not memoize anything from this.
+    if (self::$search_spent >= self::SEARCH_REQUEST_BUDGET_SECONDS) {
+      $complete = FALSE;
+      if (!self::$search_budget_reported) {
+        self::$search_budget_reported = TRUE;
+        error_log(sprintf(
+          'FilesDb: docroot search budget of %.1fs exhausted; resolving from the '
+          . 'cache and index only for the rest of this request. This means the node '
+          . 'index is not serving -- check qdbstat.',
+          self::SEARCH_REQUEST_BUDGET_SECONDS
+        ));
+      }
+      return array();
+    }
+
+    $results = array();
+    $status = 0;
+    $started = microtime(TRUE);
+    if (self::$search_timeout_missing) {
+      exec($findcmd, $results, $status);
+    }
+    else {
+      exec('timeout ' . self::SEARCH_TIMEOUT_SECONDS . ' ' . $findcmd, $results, $status);
+      // 126/127 are the shell's "cannot execute" / "not found": `timeout` is
+      // not in this image. It is in the debian-slim runtime (coreutils is
+      // Essential) but not in every environment this code is run in, and an
+      // unbounded walk is a far smaller problem than a resolver that finds
+      // nothing at all — which is what silently swallowing a 127 would produce,
+      // via the '__MISSING__' markers an empty result writes. So redo the walk
+      // without the wrapper and stop reaching for it.
+      if ($status === 126 || $status === 127) {
+        self::$search_timeout_missing = TRUE;
+        error_log('FilesDb: no usable `timeout` binary; the fallback node search '
+          . 'runs unbounded from here on. Install coreutils in this image.');
+        $results = array();
+        exec($findcmd, $results, $status);
+      }
+    }
+
+    self::$search_spent += microtime(TRUE) - $started;
+
+    // 0 is a clean walk. 1 is find's "I could not read some of it" — a
+    // permission-denied subdirectory, say — and that has always counted as
+    // authoritative here, because everything find COULD read, it did. Anything
+    // else (124 from timeout, or the 126/127 the retry above could not fix)
+    // means the walk did not finish, so its emptiness proves nothing.
+    $complete = ($status === 0 || $status === 1);
+
     return $results;
   }
 

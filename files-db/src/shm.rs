@@ -861,6 +861,7 @@ impl SegmentWriter {
         dir: &Path,
         epoch: u64,
         seg_size: u64,
+        backed_bytes: u64,
         slot_count: u64,
         root_hash: u64,
     ) -> io::Result<SegmentWriter> {
@@ -869,6 +870,36 @@ impl SegmentWriter {
         let path = segment_file(dir, epoch);
         let cpath = CString::new(path.as_os_str().as_bytes())
             .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "path contains NUL"))?;
+        let slots_off = HEADER_SIZE;
+        let arena_off = {
+            let end = slots_off + slot_count * 8;
+            end.div_ceil(4096) * 4096
+        };
+        let seg_size = seg_size.max(arena_off + 4096);
+
+        // Refuse to build a segment the filesystem cannot back.
+        //
+        // `ftruncate` on tmpfs is sparse: it reserves nothing, so an oversized
+        // segment is accepted here and only fails later, on the first write
+        // that touches an unbacked page -- as SIGBUS, which cannot be caught
+        // and takes the whole daemon with it. Checking up front converts that
+        // into an ordinary io::Error the caller already propagates, so the
+        // daemon logs, stays alive, and keeps serving the segment it has.
+        //
+        // What is checked is `backed_bytes`, NOT `seg_size`, and the difference
+        // is the whole correctness of this guard. `seg_size` is the sparse
+        // extent: the payload twice over, floored by `shm_size_mb` (64 MB by
+        // default). Almost none of it is touched -- that is what makes the
+        // headroom free. Demanding it up front made a ONE-NODE tree unbuildable
+        // on Docker's default 64 MB /dev/shm, so qdbd refused to publish
+        // anything and every pod ran permanently on the fallback path: the
+        // exact outcome the guard exists to prevent, arrived at by a different
+        // route. Ask for the pages the initial fill will really write.
+        //
+        // Free space is measured with the current segment still on disk, which
+        // is correct: a compaction holds the old and the new one at once.
+        check_space_for(dir, backed_bytes.max(arena_off + 4096).min(seg_size))?;
+
         // O_EXCL: an epoch is written exactly once; a leftover file from a
         // crashed daemon is removed first (it was never published as current).
         let _ = std::fs::remove_file(&path);
@@ -878,12 +909,6 @@ impl SegmentWriter {
         if fd < 0 {
             return Err(io::Error::last_os_error());
         }
-        let slots_off = HEADER_SIZE;
-        let arena_off = {
-            let end = slots_off + slot_count * 8;
-            end.div_ceil(4096) * 4096
-        };
-        let seg_size = seg_size.max(arena_off + 4096);
         if unsafe { libc::ftruncate(fd, seg_size as libc::off_t) } != 0 {
             let e = io::Error::last_os_error();
             unsafe { libc::close(fd) };
@@ -1127,6 +1152,71 @@ pub fn slot_count_for(nodes: u64) -> u64 {
     (nodes.saturating_mul(4)).max(8192).next_power_of_two()
 }
 
+/// Headroom demanded on top of a segment before we agree to build it, so a
+/// segment that only *just* fits does not leave the filesystem with no room for
+/// the metrics arena or a leftover epoch file.
+const SEG_SPACE_MARGIN: u64 = 8 << 20;
+
+/// Fail unless `dir`'s filesystem can currently back `need` bytes.
+///
+/// This is the guard that turns shm exhaustion from an uncatchable SIGBUS on
+/// first page touch into a plain `StorageFull` error. It is advisory -- another
+/// writer can consume the space between the check and the write -- but the
+/// daemon is the single writer of segments, so in practice the only racing
+/// consumer is the rest of the pod.
+pub fn check_space_for(dir: &Path, need: u64) -> io::Result<()> {
+    let cdir = CString::new(dir.as_os_str().as_bytes())
+        .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "path contains NUL"))?;
+    let mut st: libc::statvfs = unsafe { std::mem::zeroed() };
+    if unsafe { libc::statvfs(cdir.as_ptr(), &mut st) } != 0 {
+        // Cannot tell: do not invent a failure, let the write decide as before.
+        return Ok(());
+    }
+    // `f_bavail` counts units of `f_frsize` (POSIX), with `f_bsize` as the
+    // fallback for the filesystems that leave `f_frsize` unset.
+    //
+    // The conversions widen `c_ulong`, which is 32-bit on a 32-bit target. On
+    // the 64-bit targets this actually ships to they are no-ops, which is what
+    // the allow is for — dropping them to satisfy the lint would leave the
+    // multiplication below silently overflow-prone anywhere else.
+    #[allow(clippy::useless_conversion)]
+    let (unit, avail): (u64, u64) = (
+        if st.f_frsize > 0 { st.f_frsize.into() } else { st.f_bsize.into() },
+        st.f_bavail.into(),
+    );
+    let avail = avail.saturating_mul(unit);
+    let want = need.saturating_add(SEG_SPACE_MARGIN);
+    if avail < want {
+        return Err(io::Error::new(
+            io::ErrorKind::StorageFull,
+            format!(
+                "segment payload needs {} bytes (+{} margin) but {} has only {} free -- \
+                 refusing to build it rather than taking SIGBUS on first touch; \
+                 raise the /dev/shm size limit (>= 2x the tree's live bytes, since a \
+                 compaction holds the old segment and the new one at once)",
+                need,
+                SEG_SPACE_MARGIN,
+                dir.display(),
+                avail
+            ),
+        ));
+    }
+    Ok(())
+}
+
+/// Bytes a fresh segment will actually TOUCH: header, slot directory and the
+/// payload itself, plus a little slack.
+///
+/// The counterpart to [`seg_size_for`], and the two must not be confused.
+/// `seg_size_for` returns the file's sparse extent -- growth headroom that
+/// costs nothing until written. This returns the storage the filesystem has to
+/// find today, which is what [`check_space_for`] must be asked about: sizing
+/// the check off the extent instead refuses a tiny tree on a default-sized
+/// /dev/shm.
+pub fn seg_backed_for(live_bytes: u64, slot_count: u64) -> u64 {
+    (HEADER_SIZE + slot_count * 8).div_ceil(4096) * 4096 + live_bytes + (1 << 20)
+}
+
 /// Segment byte budget: enough for the live payload twice over plus the slot
 /// directory, floored by the configured budget (sparse until touched).
 pub fn seg_size_for(live_bytes: u64, slot_count: u64, budget_bytes: u64) -> u64 {
@@ -1141,6 +1231,69 @@ pub fn seg_size_for(live_bytes: u64, slot_count: u64, budget_bytes: u64) -> u64 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn space_check_passes_when_the_filesystem_has_room() {
+        // /tmp is not going to be 8MB from full in CI; a small ask must pass.
+        assert!(check_space_for(Path::new("/tmp"), 1024).is_ok());
+    }
+
+    #[test]
+    fn space_check_refuses_an_impossible_segment() {
+        // The guard that replaces SIGBUS-on-first-touch: an ask no filesystem
+        // can satisfy must come back as StorageFull, not as a successful
+        // sparse allocation that faults later.
+        let e = check_space_for(Path::new("/tmp"), u64::MAX / 2)
+            .expect_err("an impossible segment must be refused");
+        assert_eq!(e.kind(), io::ErrorKind::StorageFull);
+        // The message has to say what to do -- it is the only breadcrumb the
+        // operator gets when the daemon stops publishing.
+        assert!(e.to_string().contains("/dev/shm"), "message must name the fix: {e}");
+    }
+
+    #[test]
+    fn the_space_check_sizes_the_payload_not_the_sparse_extent() {
+        // The regression this exists for: with the default 64 MB budget, a
+        // one-node tree's segment EXTENT is the whole 64 MB, and demanding that
+        // free (plus the margin) is unsatisfiable on Docker's default 64 MB
+        // /dev/shm -- so qdbd refused to publish at all and every pod ran
+        // permanently degraded. The suite's own runner passes --shm-size=256m,
+        // so only an assertion on the numbers catches this.
+        let slots = slot_count_for(1);
+        let budget: u64 = 64 << 20;
+        assert_eq!(
+            seg_size_for(4096, slots, budget),
+            budget,
+            "a tiny tree still gets the full budget as sparse headroom"
+        );
+        let backed = seg_backed_for(4096, slots);
+        assert!(
+            backed + SEG_SPACE_MARGIN < budget,
+            "a tiny tree must fit a default-sized /dev/shm: backed {backed} + margin \
+             {SEG_SPACE_MARGIN} must be under {budget}"
+        );
+    }
+
+    #[test]
+    fn the_backed_size_covers_the_slot_directory_and_the_payload() {
+        // It has to be an over-estimate of what gets written, never an under-
+        // estimate: the point is that no page the fill touches is unbacked.
+        let slots = slot_count_for(10_000);
+        let live = 32 << 20;
+        let backed = seg_backed_for(live, slots);
+        assert!(backed > live + slots * 8, "payload and slots are both counted");
+        assert!(
+            backed < seg_size_for(live, slots, 0),
+            "but it stays under the extent, which budgets the payload twice"
+        );
+    }
+
+    #[test]
+    fn space_check_is_silent_when_it_cannot_measure() {
+        // An unstattable path must not invent a failure: fall through to the
+        // old behaviour rather than refusing to build a segment that may fit.
+        assert!(check_space_for(Path::new("/definitely/not/a/real/path"), 1024).is_ok());
+    }
 
     fn tmpdir(tag: &str) -> PathBuf {
         let d = std::env::temp_dir().join(format!("qdb_shm_{tag}_{}", std::process::id()));
@@ -1341,7 +1494,7 @@ mod tests {
     #[test]
     fn writer_reader_lookup_tombstone() {
         let dir = tmpdir("rw");
-        let mut w = SegmentWriter::create(&dir, 1, 1 << 20, 8192, 42).unwrap();
+        let mut w = SegmentWriter::create(&dir, 1, 1 << 20, seg_backed_for(0, 8192), 8192, 42).unwrap();
         for i in 0..500 {
             let name = format!("node-{i}");
             let rel = format!("home/node-{i}");
@@ -1405,7 +1558,7 @@ mod tests {
     fn arena_full_signals_compaction() {
         let dir = tmpdir("full");
         // Tiny arena: header + slots + ~8 KB of records.
-        let mut w = SegmentWriter::create(&dir, 1, 0, 8192, 0).unwrap();
+        let mut w = SegmentWriter::create(&dir, 1, 0, seg_backed_for(0, 8192), 8192, 0).unwrap();
         let doc = vec![b'x'; 512];
         let json = format!("{{\"pad\":\"{}\"}}", String::from_utf8_lossy(&doc));
         let mut hit_full = false;
@@ -1437,7 +1590,7 @@ mod tests {
         use std::sync::Arc;
 
         let dir = tmpdir("churn");
-        let mut w = SegmentWriter::create(&dir, 1, 8 << 20, 8192, 0).unwrap();
+        let mut w = SegmentWriter::create(&dir, 1, 8 << 20, seg_backed_for(0, 8192), 8192, 0).unwrap();
         // Seed, publish, then churn while readers hammer lookups.
         for i in 0..64 {
             let name = format!("churn-{i}");
