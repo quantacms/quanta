@@ -19,10 +19,10 @@ for ($i = 0; $i < $W; $i++) {
 }
 $allOk = true;
 foreach ($workers as $h) {
-    [$code, , $err] = wait_worker($h);
+    [$code, $out, $err] = wait_worker($h);
     if ($code !== 0) {
         $allOk = false;
-        echo "    worker stderr: $err\n";
+        echo '    worker: ' . worker_failure($code, $out, $err) . "\n";
     }
 }
 ok($allOk, 'all increment workers exited cleanly');
@@ -42,8 +42,8 @@ while (worker_running($writer)) {
         }
     }
 }
-[$code, , $err] = wait_worker($writer);
-eq($code, 0, 'writer worker exited cleanly' . ($code ? " ($err)" : ''));
+[$code, $out, $err] = wait_worker($writer);
+eq($code, 0, 'writer worker exited cleanly' . ($code ? ' [' . worker_failure($code, $out, $err) . ']' : ''));
 ok($reads > 50, "reader observed many snapshots ($reads reads)");
 eq($torn, 0, 'no torn reads observed');
 $final = QuantaDb::get('pair');
@@ -113,8 +113,8 @@ while (worker_running($mover)) {
         $stray++;
     }
 }
-[$code, , $err] = wait_worker($mover);
-eq($code, 0, 'move worker exited cleanly' . ($code ? " ($err)" : ''));
+[$code, $out, $err] = wait_worker($mover);
+eq($code, 0, 'move worker exited cleanly' . ($code ? ' [' . worker_failure($code, $out, $err) . ']' : ''));
 ok($seen > 20, "reader observed many relocations ($seen reads)");
 eq($stray, 0, 'node was never at a third location');
 
