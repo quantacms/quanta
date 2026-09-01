@@ -51,10 +51,18 @@ function stats_complete(Environment $env, array $vars) {
 function stats_node_build(Environment $env, array $vars) {
   // Mark node building time.
   $env->setData(STATS_NODE_BUILT, ($env->getData(STATS_NODE_BUILT, 0) + 1));
-  $list = $env->getData(STATS_NODE_LIST, array());
-  $list[] = $vars['node']->name . '_' . $vars['node']->language;
-  $env->setData(STATS_NODE_LIST, $list);
 
+  // Append in place.
+  //
+  // Reading the list into a local, pushing, and writing it back makes PHP
+  // copy-on-write the ENTIRE list on every node build: the local shares the
+  // array until the push, which then separates it. On a page that builds
+  // thousands of nodes that is O(n^2) array churn, for a debug panel.
+  // Cache::set() carries the same note for the same reason.
+  if (!isset($env->data[STATS_NODE_LIST])) {
+    $env->data[STATS_NODE_LIST] = array();
+  }
+  $env->data[STATS_NODE_LIST][] = $vars['node']->name . '_' . $vars['node']->language;
 }
 
 /**
