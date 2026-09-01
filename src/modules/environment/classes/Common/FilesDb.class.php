@@ -78,6 +78,47 @@ class FilesDb {
   const SEARCH_TIMEOUT_SECONDS = 5;
 
   /**
+   * Wall-clock seconds one REQUEST may spend on fallback docroot walks, total.
+   *
+   * SEARCH_TIMEOUT_SECONDS bounds one walk; it does not bound a render, and it
+   * is the aggregate that kills the request. Worse, a walk that is CUT SHORT is
+   * deliberately not memoized (see the `$complete` handling in resolve()) — the
+   * right call, since a truncated walk proves no absence, but it means a name
+   * that times out costs another full SEARCH_TIMEOUT_SECONDS every time it is
+   * asked for. Six of those spend PHP's whole 30s max_execution_time on find(1)
+   * and the worker is then held to the fpm terminate timeout.
+   *
+   * Past this budget, search() reports "did not finish" and returns nothing, so
+   * resolve() falls through to FALSE without recording an absence — the exact
+   * shape a timeout already produces, minus the cost. That is the same trade
+   * FastDirList::REQUEST_WALK_BUDGET_SECONDS makes one layer up, and for the
+   * same reason: a degraded page that renders beats a 500 that holds a worker.
+   */
+  const SEARCH_REQUEST_BUDGET_SECONDS = 10.0;
+
+  /**
+   * Seconds spent in fallback docroot walks so far.
+   *
+   * Static because the budget is per request, not per FilesDb instance. Static
+   * IS per request under php-fpm, which tears the execution context down
+   * between requests — the same assumption, and the same caveat for any
+   * long-lived SAPI, as FastDirList::$walk_spent.
+   *
+   * @var float
+   */
+  private static $search_spent = 0.0;
+
+  /**
+   * Whether budget exhaustion has already been logged this request.
+   *
+   * Once, not once per name: past the budget every remaining lookup would fire
+   * the same line, and a degraded render resolves thousands of them.
+   *
+   * @var bool
+   */
+  private static $search_budget_reported = FALSE;
+
+  /**
    * Whether this process has established that there is no `timeout` binary.
    *
    * Static, and deliberately so: it describes the IMAGE, not the tree. Whether
@@ -509,8 +550,25 @@ class FilesDb {
       . ' -not -path ' . escapeshellarg('*/_modules*')
       . ' -not -path ' . escapeshellarg('*.git*');
 
+    // Request-wide budget spent: stop walking. Reported as an unfinished walk,
+    // never as an absence — the caller must not memoize anything from this.
+    if (self::$search_spent >= self::SEARCH_REQUEST_BUDGET_SECONDS) {
+      $complete = FALSE;
+      if (!self::$search_budget_reported) {
+        self::$search_budget_reported = TRUE;
+        error_log(sprintf(
+          'FilesDb: docroot search budget of %.1fs exhausted; resolving from the '
+          . 'cache and index only for the rest of this request. This means the node '
+          . 'index is not serving -- check qdbstat.',
+          self::SEARCH_REQUEST_BUDGET_SECONDS
+        ));
+      }
+      return array();
+    }
+
     $results = array();
     $status = 0;
+    $started = microtime(TRUE);
     if (self::$search_timeout_missing) {
       exec($findcmd, $results, $status);
     }
@@ -531,6 +589,8 @@ class FilesDb {
         exec($findcmd, $results, $status);
       }
     }
+
+    self::$search_spent += microtime(TRUE) - $started;
 
     // 0 is a clean walk. 1 is find's "I could not read some of it" — a
     // permission-denied subdirectory, say — and that has always counted as

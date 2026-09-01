@@ -739,7 +739,13 @@ fn resolve_fallback(cfg: &Config, name: &str) -> Result<Option<NodeRow>, DbError
     let known_but_stale = match cache::snap_lookup(cfg, name) {
         Some(e) if e.path.is_dir() => return Ok(Some(row_from_snap(cfg, name, &e))),
         Some(_) => true,
-        None => false,
+        // Not in the snapshot at all — but a recent walk may still have held
+        // it, which is the same kind of positive evidence as a stale path and
+        // is treated the same way. Without this, one walk that raced an
+        // external rename is enough to condemn a live node to the negative
+        // cache: the name simply drops out of the snapshot, and every test
+        // below that keys off "the snapshot knew it" stops firing.
+        None => cache::snap_vanished(name),
     };
     // Snapshot miss or a stale path (external create/move/delete). Recently
     // proven absent? Skip the walk (TTL-bounded, contract §4.3 allows it).
@@ -749,8 +755,12 @@ fn resolve_fallback(cfg: &Config, name: &str) -> Result<Option<NodeRow>, DbError
     {
         return Ok(None);
     }
-    // Self-heal: one fresh walk, then answer from it.
-    cache::snap_rebuild(cfg);
+    // Self-heal: one fresh walk, then answer from it. Repeat self-heals may be
+    // coalesced onto the last walk ONLY for a name nothing has vouched for —
+    // for anything `known_but_stale` this walk is the second, independent look
+    // the negative-cache verdict below rests on, and skipping it would make
+    // that verdict rest on the very walk that just failed the caller.
+    cache::snap_rebuild(cfg, !known_but_stale);
     if let Some(e) = cache::snap_lookup_raw(name) {
         if e.path.is_dir() {
             metrics::fs_heal();

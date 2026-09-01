@@ -37,6 +37,24 @@ const SNAP_TTL_MAX: Duration = Duration::from_secs(60);
 /// daemon degrades throughput by a bounded fraction instead of unboundedly.
 const SNAP_TTL_COST_FACTOR: u32 = 10;
 
+/// How many consecutive walks may fail to see a name that an earlier walk *did*
+/// see before we accept that it is really gone.
+///
+/// `walk_dedup` is not atomic: it reads one directory at a time, so a walk that
+/// races an external rename can read the destination before the move and the
+/// source after it, and come back having seen the node in neither. That
+/// snapshot is wrong about a node that exists the whole time -- and a wrong
+/// "absent" is not a cheap error here, because `resolve_fallback` condemns a
+/// name it cannot find into the negative cache for `neg_cache_ms` (30s by
+/// default). Carrying the name for a few more walks costs one hash entry and
+/// makes that condemnation require an implausible run of consecutive races
+/// rather than a single one.
+const VANISHED_MAX_MISSES: u32 = 3;
+
+/// Cap on the carried-over set, so a mass delete cannot pin a whole tree's
+/// worth of names in memory for three walks.
+const VANISHED_MAX_ENTRIES: usize = 8192;
+
 /// Freshness budget for a snapshot that took `cost` to build.
 ///
 /// A fixed 2s TTL assumes the walk is cheap. Once a tree is large enough that a
@@ -198,10 +216,43 @@ struct Snapshot {
     /// `snap_coalesce`.
     healed: bool,
     nodes: HashMap<String, SnapEntry>,
+    /// Names an earlier walk saw that this one did not, against the number of
+    /// consecutive walks that have now missed them. Deliberately kept OUT of
+    /// `nodes`: `snap_all_names`/`snap_names_under` enumerate that map to build
+    /// `children()` and `find()` results, and a name we are merely unsure about
+    /// must not appear in a listing. See `VANISHED_MAX_MISSES`.
+    vanished: HashMap<String, u32>,
     links: Vec<(String, String)>,
 }
 
-fn snap_build(cfg: &Config) -> Snapshot {
+/// Names to carry into a new snapshot as "seen recently, not seen now".
+///
+/// Split out as a pure function so the policy is testable without a tree: it is
+/// what stands between a single racing walk and a 30s negative-cache verdict on
+/// a node that never went anywhere.
+fn carry_vanished(prev: &Snapshot, seen: &HashMap<String, SnapEntry>) -> HashMap<String, u32> {
+    let mut out = HashMap::new();
+    let mut push = |name: &String, misses: u32| {
+        if !seen.contains_key(name)
+            && misses <= VANISHED_MAX_MISSES
+            && out.len() < VANISHED_MAX_ENTRIES
+        {
+            out.insert(name.clone(), misses);
+        }
+    };
+    // A name the previous walk resolved: this is its first miss.
+    for name in prev.nodes.keys() {
+        push(name, 1);
+    }
+    // A name already being carried: one more miss, until the run is long enough
+    // to believe. `prev.nodes` and `prev.vanished` are disjoint by construction.
+    for (name, misses) in &prev.vanished {
+        push(name, misses + 1);
+    }
+    out
+}
+
+fn snap_build(cfg: &Config, prev: Option<&Snapshot>) -> Snapshot {
     let started = Instant::now();
     let (nodes, links) = model::walk_dedup(cfg, &cfg.root);
     let mut map = HashMap::with_capacity(nodes.len());
@@ -214,12 +265,14 @@ fn snap_build(cfg: &Config) -> Snapshot {
             },
         );
     }
+    let vanished = prev.map(|p| carry_vanished(p, &map)).unwrap_or_default();
     let built = Instant::now();
     Snapshot {
         built,
         cost: built.saturating_duration_since(started),
         healed: false,
         nodes: map,
+        vanished,
         links,
     }
 }
@@ -232,7 +285,8 @@ fn with_fresh_snap<T>(cfg: &Config, f: impl FnOnce(&Snapshot) -> T) -> T {
             .map(|s| s.built.elapsed() >= snap_ttl(s.cost))
             .unwrap_or(true);
         if stale {
-            *opt = Some(snap_build(cfg));
+            let next = snap_build(cfg, opt.as_ref());
+            *opt = Some(next);
         }
         f(opt.as_ref().expect("snapshot just ensured"))
     })
@@ -248,12 +302,15 @@ pub fn snap_lookup(cfg: &Config, name: &str) -> Option<SnapEntry> {
 /// Split out as a pure function so the policy is testable without a tree or a
 /// clock (the same reason `metrics::flap_verdict` is factored out).
 ///
-/// `healed` is the load-bearing term, and it is not an optimisation — it is
-/// what keeps the coalescing honest. A caller reaching `snap_rebuild` has just
-/// been failed by the *current* snapshot, so that snapshot is by definition not
-/// good enough to answer with; age alone would let it answer anyway. Only a
-/// snapshot that is itself the product of an earlier self-heal walk represents
-/// evidence the caller has not already seen, and only that one may be reused.
+/// This decides cost only. What decides *correctness* is the caller's
+/// `may_coalesce` argument to `snap_rebuild`, and the two must not be confused:
+/// coalescing answers a lookup with a walk that finished before the lookup was
+/// made, so it may only ever be offered for a name about which this process
+/// holds no positive evidence at all. `resolve_fallback` is the judge of that.
+///
+/// `healed` still gates the first self-heal after a TTL refresh, so a fresh
+/// coalescing window always opens on a walk rather than on the TTL snapshot the
+/// caller was just failed by.
 fn snap_coalesce(healed: bool, age: Duration, cost: Duration) -> bool {
     healed && age < cost
 }
@@ -261,32 +318,50 @@ fn snap_coalesce(healed: bool, age: Duration, cost: Duration) -> bool {
 /// Force a fresh walk NOW — the self-heal step when a lookup missed or the
 /// stored path went stale (external create/move/delete).
 ///
-/// Repeat self-heals are coalesced against the last walk's own cost: a snapshot
-/// younger than the time a walk takes is already as fresh as a new walk could
-/// make it, so rebuilding again answers the same question at the same price.
-/// This matters because the caller is a *per-miss* self-heal — one page render
-/// that misses thousands of names would otherwise pay for thousands of full
-/// tree walks. On a small tree the cost is ~0, no rebuild is ever skipped, and
-/// behaviour is unchanged.
+/// With `may_coalesce`, repeat self-heals are collapsed against the last walk's
+/// own cost: a snapshot younger than the time a walk takes is about as fresh as
+/// a new walk could make it, so rebuilding answers the same question at the
+/// same price. This matters because the caller is a *per-miss* self-heal — one
+/// page render that misses thousands of distinct names would otherwise pay for
+/// thousands of full tree walks. On a small tree the cost is ~0, no rebuild is
+/// ever skipped, and behaviour is unchanged.
 ///
-/// The *first* self-heal after any TTL rebuild always walks — see
-/// `snap_coalesce`. Skipping it would collapse two independent looks at the
-/// tree into one, and the second look is not redundant: a walk that raced an
-/// external rename can miss a node that exists, and the caller condemns the
-/// name (negative cache) on the strength of this answer. One un-coalesced walk
-/// per `snap_ttl` bounds the cost at ~10% while keeping that second look.
-pub fn snap_rebuild(cfg: &Config) {
+/// `may_coalesce` is FALSE whenever this process has positive evidence that the
+/// node exists — the snapshot holds the name (at a path that has since gone
+/// stale), or a recent walk held it and this one did not (`snap_vanished`).
+/// Then the walk is not an optimisation to be skipped, it is the whole point of
+/// the call: it is the second, independent look that stands between one walk
+/// racing an external rename and a 30s negative-cache verdict on a node that is
+/// really there. Coalescing that away is what broke `04_concurrency.php`
+/// scenario 11 — a reader watching a node shuttle between two fathers saw it
+/// vanish for the rest of the run.
+pub fn snap_rebuild(cfg: &Config, may_coalesce: bool) {
     SNAP.with(|s| {
         let mut opt = s.borrow_mut();
-        if let Some(cur) = opt.as_ref() {
-            if snap_coalesce(cur.healed, cur.built.elapsed(), cur.cost) {
-                return;
+        if may_coalesce {
+            if let Some(cur) = opt.as_ref() {
+                if snap_coalesce(cur.healed, cur.built.elapsed(), cur.cost) {
+                    return;
+                }
             }
         }
-        let mut snap = snap_build(cfg);
+        let mut snap = snap_build(cfg, opt.as_ref());
         snap.healed = true;
         *opt = Some(snap);
     });
+}
+
+/// Did a recent walk see `name` that the current snapshot does not?
+///
+/// Positive evidence that the node exists, held for `VANISHED_MAX_MISSES`
+/// walks. Read without freshness handling: the caller has just been through
+/// `snap_lookup`, so the snapshot is as fresh as its TTL requires.
+pub fn snap_vanished(name: &str) -> bool {
+    SNAP.with(|s| {
+        s.borrow()
+            .as_ref()
+            .is_some_and(|s| s.vanished.contains_key(name))
+    })
 }
 
 /// Lookup without freshness handling (right after `snap_rebuild`).
@@ -333,6 +408,7 @@ pub fn snap_names_under(cfg: &Config, base: &std::path::Path) -> Vec<String> {
 pub fn snap_note_put(name: &str, path: &std::path::Path, father: Option<&str>) {
     SNAP.with(|s| {
         if let Some(snap) = s.borrow_mut().as_mut() {
+            snap.vanished.remove(name);
             snap.nodes.insert(
                 name.to_string(),
                 SnapEntry {
@@ -347,7 +423,10 @@ pub fn snap_note_put(name: &str, path: &std::path::Path, father: Option<&str>) {
 pub fn snap_remove(name: &str) {
     SNAP.with(|s| {
         if let Some(snap) = s.borrow_mut().as_mut() {
+            // A delete this process performed is not a walk that lost sight of
+            // the name: it is proof of absence, so it must not be carried.
             snap.nodes.remove(name);
+            snap.vanished.remove(name);
             snap.links.retain(|(c, t)| c != name && t != name);
         }
     });
@@ -423,13 +502,96 @@ mod snap_policy_tests {
     #[test]
     fn the_first_self_heal_after_a_ttl_refresh_always_walks() {
         // The caller has just been failed by this very snapshot, so reusing it
-        // would answer a miss with the evidence that produced the miss. A walk
-        // that raced a rename gets a second, independent look before the caller
-        // condemns the name — which is what `04_concurrency.php` scenario 11
-        // exercises.
+        // would answer a miss with the evidence that produced the miss.
         let cost = Duration::from_secs(5);
         assert!(!snap_coalesce(false, Duration::ZERO, cost));
         assert!(!snap_coalesce(false, cost * 2, cost));
+    }
+
+    fn snap_of(nodes: &[&str], vanished: &[(&str, u32)]) -> Snapshot {
+        Snapshot {
+            built: Instant::now(),
+            cost: Duration::ZERO,
+            healed: false,
+            nodes: nodes
+                .iter()
+                .map(|n| {
+                    (
+                        (*n).to_string(),
+                        SnapEntry {
+                            path: PathBuf::from("/tmp").join(n),
+                            father: None,
+                        },
+                    )
+                })
+                .collect(),
+            vanished: vanished
+                .iter()
+                .map(|(n, m)| ((*n).to_string(), *m))
+                .collect(),
+            links: Vec::new(),
+        }
+    }
+
+    fn seen_of(nodes: &[&str]) -> HashMap<String, SnapEntry> {
+        snap_of(nodes, &[]).nodes
+    }
+
+    #[test]
+    fn a_name_a_walk_stopped_seeing_is_carried() {
+        // The `04_concurrency.php` scenario 11 shape: `walk_dedup` reads the
+        // destination before an external move and the source after it, so a
+        // node that never left the tree is in neither. One such walk must not
+        // be enough to lose the name.
+        let prev = snap_of(&["home", "shuttle"], &[]);
+        let carried = carry_vanished(&prev, &seen_of(&["home"]));
+        assert_eq!(carried.get("shuttle"), Some(&1));
+        assert!(
+            !carried.contains_key("home"),
+            "a name this walk saw is not in doubt"
+        );
+    }
+
+    #[test]
+    fn a_name_a_walk_found_again_is_no_longer_carried() {
+        let prev = snap_of(&["home"], &[("shuttle", 2)]);
+        let carried = carry_vanished(&prev, &seen_of(&["home", "shuttle"]));
+        assert!(carried.is_empty());
+    }
+
+    #[test]
+    fn a_name_no_walk_can_find_is_eventually_released() {
+        // Otherwise a genuinely deleted node would force a full walk on every
+        // lookup of its name, forever: the doubt has to have an end.
+        let seen = seen_of(&["home"]);
+        let mut misses = 1;
+        let mut prev = snap_of(&["home", "gone"], &[]);
+        loop {
+            let carried = carry_vanished(&prev, &seen);
+            match carried.get("gone") {
+                Some(m) => {
+                    assert_eq!(*m, misses);
+                    misses += 1;
+                    assert!(misses <= VANISHED_MAX_MISSES + 1, "carried forever");
+                    prev = snap_of(&["home"], &[("gone", *m)]);
+                }
+                None => break,
+            }
+        }
+        assert_eq!(misses, VANISHED_MAX_MISSES + 1);
+    }
+
+    #[test]
+    fn the_carried_set_is_capped() {
+        // A mass delete must not pin a whole tree's worth of names in memory.
+        let names: Vec<String> = (0..VANISHED_MAX_ENTRIES + 100)
+            .map(|i| format!("n{i}"))
+            .collect();
+        let prev = snap_of(&names.iter().map(String::as_str).collect::<Vec<_>>(), &[]);
+        assert_eq!(
+            carry_vanished(&prev, &HashMap::new()).len(),
+            VANISHED_MAX_ENTRIES
+        );
     }
 
     #[test]

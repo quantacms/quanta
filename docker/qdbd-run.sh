@@ -62,7 +62,9 @@ if [ "$_prev" -gt 0 ] && [ "$((_now - _prev))" -lt "$QDBD_BACKOFF_MIN_UPTIME" ];
     if [ "$_streak" -gt 30 ]; then
         _streak=30
     fi
-    # 1,2,4,8... capped. Skip the first restart so a one-off crash is instant.
+    # 2,4,8,16... capped: the first crash of a streak is never slept on (see
+    # the `-gt 1` guard below), so the 1s step the shift starts at is skipped
+    # and a one-off crash restarts instantly.
     _sleep=$(( 1 << (_streak - 1) ))
     if [ "$_sleep" -gt "$QDBD_BACKOFF_MAX_SECS" ]; then
         _sleep="$QDBD_BACKOFF_MAX_SECS"
