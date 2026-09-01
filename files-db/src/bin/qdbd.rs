@@ -96,6 +96,14 @@ fn watch_mask() -> WatchMask {
 /// behind `--resync-secs` already tolerates on a far coarser scale.
 const MOVED_GRACE: Duration = Duration::from_millis(50);
 
+/// The longest the safety-net reconcile may be deferred while the daemon is
+/// `degraded`. Once `add_watches` has hit the kernel watch limit, inotify
+/// coverage is partial and the periodic walk is the ONLY thing that will ever
+/// notice a change under an unwatched directory — so `--resync-secs` is allowed
+/// to raise the interval on a healthy daemon, but never to switch the safety net
+/// off in the one state where it IS the safety net.
+const DEGRADED_RESYNC_MAX: Duration = Duration::from_secs(60);
+
 static STOP: AtomicBool = AtomicBool::new(false);
 
 extern "C" fn on_signal(_sig: libc::c_int) {
@@ -173,9 +181,11 @@ struct Daemon {
     /// MOVED_FROMs still waiting for their counterpart: (old path, rename
     /// cookie, when it was held) — see [`Daemon::settle_moved_away`].
     moved_pending: Vec<(PathBuf, u32, Instant)>,
-    /// Cookies of the dir MOVED_TOs seen so far, so a rename whose two halves
-    /// land in different reads still pairs up.
-    moved_arrivals: HashMap<u32, Instant>,
+    /// Dir MOVED_TOs seen so far, keyed by rename cookie, so a rename whose
+    /// two halves land in different reads still pairs up. The arrival's
+    /// basename rides along: it is what separates a move from a rename — see
+    /// [`Daemon::settle_paired_move`].
+    moved_arrivals: HashMap<u32, (Instant, String)>,
     degraded: bool,
     verbose: bool,
 }
@@ -611,13 +621,48 @@ impl Daemon {
     /// rename whose other half never arrives took the node out of the tree.
     fn settle_moved_away(&mut self, moved: &[(PathBuf, u32)]) {
         for (path, cookie) in moved {
-            if self.moved_arrivals.remove(cookie).is_none() {
-                self.moved_pending.push((path.clone(), *cookie, Instant::now()));
+            match self.moved_arrivals.remove(cookie) {
+                Some((_, arrived_as)) => self.settle_paired_move(path, &arrived_as),
+                None => self.moved_pending.push((path.clone(), *cookie, Instant::now())),
             }
             // A re-watched directory carries its new path under the same
             // descriptor, so this only drops entries that really are stale.
             self.watches.retain(|_, p| !p.starts_with(path));
         }
+    }
+
+    /// A MOVED_FROM whose MOVED_TO landed inside the tree. The directory is
+    /// still here — but that alone does not mean the model is already right.
+    ///
+    /// A node's NAME is its identity, so the basename decides which happened:
+    ///
+    /// - **same basename — a move.** [`Self::on_dir_added`] re-filed the very
+    ///   same key at its new path, so every row was overwritten in place and
+    ///   nothing is left to drop. Deleting here would delete the node that just
+    ///   arrived: [`Self::apply_delete`] prunes by the model's *current*
+    ///   rel_path, which by now is the NEW path.
+    /// - **different basename — a rename.** The arrival filed a brand-new node
+    ///   under the new name and never touched the old key, which still points
+    ///   at a path that no longer exists. Left alone it lingers as a phantom
+    ///   resolving to nothing, healed only by the next full reconcile — so with
+    ///   a long `--resync-secs` it never heals at all. Pruning by the old
+    ///   rel_path reaches exactly that key: not the new node (its rel_path is a
+    ///   different prefix) and not the renamed subtree beneath it, which the
+    ///   same walk already re-filed under the new prefix.
+    fn settle_paired_move(&mut self, path: &Path, arrived_as: &str) {
+        let Some(left_as) = path.file_name().map(|s| s.to_string_lossy().to_string()) else {
+            return;
+        };
+        if left_as == arrived_as {
+            return; // moved, not renamed — already re-filed in place
+        }
+        if !self.moved_away_for_good(path) {
+            return;
+        }
+        if self.verbose {
+            eprintln!("qdbd: - {left_as} (renamed to {arrived_as})");
+        }
+        self.apply_delete(&left_as);
     }
 
     /// Does the model still file a node at `path`, with nothing on disk there?
@@ -640,7 +685,8 @@ impl Daemon {
     /// this tree: the directory was renamed out of it (or into a skipped
     /// subtree), which is a departure.
     fn settle_pending_moves(&mut self) {
-        self.moved_arrivals.retain(|_, at| at.elapsed() < MOVED_GRACE * 2);
+        self.moved_arrivals
+            .retain(|_, (at, _)| at.elapsed() < MOVED_GRACE * 2);
         if self.moved_pending.is_empty() {
             return;
         }
@@ -653,8 +699,10 @@ impl Daemon {
             false
         });
         for (path, cookie) in due {
-            if self.moved_arrivals.remove(&cookie).is_some() {
-                continue; // the other half arrived in a later read
+            if let Some((_, arrived_as)) = self.moved_arrivals.remove(&cookie) {
+                // The other half arrived in a later read.
+                self.settle_paired_move(&path, &arrived_as);
+                continue;
             }
             if !self.moved_away_for_good(&path) {
                 continue;
@@ -1214,10 +1262,13 @@ fn main() {
                         if ev.mask.intersects(EventMask::CREATE | EventMask::MOVED_TO) {
                             if ev.cookie != 0 {
                                 // An arrival inside the tree: whatever left with
-                                // this cookie only changed place. Recorded even
-                                // when its MOVED_FROM is still to come, since a
-                                // read can split the pair either way.
-                                d.moved_arrivals.insert(ev.cookie, Instant::now());
+                                // this cookie is still here, and its basename
+                                // says whether that was a move or a rename.
+                                // Recorded even when its MOVED_FROM is still to
+                                // come, since a read can split the pair either
+                                // way.
+                                d.moved_arrivals
+                                    .insert(ev.cookie, (Instant::now(), name.clone()));
                             }
                             d.on_dir_added(&path);
                             metrics::record_watch_event();
@@ -1309,7 +1360,14 @@ fn main() {
 
         metrics::set_heartbeat();
         metrics::set_coherent(true); // re-assert after an extension poison
-        if last_resync.elapsed() >= resync {
+        // Re-evaluated every turn, not once: `degraded` can flip long after
+        // start-up, when a directory added mid-run exhausts the watch limit.
+        let due = if d.degraded {
+            resync.min(DEGRADED_RESYNC_MAX)
+        } else {
+            resync
+        };
+        if last_resync.elapsed() >= due {
             d.reconcile();
             last_resync = Instant::now();
         }
