@@ -284,6 +284,43 @@ function spawn_worker(string $worker, array $args = [], array $extra_env = []): 
     return ['proc' => $proc, 'pipes' => $pipes];
 }
 
+/**
+ * Why a worker exited non-zero, as one reportable line.
+ *
+ * Workers signal an *expected* failure on stderr (move_loop.php and
+ * writer_pairs.php both fwrite(STDERR) before exit(1)), so that is reported
+ * first. An UNCAUGHT one never gets there: the CLI SAPI sends fatals to STDOUT
+ * via display_errors, and this suite runs `php -n`, so nothing routes them
+ * anywhere else. A worker that dies of an uncaught QuantaDbException therefore
+ * reaches the parent as "exit 255, stderr empty" -- which is exactly as much as
+ * a CI failure used to say, and it cost a full investigation to learn that the
+ * message had been thrown away rather than never written. Report all three
+ * streams, plus the daemon's state, because an authoritative miss ("node does
+ * not exist" for a node that is on disk) is only interpretable next to it.
+ */
+function worker_failure(int $code, string $out, string $err): string
+{
+    $one = function (string $s): string {
+        $s = trim(preg_replace('/\s+/', ' ', $s));
+        return strlen($s) > 400 ? substr($s, 0, 400) . '...' : $s;
+    };
+    $parts = ["exit $code"];
+    if (trim($err) !== '') {
+        $parts[] = 'stderr: ' . $one($err);
+    }
+    if (trim($out) !== '') {
+        $parts[] = 'stdout: ' . $one($out);
+    }
+    if (trim($err) === '' && trim($out) === '') {
+        $parts[] = 'no output (killed by a signal?)';
+    }
+    if (qdb_daemon_mode()) {
+        $parts[] = 'daemon ' . (qdb_daemon_running() ? 'running' : 'GONE')
+            . ', coherent ' . (QuantaDb::coherent() ? 'yes' : 'no');
+    }
+    return implode(' | ', $parts);
+}
+
 /** Wait for a worker; returns [exit_code, stdout, stderr]. */
 function wait_worker(array &$h): array
 {
