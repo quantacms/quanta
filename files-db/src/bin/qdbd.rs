@@ -259,7 +259,15 @@ impl Daemon {
             + (self.model.strings.len() as u64) * 32;
         let slots = shm::slot_count_for(self.model.nodes.len() as u64);
         let size = shm::seg_size_for(live + str_est, slots, self.cfg.shm_size_mb << 20);
-        let mut w = SegmentWriter::create(&self.cfg.shm_dir, epoch, size, slots, self.cfg.root_hash)?;
+        let backed = shm::seg_backed_for(live + str_est, slots);
+        let mut w = SegmentWriter::create(
+            &self.cfg.shm_dir,
+            epoch,
+            size,
+            backed,
+            slots,
+            self.cfg.root_hash,
+        )?;
         {
             let strings = &self.model.strings;
             for (name, node) in &self.model.nodes {
@@ -1124,8 +1132,16 @@ fn main() {
     }
 
     let boot_epoch = metrics::data_epoch() + 1;
-    let placeholder = match SegmentWriter::create(&cfg.shm_dir, boot_epoch, 0, 8192, cfg.root_hash)
-    {
+    // An empty segment: `seg_size` 0 is clamped up to the header plus the slot
+    // directory inside `create`, and that is exactly what it will touch.
+    let placeholder = match SegmentWriter::create(
+        &cfg.shm_dir,
+        boot_epoch,
+        0,
+        shm::seg_backed_for(0, 8192),
+        8192,
+        cfg.root_hash,
+    ) {
         Ok(w) => w,
         Err(e) => {
             eprintln!(

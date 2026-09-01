@@ -472,7 +472,7 @@ combinations.
                           |                        |
                           v                        v
                     FALLBACK MODE              the document
-                    walk snapshot (2s TTL)
+                    walk snapshot (2s..60s TTL)
                     + direct file read
                     + negative cache (30s)
 ```
@@ -775,7 +775,7 @@ happens constantly as children and links change.
                                                            v      |
                                                        FALLBACK   |
                                                            |      |
-       * per-process filesystem walk snapshot (2 s TTL)    |      |
+       * per-process filesystem walk snapshot (2..60 s TTL) |      |
        * direct file reads                                 |      |
        * negative cache for proven-absent names (30 s)     |      |
        * a miss triggers a self-heal walk                  |      |
@@ -819,8 +819,30 @@ segment is. They exist to avoid re-doing work inside one process.
 |---|---|---|---|---|
 | `DOCS` | decoded documents, keyed by `(name, lang)` + validated by `generation` | 2048 | clear the whole map on overflow | both modes |
 | `NEG` | names proven absent | 8192 | clear-all, plus `neg_cache_ms` TTL (30 s) | fallback only |
-| `SNAP` | one filesystem walk: `name → (path, father)` + link edges | one snapshot | 2 s TTL, rebuilt on any miss | fallback only |
+| `SNAP` | one filesystem walk: `name → (path, father)` + link edges | one snapshot | adaptive TTL (below), rebuilt on any miss | fallback only |
 | `GENS` | generations of nodes this process wrote | unbounded | — | fallback only |
+
+`SNAP`'s TTL is **adaptive: ten times the walk's own measured cost, clamped to
+2..60 s**. A fixed 2 s assumes the walk is cheap, and on a tree large enough that
+one costs seconds that assumption inverts — every worker spends most of its time
+rebuilding and a request that should take milliseconds takes tens of them. So a
+small tree keeps the 2 s floor exactly as before, and a large one backs off on
+its own, with the walk held to ~10% of a worker's time. **The visible
+consequence is that in fallback mode `children()`, `find()` and `lineage()` can
+be up to a minute behind the filesystem on a big tree**, where they used to be at
+most two seconds behind. Point lookups are not: a `path()`/`get()` miss still
+forces a self-heal walk (§below), which is why that walk is bounded by evidence
+rather than by a timer.
+
+That self-heal is coalesced against the last walk's cost — one render missing
+thousands of distinct names buys one walk, not thousands — but **only for a name
+this process holds no positive evidence about**. If the snapshot has the name at
+a path that has since gone stale, or a recent walk had it and the current one
+does not, the walk always happens: it is the second, independent look that a
+negative-cache verdict rests on. `walk_dedup` is not atomic, so a walk racing an
+external rename can come back having seen a node in neither its old nor its new
+directory, and one such walk must not be able to condemn a live node for the
+negative cache's full 30 s.
 
 The parse cache is validated by **generation, not mtime** — mtime's 1-second
 granularity cannot distinguish two same-second writes. A stale generation is a
