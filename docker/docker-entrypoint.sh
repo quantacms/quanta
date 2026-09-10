@@ -13,6 +13,8 @@
 #   * the ownership fixes php-fpm (www-data) needs on all of the above
 #   * the CSS/JS bundles the image built (see quanta-build-assets)
 #   * the doctor passes over the site's data (see QUANTA_BOOT_* below)
+#   * the php-fpm pool, sized from the container's own cgroup limits
+#     (see php-fpm-autotune.sh)
 #
 # Nothing here is application specific: everything is derived from QUANTA_SITE.
 # Downstream application images that need extra start-up steps drop a *.sh file
@@ -31,6 +33,9 @@
 #   QUANTA_BOOT_CLEAR_CACHE
 #                      run `doctor <site> clear_cache` on start (default 1)
 #   QUANTA_BOOT_CHECK  run `doctor <site> check` on start      (default 0)
+#   QUANTA_FPM_*       php-fpm pool sizing; see php-fpm-autotune.sh for the
+#                      full set. QUANTA_FPM_AUTOTUNE=off keeps the image's
+#                      static pool defaults.
 #
 # Hooks:
 #   Every /docker-entrypoint.d/*.sh is **sourced** (not executed), in shell glob
@@ -239,6 +244,31 @@ if [ -d /docker-entrypoint.d ]; then
         # shellcheck source=/dev/null
         . "$hook"
     done
+fi
+
+# Size the php-fpm pool from the CPU and memory this container was actually
+# given. Run after the hooks so one can still pin QUANTA_FPM_MAX_CHILDREN, and
+# before the exec so php-fpm reads the result on its first start.
+#
+# The fragment is written to a temp file and renamed into place: php-fpm globs
+# the pool dir at startup, and a half-written file there is a failed start of
+# the whole web tier rather than one bad request. A non-zero exit leaves no file
+# at all, which is the safe outcome -- the image's zz-quanta.conf defaults stand
+# and the container still serves.
+if [ -x /usr/local/bin/php-fpm-autotune.sh ]; then
+    _pool=/usr/local/etc/php-fpm.d/zzy-autotune.conf
+    if /usr/local/bin/php-fpm-autotune.sh > "$_pool.new.$$"; then
+        if [ -s "$_pool.new.$$" ]; then
+            mv -f "$_pool.new.$$" "$_pool"
+        else
+            # Autotune declined (QUANTA_FPM_AUTOTUNE=off). Drop any fragment a
+            # previous start left behind, so turning it off actually turns it off.
+            rm -f "$_pool.new.$$" "$_pool"
+        fi
+    else
+        echo "php-fpm-autotune failed; keeping the image's static pool defaults." >&2
+        rm -f "$_pool.new.$$"
+    fi
 fi
 
 # Final ownership pass for the php-fpm workers, after doctor and the hooks have
