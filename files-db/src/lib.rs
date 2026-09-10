@@ -615,6 +615,28 @@ fn seg_current(cfg: &Config) -> Option<Rc<shm::SegmentReader>> {
     if !metrics::index_coherent() {
         return None;
     }
+    seg_map(cfg)
+}
+
+/// The last segment the daemon published, mapped *without* asking whether the
+/// daemon is still there — the source for the stale-read path below.
+///
+/// Coherence is a liveness signal about the DAEMON. The segment is a fact about
+/// the DATA: a file whose header carries its own magic, layout version, epoch
+/// and root hash, and whose every record is re-verified by full hash plus name
+/// comparison on each probe. `SegmentReader::open` checks all of that with no
+/// daemon involved, the daemon retires an epoch only once its successor is
+/// published, and no exit path unlinks it. So when the daemon goes, its last
+/// published segment is still here, still valid, and still mapped into this
+/// process — and throwing it away costs a whole-tree walk per worker to
+/// rediscover what it already says.
+///
+/// What the segment stops being when the daemon goes is AUTHORITATIVE, and only
+/// about absence: nothing is maintaining it, so a name it does not hold may
+/// have been created since. That is why `seg_stale` feeds one caller only
+/// (`resolve_stale`), why that caller answers hits and never misses, and why it
+/// confirms every hit against the filesystem before returning it.
+fn seg_map(cfg: &Config) -> Option<Rc<shm::SegmentReader>> {
     let epoch = metrics::data_epoch();
     if epoch == 0 {
         return None;
@@ -728,7 +750,81 @@ fn resolve_node(cfg: &Config, name: &str) -> Result<Option<NodeRow>, DbError> {
             }
         }
     }
+    if let Some(row) = resolve_stale(cfg, name) {
+        return Ok(Some(row));
+    }
     resolve_fallback(cfg, name)
+}
+
+/// The last published segment when — and only when — it is no longer
+/// authoritative. `seg_current` and this are mutually exclusive by construction,
+/// so no lookup can be answered twice or from two sources at once.
+fn seg_stale(cfg: &Config) -> Option<Rc<shm::SegmentReader>> {
+    if metrics::index_coherent() {
+        return None;
+    }
+    seg_map(cfg)
+}
+
+/// Resolve a name from the last published segment, positive answers only.
+///
+/// This is the whole of the degraded fast path. Without it, losing the daemon
+/// costs every worker a full `walk_dedup` of the tree to answer its first
+/// lookup, and another every time that snapshot ages out — the cost that turns
+/// a dead daemon into an outage rather than a slowdown. The segment already
+/// holds the answer, so the walk is spent rediscovering it.
+///
+/// Three properties make this safe, and all three are load-bearing:
+///
+/// 1. **It can only add answers.** Every negative outcome — a miss, a
+///    tombstone, a record that fails validation, a hit the filesystem does not
+///    confirm — returns `None` and falls through to `resolve_fallback`
+///    unchanged. A stale segment can therefore turn a walk into a hit; it can
+///    never turn a hit into a miss, and it never writes to the negative cache.
+///    That asymmetry is what lets an arbitrarily old segment be consulted at
+///    all: staleness costs a fallthrough, never a wrong absence.
+///
+/// 2. **Every hit is confirmed against the filesystem.** The segment is not
+///    being maintained, so its path may name a directory that has since been
+///    moved or deleted, and `is_dir` is what stands between that and a caller
+///    holding a path to nothing. This is the same confirmation
+///    `resolve_fallback` already makes on its own snapshot hits, for the same
+///    reason and with the same one-`stat` cost — against a walk, free.
+///
+/// 3. **A confirmed path cannot belong to a different node.** In this database
+///    a node's name IS its directory's basename, so the record keyed `name`
+///    and a live directory at the path it names are the same node by
+///    definition. Were the name to have moved, the confirmation in (2) would
+///    have to pass at the OLD path, which requires a directory of that name to
+///    exist there again — and that directory would be a node of that name.
+///
+/// What this deliberately does not do is answer absence, enumerate
+/// (`find`/`links`/lineage still walk), or serve documents. Those need the
+/// segment to be complete, not merely correct about what it holds.
+fn resolve_stale(cfg: &Config, name: &str) -> Option<NodeRow> {
+    let seg = seg_stale(cfg)?;
+    let Lookup::Found(rec) = seg.lookup(name) else {
+        return None;
+    };
+    if rec.is_tombstone() {
+        return None;
+    }
+    let path = cfg.root.join(rec.rel_path());
+    if !path.is_dir() {
+        // Positive evidence that the tree moved under the segment. Counted
+        // separately from a plain miss: a rising share here is the signal that
+        // the segment has drifted far enough to be worth little, which is
+        // exactly what an operator needs to see and cannot otherwise infer.
+        metrics::stale_unconfirmed();
+        return None;
+    }
+    metrics::stale_hit();
+    Some(NodeRow {
+        name: name.to_string(),
+        path: path.to_string_lossy().to_string(),
+        father: rec.father().map(str::to_string),
+        generation: rec.generation as i64,
+    })
 }
 
 fn resolve_fallback(cfg: &Config, name: &str) -> Result<Option<NodeRow>, DbError> {
@@ -2913,6 +3009,8 @@ pub fn stats() -> PhpResult<Zval> {
         ins_cnt("moves", s.moves)?;
         ins_cnt("doc_deletes", s.doc_deletes)?;
         ins_cnt("raw_writes", s.raw_writes)?;
+        ins_cnt("stale_hits", s.stale_hits)?;
+        ins_cnt("stale_unconfirmed", s.stale_unconfirmed)?;
     }
     let mut out = Zval::new();
     out.set_hashtable(ht);

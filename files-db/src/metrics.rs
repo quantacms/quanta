@@ -25,7 +25,7 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 const SIZE: usize = 4096;
 /// "QDBSTAT\0" — layout sentinel; a reader that sees a different value bails.
 const MAGIC: u64 = 0x0054_4154_5342_4451;
-const VERSION: u32 = 8;
+const VERSION: u32 = 9;
 
 const REL: Ordering = Ordering::Relaxed;
 
@@ -126,6 +126,15 @@ pub struct Metrics {
     /// be graded as a share — its denominator is notify *attempts*, a handful
     /// of writes rather than 100k reads — so `qdbstat` grades it on *when*.
     pub uds_failure_unix: AtomicU64,
+    // -- v9: the degraded fast path (append only) ---------------------------
+    /// Lookups answered from the last published segment while the daemon was
+    /// NOT coherent, and confirmed on disk. Each one is a whole-tree walk that
+    /// did not happen.
+    pub stale_hits: AtomicU64,
+    /// Stale-segment hits the filesystem did not confirm, so the lookup fell
+    /// through to the walk. Read as a share of `stale_hits + stale_unconfirmed`
+    /// this is how far the segment has drifted from the tree.
+    pub stale_unconfirmed: AtomicU64,
 }
 
 const _: () = assert!(std::mem::size_of::<Metrics>() <= SIZE);
@@ -185,6 +194,8 @@ pub struct Snapshot {
     pub doc_deletes: u64,
     pub raw_writes: u64,
     pub uds_failure_unix: u64,
+    pub stale_hits: u64,
+    pub stale_unconfirmed: u64,
 }
 
 impl Metrics {
@@ -242,6 +253,8 @@ impl Metrics {
             doc_deletes: self.doc_deletes.load(REL),
             raw_writes: self.raw_writes.load(REL),
             uds_failure_unix: self.uds_failure_unix.load(REL),
+            stale_hits: self.stale_hits.load(REL),
+            stale_unconfirmed: self.stale_unconfirmed.load(REL),
         }
     }
 }
@@ -404,6 +417,21 @@ pub fn fs_heal() {
 pub fn node_miss() {
     if let Some(m) = arena() {
         m.node_misses.fetch_add(1, REL);
+    }
+}
+
+/// A lookup answered from the last published segment while the daemon was not
+/// coherent (a saved docroot walk).
+pub fn stale_hit() {
+    if let Some(m) = arena() {
+        m.stale_hits.fetch_add(1, REL);
+    }
+}
+
+/// A stale-segment hit whose path no longer exists, so the lookup fell through.
+pub fn stale_unconfirmed() {
+    if let Some(m) = arena() {
+        m.stale_unconfirmed.fetch_add(1, REL);
     }
 }
 
