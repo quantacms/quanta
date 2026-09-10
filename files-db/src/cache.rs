@@ -267,9 +267,11 @@ fn snap_build(cfg: &Config, prev: Option<&Snapshot>) -> Snapshot {
     }
     let vanished = prev.map(|p| carry_vanished(p, &map)).unwrap_or_default();
     let built = Instant::now();
+    let cost = built.saturating_duration_since(started);
+    crate::metrics::snap_walk(cost.as_nanos() as u64);
     Snapshot {
         built,
-        cost: built.saturating_duration_since(started),
+        cost,
         healed: false,
         nodes: map,
         vanished,
