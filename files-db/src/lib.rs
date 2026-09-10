@@ -3011,6 +3011,9 @@ pub fn stats() -> PhpResult<Zval> {
         ins_cnt("raw_writes", s.raw_writes)?;
         ins_cnt("stale_hits", s.stale_hits)?;
         ins_cnt("stale_unconfirmed", s.stale_unconfirmed)?;
+        ins_cnt("snap_walks", s.snap_walks)?;
+        ins_cnt("snap_walk_ns", s.snap_walk_ns)?;
+        ins_cnt("snap_walk_ns_max", s.snap_walk_ns_max)?;
     }
     let mut out = Zval::new();
     out.set_hashtable(ht);
