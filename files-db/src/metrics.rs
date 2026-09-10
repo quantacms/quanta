@@ -25,7 +25,7 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 const SIZE: usize = 4096;
 /// "QDBSTAT\0" — layout sentinel; a reader that sees a different value bails.
 const MAGIC: u64 = 0x0054_4154_5342_4451;
-const VERSION: u32 = 9;
+const VERSION: u32 = 10;
 
 const REL: Ordering = Ordering::Relaxed;
 
@@ -135,6 +135,22 @@ pub struct Metrics {
     /// through to the walk. Read as a share of `stale_hits + stale_unconfirmed`
     /// this is how far the segment has drifted from the tree.
     pub stale_unconfirmed: AtomicU64,
+    // -- v10: what the degraded path actually COSTS (append only) -----------
+    // The fallback path's cost is walks and nothing else: every other step it
+    // takes is a hash lookup against a map already in this worker's heap. So
+    // these three are the only counters that can distinguish "degraded and
+    // cheap" from "degraded and melting", and without them the cost of a
+    // fallback lookup is unassertable -- a test can time a call, but timing is
+    // the flaky half; the walk COUNT is the contract.
+    /// Full docroot walks this worker has paid for (`cache::snap_build`),
+    /// whether from a TTL refresh or a forced self-heal.
+    pub snap_walks: AtomicU64,
+    /// Nanoseconds spent inside those walks. Against `snap_walks` this is the
+    /// per-walk cost the adaptive TTL is derived from.
+    pub snap_walk_ns: AtomicU64,
+    /// The most expensive single walk, in nanoseconds. A request that blocks
+    /// on one walk blocks for roughly this long, which an average hides.
+    pub snap_walk_ns_max: AtomicU64,
 }
 
 const _: () = assert!(std::mem::size_of::<Metrics>() <= SIZE);
@@ -196,6 +212,9 @@ pub struct Snapshot {
     pub uds_failure_unix: u64,
     pub stale_hits: u64,
     pub stale_unconfirmed: u64,
+    pub snap_walks: u64,
+    pub snap_walk_ns: u64,
+    pub snap_walk_ns_max: u64,
 }
 
 impl Metrics {
@@ -255,6 +274,9 @@ impl Metrics {
             uds_failure_unix: self.uds_failure_unix.load(REL),
             stale_hits: self.stale_hits.load(REL),
             stale_unconfirmed: self.stale_unconfirmed.load(REL),
+            snap_walks: self.snap_walks.load(REL),
+            snap_walk_ns: self.snap_walk_ns.load(REL),
+            snap_walk_ns_max: self.snap_walk_ns_max.load(REL),
         }
     }
 }
@@ -432,6 +454,20 @@ pub fn stale_hit() {
 pub fn stale_unconfirmed() {
     if let Some(m) = arena() {
         m.stale_unconfirmed.fetch_add(1, REL);
+    }
+}
+
+/// A full docroot walk finished, having cost `ns` nanoseconds.
+///
+/// Recorded where the walk is built rather than where it is consumed, so a walk
+/// counts once no matter how many lookups it goes on to answer -- which is the
+/// whole point: the ratio of lookups to walks is what says whether the fallback
+/// path is amortising its cost or paying it per name.
+pub fn snap_walk(ns: u64) {
+    if let Some(m) = arena() {
+        m.snap_walks.fetch_add(1, REL);
+        m.snap_walk_ns.fetch_add(ns, REL);
+        m.snap_walk_ns_max.fetch_max(ns, REL);
     }
 }
 

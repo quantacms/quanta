@@ -699,6 +699,26 @@ fn render(
             s.neg_hits,
         ),
     );
+    // What those walks COST. A degraded worker's whole bill is here: the count
+    // says how often the tree was re-read, the peak says how long one request
+    // could block on it. Both stay zero while the index is serving.
+    if s.snap_walks > 0 {
+        let cost_code = if s.snap_walk_ns_max > 1_000_000_000 {
+            C_YELLOW
+        } else {
+            C_DIM
+        };
+        row(
+            &mut o,
+            "walk cost",
+            &format!(
+                "{} walks   avg {}   peak {}",
+                thousands(s.snap_walks),
+                avg_ms(s.snap_walk_ns, s.snap_walks),
+                paint(col, cost_code, &ms(s.snap_walk_ns_max)),
+            ),
+        );
+    }
     // Lookups answered from a segment no daemon is maintaining any more. Each
     // one is a tree walk that did not happen, so a non-zero count is the fix
     // working, not a fault -- what to watch is the unconfirmed SHARE, which is
@@ -923,6 +943,9 @@ fn to_json(s: &Snapshot, seg: &SegStats, arena_ok: bool) -> String {
         "authoritative_misses": s.authoritative_misses,
         "stale_hits": s.stale_hits,
         "stale_unconfirmed": s.stale_unconfirmed,
+        "snap_walks": s.snap_walks,
+        "snap_walk_ns": s.snap_walk_ns,
+        "snap_walk_ns_max": s.snap_walk_ns_max,
         "shm_hits": s.shm_hits,
         "shm_remaps": s.shm_remaps,
         "shm_invalid": s.shm_invalid,
