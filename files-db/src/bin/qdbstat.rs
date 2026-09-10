@@ -467,7 +467,12 @@ fn render(
     if let Some((p, secs)) = prev {
         let queries = |x: &Snapshot| x.children_ops + x.find_ops + x.count_ops + x.links_ops;
         let lookups = |x: &Snapshot| {
-            x.shm_hits + x.authoritative_misses + x.node_misses + x.fs_heals + x.neg_hits
+            x.shm_hits
+                + x.authoritative_misses
+                + x.node_misses
+                + x.fs_heals
+                + x.neg_hits
+                + x.stale_hits
         };
         let rate = |now: u64, was: u64| paint(col, C_CYAN, &per_sec(now.saturating_sub(was), secs));
         o.push_str(&format!(
@@ -694,6 +699,28 @@ fn render(
             s.neg_hits,
         ),
     );
+    // Lookups answered from a segment no daemon is maintaining any more. Each
+    // one is a tree walk that did not happen, so a non-zero count is the fix
+    // working, not a fault -- what to watch is the unconfirmed SHARE, which is
+    // how far the segment has drifted from the tree beneath it.
+    if s.stale_hits > 0 || s.stale_unconfirmed > 0 {
+        let seen = s.stale_hits + s.stale_unconfirmed;
+        let drift = s.stale_unconfirmed as f64 / seen as f64;
+        let drift_code = if drift > 0.10 { C_YELLOW } else { C_DIM };
+        row(
+            &mut o,
+            "stale index",
+            &format!(
+                "served {}   unconfirmed {}",
+                thousands(s.stale_hits),
+                paint(
+                    col,
+                    drift_code,
+                    &format!("{} ({:.0}%)", thousands(s.stale_unconfirmed), drift * 100.0),
+                ),
+            ),
+        );
+    }
 
     // --- QUERIES (listing / relation ops) ------------------------------------
     section(&mut o, col, "QUERIES");
@@ -894,6 +921,8 @@ fn to_json(s: &Snapshot, seg: &SegStats, arena_ok: bool) -> String {
         "node_misses": s.node_misses,
         "neg_hits": s.neg_hits,
         "authoritative_misses": s.authoritative_misses,
+        "stale_hits": s.stale_hits,
+        "stale_unconfirmed": s.stale_unconfirmed,
         "shm_hits": s.shm_hits,
         "shm_remaps": s.shm_remaps,
         "shm_invalid": s.shm_invalid,

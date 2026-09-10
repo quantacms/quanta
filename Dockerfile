@@ -415,6 +415,12 @@ COPY --link docker/supervisord.conf          /etc/supervisor/conf.d/quanta.conf
 COPY --link docker/qdbd-run.sh               /usr/local/bin/qdbd-run.sh
 COPY --link docker/build-assets.sh           /usr/local/bin/quanta-build-assets
 
+# Pool sizing derived from the container's own cgroup limits, run by the
+# entrypoint into php-fpm.d/zzy-autotune.conf. It sorts after zz-quanta.conf
+# (the image's defaults) and before any zzz-*.conf a deployment renders, so it
+# raises the floor without taking the override away.
+COPY --link docker/php-fpm-autotune.sh       /usr/local/bin/php-fpm-autotune.sh
+
 # Container entrypoint: the site-agnostic first-boot setup (writable dirs, host
 # aliases, ownership, doctor, the quanta_db kill switch) that every Quanta
 # container needs before supervisord starts. Downstream application images
@@ -445,7 +451,7 @@ RUN set -eux; \
         > /etc/profile.d/00-quanta-shell.sh; \
     rm -f /etc/nginx/sites-enabled/default /etc/nginx/conf.d/default.conf.dpkg-dist; \
     chmod +x /usr/local/bin/qdbd-run.sh /usr/local/bin/docker-entrypoint.sh \
-             /usr/local/bin/quanta-build-assets; \
+             /usr/local/bin/quanta-build-assets /usr/local/bin/php-fpm-autotune.sh; \
     mkdir -p /docker-entrypoint.d /var/cache/nginx/assets /var/cache/nginx/html \
              /var/lib/nginx /run; \
     chown -R www-data:www-data /var/cache/nginx /var/lib/nginx /var/lib/php/sessions
