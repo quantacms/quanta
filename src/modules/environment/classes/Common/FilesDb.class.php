@@ -13,7 +13,7 @@ require_once __DIR__ . '/FilesDbException.class.php';
  * symlink — and it answers every method on its own.
  *
  * FilesDbExt extends it and serves the same methods from the `quanta_db`
- * native extension (files-db/docs/api-contract.md), which reads from a
+ * native extension (qdb/docs/api-contract.md), which reads from a
  * shared-memory projection of the tree and makes writes locked and atomic.
  * Where the extension cannot answer — an inexpressible query, an incoherent
  * index, a thrown error — the override calls parent:: and lands back here.
@@ -61,9 +61,9 @@ require_once __DIR__ . '/FilesDbException.class.php';
  * Failures raise FilesDbException; "not found" never does. See that class for
  * why it is not the extension's \QuantaDbException.
  *
- * @see files-db/docs/api-contract.md
- * @see files-db/docs/usage.md
- * @see files-db/docs/two-implementations.md
+ * @see qdb/docs/api-contract.md
+ * @see qdb/docs/usage.md
+ * @see qdb/docs/two-implementations.md
  */
 class FilesDb {
 

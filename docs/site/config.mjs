@@ -32,9 +32,9 @@ export const topNav = [
   {
     label: 'Documentation',
     to: 'overview.html',
-    match: ['overview.html', 'introduction.html', 'files-db/'],
+    match: ['overview.html', 'introduction.html', 'qdb/'],
   },
-  { label: 'Files-DB', to: 'files-db.html' },
+  { label: 'qdb', to: 'qdb.html' },
   { label: 'quanta.org', to: site.website },
   { label: 'GitHub', to: site.repo },
 ];
@@ -45,7 +45,7 @@ export const topNav = [
 //   out   output path inside `docs/`
 //   title label in the sidebar (the page keeps its own H1 as the visible title)
 //
-// Relative links between these files (`usage.md`, `../files-db/docs/usage.md`)
+// Relative links between these files (`usage.md`, `../qdb/docs/usage.md`)
 // are rewritten to the corresponding site pages by the build; links pointing
 // at repository files that are NOT in this list become GitHub links.
 export const docsNav = [
@@ -57,14 +57,14 @@ export const docsNav = [
     ],
   },
   {
-    section: 'Files-DB',
+    section: 'qdb',
     items: [
-      { src: 'files-db/README.md', out: 'files-db/index.html', title: 'The extension' },
-      { src: 'files-db/docs/usage.md', out: 'files-db/usage.html', title: 'Using Files-DB from PHP' },
-      { src: 'files-db/docs/how-it-works.md', out: 'files-db/how-it-works.html', title: 'How Files-DB works' },
-      { src: 'files-db/docs/api-contract.md', out: 'files-db/api-contract.html', title: 'API contract' },
-      { src: 'files-db/docs/two-implementations.md', out: 'files-db/two-implementations.html', title: 'Two implementations' },
-      { src: 'files-db/docs/simpler-faster.md', out: 'files-db/simpler-faster.html', title: 'Simpler and faster' },
+      { src: 'qdb/README.md', out: 'qdb/index.html', title: 'The extension' },
+      { src: 'qdb/docs/usage.md', out: 'qdb/usage.html', title: 'Using qdb from PHP' },
+      { src: 'qdb/docs/how-it-works.md', out: 'qdb/how-it-works.html', title: 'How qdb works' },
+      { src: 'qdb/docs/api-contract.md', out: 'qdb/api-contract.html', title: 'API contract' },
+      { src: 'qdb/docs/two-implementations.md', out: 'qdb/two-implementations.html', title: 'Two implementations' },
+      { src: 'qdb/docs/simpler-faster.md', out: 'qdb/simpler-faster.html', title: 'Simpler and faster' },
     ],
   },
 ];

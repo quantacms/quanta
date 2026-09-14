@@ -201,7 +201,7 @@ class Doctor extends DataContainer {
     // Rebuild the derived index from the files first. It is the repair tool for
     // exactly what this command hunts — dangling symlinks left behind by a
     // crash mid-move — and it is safe to run under traffic
-    // (files-db/docs/api-contract.md §Maintenance). The find sweep below still
+    // (qdb/docs/api-contract.md §Maintenance). The find sweep below still
     // runs afterwards: reindex() drops dangling links from the index, while
     // only the sweep re-points the ones whose target moved.
     $rebuilt = $this->env->db()->reindex();

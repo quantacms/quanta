@@ -36,7 +36,7 @@ abstract class JSONDataContainer extends DataContainer {
     // An empty language is the neutral document, not a 'data_.json' with an
     // empty code in the name. The node database reads lang '' as neutral
     // (api-contract.md §3), and both of its implementations name the same file
-    // for the same call — pinned by files-db/tests/quanta/02_nodes.php.
+    // for the same call — pinned by qdb/tests/quanta/02_nodes.php.
     $neutral = (empty($language) || $language == \Quanta\Common\Localization::LANGUAGE_NEUTRAL);
 
     // Unset attributes to ignore, before the write.

@@ -328,7 +328,7 @@ async function buildStaticPages() {
       title: meta.title || site.title,
       description: meta.description || site.description,
       variant: meta.variant || 'home',
-      // `<!-- assets: files-db.css, files-db.js -->`
+      // `<!-- assets: qdb.css, qdb.js -->`
       assets: (meta.assets || '').split(',').map((f) => f.trim()).filter(Boolean),
       content,
     }));

@@ -1,5 +1,5 @@
 #!/bin/sh
-# supervisord wrapper for the files-DB daemon.
+# supervisord wrapper for the qdb daemon.
 #
 # qdbd is optional: with QUANTA_DB_DAEMON=off the extension serves from its
 # walk-snapshot fallback instead. supervisord has no conditional-start, so the

@@ -28,12 +28,12 @@ _sites/*
 static/tmp
 static/tmp/*
 
-# files-db: only Cargo.toml, Cargo.lock and src/ are needed to compile the
+# qdb: only Cargo.toml, Cargo.lock and src/ are needed to compile the
 # extension. The Rust target dir (huge) and the test/demo assets are not.
-files-db/target
-files-db/demo
-files-db/tests/bench
-files-db/.gitignore
+qdb/target
+qdb/demo
+qdb/tests/bench
+qdb/.gitignore
 
 # Development, CI and build material. None of it is read at runtime, and all of
 # it would otherwise sit inside the document root. quanta-nginx.conf belongs to

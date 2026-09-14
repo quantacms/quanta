@@ -26,7 +26,7 @@ class FileFactory {
       // Resolve the node properly instead of reading the shard symlink
       // directly. getStoredNodePath() only answers for a name some earlier
       // request happened to cache, and Environment::nodePath() stopped writing
-      // that cache once the files-db index became authoritative (it answers
+      // that cache once the qdb index became authoritative (it answers
       // from a hash probe, so the symlink layer is pure syscall overhead there).
       // Reading the shard directly therefore meant file URLs stopped resolving
       // on a cold tmp/cache — a fresh deploy or a Cache::clear() — until some
