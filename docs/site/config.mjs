@@ -63,8 +63,6 @@ export const docsNav = [
       { src: 'qdb/docs/usage.md', out: 'qdb/usage.html', title: 'Using qdb from PHP' },
       { src: 'qdb/docs/how-it-works.md', out: 'qdb/how-it-works.html', title: 'How qdb works' },
       { src: 'qdb/docs/api-contract.md', out: 'qdb/api-contract.html', title: 'API contract' },
-      { src: 'qdb/docs/two-implementations.md', out: 'qdb/two-implementations.html', title: 'Two implementations' },
-      { src: 'qdb/docs/simpler-faster.md', out: 'qdb/simpler-faster.html', title: 'Simpler and faster' },
     ],
   },
 ];

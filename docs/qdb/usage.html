@@ -65,8 +65,6 @@
           <li><a class="docs__navlink is-active" aria-current="page" href="usage.html">Using qdb from PHP</a></li>
           <li><a class="docs__navlink" href="how-it-works.html">How qdb works</a></li>
           <li><a class="docs__navlink" href="api-contract.html">API contract</a></li>
-          <li><a class="docs__navlink" href="two-implementations.html">Two implementations</a></li>
-          <li><a class="docs__navlink" href="simpler-faster.html">Simpler and faster</a></li>
         </ul>
       </nav>
     </aside>
@@ -833,9 +831,9 @@ extension. There are two classes behind that call, with the same methods:</p>
 <p><code>Environment::db()</code> instantiates the subclass when <code>QuantaDb</code> is loaded and the
 base when it is not. <strong>Every method answers</strong>: a call site never branches on
 which implementation it got and never carries a second body for the case where
-the extension declines. That is the whole design — see
-<code>qdb/docs/two-implementations.md</code> for why the choice cannot simply be made
-once per process.</p>
+the extension declines. The choice is made per call, not once per process: a
+loaded extension can still be unable to answer a given question, and the
+override is where that is decided.</p>
 <p><code>NULL</code> therefore means what it says. <code>path()</code> is <code>string|FALSE</code>; <code>find()</code>,
 <code>children()</code>, <code>langs()</code> and <code>links()</code> return <code>array()</code> for &quot;nothing matched&quot;;
 <code>put()</code>, <code>link()</code>, <code>move()</code> and friends return a bool. Only <code>reindex()</code>,

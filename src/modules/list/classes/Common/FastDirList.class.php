@@ -13,36 +13,6 @@ namespace Quanta\Common;
 class FastDirList extends DirList {
 
   /**
-   * Names this list already failed to resolve, so a repeat lookup skips the
-   * prefix-walk entirely.
-   *
-   * The walk below caches successes (via Cache::storeNodePath) but nothing
-   * recorded a failure, so an unresolvable name paid for the full 5-base x
-   * depth-4 scandir every time it was asked for. findInDirectory is where a
-   * degraded render spends its time, and where it dies if it dies.
-   *
-   * Per-instance, deliberately not static. A process-wide negative cache has to
-   * be invalidated on every write or it hides a node created later in the same
-   * request -- the mistake an earlier version of this made in
-   * FilesDb::search(), which tests/quanta/07_filesdb_writes.php caught. Nothing
-   * here can see a write, so nothing here may outlive one resolution attempt by
-   * more than it has to.
-   *
-   * Be clear about what that scoping costs, because it is easy to overrate:
-   * fastResolvePath() has exactly ONE call site, the constructor, so as the
-   * class stands an instance resolves exactly one name and this map is written
-   * but never read. It is kept because it is the correct guard the moment a
-   * second call site exists, and because the shape of the safe version is worth
-   * having on the page. It is NOT what makes a degraded render survivable:
-   * real-world misses are almost entirely distinct names, so no per-name memo
-   * of any scope helps them. REQUEST_WALK_BUDGET_SECONDS below is the bound
-   * that does the work.
-   *
-   * @var array
-   */
-  private $unresolved = array();
-
-  /**
    * Wall-clock seconds the prefix-walk may spend on a single name.
    *
    * The walk is a fallback for when the node index cannot answer. Uncapped it
@@ -54,42 +24,27 @@ class FastDirList extends DirList {
   /**
    * Wall-clock seconds one REQUEST may spend prefix-walking, in total.
    *
-   * The per-name budget above bounds one pathological walk; it does not bound a
-   * render. On a tree of ~128k directories one unresolvable name costs ~48ms,
-   * and a backoffice render resolves thousands of distinct names -- so it is
-   * the aggregate, not any single walk, that reaches PHP's 30s limit and then
-   * holds a worker until the fpm terminate timeout.
-   *
-   * Once this is spent, the walk is skipped and resolution falls back to the
-   * cheap layers only: the shard symlink cache and the node index. That is not
-   * a new semantic -- it is exactly what `path($name, ['search' => FALSE])`
-   * already means elsewhere in the codebase, and what FastDirList itself asks
-   * for at step 1.5. The trade is deliberate and stated: a degraded page that
-   * renders beats a 500 that holds a worker for two minutes.
+   * A render resolves thousands of distinct names, so it is their sum, not any
+   * single walk, that reaches max_execution_time. Once spent, resolution falls
+   * back to the cheap layers only -- the same thing
+   * `path($name, ['search' => FALSE])` already means.
    */
   const REQUEST_WALK_BUDGET_SECONDS = 5.0;
 
   /**
    * Seconds spent prefix-walking so far.
    *
-   * Static because the budget is per request, not per list: a page builds many
-   * lists and it is their sum that runs into the wall. Static IS per request
-   * under php-fpm, which tears the execution context down between requests --
-   * that is the only SAPI this ships on, and it is why there is no reset hook
-   * here. Anything long-lived (a CLI script, a persistent worker runtime) would
-   * accumulate across logical requests and eventually stop walking for good, so
-   * that is the assumption to revisit first if this class is ever run under
-   * one.
+   * Static because the budget is per request, not per list, and under php-fpm
+   * statics are torn down between requests. A long-lived SAPI would accumulate
+   * across requests and eventually stop walking for good.
    *
    * @var float
    */
   private static $walk_spent = 0.0;
 
   /**
-   * Whether the exhaustion above has already been logged.
-   *
-   * Once, not once per name: past the budget every remaining lookup would fire
-   * the same line, and a bad render resolves thousands of them.
+   * Whether the exhaustion above has already been logged -- once, not once per
+   * name, since past the budget every remaining lookup would fire the same line.
    *
    * @var bool
    */
@@ -194,26 +149,18 @@ class FastDirList extends DirList {
     }
 
     // 1.5. The node database, cheap layers only: 'search' => FALSE stops it
-    // before the exec(find) it would otherwise end with, because avoiding that
-    // find is what this whole class is for. Where an index is serving, this
-    // resolves any cold name in one probe and the prefix-walk heuristic below
-    // (which only works for parent-prefixed names) never runs.
+    // before the exec(find) this class exists to avoid. Where an index is
+    // serving, this resolves any cold name in one probe and the prefix-walk
+    // below never runs.
     $db_path = $this->env->db()->path($name, array('search' => FALSE));
     if ($db_path !== FALSE && is_dir($db_path)) {
       Cache::storeNodePath($this->env, $db_path);
       return $db_path;
     }
 
-    // Already walked for this name and found nothing: do not walk again.
-    if (isset($this->unresolved[$name])) {
-      return false;
-    }
-
-    // Request-wide budget spent: stop walking. Returning FALSE here is not a
-    // claim that the node is absent, it is the same "not found cheaply" the two
-    // layers above just produced -- and the caller treats all three alike, so
-    // nothing downstream can tell them apart or act on the difference. The
-    // cheap layers have had their chance and they are the ones that scale.
+    // Request-wide budget spent: stop walking. FALSE here is not a claim that
+    // the node is absent, it is the same "not found cheaply" the two layers
+    // above produce, and the caller treats all three alike.
     if (self::$walk_spent >= self::REQUEST_WALK_BUDGET_SECONDS) {
       if (!self::$walk_budget_reported) {
         self::$walk_budget_reported = TRUE;
@@ -263,15 +210,7 @@ class FastDirList extends DirList {
       }
     }
     self::$walk_spent += microtime(TRUE) - $walk_started;
-    $expired = $this->resolve_deadline !== NULL && microtime(TRUE) >= $this->resolve_deadline;
     $this->resolve_deadline = NULL;
-
-    // Only remember the miss when the walk actually completed. A walk cut short
-    // by the budget proves nothing about whether the node exists, and caching
-    // that verdict would hide a real node for the rest of the request.
-    if (!$expired) {
-      $this->unresolved[$name] = TRUE;
-    }
 
     return false;
   }

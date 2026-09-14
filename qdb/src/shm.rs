@@ -52,8 +52,8 @@ pub const LANG_HAS_IMAGE: u16 = 2;
 ///
 /// Cleared from layout v3 on. The image is a complete representation of the
 /// decoded document, so storing the JSON next to it was storing the same
-/// content twice — 39.7 MB of hili's production segment, and the same again in
-/// the daemon's own heap, which held every document's bytes for the life of the
+/// content twice — on a production tree of ~111k documents, 39.7 MB of
+/// segment, and the same again in the daemon's own heap, which held every document's bytes for the life of the
 /// model just to re-encode them on republish.
 ///
 /// What still needs the exact bytes reads the file: `getRaw()` (whose contract
@@ -849,9 +849,9 @@ pub struct SegmentWriter {
     /// segment; 0 = not placed yet (offset 0 is the header, never a string).
     ///
     /// Indexed by ID rather than hashed: IDs are dense and assigned in order,
-    /// so this is one 4-byte slot per distinct string in the tree — ~350 KB on
-    /// hili's production data, against a `HashMap` probe on every string of
-    /// every record written.
+    /// so this is one 4-byte slot per distinct string in the tree — ~350 KB on a
+    /// production tree of ~111k documents, against a `HashMap` probe on every
+    /// string of every record written.
     str_off: Vec<u32>,
 }
 

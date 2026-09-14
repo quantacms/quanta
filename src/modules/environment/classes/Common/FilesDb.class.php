@@ -63,7 +63,6 @@ require_once __DIR__ . '/FilesDbException.class.php';
  *
  * @see qdb/docs/api-contract.md
  * @see qdb/docs/usage.md
- * @see qdb/docs/two-implementations.md
  */
 class FilesDb {
 

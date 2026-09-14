@@ -121,10 +121,10 @@ eq(Job::safeMove($src, $dst, TRUE, $env, $job_name), TRUE, 'safeMove on a vanish
 // A move the node database RAISES on, for a reason that is not a lost race,
 // must still finish on the filesystem.
 //
-// In production that reason is EXDEV: HILI gives each job father (_jobs_todo,
-// _jobs_done, _jobs_unknown, _jobs_archived) its own hostPath volume, and
-// rename(2) refuses to cross a mount boundary even when both sides live on one
-// filesystem. A test cannot mount anything, so it reaches the same branch with
+// In production that reason is EXDEV: a deployment that wants its job queues
+// durable gives each job father its own volume, and rename(2) refuses to cross
+// a mount boundary even when both sides live on one filesystem. A test cannot
+// mount anything, so it reaches the same branch with
 // a father the database can no longer resolve — a raise either way, with the
 // job still sitting in _jobs_todo afterwards and `mv -T` the only thing left
 // that can move it.

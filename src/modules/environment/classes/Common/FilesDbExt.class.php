@@ -44,7 +44,6 @@ require_once __DIR__ . '/FilesDb.class.php';
  * write is not something to paper over by doing it again unlocked.
  *
  * @see qdb/docs/api-contract.md
- * @see qdb/docs/two-implementations.md
  */
 class FilesDbExt extends FilesDb {
 
@@ -205,11 +204,9 @@ class FilesDbExt extends FilesDb {
    * Whether the index holds $name, and holds it at the directory the caller
    * named.
    *
-   * This is the check the wired call sites used to make inline with
-   * resolvesTo(), moved in. It deliberately asks the INDEX rather than
-   * $this->path(): the question is "can the extension serve this call", and a
-   * name the index does not know is a no regardless of what an exec(find)
-   * would eventually turn up.
+   * Deliberately asks the INDEX rather than $this->path(): the question is
+   * "can the extension serve this call", and a name the index does not know is
+   * a no regardless of what an exec(find) would eventually turn up.
    *
    * @param string $name
    *   The node name.
@@ -225,8 +222,7 @@ class FilesDbExt extends FilesDb {
     if (!isset($opts['at']) || !is_string($opts['at']) || $opts['at'] === '') {
       // Nothing to check. Do NOT probe just to find out whether the index knows
       // the name — the call that follows asks the same question and answers it,
-      // and paying for both would put a second probe on every document read.
-      // That is the tax simpler-faster.md §4.1 removed; it is not coming back.
+      // and paying for both puts a second probe on every document read.
       return TRUE;
     }
     $indexed = $this->indexPath($name);
@@ -333,12 +329,9 @@ class FilesDbExt extends FilesDb {
   /**
    * {@inheritdoc}
    *
-   * One call, one probe. This used to be three at the call site — a path
-   * lookup for the node's absolute path, then getObject($language), then
-   * getObject(NULL) on a miss. All three interrogated the same index
-   * record, and the first one's answer existed only to be compared once and
-   * dropped. 'at' carries the comparison and 'fallback' the language order into
-   * the probe that already holds the record, so no path is built at all.
+   * One call, one probe: 'at' carries the path comparison and 'fallback' the
+   * language order into the probe that already holds the index record, so no
+   * path is built at all.
    *
    * Measured against a live daemon (qdb/tests/bench/probe.php, php:8.2-fpm):
    *
@@ -347,14 +340,12 @@ class FilesDbExt extends FilesDb {
    *   437 B                      7.19 us                 0.44 us    16x
    *   205 KB                   129.61 us                 0.46 us   279x
    *
-   * Most of the legacy cost is the syscalls (~6.3 us of the 6.53 us on a tiny
-   * document); the rest is json_decode, which the daemon's pre-decoded document
-   * image removes entirely. The 205 KB row is flat because the extension points
-   * PHP's string zvals straight at the shared mapping instead of copying the
-   * body (qdb/README.md, "Document reads").
+   * Nearly all the legacy cost is syscalls plus json_decode; the 205 KB row is
+   * flat because the extension points PHP's string zvals straight at the shared
+   * mapping instead of copying the body.
    *
-   * Re-measure before changing this: Node::loadJSON is the hottest function on
-   * admin list pages (~26% of render self-time).
+   * Re-measure before changing this — Node::loadJSON is the hottest function on
+   * list-heavy pages (~26% of render self-time).
    */
   public function load($name, $opts = array()) {
     if (!$this->available()) {

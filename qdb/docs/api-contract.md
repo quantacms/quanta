@@ -526,7 +526,7 @@ reaches all of it through `$env->db()`, which is one of two classes
 with the same methods — `Quanta\Common\FilesDbExt` when this extension is
 loaded, `Quanta\Common\FilesDb` (the filesystem, complete on its own) when it
 is not. A method that the extension cannot serve falls to the base class inside
-the override, not at the caller. See `qdb/docs/two-implementations.md`.
+the override, not at the caller.
 
 The practical consequence for this contract: **"not answerable" is no longer a
 return value.** A call site cannot see the difference between the two
