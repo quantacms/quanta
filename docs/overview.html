@@ -39,7 +39,7 @@
       </button>
       <nav class="topnav" id="site-nav" aria-label="Main">
         <a class="topnav__link is-active" href="overview.html">Documentation</a>
-          <a class="topnav__link" href="files-db.html">Files-DB</a>
+          <a class="topnav__link" href="qdb.html">qdb</a>
           <a class="topnav__link" href="https://www.quanta.org" target="_blank" rel="noopener">quanta.org</a>
           <a class="topnav__link" href="https://github.com/quantacms/quanta" target="_blank" rel="noopener">GitHub</a>
       </nav>
@@ -59,14 +59,14 @@
           <li><a class="docs__navlink is-active" aria-current="page" href="overview.html">Overview</a></li>
           <li><a class="docs__navlink" href="introduction.html">Introduction &amp; install</a></li>
         </ul>
-        <p class="docs__navtitle">Files-DB</p>
+        <p class="docs__navtitle">qdb</p>
         <ul class="docs__navlist">
-          <li><a class="docs__navlink" href="files-db/">The extension</a></li>
-          <li><a class="docs__navlink" href="files-db/usage.html">Using Files-DB from PHP</a></li>
-          <li><a class="docs__navlink" href="files-db/how-it-works.html">How Files-DB works</a></li>
-          <li><a class="docs__navlink" href="files-db/api-contract.html">API contract</a></li>
-          <li><a class="docs__navlink" href="files-db/two-implementations.html">Two implementations</a></li>
-          <li><a class="docs__navlink" href="files-db/simpler-faster.html">Simpler and faster</a></li>
+          <li><a class="docs__navlink" href="qdb/">The extension</a></li>
+          <li><a class="docs__navlink" href="qdb/usage.html">Using qdb from PHP</a></li>
+          <li><a class="docs__navlink" href="qdb/how-it-works.html">How qdb works</a></li>
+          <li><a class="docs__navlink" href="qdb/api-contract.html">API contract</a></li>
+          <li><a class="docs__navlink" href="qdb/two-implementations.html">Two implementations</a></li>
+          <li><a class="docs__navlink" href="qdb/simpler-faster.html">Simpler and faster</a></li>
         </ul>
       </nav>
     </aside>
@@ -80,7 +80,7 @@
 lives in a <code>data.json</code> (plus <code>data_&lt;lang&gt;.json</code> for translations) inside it.
 There is no SQL and no separate schema — the filesystem is the single source of
 truth.</p>
-<p>The <code>quanta_db</code> PHP extension (&quot;Files-DB&quot;) is a fast path onto exactly those
+<p>The <code>quanta_db</code> PHP extension (&quot;qdb&quot;) is a fast path onto exactly those
 files: a daemon keeps the whole tree in shared memory so a node lookup is a hash
 probe instead of an <code>exec(find)</code>, and writes become atomic and locked. It is
 never load-bearing — when it is absent or its daemon is down, Quanta falls back
@@ -93,19 +93,19 @@ to the original filesystem code and behaves exactly as it always did.</p>
 </tr>
 </thead>
 <tbody><tr>
-<td><a href="files-db/usage.html">Using Files-DB from PHP</a></td>
+<td><a href="qdb/usage.html">Using qdb from PHP</a></td>
 <td>How to read and write nodes through the <code>QuantaDb</code> API — methods, options, errors, recipes, and how Quanta&#39;s own <code>Node</code>/<code>NodeFactory</code>/<code>Environment</code> classes use it.</td>
 </tr>
 <tr>
-<td><a href="files-db/how-it-works.html">How Files-DB works</a></td>
+<td><a href="qdb/how-it-works.html">How qdb works</a></td>
 <td>Internals — the daemon, the shared-memory layout, the read and write paths, coherence and fallback.</td>
 </tr>
 <tr>
-<td><a href="files-db/api-contract.html">API contract</a></td>
+<td><a href="qdb/api-contract.html">API contract</a></td>
 <td>The normative, versioned specification.</td>
 </tr>
 <tr>
-<td><a href="files-db/">files-db README</a></td>
+<td><a href="qdb/">qdb README</a></td>
 <td>Building, testing, benchmarking, and running <code>qdbd</code> / <code>qdbstat</code>.</td>
 </tr>
 </tbody></table>

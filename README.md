@@ -161,7 +161,7 @@ Once you have, you can start:
 Documentation site
 -----------------
 `docs/` is a small static site: a landing page, an animated walkthrough of
-Files-DB, and the documentation itself, rendered from the Markdown files that
+qdb, and the documentation itself, rendered from the Markdown files that
 already live in this repository. `docs/site/` holds its source; everything else
 under `docs/` is generated from that and committed.
 

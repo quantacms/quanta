@@ -112,7 +112,7 @@ function integrity_check_parent_nodes($env,$path,$subnodes_types){
  *
  * The node database expresses every step of this: meta()['langs'] lists the
  * documents, deleteDoc() drops one, and getRaw() + putRaw() move one to another
- * language without re-encoding it (files-db/docs/api-contract.md §9). Each step
+ * language without re-encoding it (qdb/docs/api-contract.md §9). Each step
  * falls back to the filesystem on its own, so an absent extension changes
  * nothing.
  *

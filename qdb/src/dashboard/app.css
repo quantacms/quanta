@@ -1,0 +1,387 @@
+/* Two panes under a status bar. Deliberately dependency-free: the container
+   has no egress, so every byte here is served from the binary. */
+:root {
+  color-scheme: light dark;
+  --bg: #ffffff;
+  --panel: #f6f7f9;
+  --line: #dcdfe4;
+  --fg: #1c2024;
+  --dim: #6b7280;
+  --accent: #2563eb;
+  --ok: #15803d;
+  --warn: #b45309;
+  --bad: #b91c1c;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14171a;
+    --panel: #1b1f23;
+    --line: #2c3238;
+    --fg: #e6e9ec;
+    --dim: #9aa4b0;
+    --accent: #60a5fa;
+    --ok: #4ade80;
+    --warn: #fbbf24;
+    --bad: #f87171;
+  }
+}
+
+* { box-sizing: border-box; }
+/* The UA's `[hidden]{display:none}` is a lone attribute selector, so the
+   `main{display:flex}` below outranks it and the hidden view would render
+   underneath the visible one. This has to win. */
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 13px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+#bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+  flex: 0 0 auto;
+}
+.brand { font-weight: 700; letter-spacing: .02em; }
+#bar nav { display: flex; gap: 4px; }
+#bar nav a {
+  color: var(--dim);
+  text-decoration: none;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+#bar nav a.on { background: var(--bg); color: var(--fg); box-shadow: inset 0 0 0 1px var(--line); }
+.status { margin-left: auto; display: flex; align-items: center; gap: 14px; color: var(--dim); }
+.status b { color: var(--fg); font-variant-numeric: tabular-nums; }
+.pill {
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  background: var(--line);
+}
+.pill.ok { background: var(--ok); color: #04140a; }
+.pill.warn { background: var(--warn); color: #1a1102; }
+.pill.bad { background: var(--bad); color: #1a0404; }
+
+main { flex: 1 1 auto; min-height: 0; display: flex; }
+#left {
+  flex: 0 0 380px;
+  min-width: 260px;
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+#right { flex: 1 1 auto; min-width: 0; padding: 16px 20px; }
+.scroll { overflow: auto; }
+
+.controls { padding: 10px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+#q {
+  width: 100%;
+  padding: 6px 9px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+}
+.tabs { display: flex; gap: 4px; }
+.tabs button {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--dim);
+  font: inherit;
+  cursor: pointer;
+}
+.tabs button.on { color: var(--fg); border-color: var(--accent); }
+
+#browser { flex: 1 1 auto; padding: 6px 0; }
+.foot { padding: 6px 10px; border-top: 1px solid var(--line); color: var(--dim); font-size: 11px; }
+
+/* Tree */
+ul.tree, ul.tree ul { list-style: none; margin: 0; padding: 0; }
+ul.tree ul { padding-left: 14px; border-left: 1px solid var(--line); margin-left: 9px; }
+.row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px 2px 4px;
+  cursor: pointer;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+.row:hover { background: var(--panel); }
+.row.sel { background: var(--accent); color: #fff; }
+.row.sel .meta, .row.sel .twisty { color: #e8f0ff; }
+.twisty {
+  width: 14px;
+  flex: 0 0 14px;
+  text-align: center;
+  color: var(--dim);
+  font-size: 10px;
+  user-select: none;
+}
+.label { font-family: var(--mono); overflow: hidden; text-overflow: ellipsis; }
+.meta { margin-left: auto; color: var(--dim); font-size: 11px; font-variant-numeric: tabular-nums; }
+.badge {
+  font-size: 10px;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--line);
+  color: var(--dim);
+}
+.badge.link { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
+.badge.bad { background: var(--bad); color: #fff; }
+.badge.missing { background: var(--warn); color: #1a1102; }
+
+/* Flat list */
+table.list { width: 100%; border-collapse: collapse; font-size: 12px; }
+table.list th {
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+  text-align: left;
+  font-weight: 600;
+  color: var(--dim);
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--line);
+}
+table.list td { padding: 3px 8px; border-bottom: 1px solid var(--line); }
+table.list tr { cursor: pointer; }
+table.list tr:hover td { background: var(--panel); }
+table.list tr.sel td { background: var(--accent); color: #fff; }
+td.path { font-family: var(--mono); }
+td.num { text-align: right; font-variant-numeric: tabular-nums; color: var(--dim); white-space: nowrap; }
+td.path .badge { margin-left: 6px; }
+.foot { display: flex; align-items: center; gap: 8px; }
+
+/* Detail */
+.empty { color: var(--dim); padding: 40px 0; text-align: center; }
+h1.node { font-size: 18px; margin: 0 0 2px; font-family: var(--mono); }
+.crumbs { color: var(--dim); font-family: var(--mono); font-size: 12px; margin-bottom: 14px; word-break: break-all; }
+.grid { display: grid; grid-template-columns: max-content 1fr; gap: 3px 16px; margin-bottom: 18px; }
+.grid dt { color: var(--dim); }
+.grid dd { margin: 0; font-family: var(--mono); word-break: break-all; }
+h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--dim); margin: 18px 0 7px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  cursor: pointer;
+  background: var(--bg);
+  color: var(--fg);
+}
+.chip:hover { border-color: var(--accent); }
+.chip.missing { border-style: dashed; color: var(--warn); }
+.chip small { color: var(--dim); }
+
+.files { display: flex; flex-direction: column; gap: 10px; }
+.file { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.file > summary {
+  padding: 7px 10px;
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: var(--panel);
+  font-family: var(--mono);
+}
+.file > summary .meta { font-family: inherit; }
+pre.json {
+  margin: 0;
+  padding: 10px 12px;
+  font-family: var(--mono);
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 60vh;
+  overflow: auto;
+}
+.k { color: var(--accent); }
+.s { color: var(--ok); }
+.n { color: var(--warn); }
+.b, .z { color: var(--bad); }
+.note { color: var(--dim); padding: 10px 12px; }
+
+/* Stats */
+#stats { padding: 16px 20px; width: 100%; }
+.sect { margin-bottom: 22px; }
+.sect h2 { margin-top: 0; }
+.kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2px 24px; }
+.kv div { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px dotted var(--line); padding: 2px 0; }
+.kv span:first-child { color: var(--dim); }
+.kv span:last-child { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.banner {
+  border: 1px solid var(--warn);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  color: var(--warn);
+}
+
+/* ------------------------------------------------------------------ sizes */
+
+/* One-hue ORDINAL ramp, five steps, validated against this page's own surfaces
+   (`validate_palette.js --ordinal`: monotone lightness, adjacent dL >= 0.06,
+   the step nearest the surface clears 2:1, hue spread 3deg).
+   Area already carries magnitude, so the ramp carries RANK -- and it runs
+   quiet-for-large, loud-for-small in both modes. Large saturated blocks are
+   the treemap failure mode; the tiles that need help being seen are the small
+   ones. --tm-1 is always the biggest child, --tm-5 the smallest. */
+:root {
+  --tm-1: #86b6ef;
+  --tm-2: #5598e7;
+  --tm-3: #2a78d6;
+  --tm-4: #1c5cab;
+  --tm-5: #104281;
+  --tm-other: #c9ccd1;
+  --tm-ink: #0b0b0b;
+  --tm-ink-small: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tm-1: #184f95;
+    --tm-2: #256abf;
+    --tm-3: #3987e5;
+    --tm-4: #6da7ec;
+    --tm-5: #9ec5f4;
+    --tm-other: #333a42;
+    --tm-ink: #ffffff;
+    --tm-ink-small: #0b0b0b;
+  }
+}
+
+/* Scrolls as a whole when the viewport is too short to hold the map at a
+   readable size. Without this the treemap's min-height pushes the note and the
+   bottom of the map out of the pane with no way to reach them -- a pane that
+   clips is worse than one that scrolls. */
+.sizes { display: flex; flex-direction: column; width: 100%; min-height: 0; overflow: auto; padding: 14px 18px 10px; gap: 12px; }
+.sizes-head { display: flex; align-items: center; gap: 16px; flex: 0 0 auto; }
+.sizes-head .tabs { margin-left: auto; flex: 0 0 auto; }
+.sizes-head .tabs button { flex: 0 0 auto; white-space: nowrap; }
+
+.crumbs-nav { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px; font-family: var(--mono); min-width: 0; }
+.crumbs-nav button {
+  background: none;
+  border: 0;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font: inherit;
+  color: var(--accent);
+  cursor: pointer;
+}
+.crumbs-nav button:hover { background: var(--panel); }
+.crumbs-nav .sep { color: var(--dim); }
+.crumbs-nav .here { color: var(--fg); font-weight: 600; padding: 2px 4px; }
+
+.sizes-body { flex: 1 1 auto; display: flex; gap: 14px; min-height: 260px; }
+.treemap { flex: 1 1 auto; position: relative; min-width: 0; min-height: 180px; }
+.ranked { flex: 0 0 340px; min-width: 220px; }
+
+/* Below this the two panes side by side leave neither enough room: the map
+   becomes a column of slivers and the names in the list are all ellipsis. */
+@media (max-width: 900px) {
+  .sizes-body { flex-direction: column; }
+  .ranked { flex: 1 1 auto; min-height: 200px; }
+  .sizes-head { flex-wrap: wrap; }
+  .sizes-head .tabs { margin-left: 0; }
+}
+
+/* Tiles are positioned by the squarify pass in app.js. The 2px inset is the
+   SURFACE GAP that separates touching fills -- never a border, which would
+   add a line the data does not have. */
+.tile {
+  position: absolute;
+  overflow: hidden;
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 5px 7px;
+  color: var(--tm-ink);
+  transition: outline-color .08s;
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+}
+.tile:hover, .tile:focus-visible { outline-color: var(--fg); }
+.tile.small { color: var(--tm-ink-small); }
+.tile .t-name {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tile .t-size { font-size: 11px; opacity: .85; font-variant-numeric: tabular-nums; }
+.tile.tiny { padding: 0; }
+/* The fold tile is not a node: nothing opens, so it must not look clickable. */
+.tile.other { cursor: default; color: var(--fg); }
+
+/* Fixed layout so the name column can ellipsis: in an auto-layout table a
+   percentage width is a suggestion and `overflow: hidden` never engages, so a
+   long node name stretches the table and pushes the numbers out of view. */
+.ranked table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+.ranked col.c-name { width: auto; }
+.ranked col.c-num { width: 76px; }
+.ranked col.c-pct { width: 58px; }
+.ranked th {
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  text-align: left;
+  font-weight: 600;
+  color: var(--dim);
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--line);
+}
+.ranked td { padding: 3px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.ranked tr { cursor: pointer; }
+.ranked tr:hover td, .ranked tr.hot td { background: var(--panel); }
+.ranked .swatch {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  margin-right: 7px;
+  vertical-align: baseline;
+}
+.ranked .r-name { font-family: var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ranked .r-num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ranked .r-pct { text-align: right; font-variant-numeric: tabular-nums; color: var(--dim); white-space: nowrap; }
+.ranked .total-row td { border-bottom: 1px solid var(--line); color: var(--dim); }
+.ranked .total-row b { color: var(--fg); font-variant-numeric: tabular-nums; }
+
+.metric-note { flex: 0 0 auto; margin: 0; color: var(--dim); font-size: 11px; }
+
+#tip {
+  position: fixed;
+  z-index: 10;
+  pointer-events: none;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 9px;
+  font-size: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .28);
+  max-width: 320px;
+}
+#tip .tip-name { font-family: var(--mono); font-weight: 600; display: block; }
+#tip .tip-row { color: var(--dim); font-variant-numeric: tabular-nums; }

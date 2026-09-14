@@ -43,8 +43,8 @@ require_once __DIR__ . '/FilesDb.class.php';
  * are re-thrown, not retried against the filesystem: a locked, half-completed
  * write is not something to paper over by doing it again unlocked.
  *
- * @see files-db/docs/api-contract.md
- * @see files-db/docs/two-implementations.md
+ * @see qdb/docs/api-contract.md
+ * @see qdb/docs/two-implementations.md
  */
 class FilesDbExt extends FilesDb {
 
@@ -340,7 +340,7 @@ class FilesDbExt extends FilesDb {
    * dropped. 'at' carries the comparison and 'fallback' the language order into
    * the probe that already holds the record, so no path is built at all.
    *
-   * Measured against a live daemon (files-db/tests/bench/probe.php, php:8.2-fpm):
+   * Measured against a live daemon (qdb/tests/bench/probe.php, php:8.2-fpm):
    *
    *   document      legacy fgc+json_decode   QuantaDb::getObject()
    *   48 B                       6.53 us                 0.24 us    27x
@@ -351,7 +351,7 @@ class FilesDbExt extends FilesDb {
    * document); the rest is json_decode, which the daemon's pre-decoded document
    * image removes entirely. The 205 KB row is flat because the extension points
    * PHP's string zvals straight at the shared mapping instead of copying the
-   * body (files-db/README.md, "Document reads").
+   * body (qdb/README.md, "Document reads").
    *
    * Re-measure before changing this: Node::loadJSON is the hottest function on
    * admin list pages (~26% of render self-time).
@@ -485,7 +485,7 @@ class FilesDbExt extends FilesDb {
    * the default DIR_ALL, 'no' means "everything that is not a symlink", which
    * includes data.json and every upload. Only 'only' is safe on its own, since
    * a plain file is never a symlinked member. The parity suite pins this
-   * (files-db/tests/quanta/01_shim_reads.php).
+   * (qdb/tests/quanta/01_shim_reads.php).
    */
   public function children($father, $attributes = array()) {
     $type = isset($attributes['type']) ? $attributes['type'] : Environment::DIR_ALL;

@@ -1,0 +1,62 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>qdb browser</title>
+<link rel="stylesheet" href="app.css">
+
+<header id="bar">
+  <span class="brand">qdb</span>
+  <nav>
+    <a href="#/files" data-view="files">Files</a>
+    <a href="#/sizes" data-view="sizes">Size</a>
+    <a href="#/stats" data-view="stats">Stats</a>
+  </nav>
+  <div id="status" class="status">
+    <span class="pill" id="verdict">connecting</span>
+    <span class="stat"><b id="s-nodes">&mdash;</b> nodes</span>
+    <span class="stat"><b id="s-links">&mdash;</b> links</span>
+    <span class="stat"><b id="s-docs">&mdash;</b> docs</span>
+    <span class="stat">epoch <b id="s-epoch">&mdash;</b></span>
+  </div>
+</header>
+
+<main id="files-view">
+  <section id="left">
+    <div class="controls">
+      <input id="q" type="search" placeholder="filter by name or path" autocomplete="off" spellcheck="false">
+      <div class="tabs" id="mode">
+        <button data-mode="tree" class="on">Tree</button>
+        <button data-mode="list">All files</button>
+      </div>
+    </div>
+    <div id="browser" class="scroll"></div>
+    <div id="left-foot" class="foot"></div>
+  </section>
+
+  <section id="right" class="scroll">
+    <div id="detail" class="empty">Select a node to inspect the files it holds.</div>
+  </section>
+</main>
+
+<main id="sizes-view" hidden>
+  <section id="sizes" class="sizes">
+    <div class="sizes-head">
+      <nav id="crumbs" class="crumbs-nav" aria-label="Breadcrumb"></nav>
+      <div class="tabs" id="metric">
+        <button data-metric="docs" class="on">Documents on disk</button>
+        <button data-metric="segment">Segment footprint</button>
+      </div>
+    </div>
+    <div class="sizes-body">
+      <div id="treemap" class="treemap" role="img" aria-label="Subtree sizes"></div>
+      <div id="ranked" class="ranked scroll"></div>
+    </div>
+    <p id="metric-note" class="metric-note"></p>
+  </section>
+</main>
+
+<main id="stats-view" hidden>
+  <div id="stats" class="scroll"></div>
+</main>
+
+<script src="app.js"></script>

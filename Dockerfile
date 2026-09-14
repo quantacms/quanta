@@ -2,7 +2,7 @@
 #
 # ── Quanta CMS base image ─────────────────────────────────────────────────────
 # "All dependencies" layer for the Quanta CMS application image. Everything here
-# is expensive to build and changes rarely: the native files-DB extension
+# is expensive to build and changes rarely: the native qdb extension
 # (Rust), the PHP extensions, Composer, and the Quanta CMS source + its vendored
 # dependencies.
 #
@@ -24,14 +24,14 @@
 #   * an interactive `exec` into the container lands in a www-data shell (`root`
 #     switches back) — the processes themselves still run as root.
 #
-# Build (context MUST be this quanta/ directory so files-db/ is reachable):
+# Build (context MUST be this quanta/ directory so qdb/ is reachable):
 #
 #     DOCKER_BUILDKIT=1 docker build -t quanta-cms-base:php8.5 quanta/
 #
 # Built against php:8.5-fpm so the compiled .so matches the production ABI
 # (non-thread-safe). Bump PHP_VERSION here and the app image inherits it.
 #
-# 8.5 is also the ceiling of ext-php-rs 0.15 (files-db/Cargo.toml): its build
+# 8.5 is also the ceiling of ext-php-rs 0.15 (qdb/Cargo.toml): its build
 # script rejects any PHP whose Zend API is newer than 20250925, so PHP 8.6 needs
 # a crate upgrade first, not just a bump here.
 #
@@ -64,7 +64,7 @@ ARG PHP_VERSION=8.5
 # not; there is no need to guess.
 ARG DEBIAN_SUITE=trixie
 
-# ── Stage 1: qdb-builder — compile the native files-DB extension (Rust) ───────
+# ── Stage 1: qdb-builder — compile the native qdb extension (Rust) ───────
 # Kept in the same base image FROM so the cdylib links against the exact PHP ABI
 # the runtime uses. build-essential/clang/pkg-config are only needed here and
 # never reach the final image.
@@ -85,8 +85,8 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
 WORKDIR /qdb
 # Copy only the crate manifest + sources (see .dockerignore: target/ is excluded)
 # so the cargo layer caches on source changes alone.
-COPY files-db/Cargo.toml files-db/Cargo.lock ./
-COPY files-db/src ./src
+COPY qdb/Cargo.toml qdb/Cargo.lock ./
+COPY qdb/src ./src
 
 # --locked builds exactly the pinned Cargo.lock; LTO + codegen-units=1 come from
 # the crate's [profile.release]. The registry and target dirs are BuildKit cache
@@ -325,7 +325,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 COPY --link --from=squeeze /out/rclone /usr/local/bin/rclone
 
-# quanta_db: fast, concurrency-safe access to the files DB. Root is the
+# quanta_db: fast, concurrency-safe access to the qdb index. Root is the
 # canonical site dir (host aliases are symlinks to it). The qdbd daemon holds
 # the whole tree in a shared-memory segment (tmpfs, /dev/shm) that the
 # extension maps read-only; locks default under /tmp/quanta_db — all derived,
@@ -343,9 +343,18 @@ COPY --link --from=qdb-builder /out/quanta_db.so /usr/local/lib/php/extensions/q
 # qdbstat: varnishstat-style live monitor. Reads the per-pod shared-memory
 # counter arena + active data segment. QUANTA_DB_ROOT lets it (and the PHP env
 # fallback) resolve the same derived-data dir the php.ini root points at, so
-# `kubectl exec <pod> -- qdbstat --once` works with no arguments.
+# `kubectl exec <pod> -- qdbstat --once` works with no arguments. The same
+# binary serves those counters as Prometheus /metrics with --listen; supervisord
+# runs it that way when QUANTA_DB_METRICS_LISTEN is set (docker/qdbstat-exporter.sh).
 #
-# qdbd: the files-db daemon. Loads the whole node tree into a shared-memory
+# It also serves a read-only web browser for the indexed files with --dashboard,
+# started by supervisord when QUANTA_DB_DASHBOARD_LISTEN is set
+# (docker/qdbstat-dashboard.sh). That one carries node paths and document
+# content rather than counters, so it binds loopback unless told otherwise and
+# takes an optional QUANTA_DB_DASHBOARD_TOKEN. Neither port is EXPOSEd: this
+# image is a base for deployments that never asked to open one.
+#
+# qdbd: the qdb daemon. Loads the whole node tree into a shared-memory
 # segment at boot, keeps it authoritative via inotify + periodic reconcile, and
 # applies the extension's write notifications over a unix socket. supervisord
 # starts it (via docker/qdbd-run.sh) unless QUANTA_DB_DAEMON is off; if it isn't
@@ -413,6 +422,8 @@ COPY --link docker/nginx/snippets/           /etc/nginx/snippets/
 COPY --link docker/php/zz-quanta.conf        /usr/local/etc/php-fpm.d/zz-quanta.conf
 COPY --link docker/supervisord.conf          /etc/supervisor/conf.d/quanta.conf
 COPY --link docker/qdbd-run.sh               /usr/local/bin/qdbd-run.sh
+COPY --link docker/qdbstat-exporter.sh       /usr/local/bin/qdbstat-exporter.sh
+COPY --link docker/qdbstat-dashboard.sh      /usr/local/bin/qdbstat-dashboard.sh
 COPY --link docker/build-assets.sh           /usr/local/bin/quanta-build-assets
 
 # Pool sizing derived from the container's own cgroup limits, run by the
@@ -450,7 +461,9 @@ RUN set -eux; \
         '[ -r /etc/quanta/shell.bashrc ] && . /etc/quanta/shell.bashrc' \
         > /etc/profile.d/00-quanta-shell.sh; \
     rm -f /etc/nginx/sites-enabled/default /etc/nginx/conf.d/default.conf.dpkg-dist; \
-    chmod +x /usr/local/bin/qdbd-run.sh /usr/local/bin/docker-entrypoint.sh \
+    chmod +x /usr/local/bin/qdbd-run.sh /usr/local/bin/qdbstat-exporter.sh \
+             /usr/local/bin/qdbstat-dashboard.sh \
+             /usr/local/bin/docker-entrypoint.sh \
              /usr/local/bin/quanta-build-assets /usr/local/bin/php-fpm-autotune.sh; \
     mkdir -p /docker-entrypoint.d /var/cache/nginx/assets /var/cache/nginx/html \
              /var/lib/nginx /run; \
@@ -461,11 +474,11 @@ RUN set -eux; \
 # their own layer so an image pull that already has them skips them.
 COPY --link --from=vendor /app/vendor /var/www/quanta/vendor
 
-# The Quanta CMS source. The Rust source (files-db/) and the server configs
+# The Quanta CMS source. The Rust source (qdb/) and the server configs
 # (docker/, already installed under /etc above) are dropped afterwards — neither
 # belongs under the web root.
 COPY . /var/www/quanta/
-RUN rm -rf /var/www/quanta/files-db /var/www/quanta/docker
+RUN rm -rf /var/www/quanta/qdb /var/www/quanta/docker
 
 # Create sites and static directories (gitignored in the Quanta repo). php-fpm
 # runs as www-data and writes derived data here (class map, thumbs, tmp files),
@@ -483,7 +496,18 @@ RUN mkdir -p /var/www/quanta/sites /var/www/quanta/static/tmp \
 # (hook_load_includes), add `RUN quanta-build-assets` after copying your site in,
 # so those assets are in the bundle.
 ENV QUANTA_ASSETS_DIR=/usr/local/share/quanta/assets
-RUN quanta-build-assets
+# The doctor run loads the quanta_db extension, which creates the per-pod
+# metrics arena under /tmp/quanta_db. Left in place it is baked into the image
+# layer, and every container then starts with a stale arena in a *lower*
+# overlayfs layer: the first writer's O_RDWR open copies the file up and writes
+# to the upper copy, while any reader that opened the lower one keeps a frozen
+# view of it -- with the same st_ino, because overlayfs deliberately keeps
+# inode numbers stable across a copy-up, so nothing about the path says the
+# contents diverged. That stranded `qdbstat --listen` on all-zero counters for a
+# pod's whole life. The arena is derived, per-pod state; it has no business in
+# an image layer at all, and the entrypoint recreates the directory anyway.
+RUN quanta-build-assets \
+    && rm -rf /tmp/quanta_db
 
 WORKDIR /var/www/quanta
 

@@ -7,7 +7,7 @@ namespace Quanta\Common;
  *
  * Never "not found": an absent node is a return value (FALSE, NULL or an empty
  * array, depending on the method), not an exception. This is the contract's own
- * rule (files-db/docs/quanta_db.stub.php) and both implementations obey it.
+ * rule (qdb/docs/quanta_db.stub.php) and both implementations obey it.
  *
  * This class exists because \QuantaDbException does NOT. It ships with the
  * native extension, so on a host without the .so every `catch
@@ -20,7 +20,7 @@ namespace Quanta\Common;
  * The codes are the contract's, by value, so a wrapped exception keeps the
  * number it arrived with.
  *
- * @see files-db/docs/api-contract.md
+ * @see qdb/docs/api-contract.md
  */
 class FilesDbException extends \RuntimeException {
 

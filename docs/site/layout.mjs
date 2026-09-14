@@ -21,7 +21,7 @@ export function escapeHtml(str) {
 const isExternal = (href) => /^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith('//');
 
 /**
- * URL of `to` (an output path such as `docs/files-db/usage.html`) as seen from
+ * URL of `to` (an output path such as `docs/qdb/usage.html`) as seen from
  * the page at `from`. `index.html` targets collapse to a directory URL.
  */
 export function relUrl(from, to) {
