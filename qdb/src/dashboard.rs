@@ -522,7 +522,8 @@ fn route_doc(view: &View, q: &Query) -> Result<Response, Response> {
 /// Every node, filtered and paginated — the "show me all of it" view.
 ///
 /// The only route that scans, and the one that has to stay cheap on a real
-/// tree: hili's index is ~200k nodes, and the first thing anyone clicks is this.
+/// tree — a production index runs to a few hundred thousand nodes, and this is
+/// the first thing anyone clicks.
 ///
 /// So the scan keeps a bounded max-heap of the `offset + limit` smallest sort
 /// keys rather than collecting every match and sorting it. Two things fall out

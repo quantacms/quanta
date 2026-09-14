@@ -192,18 +192,10 @@ class QtagFactory {
       }
       $transformed++;
 
-      // Scan and substitute in ONE pass over the subject, per delimiter.
+      // Scan and substitute in ONE pass over the subject, per delimiter. A
+      // str_replace per distinct Qtag costs O(distinct x subject) - the whole
+      // page rebuilt once per Qtag it contains.
       //
-      // Collecting the replacements first and then applying them with a
-      // str_replace per distinct Qtag costs O(distinct x subject): the whole
-      // page is rebuilt once per Qtag it contains. preg_replace_callback walks
-      // the subject once and splices as it goes, so the cost no longer depends
-      // on how many distinct Qtags the page has. strtr() batches the same work
-      // and is far worse here - it probes every position for a key of each
-      // length it knows, and a page carries thousands of distinct markup
-      // lengths.
-      //
-      // The callback fires in scan order, so Qtags render in document order.
       // preg_replace_callback does not re-scan replacement text, so Qtags
       // revealed by a substitution are picked up on the next turn of this
       // loop: that is what makes the fixpoint.

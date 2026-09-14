@@ -108,31 +108,19 @@ class Node extends JSONDataContainer implements Cacheable {
    * TODO: move standard part into JSONDataContainer.
    */
   public function loadJSON() {
-    // One call to the node database, which serves this from the daemon's
-    // shared-memory segment when it can (no stat, no file read, no
-    // json_decode) and off the disk when it cannot. This call site used to
-    // carry both — a class_exists()/method_exists() probe, a three-call
-    // extension read, and a complete legacy read to fall back to. Only the
-    // last of those was ever really about THIS node's behaviour; the rest was
-    // deciding which implementation to use, and FilesDb owns that now.
+    // One call to the node database, which picks its own implementation.
     //
-    // 'as' => 'object' (not the default array shape) is the right ask here: it
-    // reproduces json_decode's shape all the way down, where the array shape
-    // returns the contract's nested ARRAYS. Quanta reads nested documents as
-    // objects — see loadPermissions() below ($this->json->permissions->
-    // {$permission}) and access.hook.inc — so a plain (object) cast of the
-    // array shape would only fix the top level. json_encode() cannot detect
-    // that difference; parity has to be checked with var_export().
+    // 'as' => 'object' reproduces json_decode's shape all the way down; the
+    // default array shape returns nested ARRAYS, and Quanta reads nested
+    // documents as objects (loadPermissions() below, access.hook.inc), so a
+    // top-level (object) cast is not equivalent.
     //
-    // 'at' is load-bearing: this container may have been built from an
-    // explicit path (NodeFactory::loadFromRealPath / fastLoadFromRealPath),
-    // and the globally-unique NAME may point somewhere else entirely. Passing
-    // the path settles that inside the probe that is already holding the
-    // record, instead of resolving a second path here to compare against.
+    // 'at' is load-bearing: this container may have been built from an explicit
+    // path (NodeFactory::loadFromRealPath), where the globally-unique NAME
+    // points somewhere else entirely.
     //
-    // Re-measure before changing this: loadJSON is the hottest function on
-    // admin list pages (~26% of render self-time). The per-implementation
-    // numbers are on FilesDbExt::load().
+    // Re-measure before changing this — loadJSON is the hottest function on
+    // list-heavy pages (~26% of render self-time).
     $language = $this->getLanguage();
     // Quanta's neutral language is a named constant; the database's is the
     // empty string. saveJSON() does the same mapping, and both treat an EMPTY
@@ -334,20 +322,10 @@ class Node extends JSONDataContainer implements Cacheable {
     //TODO: find a better way to check node existence.
     if ($this->exists) {
       // Build the content only when this object has not already been built
-      // against exactly this language and path.
-      //
-      // Every node that misses the request cache is loaded at least twice and
-      // usually three times, all on the SAME object and all but the last with
-      // identical state: the constructor ends with $this->load(), then
-      // NodeFactory::load() calls $node->load() again, and a node with no
-      // document in the requested language gets setLanguage($fallback) and a
-      // third call. Only that last call looks at different state; the
-      // signature lets it through and stops the duplicate.
-      //
-      // This is not a cache and holds nothing across objects: a Node still
-      // owns its own json, so nothing can alias or leak between nodes. It only
-      // declines to redo work THIS object has already done. save() clears the
-      // signature, so a write is still followed by a real reload.
+      // against exactly this language and path. A node that misses the request
+      // cache reaches load() two or three times on the SAME object, all but the
+      // last with identical state. Nothing is held across objects; save()
+      // clears the signature, so a write is still followed by a real reload.
       $signature = $this->getLanguage() . "\0" . $this->path;
       if ($force || $this->loaded_signature !== $signature) {
         $this->buildContent();

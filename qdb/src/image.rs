@@ -17,7 +17,7 @@
 //!
 //! Until v2 each document carried its own string table, so every one of a tree
 //! of same-shaped nodes re-emitted `"title"`, `"language"`, `"permissions"` as
-//! its own 32-byte `zend_string`. Modelled over hili's production tree
+//! its own 32-byte `zend_string`. Modelled over a production tree
 //! (111,124 documents, `tests/bench/image-size.py --dedup`):
 //!
 //! ```text
@@ -333,7 +333,8 @@ fn wr_u64(b: &mut [u8], off: usize, v: u64) -> Option<()> {
 /// image would hand PHP an ID as an address, so there is no partial success.
 ///
 /// Walks the value tree rather than carrying a relocation table. The table
-/// would be ~4 bytes per string reference — 8 MB of daemon RSS on hili's tree —
+/// would be ~4 bytes per string reference — 8 MB of daemon RSS on a tree that
+/// size —
 /// to save a walk that only runs when a record is actually written, which is
 /// the wrong side of that trade.
 #[must_use]
