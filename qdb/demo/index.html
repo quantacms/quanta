@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>quanta_db — before / after</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --panel-2: #1c2129;
+    --border: #2d333b;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --green: #3fb950;
+    --green-dim: #238636;
+    --red: #f85149;
+    --amber: #d29922;
+    --blue: #58a6ff;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 40px 20px 80px; }
+  header h1 { font-size: 30px; margin: 0 0 6px; }
+  header h1 code { font-family: var(--mono); color: var(--green); }
+  header p { color: var(--muted); margin: 0 0 8px; max-width: 62ch; }
+  section { margin-top: 56px; }
+  h2 { font-size: 21px; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 14px; margin: 0 0 16px; max-width: 70ch; }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .lanes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px) { .lanes { grid-template-columns: 1fr; } }
+  .lane-title {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-family: var(--mono); font-size: 13px; margin-bottom: 10px;
+  }
+  .lane-title .tag { font-weight: 700; letter-spacing: .06em; }
+  .before .tag { color: var(--red); }
+  .after .tag { color: var(--green); }
+  .lane-title .cmd { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60%; }
+  .clock { font-family: var(--mono); font-size: 22px; text-align: right; margin-top: 10px; }
+  .clock small { color: var(--muted); font-size: 12px; margin-left: 4px; }
+  .verdict { font-family: var(--mono); font-size: 13px; text-align: right; height: 20px; }
+  .verdict.win { color: var(--green); }
+  .verdict.lose { color: var(--red); }
+
+  /* folder grid */
+  .tree { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+  .chip {
+    font-family: var(--mono); font-size: 9.5px; color: var(--muted);
+    background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 4px; padding: 3px 4px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    transition: background .12s, color .12s, border-color .12s;
+  }
+  .chip.scan { background: #3d2c12; border-color: var(--amber); color: var(--amber); }
+  .chip.seen { background: #21262d; color: #555e68; }
+  .chip.hit  { background: #12341c; border-color: var(--green); color: var(--green); font-weight: 700; }
+
+  /* index card */
+  .indexbox {
+    display: flex; flex-direction: column; gap: 6px;
+    font-family: var(--mono); font-size: 12px;
+  }
+  .idxrow {
+    display: flex; justify-content: space-between;
+    background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 4px; padding: 5px 10px; color: var(--muted);
+    transition: background .1s, border-color .1s, color .1s;
+  }
+  .idxrow.hit { background: #12341c; border-color: var(--green); color: var(--green); font-weight: 700; }
+  .idxrow .path { opacity: .7; }
+
+  button {
+    font: 600 14px/1 system-ui, sans-serif;
+    color: #fff; background: var(--green-dim);
+    border: 1px solid rgba(255,255,255,.12); border-radius: 7px;
+    padding: 10px 18px; cursor: pointer; margin-top: 18px;
+  }
+  button:hover { filter: brightness(1.12); }
+  button:disabled { opacity: .45; cursor: default; }
+  .note { color: var(--muted); font-size: 12.5px; margin-top: 10px; }
+  .note code, .sub code, td code { font-family: var(--mono); font-size: .92em; color: var(--blue); }
+
+  /* write-safety animation */
+  .filecard { font-family: var(--mono); font-size: 12px; }
+  .file { margin-bottom: 10px; }
+  .fname { color: var(--muted); margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .fname .flag { transition: opacity .2s; opacity: 0; }
+  .fname .flag.on { opacity: 1; }
+  .fbar {
+    height: 18px; border: 1px solid var(--border); border-radius: 4px;
+    background: var(--panel-2); overflow: hidden; position: relative;
+  }
+  .fbar .fill {
+    height: 100%; width: 100%;
+    background: linear-gradient(90deg, #1f4d2e, #2ea043);
+    transition: width .9s linear;
+  }
+  .fbar.tmp .fill { background: linear-gradient(90deg, #123, #58a6ff); }
+  .reader {
+    margin-top: 12px; padding: 8px 10px; border-radius: 6px;
+    border: 1px dashed var(--border); color: var(--muted);
+    min-height: 40px; transition: border-color .2s, color .2s;
+  }
+  .reader.bad  { border-color: var(--red); color: var(--red); }
+  .reader.good { border-color: var(--green); color: var(--green); }
+  .reader .who { font-size: 10.5px; letter-spacing: .08em; opacity: .8; }
+
+  /* bench bars */
+  .bench { display: flex; flex-direction: column; gap: 9px; }
+  .brow { display: grid; grid-template-columns: 190px 1fr 86px; gap: 12px; align-items: center; }
+  @media (max-width: 640px) { .brow { grid-template-columns: 130px 1fr 76px; } }
+  .blabel { font-size: 13px; color: var(--text); text-align: right; }
+  .blabel small { display: block; color: var(--muted); font-size: 11px; }
+  .btrack { position: relative; height: 14px; background: var(--panel-2); border-radius: 4px; }
+  .btrack::before {   /* the ×1 parity line */
+    content: ""; position: absolute; top: -3px; bottom: -3px;
+    left: var(--parity); width: 1px; background: var(--muted); opacity: .55;
+  }
+  .bfill {
+    position: absolute; top: 0; bottom: 0; left: 0; width: 0; border-radius: 4px;
+    transition: width 1s cubic-bezier(.2,.7,.2,1);
+  }
+  .bfill.fast { background: linear-gradient(90deg, #1f4d2e, #3fb950); }
+  .bfill.slow { background: linear-gradient(90deg, #4d3a12, #d29922); }
+  .bval { font-family: var(--mono); font-size: 13px; }
+  .bval.fast { color: var(--green); }
+  .bval.slow { color: var(--amber); }
+  .legend { display: flex; gap: 18px; font-size: 12px; color: var(--muted); margin-top: 14px; }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+
+  /* live race */
+  .racelane { margin-bottom: 14px; }
+  .racelane .lane-title { margin-bottom: 6px; }
+  .racetrack { height: 20px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 5px; overflow: hidden; }
+  .racefill { height: 100%; width: 0; }
+  .racefill.legacy { background: linear-gradient(90deg, #4d1f1f, #f85149); }
+  .racefill.ext    { background: linear-gradient(90deg, #1f4d2e, #3fb950); }
+  .livemeta { font-family: var(--mono); font-size: 12.5px; color: var(--muted); margin-top: 10px; white-space: pre-line; }
+  .error { color: var(--red); font-family: var(--mono); font-size: 13px; margin-top: 12px; display: none; white-space: pre-wrap; }
+  pre.how {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 14px; font-family: var(--mono); font-size: 12.5px;
+    overflow-x: auto; color: var(--text);
+  }
+  footer { margin-top: 64px; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1><code>quanta_db</code> — before / after</h1>
+  <p>Quanta stores every node as a folder with JSON documents. This page shows what
+     the <code>quanta_db</code> Rust extension changes versus the legacy access
+     patterns — animated, with the real measured numbers.</p>
+</header>
+
+<!-- ============ 1. LOOKUP RACE ============ -->
+<section>
+  <h2>1 · Finding a node by name</h2>
+  <p class="sub">Node names are globally unique, but nothing recorded <em>where</em> a
+     folder lives. <b>Before:</b> a cold lookup shells out to
+     <code>find</code> and walks the whole docroot. <b>After:</b> one lookup in a
+     derived SQLite index (rebuildable any time — files stay the source of truth).</p>
+
+  <div class="lanes">
+    <div class="card before">
+      <div class="lane-title">
+        <span class="tag">BEFORE</span>
+        <span class="cmd">exec("find /docroot/ -type d -name booking-1523 …")</span>
+      </div>
+      <div class="tree" id="tree"></div>
+      <div class="clock"><span id="clock-legacy">0</span><small>µs</small></div>
+      <div class="verdict lose" id="verdict-legacy"></div>
+    </div>
+    <div class="card after">
+      <div class="lane-title">
+        <span class="tag">AFTER</span>
+        <span class="cmd">QuantaDb::path("booking-1523")</span>
+      </div>
+      <div class="indexbox" id="indexbox"></div>
+      <div class="clock"><span id="clock-ext">0</span><small>µs</small></div>
+      <div class="verdict win" id="verdict-ext"></div>
+    </div>
+  </div>
+  <button id="btn-race">▶ Run the lookup race</button>
+  <p class="note">Numbers are real (409-node bench tree, in-container:
+     <b>10,964&nbsp;µs</b> vs <b>6.2&nbsp;µs</b> — ×1,777). The animation is <em>not</em> to
+     scale: drawn to scale, the index lookup would finish in ~2&nbsp;ms of this
+     4-second sweep. The production tree is larger, so the real gap is bigger.</p>
+</section>
+
+<!-- ============ 2. WRITE SAFETY ============ -->
+<section>
+  <h2>2 · Writing a document</h2>
+  <p class="sub"><b>Before:</b> <code>fopen('data.json','w+')</code> truncates the file
+     first, then writes — no lock, no fsync. Any reader arriving mid-write sees an
+     empty or half-written document. <b>After:</b> the extension writes a temp file,
+     fsyncs, then atomically <code>rename()</code>s it into place under a per-node
+     lock — readers always see a complete document (old or new, never torn).</p>
+
+  <div class="lanes">
+    <div class="card before filecard">
+      <div class="lane-title"><span class="tag">BEFORE</span><span class="cmd">fopen('w+') + fwrite</span></div>
+      <div class="file">
+        <div class="fname"><span>db/booking-1523/data.json</span><span class="flag" id="l-flag">⚠ truncated</span></div>
+        <div class="fbar"><div class="fill" id="l-fill"></div></div>
+      </div>
+      <div class="reader" id="l-reader"><span class="who">CONCURRENT READER</span><br><span id="l-read-out">idle</span></div>
+    </div>
+    <div class="card after filecard">
+      <div class="lane-title"><span class="tag">AFTER</span><span class="cmd">QuantaDb::put — tmp + fsync + rename + flock</span></div>
+      <div class="file">
+        <div class="fname"><span>db/booking-1523/data.json</span><span class="flag" id="e-flag">⇄ rename()</span></div>
+        <div class="fbar"><div class="fill" id="e-fill"></div></div>
+      </div>
+      <div class="file">
+        <div class="fname"><span>db/booking-1523/.data.json.tmp</span><span class="flag" id="e-tmp-flag">fsync ✓</span></div>
+        <div class="fbar tmp"><div class="fill" id="e-tmp-fill" style="width:0"></div></div>
+      </div>
+      <div class="reader" id="e-reader"><span class="who">CONCURRENT READER</span><br><span id="e-read-out">idle</span></div>
+    </div>
+  </div>
+  <button id="btn-write">▶ Run a concurrent write</button>
+  <p class="note">This is the deliberate trade-off: legacy's unlocked write is ~30&nbsp;µs,
+     the safe write costs ~1&nbsp;ms. CMS traffic is overwhelmingly reads.</p>
+</section>
+
+<!-- ============ 3. MEASURED BENCHMARKS ============ -->
+<section>
+  <h2>3 · Measured speedups</h2>
+  <p class="sub">From <code>qdb/tests/bench/</code> — the legacy logic re-implemented
+     verbatim and raced against the extension on one shared tree
+     (400 bookings + 400 businesses). Log scale; the grey line is parity (×1).</p>
+  <div class="card">
+    <div class="bench" id="bench"></div>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--green)"></span>extension faster</span>
+      <span><span class="dot" style="background:var(--amber)"></span>extension slower — durability cost</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. LIVE RACE ============ -->
+<section>
+  <h2>4 · Live race on this tree</h2>
+  <p class="sub">Race <code>exec(find)</code> against <code>QuantaDb::path()</code> on a
+     random <em>real</em> node from the mounted qdb index, right now. Needs the page
+     served from inside the app container (button explains how if not).</p>
+  <div class="card">
+    <div class="racelane">
+      <div class="lane-title before"><span class="tag">exec find</span><span class="cmd" id="live-legacy-val"></span></div>
+      <div class="racetrack"><div class="racefill legacy" id="live-legacy-fill"></div></div>
+    </div>
+    <div class="racelane">
+      <div class="lane-title after"><span class="tag">QuantaDb::path</span><span class="cmd" id="live-ext-val"></span></div>
+      <div class="racetrack"><div class="racefill ext" id="live-ext-fill"></div></div>
+    </div>
+    <div class="livemeta" id="live-meta"></div>
+    <div class="error" id="live-error"></div>
+  </div>
+  <button id="btn-live">▶ Race a real node</button>
+</section>
+
+<footer>
+  <p>Run this page with the live endpoint (the main vhost intentionally blocks
+     <code>.php</code> under the site dir):</p>
+  <pre class="how">docker compose run --rm -p 8090:8090 --entrypoint php web \
+  -S 0.0.0.0:8090 -t /var/www/quanta/sites/localhost/quanta/qdb/demo
+# then open http://localhost:8090</pre>
+  <p>Contract: <code>docs/qdb/api-contract.md</code> · implementation notes and full
+     bench results: <code>qdb/README.md</code>.</p>
+</footer>
+
+</div>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+/* Cancel tokens so replays restart cleanly. */
+const runs = {};
+function newRun(key) { runs[key] = (runs[key] || 0) + 1; return runs[key]; }
+const alive = (key, id) => runs[key] === id;
+
+/* ---------- 1. lookup race ---------- */
+const TARGET = "booking-1523";
+const KINDS = ["booking", "business", "guest", "plan", "feed", "room", "offer"];
+const chips = [];
+(function buildTree() {
+  const tree = $("tree");
+  const total = 96, targetAt = 82;
+  for (let i = 0; i < total; i++) {
+    const el = document.createElement("div");
+    el.className = "chip";
+    el.textContent = i === targetAt
+      ? TARGET
+      : KINDS[i % KINDS.length] + "-" + (1000 + ((i * 37) % 900));
+    tree.appendChild(el);
+    chips.push({ el, target: i === targetAt });
+  }
+  const box = $("indexbox");
+  [["booking-1521", "db/booking-1521"],
+   ["booking-1522", "db/booking-1522"],
+   ["booking-1523", "db/booking-1523"],
+   ["booking-1524", "db/booking-1524"]].forEach(([n, p], i) => {
+    const row = document.createElement("div");
+    row.className = "idxrow";
+    if (n === TARGET) row.id = "idx-hit";
+    row.innerHTML = "<span>" + n + "</span><span class='path'>" + p + "</span>";
+    box.appendChild(row);
+  });
+})();
+
+function tickClock(el, targetUs, durMs, key, id, decimals) {
+  const t0 = performance.now();
+  return new Promise(resolve => {
+    (function frame() {
+      if (!alive(key, id)) return resolve();
+      const p = Math.min(1, (performance.now() - t0) / durMs);
+      el.textContent = (targetUs * p).toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      p < 1 ? requestAnimationFrame(frame) : resolve();
+    })();
+  });
+}
+
+$("btn-race").addEventListener("click", async () => {
+  const id = newRun("race");
+  const btn = $("btn-race");
+  btn.disabled = true;
+  chips.forEach(c => c.el.className = "chip");
+  $("idx-hit").classList.remove("hit");
+  $("verdict-legacy").textContent = $("verdict-ext").textContent = "";
+  $("clock-legacy").textContent = $("clock-ext").textContent = "0";
+
+  /* AFTER: one index probe, done almost immediately. */
+  (async () => {
+    await sleep(250);
+    if (!alive("race", id)) return;
+    $("idx-hit").classList.add("hit");
+    await tickClock($("clock-ext"), 6.2, 120, "race", id, 1);
+    if (alive("race", id)) $("verdict-ext").textContent = "✓ found — waiting for find(1)…";
+  })();
+
+  /* BEFORE: sequential directory sweep. */
+  const hitIdx = chips.findIndex(c => c.target);
+  const stepMs = 4000 / (hitIdx + 1);
+  const clock = tickClock($("clock-legacy"), 10964, stepMs * (hitIdx + 1), "race", id, 0);
+  for (let i = 0; i <= hitIdx; i++) {
+    if (!alive("race", id)) { btn.disabled = false; return; }
+    if (i > 0) chips[i - 1].el.className = "chip seen";
+    chips[i].el.className = "chip " + (chips[i].target ? "hit" : "scan");
+    await sleep(stepMs);
+  }
+  await clock;
+  if (alive("race", id)) {
+    $("verdict-legacy").textContent = "found after walking the tree";
+    $("verdict-ext").textContent = "✓ found — ×1,777 faster";
+  }
+  btn.disabled = false;
+});
+
+/* ---------- 2. write safety ---------- */
+function setReader(el, out, cls, text) {
+  el.className = "reader" + (cls ? " " + cls : "");
+  out.textContent = text;
+}
+
+$("btn-write").addEventListener("click", async () => {
+  const id = newRun("write");
+  const btn = $("btn-write");
+  btn.disabled = true;
+
+  /* reset */
+  $("l-fill").style.transition = "none"; $("l-fill").style.width = "100%";
+  $("e-tmp-fill").style.transition = "none"; $("e-tmp-fill").style.width = "0";
+  $("e-fill").style.width = "100%";
+  ["l-flag", "e-flag", "e-tmp-flag"].forEach(k => $(k).classList.remove("on"));
+  setReader($("l-reader"), $("l-read-out"), "", "idle");
+  setReader($("e-reader"), $("e-read-out"), "", "idle");
+  await sleep(400);
+  if (!alive("write", id)) return;
+  $("l-fill").style.transition = $("e-tmp-fill").style.transition = "width .9s linear";
+
+  /* BEFORE: truncate… */
+  $("l-flag").classList.add("on");
+  $("l-fill").style.transition = "width .25s linear";
+  $("l-fill").style.width = "0%";
+  /* AFTER: tmp file starts filling; the real doc is untouched. */
+  $("e-tmp-fill").style.width = "100%";
+
+  await sleep(500);
+  if (!alive("write", id)) return;
+  /* reader probes both mid-write */
+  setReader($("l-reader"), $("l-read-out"), "bad", 'got: {"title":"Boo…   ✗ torn read');
+  setReader($("e-reader"), $("e-read-out"), "good", "got: complete document (old version) ✓");
+  /* legacy slowly rewrites */
+  $("l-fill").style.transition = "width 1.4s linear";
+  $("l-fill").style.width = "100%";
+
+  await sleep(1000);
+  if (!alive("write", id)) return;
+  $("e-tmp-flag").classList.add("on");           /* fsync */
+  await sleep(500);
+  if (!alive("write", id)) return;
+  $("e-flag").classList.add("on");               /* rename() swap */
+  $("e-tmp-fill").style.transition = "width .15s linear";
+  $("e-tmp-fill").style.width = "0";
+  $("e-fill").style.background = "linear-gradient(90deg,#123,#58a6ff)";
+
+  await sleep(600);
+  if (!alive("write", id)) return;
+  $("l-flag").classList.remove("on");
+  setReader($("l-reader"), $("l-read-out"), "bad", "reader kept the torn JSON — silent data bug");
+  setReader($("e-reader"), $("e-read-out"), "good", "next read: complete NEW document ✓");
+  btn.disabled = false;
+});
+
+/* ---------- 3. bench bars ---------- */
+const BENCH = [
+  { label: "cold name → path", factor: 1777, note: "6.2 µs vs 10,964 µs" },
+  { label: "children listing", factor: 8, note: "scandir + JSON loads" },
+  { label: "warm path lookup", factor: 2.8, note: "vs symlink path-cache" },
+  { label: "count() query", factor: 2.5, note: "index vs load-all-JSON" },
+  { label: "find() query", factor: 2.5, note: "index vs load-all-JSON" },
+  { label: "read distinct docs", factor: 2.1, note: "" },
+  { label: "re-read same doc", factor: 1.0, note: "zval rebuild ≈ json_decode" },
+  { label: "status relink", factor: 1.0, note: "but atomic now" },
+  { label: "document write", factor: 1 / 34, note: "~1 ms vs 29 µs — fsync+lock+rename" },
+  { label: "node create", factor: 1 / 30, note: "atomic name reservation" },
+];
+(function buildBench() {
+  const LMIN = Math.log10(1 / 50), LMAX = Math.log10(3000);
+  const pos = f => ((Math.log10(f) - LMIN) / (LMAX - LMIN) * 100).toFixed(1) + "%";
+  const wrap = $("bench");
+  wrap.parentElement.style.setProperty("--parity", pos(1));
+  const fills = [];
+  for (const row of BENCH) {
+    const fast = row.factor >= 1;
+    const div = document.createElement("div");
+    div.className = "brow";
+    div.innerHTML =
+      '<div class="blabel">' + row.label +
+        (row.note ? "<small>" + row.note + "</small>" : "") + "</div>" +
+      '<div class="btrack" style="--parity:' + pos(1) + '"><div class="bfill ' +
+        (fast ? "fast" : "slow") + '"></div></div>' +
+      '<div class="bval ' + (fast ? "fast" : "slow") + '">' +
+        (fast ? "×" + (row.factor >= 10 ? Math.round(row.factor).toLocaleString() : row.factor)
+              : "×" + Math.round(1 / row.factor) + " slower") + "</div>";
+    wrap.appendChild(div);
+    fills.push([div.querySelector(".bfill"), pos(row.factor)]);
+  }
+  /* animate on first scroll into view */
+  new IntersectionObserver((entries, obs) => {
+    if (!entries[0].isIntersecting) return;
+    obs.disconnect();
+    requestAnimationFrame(() => fills.forEach(([el, w]) => el.style.width = w));
+  }, { threshold: 0.25 }).observe(wrap);
+})();
+
+/* ---------- 4. live race ---------- */
+$("btn-live").addEventListener("click", async () => {
+  const id = newRun("live");
+  const btn = $("btn-live");
+  btn.disabled = true;
+  const err = $("live-error");
+  err.style.display = "none";
+  $("live-legacy-fill").style.transition = $("live-ext-fill").style.transition = "none";
+  $("live-legacy-fill").style.width = $("live-ext-fill").style.width = "0";
+  $("live-legacy-val").textContent = $("live-ext-val").textContent = "";
+  $("live-meta").textContent = "racing…";
+
+  let data;
+  try {
+    const res = await fetch("live.php", { cache: "no-store" });
+    data = await res.json();
+    if (data.error) throw new Error(data.error);
+  } catch (e) {
+    $("live-meta").textContent = "";
+    err.textContent = "live.php not reachable (" + e.message + ").\n" +
+      "Serve the demo from inside the app container:\n\n" +
+      "  docker compose run --rm -p 8090:8090 --entrypoint php web \\\n" +
+      "    -S 0.0.0.0:8090 -t /var/www/quanta/sites/localhost/quanta/qdb/demo";
+    err.style.display = "block";
+    btn.disabled = false;
+    return;
+  }
+  if (!alive("live", id)) return;
+
+  /* animate lanes: log-scaled durations so both are visible */
+  const ratio = Math.max(1, data.find_us / Math.max(data.ext_us, 0.1));
+  const legacyMs = 900 + Math.min(2400, 600 * Math.log10(1 + ratio));
+  const extMs = 350;
+  await sleep(30);
+  $("live-ext-fill").style.transition = "width " + extMs + "ms cubic-bezier(.2,.8,.3,1)";
+  $("live-legacy-fill").style.transition = "width " + legacyMs + "ms linear";
+  $("live-ext-fill").style.width = $("live-legacy-fill").style.width = "100%";
+  tickClock($("live-ext-val"), data.ext_us, extMs, "live", id, 1);
+  tickClock($("live-legacy-val"), data.find_us, legacyMs, "live", id, 0);
+  await sleep(legacyMs + 100);
+  if (!alive("live", id)) return;
+  $("live-ext-val").textContent = data.ext_us + " µs";
+  $("live-legacy-val").textContent = data.find_us.toLocaleString() + " µs";
+  $("live-meta").textContent =
+    "node: db/" + data.node + "   (indexed tree: " + data.nodes + " nodes, " +
+    data.links + " links)\n" +
+    "cold lookup ×" + Math.round(ratio).toLocaleString() + " faster · steady-state " +
+    data.ext_warm_us + " µs/lookup" +
+    (data.agree ? " · both resolved the same path ✓" : " · ⚠ paths disagree!");
+  btn.disabled = false;
+});
+</script>
+</body>
+</html>

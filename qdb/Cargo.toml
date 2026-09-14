@@ -1,0 +1,33 @@
+[package]
+name = "quanta_db"
+version = "0.1.0"
+edition = "2021"
+description = "Quanta qdb PHP extension (contract v1) — fast indexed access to the JSON-per-folder node database"
+license = "MIT"
+
+[lib]
+name = "quanta_db"
+crate-type = ["cdylib"]
+
+# Standalone monitor (varnishstat-style). Does NOT link the cdylib/PHP; it
+# reuses the arena/segment layout + path derivation via source include.
+[[bin]]
+name = "qdbstat"
+path = "src/bin/qdbstat.rs"
+
+# The qdb daemon: loads the whole node tree into a shared-memory segment,
+# keeps it authoritative via inotify + periodic reconcile, and applies write
+# notifications from the extension over a unix socket. PHP-free (source include).
+[[bin]]
+name = "qdbd"
+path = "src/bin/qdbd.rs"
+
+[dependencies]
+ext-php-rs = "0.15"
+serde_json = { version = "1", features = ["preserve_order"] }
+libc = "0.2"
+inotify = { version = "0.11", default-features = false }
+
+[profile.release]
+lto = true
+codegen-units = 1

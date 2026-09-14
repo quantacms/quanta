@@ -198,11 +198,11 @@ exists and covers anonymous traffic at page granularity.
 
 ---
 
-## 4. Why NOT files-db for the qtag cache
+## 4. Why NOT qdb for the qtag cache
 
 Considered and rejected as the **store**.
 
-- **Data-model mismatch.** files-db indexes *nodes*: a directory with a
+- **Data-model mismatch.** qdb indexes *nodes*: a directory with a
   globally-unique name, a father, links, per-language documents. A qtag entry is
   an opaque `crc32 → HTML blob` — derived output, not content. It would have to
   become a globally-name-unique node.
@@ -211,16 +211,16 @@ Considered and rejected as the **store**.
   thousands of entries, doubling or tripling the index with non-content. Every
   `QuantaDb::path()` probe pays for it, and the segment budget tightens (cf. the
   `/dev/shm` SIGBUS history).
-- **The write path is exactly what was just removed.** A files-db write is
+- **The write path is exactly what was just removed.** A qdb write is
   flock + tmp + fsync + atomic rename + UDS notify + *wait for the daemon ack*:
   26 ms typical, 729 ms worst, and a missed `write_ack_timeout_ms` flips every
   worker to fallback. HILI-379 deleted one such write per render and got 22%
   back. A cold qtag cache would add one per miss — thousands on a first render.
-- **Wrong guarantee.** files-db exists to give read-your-writes with files as the
+- **Wrong guarantee.** qdb exists to give read-your-writes with files as the
   source of truth. A render cache is purely derived and nobody needs that; it
   would pay full coordination cost for an irrelevant property.
 
-**Where files-db does fit: as the invalidation signal.** `QuantaDb::meta($name)`
+**Where qdb does fit: as the invalidation signal.** `QuantaDb::meta($name)`
 already returns `generation` and `mtime` per node. If a qtag recorded which nodes
 it read during render, the cache key could include those generations and entries
 would self-invalidate on content change. That is a legitimate use of the

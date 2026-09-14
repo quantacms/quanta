@@ -1,6 +1,6 @@
 # The Quanta documentation site (`docs/site/`)
 
-The source of the site under `docs/`: a landing page, an animated Files-DB
+The source of the site under `docs/`: a landing page, an animated qdb
 walkthrough, and the project documentation rendered from the repository's own
 Markdown.
 
@@ -22,7 +22,7 @@ and [Publishing](#publishing) below.
 | `docs/site/config.mjs` | Site identity, top navigation, and the map of repository Markdown files to documentation pages. **This is the file you edit to add a page.** |
 | `docs/site/build.mjs` | The generator: Markdown → HTML, link rewriting, sidebar, table of contents, prev/next. |
 | `docs/site/layout.mjs` | The HTML shell shared by every page, and the relative-URL helper. |
-| `docs/site/pages/*.html` | Hand-written pages (the landing page, the Files-DB walkthrough, 404). A page's first `<!-- key: value -->` lines are its metadata. |
+| `docs/site/pages/*.html` | Hand-written pages (the landing page, the qdb walkthrough, 404). A page's first `<!-- key: value -->` lines are its metadata. |
 | `docs/site/assets/` | Stylesheets, scripts, favicon — copied verbatim. |
 | `docs/site/serve.mjs` | Local preview server with rebuild-on-change. |
 | `docs/site/check-links.mjs` | Post-build link and anchor check. |
@@ -47,7 +47,7 @@ difference:
 |---|---|
 | `docs/site/**` | the generator — its own source, never touched by a build |
 | `docs/README.md`, and the other `.md` files | documentation **sources**, some of which are rendered into pages |
-| `docs/*.html`, `docs/files-db/`, `docs/assets/`, `docs/.nojekyll` | **generated**, and committed |
+| `docs/*.html`, `docs/qdb/`, `docs/assets/`, `docs/.nojekyll` | **generated**, and committed |
 
 Because the output directory contains its own input, the build cannot simply
 delete it and start over. Instead every file it writes is recorded in
@@ -66,20 +66,20 @@ Drop an HTML fragment (body content only) into `docs/site/pages/`. The leading
 `<!-- key: value -->` comments are its metadata:
 
 ```html
-<!-- title: Files-DB, step by step -->
+<!-- title: qdb, step by step -->
 <!-- description: … used for <meta> and the social card -->
 <!-- variant: home -->
-<!-- assets: files-db.css, files-db.js -->
+<!-- assets: qdb.css, qdb.js -->
 ```
 
 `assets` lists extra files from `docs/site/assets/` that only this page needs: `.css`
 is linked in the head, `.js` is added deferred at the end of the body. Use
 `{{link:overview.html}}` anywhere in the body for a URL relative to this page.
 
-The Files-DB walkthrough (`docs/site/pages/files-db.html` with
-`assets/files-db.{css,js}`) is the worked example. Its player is progressive
+The qdb walkthrough (`docs/site/pages/qdb.html` with
+`assets/qdb.{css,js}`) is the worked example. Its player is progressive
 enhancement: the markup is a diagram, three code listings and three numbered
-lists of what happens, and `files-db.js` turns those lists into steps that light
+lists of what happens, and `qdb.js` turns those lists into steps that light
 up the diagram, highlight lines of code and switch the data panel. Each `<li>`
 carries the whole step definition —
 
@@ -97,7 +97,7 @@ Add the Markdown file to the repository as usual, then add one entry to
 `docsNav` in `docs/site/config.mjs`:
 
 ```js
-{ src: 'files-db/docs/my-page.md', out: 'files-db/my-page.html', title: 'My page' }
+{ src: 'qdb/docs/my-page.md', out: 'qdb/my-page.html', title: 'My page' }
 ```
 
 It appears in the sidebar and in the prev/next pager, and links to it from other

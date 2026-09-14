@@ -3,7 +3,7 @@ name: Build and push Docker image
 # Builds the Quanta CMS base image (Dockerfile at the repo root), TESTS it, and
 # pushes it to the GitHub Container Registry (ghcr.io/quantacms/quanta).
 #
-# The build context is the repo root so files-db/ is reachable for the Rust
+# The build context is the repo root so qdb/ is reachable for the Rust
 # extension stage. Pull requests build and test only; pushes to master, version
 # tags, and manual runs also push the image.
 #
@@ -14,15 +14,15 @@ name: Build and push Docker image
 #
 # Two suites run, and they answer different questions:
 #
-#   files-db/tests/run-tests.sh        does the EXTENSION obey the contract?
+#   qdb/tests/run-tests.sh        does the EXTENSION obey the contract?
 #                                      (fallback + daemon modes)
-#   files-db/tests/run-quanta-tests.sh does QUANTA behave the same with the
+#   qdb/tests/run-quanta-tests.sh does QUANTA behave the same with the
 #                                      extension and without it?
 #                                      (noext + fallback + daemon modes)
 #
 # The second is the one that guards the shim: every call site wired to the node
 # database keeps a legacy path, and the suite pins both branches to the same
-# observable behaviour. See files-db/tests/quanta/_bootstrap.php.
+# observable behaviour. See qdb/tests/quanta/_bootstrap.php.
 
 on:
   push:
@@ -93,21 +93,21 @@ jobs:
           cache-to: type=gha,mode=max
           provenance: false
 
-      # The image drops files-db/ from the web root (see the Dockerfile), so the
+      # The image drops qdb/ from the web root (see the Dockerfile), so the
       # suites are mounted in from the checkout rather than read out of it. The
       # entrypoint is bypassed: it does first-boot site setup and starts
       # supervisord, neither of which a test run wants.
-      - name: files-db contract conformance (fallback + daemon)
+      - name: qdb contract conformance (fallback + daemon)
         run: |
           docker run --rm --entrypoint sh \
-            -v "$PWD/files-db/tests:/tests:ro" \
+            -v "$PWD/qdb/tests:/tests:ro" \
             quanta-ci:test \
             -c 'QDB_EXT=/usr/local/lib/php/extensions/quanta_db.so sh /tests/run-tests.sh'
 
       - name: Quanta call-site parity (noext + fallback + daemon)
         run: |
           docker run --rm --entrypoint sh \
-            -v "$PWD/files-db/tests:/tests:ro" \
+            -v "$PWD/qdb/tests:/tests:ro" \
             quanta-ci:test \
             -c 'QUANTA_ROOT=/var/www/quanta sh /tests/run-quanta-tests.sh'
 

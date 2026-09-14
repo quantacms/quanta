@@ -947,7 +947,7 @@ class Node extends JSONDataContainer implements Cacheable {
    */
   public function getCategories($node = NULL) {
     // links() is the containers holding a symlink to this node
-    // (files-db/docs/api-contract.md §9). The $node-scoped call passes 'in' to
+    // (qdb/docs/api-contract.md §9). The $node-scoped call passes 'in' to
     // limit the sweep to one subtree, which the index cannot express — so that
     // one always goes to the filesystem, and says so rather than being a
     // fallback nobody can see.
