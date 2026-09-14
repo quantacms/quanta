@@ -663,9 +663,9 @@ extension. There are two classes behind that call, with the same methods:
 `Environment::db()` instantiates the subclass when `QuantaDb` is loaded and the
 base when it is not. **Every method answers**: a call site never branches on
 which implementation it got and never carries a second body for the case where
-the extension declines. That is the whole design — see
-`qdb/docs/two-implementations.md` for why the choice cannot simply be made
-once per process.
+the extension declines. The choice is made per call, not once per process: a
+loaded extension can still be unable to answer a given question, and the
+override is where that is decided.
 
 `NULL` therefore means what it says. `path()` is `string|FALSE`; `find()`,
 `children()`, `langs()` and `links()` return `array()` for "nothing matched";

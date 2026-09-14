@@ -19,8 +19,8 @@ pub struct DocModel {
     /// Raw file bytes — kept ONLY when this document has no image.
     ///
     /// The image is a complete representation of the document, so storing both
-    /// stored the same content twice (39.7 MB of hili's production segment, and
-    /// the same again in this heap). But the segment must always be able to
+    /// stored the same content twice (on a production tree of ~111k documents,
+    /// 39.7 MB of segment, and the same again in this heap). But the segment must always be able to
     /// answer SOMETHING, or a document with no image has nothing resident and
     /// every read of it goes to disk. That is not hypothetical: `image=0` is a
     /// documented kill switch, and a document can also exceed `image_max_doc`
@@ -36,9 +36,9 @@ pub struct DocModel {
     pub mtime: i64,
     /// The document's size ON DISK. The bytes themselves are deliberately not
     /// kept: the daemon used to hold every document's raw JSON for the life of
-    /// the model purely to hand it back to `encode()` on every republish, which
-    /// on hili's production tree was 39.7 MB of the daemon's heap duplicating
-    /// content the image already represents completely. `image` below is the
+    /// the model purely to hand it back to `encode()` on every republish — on a
+    /// production tree of ~111k documents, 39.7 MB of the daemon's heap
+    /// duplicating content the image already represents completely. `image` below is the
     /// only in-memory copy now, and the file is the only byte-exact one.
     pub size: i64,
     /// Pre-decoded ID-image (`image::encode`), built ONCE here when the
@@ -192,9 +192,9 @@ pub struct Model {
     /// Every distinct string in every document, held exactly once. Images
     /// reference entries here by ID; the segment writer places the bytes.
     ///
-    /// Modelled over hili's production tree, this is 87,585 entries / ~9.8 MB
-    /// against the 2,112,806 per-document `zend_string`s / 89.5 MB the v2
-    /// layout wrote — see the `image` module docs.
+    /// Modelled over a production tree of ~111k documents, this is 87,585
+    /// entries / ~9.8 MB against the 2,112,806 per-document `zend_string`s /
+    /// 89.5 MB the v2 layout wrote — see the `image` module docs.
     pub strings: image::Interner,
 }
 

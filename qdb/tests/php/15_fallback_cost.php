@@ -196,8 +196,8 @@ if (!qdb_daemon_mode()) {
 }
 
 // ---------------------------------------------------------------------------
-// Degraded with the last published segment still on disk (HILI-QDB-15). The
-// correctness of this path is 14_stale_segment.php; what it is FOR is the cost.
+// Degraded with the last published segment still on disk. The correctness of
+// this path is 14_stale_segment.php; what it is FOR is the cost.
 // ---------------------------------------------------------------------------
 if (qdb_daemon_mode()) {
     qdb_daemon_stop();
@@ -216,8 +216,8 @@ if (qdb_daemon_mode()) {
     // Absence is the part the segment cannot answer: it can prove a name is
     // there, never that it is not. So a miss still falls through to a walk, and
     // the only thing standing between a render and one walk per missing name is
-    // the same coalescing asserted above. Measured on a production-sized tree
-    // this is what a degraded render still pays; see HILI-QDB-15 § Follow-ups.
+    // the same coalescing asserted above. On a production-sized tree this is
+    // what a degraded render still pays.
     $w = walks();
     foreach ($absent as $n) {
         QuantaDb::path($n);

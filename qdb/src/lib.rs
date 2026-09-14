@@ -1080,8 +1080,8 @@ fn with_shm_doc_raw<T>(
                 // image would not deliver it: escaping normalizes (PHP's `\/`
                 // and `\uXXXX` vs serde's neither), whitespace and indentation
                 // are gone, and float formatting changes. Its callers do
-                // textual substitution on the result (hili.doctor.hook.inc
-                // str_replace's the raw string and writes it back), so a
+                // textual substitution on the result (a site's doctor hooks
+                // str_replace the raw string and write it back), so a
                 // normalized re-serialization would rewrite the escaping of
                 // every document it touches. It reads the file instead — this
                 // is integrity/doctor/migration code, not the render path, and

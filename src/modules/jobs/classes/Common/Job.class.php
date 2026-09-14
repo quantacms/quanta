@@ -74,10 +74,10 @@ class Job extends Node {
         // is NOT done — fall through to the `mv -T` below rather than reporting
         // a failure the callers can only log.
         //
-        // The failure this actually catches is EXDEV. The job fathers are
-        // separate mounts in every real deployment (HILI gives _jobs_todo,
-        // _jobs_done, _jobs_unknown and _jobs_archived a hostPath volume each),
-        // and rename(2) refuses to cross a mount boundary even when both sides
+        // The failure this actually catches is EXDEV. A deployment that wants
+        // its job queues durable typically gives each job father its own
+        // volume, so the fathers are separate mounts, and rename(2) refuses to
+        // cross a mount boundary even when both sides
         // live on the same filesystem. `mv -T` copies and unlinks instead, so
         // it is the only thing here that can complete such a move; the index
         // picks the job up at its new father from the father's dir watch.
