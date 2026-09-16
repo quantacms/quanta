@@ -19,3 +19,13 @@ composer.phar
 # from it and IS committed — see docs/.build-manifest)
 node_modules
 node_modules/*
+
+# Local secrets — never commit. Provide credentials via environment variables.
+secrets.php
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+!**/*.pub.key
+.htpasswd

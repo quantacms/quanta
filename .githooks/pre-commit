@@ -1,0 +1,54 @@
+#!/bin/sh
+# Block commits that introduce credential-shaped strings.
+# Bypass for a verified false positive with: git commit --no-verify
+
+set -u
+
+# Vendored and generated trees carry documentation placeholders and integrity
+# hashes that look like secrets; scanning them only produces noise.
+# This hook is excluded from its own scan: a detector necessarily contains
+# the patterns it looks for.
+files=$(git diff --cached --name-only --diff-filter=ACM \
+        | grep -vE '(^|/)(vendor|node_modules|\.git)/' \
+        | grep -vxF '.githooks/pre-commit' || true)
+[ -z "$files" ] && exit 0
+
+# Each pattern matches a token format whose issuer defines it, so a hit is a
+# real credential rather than a guess based on entropy.
+patterns='
+(sk|rk)_live_[A-Za-z0-9]{20,}
+sk_test_[A-Za-z0-9]{20,}
+AKIA[0-9A-Z]{16}
+AIza[0-9A-Za-z_-]{35}
+gh[pousr]_[A-Za-z0-9]{36}
+xox[baprs]-[A-Za-z0-9-]{10,}
+SG\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}
+-----BEGIN [A-Z ]*PRIVATE KEY-----
+(smtp_?pass(word)?|mail_?pass(word)?)["ّ]?\s*[:=]>?\s*["'\''][^"'\'']{4,}
+(https?|smtps?|ftp|mysql|postgres|redis|amqp)://[A-Za-z0-9._%+-]+:[^:@/[:space:]"'\'']{4,}@
+'
+
+found=0
+for f in $files; do
+  # Compare against the staged blob, not the worktree: they can differ.
+  blob=$(git show ":$f" 2>/dev/null) || continue
+  for p in $patterns; do
+    hit=$(printf '%s' "$blob" | grep -nEI "$p" 2>/dev/null | head -3) || true
+    if [ -n "$hit" ]; then
+      [ "$found" -eq 0 ] && echo "Possible credentials in staged changes:" >&2
+      found=1
+      echo "  $f:" >&2
+      printf '%s\n' "$hit" | sed 's/^/    /' >&2
+    fi
+  done
+done
+
+if [ "$found" -ne 0 ]; then
+  cat >&2 <<'MSG'
+
+Commit blocked. Move the value into an environment variable and read it at
+runtime. If this is genuinely not a secret, re-run with --no-verify.
+MSG
+  exit 1
+fi
+exit 0
