@@ -79,8 +79,8 @@ class Message {
       if ($type == self::MESSAGE_TYPE_SCREEN) {
         $isProduction = !empty($this->env->getData('IS_PRODUCTION')) && $this->env->getData('IS_PRODUCTION') === 'true';
         if ($isProduction) {
-            // Log the error to Apache/PHP log
-            error_log("Error message from quanta: " . $this->body, 0); // Logs to the server error log (Apache/PHP error log)
+            // Keep the message out of the page, but in the application log.
+            Logger::get('message')->log(self::logLevel($this->severity), $this->body, array('module' => $this->module, 'key' => $this->key));
         } else {
             // Show the error message on screen
             if (!isset($_SESSION['messages'])) {
@@ -123,6 +123,28 @@ class Message {
    */
   public function __sleep() {
     return array('body', 'module', 'type', 'severity', 'key', 'style');
+  }
+
+  /**
+   * Maps a message severity to the application log level it is recorded at.
+   *
+   * @param string $severity
+   *   The message severity.
+   *
+   * @return string
+   *   A Logger level.
+   */
+  public static function logLevel($severity) {
+    switch ($severity) {
+      case self::MESSAGE_ERROR:
+        return Logger::ERROR;
+      case self::MESSAGE_WARNING:
+        return Logger::WARNING;
+      case self::MESSAGE_NOTICE:
+        return Logger::NOTICE;
+      default:
+        return Logger::INFO;
+    }
   }
 
   /**

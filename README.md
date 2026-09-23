@@ -115,6 +115,40 @@ under `set -e`) after its own setup and before it execs the `CMD`. If its own
 modules add CSS/JS includes, it should also `RUN quanta-build-assets` after
 copying its site in, so those assets land in the bundle.
 
+### Application logs:
+Application code logs through `\Quanta\Common\Logger`, which writes one JSON
+object per line. Its levels and method names are the PSR-3 / RFC 5424 ones
+(`debug`, `info`, `notice`, `warning`, `error`, `critical`, `alert`, `emergency`):
+
+```php
+use Quanta\Common\Logger;
+
+Logger::get()->info('User {name} logged in', array('name' => $name));
+Logger::get('payments')->error('Charge failed', array('order' => $id, 'exception' => $e));
+```
+
+```json
+{"time":"2026-01-01T12:00:00.123456+00:00","level":"error","channel":"payments","message":"Charge failed","context":{"order":42,"exception":{"class":"RuntimeException","message":"…","code":0,"file":"…:12","trace":"…"}},"request_id":"9f86d081884c7d65","host":"example.com","method":"POST","uri":"/checkout/"}
+```
+
+PHP's own warnings, notices, deprecations and fatal errors (uncaught exceptions
+included) go through the same logger, on the `php` channel, and PHP's plain-text
+error log is switched off. `display_errors`, `error_reporting`, the `@` operator
+and the 500 status on a fatal error work exactly as before.
+
+`{key}` placeholders in the message are filled from the context. The argument to
+`get()` is the channel, naming the subsystem that logs (default `app`).
+`request_id` is taken from an upstream `X-Request-Id` header when there is one,
+so records from one request can be grouped. Configuration comes from the environment:
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `QUANTA_LOG_LEVEL` | `info` | lowest level written |
+| `QUANTA_LOG_OUTPUT` | `stderr` | `stderr`, `stdout`, `error_log` (PHP's `error_log()`), or an absolute file path |
+
+In the Docker image, stderr ends up in the container log alongside nginx's JSON
+access log.
+
 ### For Windows / XAMP users:
 As Quanta only runs on UNIX, in order to run Quanta on Windows, you will have to install a VM (VMware, VirtualBox, etc.) with your distribution of choice. 
 

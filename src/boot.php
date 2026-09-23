@@ -1,6 +1,11 @@
 <?php
   require_once('modules/environment/classes/Common/DataContainer.class.php');
   require_once('modules/environment/classes/Common/Environment.class.php');
+  // Loaded directly rather than through the class map: the map is only rebuilt
+  // when missing, so on an existing site it would not know about the logger.
+  require_once('modules/environment/classes/Common/Logger.class.php');
+  // PHP's own warnings and fatal errors go to the same JSON log as the app's.
+  \Quanta\Common\Logger::registerErrorHandlers();
   require_once('modules/user/classes/Common/UserFactory.class.php');
 // Create a new Environment.
 

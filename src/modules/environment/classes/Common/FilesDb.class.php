@@ -555,12 +555,12 @@ class FilesDb {
       $complete = FALSE;
       if (!self::$search_budget_reported) {
         self::$search_budget_reported = TRUE;
-        error_log(sprintf(
-          'FilesDb: docroot search budget of %.1fs exhausted; resolving from the '
+        Logger::get('files_db')->warning(
+          'Docroot search budget of {budget_seconds}s exhausted; resolving from the '
           . 'cache and index only for the rest of this request. This means the node '
           . 'index is not serving -- check qdbstat.',
-          self::SEARCH_REQUEST_BUDGET_SECONDS
-        ));
+          array('budget_seconds' => self::SEARCH_REQUEST_BUDGET_SECONDS)
+        );
       }
       return array();
     }
@@ -582,8 +582,9 @@ class FilesDb {
       // without the wrapper and stop reaching for it.
       if ($status === 126 || $status === 127) {
         self::$search_timeout_missing = TRUE;
-        error_log('FilesDb: no usable `timeout` binary; the fallback node search '
-          . 'runs unbounded from here on. Install coreutils in this image.');
+        Logger::get('files_db')->warning('No usable `timeout` binary; the fallback node search '
+          . 'runs unbounded from here on. Install coreutils in this image.',
+          array('exit_status' => $status));
         $results = array();
         exec($findcmd, $results, $status);
       }
