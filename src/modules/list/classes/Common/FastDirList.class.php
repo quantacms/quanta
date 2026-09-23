@@ -164,12 +164,12 @@ class FastDirList extends DirList {
     if (self::$walk_spent >= self::REQUEST_WALK_BUDGET_SECONDS) {
       if (!self::$walk_budget_reported) {
         self::$walk_budget_reported = TRUE;
-        error_log(sprintf(
-          'FastDirList: prefix-walk budget of %.1fs exhausted; resolving from the '
+        Logger::get('fast_dir_list')->warning(
+          'Prefix-walk budget of {budget_seconds}s exhausted; resolving from the '
           . 'cache and index only for the rest of this request. This means the node '
           . 'index is not serving -- check qdbstat.',
-          self::REQUEST_WALK_BUDGET_SECONDS
-        ));
+          array('budget_seconds' => self::REQUEST_WALK_BUDGET_SECONDS)
+        );
       }
       return false;
     }

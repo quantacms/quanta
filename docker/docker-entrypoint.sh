@@ -33,6 +33,10 @@
 #   QUANTA_BOOT_CLEAR_CACHE
 #                      run `doctor <site> clear_cache` on start (default 1)
 #   QUANTA_BOOT_CHECK  run `doctor <site> check` on start      (default 0)
+#   QUANTA_LOG_LEVEL   lowest application log level written (default info);
+#                      read by PHP (Logger), not by this script
+#   QUANTA_LOG_OUTPUT  application log target: stderr/stdout/error_log/<path>
+#                                                        (default stderr)
 #   QUANTA_FPM_*       php-fpm pool sizing; see php-fpm-autotune.sh for the
 #                      full set. QUANTA_FPM_AUTOTUNE=off keeps the image's
 #                      static pool defaults.

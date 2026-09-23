@@ -67,13 +67,13 @@ class Image extends FileObject {
       if (is_file($this->getRealPath())) {
         $realpath = $this->getRealPath();
         if ($realpath === false) {
-          error_log("Error: getRealPath() returned false for ". $this->getFileName() . ".");
+          Logger::get('image')->error('getRealPath() returned false', array('file' => $this->getFileName()));
         } else {
-          error_log("Path: " . $realpath);
+          Logger::get('image')->debug('Reading image size from file', array('path' => $realpath));
     	}
 	$get_size = getimagesize($this->getRealPath());
     	if ($get_size === false) {
-        	error_log("Error: getimagesize() failed for path: " . $realpath);
+        	Logger::get('image')->error('getimagesize() failed', array('path' => $realpath));
     	} else {
         	$this->width = $get_size[0];
         	$this->height = $get_size[1];

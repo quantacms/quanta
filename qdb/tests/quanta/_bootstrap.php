@@ -320,6 +320,7 @@ function quanta_env(): array
 
     require_once "$quanta/src/modules/environment/classes/Common/DataContainer.class.php";
     require_once "$quanta/src/modules/environment/classes/Common/Environment.class.php";
+    require_once "$quanta/src/modules/environment/classes/Common/Logger.class.php";
     $_SERVER['HTTPS'] = 1;
     $env = new \Quanta\Common\Environment($host, NULL, $quanta);
     require_once "$quanta/src/autoload.php";
