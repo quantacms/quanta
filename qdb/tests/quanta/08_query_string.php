@@ -2,18 +2,21 @@
 /**
  * Request data must stay data across the real QTag substitution passes.
  *
- *   php tests/query_string_qtag_test.php
+ *   php qdb/tests/quanta/08_query_string.php
+ *
+ * Also discovered by run-quanta-tests.sh in noext, fallback and daemon modes.
  */
-require __DIR__ . '/../src/modules/environment/classes/Common/DataContainer.class.php';
-require __DIR__ . '/../src/modules/environment/classes/Common/Environment.class.php';
-require __DIR__ . '/../src/modules/cache/classes/Common/Cacheable.class.php';
-require __DIR__ . '/../src/modules/cache/classes/Common/Cache.class.php';
-require __DIR__ . '/../src/modules/api/classes/Common/Api.class.php';
-require __DIR__ . '/../src/modules/qtags/classes/Common/QtagFactory.class.php';
-require __DIR__ . '/../src/modules/qtags/classes/Qtags/Qtag.class.php';
-require __DIR__ . '/../src/modules/api/classes/Qtags/QueryString.qtag.php';
-require __DIR__ . '/../src/modules/environment/classes/Qtags/Env.qtag.php';
-require __DIR__ . '/../src/modules/stats/hooks/stats.hook.inc';
+$root = getenv('QUANTA_ROOT') ?: dirname(__DIR__, 3);
+require "$root/src/modules/environment/classes/Common/DataContainer.class.php";
+require "$root/src/modules/environment/classes/Common/Environment.class.php";
+require "$root/src/modules/cache/classes/Common/Cacheable.class.php";
+require "$root/src/modules/cache/classes/Common/Cache.class.php";
+require "$root/src/modules/api/classes/Common/Api.class.php";
+require "$root/src/modules/qtags/classes/Common/QtagFactory.class.php";
+require "$root/src/modules/qtags/classes/Qtags/Qtag.class.php";
+require "$root/src/modules/api/classes/Qtags/QueryString.qtag.php";
+require "$root/src/modules/environment/classes/Qtags/Env.qtag.php";
+require "$root/src/modules/stats/hooks/stats.hook.inc";
 
 use Quanta\Common\Environment;
 use Quanta\Common\QtagFactory;
@@ -34,8 +37,9 @@ function check($cond, $label) {
 }
 
 function render_request($value, $json = FALSE) {
+  global $root;
   $_REQUEST = array('input' => $value);
-  $env = new Environment('qtag-test.invalid', '/home/', dirname(__DIR__));
+  $env = new Environment('qtag-test.invalid', '/home/', $root);
   $env->setData('bounty_fixture', 'PRIVATE_FIXTURE_VALUE');
   $markup = $json
     ? '[QUERY_STRING|name=input|JSON=1|data=value]'
@@ -77,7 +81,7 @@ check(render_request('0') === '0', 'a zero-valued query parameter remains text')
 
 // Normal template nesting must still work; only request-derived text is inert.
 $_REQUEST = array('input' => 'safe');
-$env = new Environment('qtag-test.invalid', '/home/', dirname(__DIR__));
+$env = new Environment('qtag-test.invalid', '/home/', $root);
 $env->setData('template_fixture', '[QUERY_STRING|name=input]');
 check(QtagFactory::transformCodeTags($env, '[ENV|key=template_fixture]') === 'safe', 'authored nested templates still render');
 

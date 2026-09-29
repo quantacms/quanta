@@ -93,12 +93,6 @@ jobs:
           cache-to: type=gha,mode=max
           provenance: false
 
-      - name: Request-data QTag regression
-        run: |
-          docker run --rm --network none --entrypoint php \
-            -v "$PWD/tests:/var/www/quanta/tests:ro" \
-            quanta-ci:test tests/query_string_qtag_test.php
-
       # The image drops qdb/ from the web root (see the Dockerfile), so the
       # suites are mounted in from the checkout rather than read out of it. The
       # entrypoint is bypassed: it does first-boot site setup and starts
