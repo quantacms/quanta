@@ -25,12 +25,9 @@ if (!file_exists(CLASS_MAP_FILE)) {
   $env->mapClasses();
 }
 
-// Load site .env values (including ELASTICSEARCH_HOST / ELASTICSEARCH_INDEX).
-$env->hook('boot', $vars);
-
-// CLI requests have no HTTP headers or PHP session. Seed the anonymous actor so
-// access checks use exactly the public-view permissions and never call
-// getallheaders() from UserFactory::current().
+// CLI requests have no HTTP headers or PHP session. Seed the anonymous actor
+// before any boot hook can ask for the current user, so every access check
+// performed during indexing uses public-view permissions.
 $_SESSION = isset($_SESSION) && is_array($_SESSION) ? $_SESSION : array();
 if (!isset($_SESSION['user'])) {
   $_SESSION['user'] = serialize(new \Quanta\Common\User(
@@ -38,6 +35,9 @@ if (!isset($_SESSION['user'])) {
     \Quanta\Common\User::USER_ANONYMOUS
   ));
 }
+
+// Load site .env values (including ELASTICSEARCH_HOST / ELASTICSEARCH_INDEX).
+$env->hook('boot', $vars);
 
 $summary = (new \Quanta\Common\ElasticSearch($env))->sync();
 fwrite(
