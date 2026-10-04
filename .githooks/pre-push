@@ -1,5 +1,81 @@
 #!/bin/sh
+# Check changed PHP blobs in each pushed tip, independently of the checkout.
 
-[ -f ./vendor/bin/phpcs ] && ./vendor/bin/phpcs -d memory_limit=-1 . || [ -f ../../vendor/bin/phpcs ] && ../../vendor/bin/phpcs -d memory_limit=-1 .
+set -u
+
+fail() {
+    printf 'Quanta style check: %s\n' "$*" >&2
+    exit 1
+}
+
+repo_root=$(git rev-parse --show-toplevel) || exit 1
+cd "$repo_root" || exit 1
+remote_name=${1:-origin}
+work_dir=
+trap 'if [ -n "$work_dir" ]; then rm -f "$work_dir/files" "$work_dir/blob"; rmdir "$work_dir"; fi' 0
+trap 'exit 1' HUP INT TERM
+
+while IFS=' ' read -r local_ref local_oid remote_ref remote_oid extra; do
+    [ -n "$local_ref" ] || continue
+    [ -n "$local_oid" ] && [ -n "$remote_ref" ] && [ -n "$remote_oid" ] && [ -z "$extra" ] \
+        || fail 'Invalid pushed-ref input.'
+    case "$local_oid" in *[!0]*) ;; *) continue ;; esac
+    git cat-file -e "$local_oid^{commit}" || fail "Cannot read pushed revision $local_oid."
+
+    case "$remote_oid" in
+        *[!0]*)
+            git cat-file -e "$remote_oid^{commit}" \
+                || fail 'Fetch the destination branch before checking this push.'
+            base=$remote_oid
+            ;;
+        *)
+            # A new branch has no remote tip. Prefer a fetched default branch;
+            # without one, check all PHP files in the new tip via an empty tree.
+            base=
+            for ref in "refs/remotes/$remote_name/HEAD" "refs/remotes/$remote_name/main" \
+                "refs/remotes/$remote_name/master" refs/remotes/upstream/HEAD \
+                refs/remotes/upstream/main refs/remotes/upstream/master; do
+                if base=$(git merge-base "$local_oid" "$ref" 2>/dev/null); then
+                    break
+                fi
+                base=
+            done
+            [ -n "$base" ] || base=$(git hash-object -t tree --stdin </dev/null) || exit 1
+            ;;
+    esac
+
+    if [ -z "$work_dir" ]; then
+        work_dir=$(mktemp -d "${TMPDIR:-/tmp}/quanta-phpcs.XXXXXX") \
+            || fail 'Cannot create the temporary style-check directory.'
+    fi
+    git diff --name-only --diff-filter=ACMR -z "$base" "$local_oid" \
+        -- '*.php' '*.inc' '*.PHP' '*.INC' >"$work_dir/files" \
+        || fail 'Cannot enumerate changed PHP files.'
+    [ -s "$work_dir/files" ] || continue
+
+    if [ -f "$repo_root/vendor/bin/phpcs" ]; then
+        phpcs=$repo_root/vendor/bin/phpcs
+        ruleset=$repo_root/.phpcs.xml
+    elif [ -f "$repo_root/../../vendor/bin/phpcs" ]; then
+        phpcs=$repo_root/../../vendor/bin/phpcs
+        ruleset=$repo_root/../../.phpcs.xml
+    else
+        fail 'PHP changes require PHPCS. Run composer install with development dependencies.'
+    fi
+    [ -f "$ruleset" ] || fail 'The Quanta .phpcs.xml ruleset is missing.'
+
+    export local_oid work_dir phpcs ruleset
+    # NUL-delimited arguments preserve spaces, Unicode and newline filenames.
+    # Reuse one blob file, and supply its original name to PHPCS on stdin.
+    if ! xargs -0 sh -c '
+        for path do
+            git show "$local_oid:$path" >"$work_dir/blob" || exit 1
+            "$phpcs" -d memory_limit=-1 --standard="$ruleset" \
+                --stdin-path="$path" - <"$work_dir/blob" || exit 1
+        done
+    ' quanta-phpcs <"$work_dir/files"; then
+        fail 'Push blocked: fix the PHP style errors above.'
+    fi
+done
 
 exit 0

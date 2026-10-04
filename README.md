@@ -192,6 +192,38 @@ Once you have, you can start:
 * the documentation -> https://www.quanta.org/documentation/
 * the tutorials  -> https://www.quanta.org/tutorial/
 
+Coding style checks
+-----------------
+Development dependencies include PHP_CodeSniffer. Composer installs the local
+hooks; for an existing checkout, enable them with:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+The pre-push hook checks changed `.php` and `.inc` files in each resulting pushed
+revision using `.phpcs.xml`, including its test exclusions and line-length rules.
+It reads committed blobs, so unrelated working-tree changes do not affect the
+result. Existing violations in unchanged files and intermediate commits are not
+checked. PHP style errors, missing PHPCS, and unreadable revisions block the push;
+documentation-only pushes and deletions do not require PHPCS.
+
+For a new branch, the hook compares against a merge base with a fetched default
+branch of the destination remote or `upstream`. Without a fetched baseline, it
+checks all PHP files in the new tip. Fetch the destination branch before updating
+a remote tip whose commit is not available locally. Site repositories can use
+the existing shared `../../vendor/bin/phpcs` and `../../.phpcs.xml` paths.
+
+Run the standalone integration checks after installing development dependencies:
+
+```bash
+php tests/pre_push_test.php
+```
+
+The tests create disposable local repositories and a local bare remote. They do
+not configure global hooks or contact a remote service. An optional first argument
+selects a separate PHPCS executable for testing.
+
 Documentation site
 -----------------
 `docs/` is a small static site: a landing page, an animated walkthrough of
