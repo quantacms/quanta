@@ -104,6 +104,18 @@ class Job extends Node {
       return false;
     }
 
+    // Already completed: the handler must not run again, it would repeat its
+    // side effects. A completed job still in _jobs_todo is one whose move to
+    // _jobs_done failed or has not happened yet, so finish that move. Anywhere
+    // else (a job loaded by name resolves wherever it is now) it has nothing
+    // left to do.
+    if (!empty($this->json->completed)) {
+      if (basename(dirname($this->path)) == self::DIR_TODO) {
+        $this->moveToDone();
+      }
+      return true;
+    }
+
     $type = isset($this->json->type) ? $this->json->type : self::TYPE_UNKNOWN;
     
     if (!isset($this->json->attempts)) {
@@ -191,19 +203,9 @@ class Job extends Node {
       if (is_dir($this->path)) {
         $this->save();
       }
-      
-      // Move to _jobs_done
-      // First, get the destination path for _jobs_done folder
-      $done_father = NodeFactory::load($this->env, self::DIR_DONE);
-      if ($done_father->exists) {
-        $sourceFile = $this->path;
-        $destinationFile = $done_father->path . '/' . $this->getName();
-        
-        if (!$this->safeMove($sourceFile, $destinationFile, true, $this->env, $this->getName())) {
-          new Message($this->env, 'Warning: Could not move job ' . $this->getName() . ' to ' . self::DIR_DONE, Message::MESSAGE_WARNING);
-        }
-      }
-      
+
+      $this->moveToDone();
+
       return true;
     } else {
       if (is_dir($this->path)) {
@@ -215,6 +217,21 @@ class Job extends Node {
         NodeFactory::buildNode($this->env, $this->name . '-log-' . time(), $this->name . '-logs', $logs_data);
       }
       return false;
+    }
+  }
+
+  /**
+   * Move the job to _jobs_done.
+   */
+  private function moveToDone() {
+    $done_father = NodeFactory::load($this->env, self::DIR_DONE);
+    if ($done_father->exists) {
+      $sourceFile = $this->path;
+      $destinationFile = $done_father->path . '/' . $this->getName();
+
+      if (!$this->safeMove($sourceFile, $destinationFile, true, $this->env, $this->getName())) {
+        new Message($this->env, 'Warning: Could not move job ' . $this->getName() . ' to ' . self::DIR_DONE, Message::MESSAGE_WARNING);
+      }
     }
   }
 

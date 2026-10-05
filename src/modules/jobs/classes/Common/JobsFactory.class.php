@@ -68,13 +68,27 @@ class JobsFactory {
     foreach ($dirs as $dir) {      
       // Ignore hidden folders, 'data', or other non-node components
       if (substr($dir, 0, 1) != '.' && $dir != 'data') {
-        $job = new Job($env, $dir, Job::DIR_TODO); 
+        // Load the job from _jobs_todo itself, not by name. The listing can
+        // trail the disk, and a name resolves to wherever the job is NOW: a
+        // job another worker already finished would be found in _jobs_done
+        // and run again.
+        $job = new Job($env, $dir, Job::DIR_TODO, NULL, $todo_node->path . '/' . $dir);
+        if (!$job->exists) {
+          continue;
+        }
         $type = isset($job->json->type) ? $job->json->type : '';
         // Skip sync jobs as they are processed by a dedicated cron (processSyncQueue)
         if (in_array($type, $exclusion)) {
           continue;
         }
-        self::runJob($job);
+        // One failing job must not stop the rest of the queue. It keeps its
+        // recorded attempt and is retried on the next run.
+        try {
+          self::runJob($job);
+        }
+        catch (\Throwable $e) {
+          Logger::get('jobs')->error('Job {job} failed with an exception', array('job' => $dir, 'exception' => $e));
+        }
       }
     }
   }
