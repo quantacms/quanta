@@ -17,18 +17,45 @@ class Handler(BaseHTTPRequestHandler):
         return json.loads(raw or b"{}")
 
     def do_HEAD(self):
-        self.reply(200)
+        # Exercise ElasticSearch::ensureIndex(): the first existence check must
+        # report a missing index, while later checks see the created index.
+        self.reply(200 if self.server.index_created else 404)
 
     def do_PUT(self):
-        self.body()
+        body = self.body()
+        properties = body.get("mappings", {}).get("properties", {})
+
+        # Reject a create request that does not carry the mappings Quanta owns.
+        # This makes the integration test prove ensureIndex() actually creates
+        # a usable index instead of only exercising search against a fake one.
+        required = {
+            "name": "keyword",
+            "title": "text",
+            "teaser": "text",
+            "body": "text",
+            "status": "keyword",
+            "timestamp": "long",
+            "_quanta_sync": "keyword",
+            "fields": "object",
+        }
+        for field, expected_type in required.items():
+            if properties.get(field, {}).get("type") != expected_type:
+                self.reply(400, {"error": f"missing or invalid mapping for {field}"})
+                return
+
+        self.server.index_created = True
         self.reply(200, {
             "acknowledged": True,
-            "result": "created",
-            "_shards": {"total": 1, "successful": 1, "failed": 0},
+            "shards_acknowledged": True,
+            "index": "quanta-test",
         })
 
     def do_POST(self):
         body = self.body()
+
+        if not self.server.index_created:
+            self.reply(404, {"error": "index_not_found_exception"})
+            return
 
         if self.path.endswith("/_delete_by_query"):
             query = body.get("query", {})
@@ -58,6 +85,15 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         if self.path.endswith("/_search") and "aggs" in body:
+            facet_field = (
+                body.get("aggs", {})
+                .get("facet", {})
+                .get("terms", {})
+                .get("field")
+            )
+            if facet_field != "fields.category.keyword":
+                self.reply(400, {"error": "unexpected facet field"})
+                return
             self.reply(200, {
                 "took": 1,
                 "timed_out": False,
@@ -82,7 +118,7 @@ class Handler(BaseHTTPRequestHandler):
                     "total": {"value": 1, "relation": "eq"},
                     "max_score": 1.0,
                     "hits": [{
-                        "_index": "x",
+                        "_index": "quanta-test",
                         "_id": "home",
                         "_score": 1.0,
                         "_source": {"name": "home", "title": "Home", "teaser": "Hello"},
@@ -100,4 +136,6 @@ class Handler(BaseHTTPRequestHandler):
         pass
 
 
-HTTPServer(("127.0.0.1", 19200), Handler).serve_forever()
+server = HTTPServer(("127.0.0.1", 19200), Handler)
+server.index_created = False
+server.serve_forever()
