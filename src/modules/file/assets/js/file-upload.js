@@ -1,6 +1,37 @@
 var hasMultipleAttribute= true;
 var files = [];
+var FILE_VIEW_STORAGE_KEY = 'quanta-file-admin-view';
+
+function getFileViewPreference() {
+  try {
+    return window.localStorage.getItem(FILE_VIEW_STORAGE_KEY) === 'preview' ? 'preview' : 'list';
+  } catch (e) {
+    return 'list';
+  }
+}
+
+function applyFileView(container, mode) {
+  var normalizedMode = mode === 'preview' ? 'preview' : 'list';
+  var list = container.find('ul.file_admin').first();
+
+  container.toggleClass('file-view-preview-mode', normalizedMode === 'preview');
+  container.find('.file-view-button').each(function () {
+    var active = $(this).data('file-view') === normalizedMode;
+    $(this).toggleClass('is-active', active);
+    $(this).attr('aria-pressed', active ? 'true' : 'false');
+  });
+  container.toggleClass('file-view-sortable', list.find('.sort-handle').length > 0);
+}
+
+function initFileViewSwitchers() {
+  var mode = getFileViewPreference();
+  $('.file-view-container').each(function () {
+    applyFileView($(this), mode);
+  });
+}
+
 $(function () {
+  initFileViewSwitchers();
   if (!($('.upload-files').length)) { return; }
   
   $('.drop a').click(function () {
@@ -162,6 +193,18 @@ $(function () {
 
 });
 
+$(document).on('click', '.file-view-button', function () {
+  var mode = $(this).data('file-view');
+  var container = $(this).closest('.file-view-container');
+
+  applyFileView(container, mode);
+  try {
+    window.localStorage.setItem(FILE_VIEW_STORAGE_KEY, mode);
+  } catch (e) {
+    // Storage may be disabled; the selected mode still applies to this page.
+  }
+});
+
 
 // Initialize button events for file table admin.
 var refreshFileActions = function (fileElement, justView = false, deleteAction = true, thumbnailAction = true) {
@@ -252,6 +295,8 @@ var refreshThumbnail = function () {
 
 
 $(document).bind('refresh', function () {
+  initFileViewSwitchers();
+
   $('.list-item-file_admin').each(function () {
         refreshFileActions($(this),$(this).parent().hasClass('just-view'), $(this).parent().hasClass('delete-action'), $(this).parent().hasClass('thumbnail-action'));
         refreshThumbnail();
