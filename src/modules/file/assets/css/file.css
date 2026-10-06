@@ -463,6 +463,13 @@ ul.file_admin  li {
     align-items: center;
     gap: 8px;
 }
+.file-view-preview-mode .file-link-item .file-link {
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-wrap: anywhere;
+}
 .file-view-preview-mode .file-preview {
     width: 100%;
     max-width: 150px;

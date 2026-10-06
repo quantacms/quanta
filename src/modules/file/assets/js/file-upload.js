@@ -1,13 +1,28 @@
 var hasMultipleAttribute= true;
 var files = [];
 var FILE_VIEW_STORAGE_KEY = 'quanta-file-admin-view';
+var fileViewPreference = null;
 
 function getFileViewPreference() {
-  try {
-    return window.localStorage.getItem(FILE_VIEW_STORAGE_KEY) === 'preview' ? 'preview' : 'list';
-  } catch (e) {
-    return 'list';
+  if (fileViewPreference !== null) {
+    return fileViewPreference;
   }
+  try {
+    fileViewPreference = window.localStorage.getItem(FILE_VIEW_STORAGE_KEY) === 'preview' ? 'preview' : 'list';
+  } catch (e) {
+    fileViewPreference = 'list';
+  }
+  return fileViewPreference;
+}
+
+function rememberFileViewPreference(mode) {
+  fileViewPreference = mode === 'preview' ? 'preview' : 'list';
+  try {
+    window.localStorage.setItem(FILE_VIEW_STORAGE_KEY, fileViewPreference);
+  } catch (e) {
+    // Keep the selection through Shadow refreshes when storage is unavailable.
+  }
+  return fileViewPreference;
 }
 
 function applyFileView(container, mode) {
@@ -194,15 +209,10 @@ $(function () {
 });
 
 $(document).on('click', '.file-view-button', function () {
-  var mode = $(this).data('file-view');
+  var mode = rememberFileViewPreference($(this).data('file-view'));
   var container = $(this).closest('.file-view-container');
 
   applyFileView(container, mode);
-  try {
-    window.localStorage.setItem(FILE_VIEW_STORAGE_KEY, mode);
-  } catch (e) {
-    // Storage may be disabled; the selected mode still applies to this page.
-  }
 });
 
 
