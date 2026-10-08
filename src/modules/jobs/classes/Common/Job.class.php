@@ -100,7 +100,7 @@ class Job extends Node {
    *   TRUE if the job was successfully completed, FALSE otherwise.
    */
   public function run() {
-    if (!is_dir($this->path) || basename(dirname($this->path)) !== self::DIR_TODO) {
+    if (!is_dir($this->path)) {
       return false;
     }
 
