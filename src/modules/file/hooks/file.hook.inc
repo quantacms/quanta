@@ -174,29 +174,6 @@ function file_node_after_save(Environment $env, array &$vars) {
   }
 }
 
-/**
- * Implements hook_page_init().
- *
- * @param Environment $env
- *   The Environment.
- * @param array $vars
- *   An array of variables.
- */
-function file_page_init(Environment $env, array $vars) {
-  // If a Shadow is open, initialize file upload libraries.
-	if (Shadow::isOpen($env)) {
-    /** @var Page $page */
-    $page = $vars['page'];
-    // TODO: print is not a good approach.
-    $attributes = array('file_inline' => TRUE, 'refresh' => TRUE, 'module' => 'file');
-    print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/jquery.knob.js');
-    print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/jquery.iframe-transport.js');
-    print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/jquery.fileupload.js');
-    print new \Quanta\Qtags\Js($env, $attributes, '/assets/js/file-upload.js');
-  }
-}
-
-
 function file_shadow_preview_img($env, $vars) {
 	$vars['shadow']->addTab('Preview', file_get_contents($env->getModulePath('file') . '/tpl/preview_img.inc'), 2);
 	$vars['shadow']->addButton('set_as_thumbnail', t('Imposta come principale'));
