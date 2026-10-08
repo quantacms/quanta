@@ -1,3 +1,0 @@
-Automated BEHAT tests are coming.
-
-Star the repository at https://www.github.com/quantacms/quanta to be updated as soon as that happens.

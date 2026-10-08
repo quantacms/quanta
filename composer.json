@@ -11,13 +11,15 @@
         "stripe/stripe-php": "^17.3"
     },
     "require-dev": {
-        "squizlabs/php_codesniffer": "^3.0"
+        "squizlabs/php_codesniffer": "^3.0",
+        "behat/behat": "^3.15"
     },
     "scripts": {
         "post-install-cmd": [
             "git config core.hooksPath .githooks",
             "find ./sites -type d -name .git -exec dirname {} \\; | xargs -I {} rm -rf {}/.git/hooks",
             "find ./sites -type d -name .git -exec dirname {} \\; | xargs -I {} ln -s ../../../.githooks {}/.git/hooks "
-        ]
+        ],
+        "test:behat": "tests/behat/run.sh"
     }
 }
