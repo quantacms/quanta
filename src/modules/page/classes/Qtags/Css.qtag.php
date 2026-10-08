@@ -28,18 +28,37 @@ class Css extends Qtag {
 
     // Including an internal CSS.
     if (empty($this->attributes['external'])) {
-      $css_code = '<style>';
-      // TODO: converting all inclusions into inline stylesheets. Faster, but to be reviewed.
+      $inline_code = '';
+      $css_links = '';
+      $allowed_roots = array(
+        $this->env->dir['docroot'],
+        $this->env->dir['modules_core'],
+        $this->env->dir['modules_custom'],
+        $this->env->dir['profiles'],
+        $this->env->dir['static'],
+      );
 
       foreach ($css as $css_file) {
-        $css_code .= file_get_contents($css_file);
+        // Remote stylesheets must stay links. Never fetch arbitrary URLs server-side.
+        if (preg_match('#^https?://#i', $css_file)) {
+          $css_links .= '<link rel="stylesheet" href="' . htmlspecialchars($css_file, ENT_QUOTES, 'UTF-8') . '" type="text/css" />';
+          continue;
+        }
+        if (strtolower(pathinfo($css_file, PATHINFO_EXTENSION)) !== 'css') {
+          continue;
+        }
+        $local_file = \Quanta\Common\Api::resolveAllowedLocalFile($css_file, $allowed_roots);
+        if ($local_file !== FALSE) {
+          $inline_code .= file_get_contents($local_file);
+        }
       }
       if (!empty($inline_css)) {
         foreach ($inline_css as $inline_css_code) {
-          $css_code .= $inline_css_code . "\n";
+          $inline_code .= $inline_css_code . "\n";
         }
       }
-      $css_code .= '</style>';
+      $css_code = ($inline_code !== '') ? ('<style>' . $inline_code . '</style>') : '';
+      $css_code .= $css_links;
     }
     // Including an external CSS.
     else {

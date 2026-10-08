@@ -37,7 +37,20 @@ class Js extends Qtag {
         $js_code .= '<script>' . $js_file . '</script>';
       }
       elseif (isset($this->attributes['file_inline'])) {
-        $js_code .= '<script>' . file_get_contents($js_file) . '</script>';
+        $allowed_roots = array(
+          $this->env->dir['docroot'],
+          $this->env->dir['modules_core'],
+          $this->env->dir['modules_custom'],
+          $this->env->dir['profiles'],
+          $this->env->dir['static'],
+        );
+        if (strtolower(pathinfo($js_file, PATHINFO_EXTENSION)) !== 'js') {
+          continue;
+        }
+        $local_file = \Quanta\Common\Api::resolveAllowedLocalFile($js_file, $allowed_roots);
+        if ($local_file !== FALSE) {
+          $js_code .= '<script>' . file_get_contents($local_file) . '</script>';
+        }
       }
       else {
         $type = (isset($this->attributes['type'])) ? 'type=' . $this->attributes['type'] : '';
