@@ -342,11 +342,17 @@ class UserFactory {
   }
 
   public static function verifyToken($env, $token){
+    if (empty($token) || !is_string($token) || substr_count($token, '.') !== 2) {
+      return null;
+    }
     $secret_key = $env->getData('JWT_SECRET_KEY');
+    if (empty($secret_key)) {
+      return null;
+    }
     try {
         $decoded = \Firebase\JWT\JWT::decode($token, new \Firebase\JWT\Key($secret_key, 'HS256'));
         return (array) $decoded; // Returns payload as an array
-    } catch (Exception $e) {
+    } catch (\Throwable $e) {
         return null; // Invalid token
     }
   }
