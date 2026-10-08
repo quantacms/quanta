@@ -78,7 +78,7 @@ class JobsFactory {
         }
         $type = isset($job->json->type) ? $job->json->type : '';
         // Skip sync jobs as they are processed by a dedicated cron (processSyncQueue)
-        if (in_array($type, $exclusion)) {
+        if (empty($type) || in_array($type, $exclusion)) {
           continue;
         }
         // One failing job must not stop the rest of the queue. It keeps its
