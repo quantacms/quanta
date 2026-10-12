@@ -31,6 +31,13 @@
 # Built against php:8.5-fpm so the compiled .so matches the production ABI
 # (non-thread-safe). Bump PHP_VERSION here and the app image inherits it.
 #
+# CI publishes the image for linux/amd64 and linux/arm64 under one tag, each
+# built natively on a runner of that architecture (.github/workflows/
+# docker-image.yml), so downstream images build natively on Apple-silicon
+# laptops too. Nothing in this file is architecture-specific — every binary
+# comes from apt, rustup or a source build — and it has to stay that way: a
+# hardcoded x86_64 download here would break the arm64 half of the manifest.
+#
 # 8.5 is also the ceiling of ext-php-rs 0.15 (qdb/Cargo.toml): its build
 # script rejects any PHP whose Zend API is newer than 20250925, so PHP 8.6 needs
 # a crate upgrade first, not just a bump here.
