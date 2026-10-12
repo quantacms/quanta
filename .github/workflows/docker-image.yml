@@ -7,10 +7,29 @@ name: Build and push Docker image
 # extension stage. Pull requests build and test only; pushes to master, version
 # tags, and manual runs also push the image.
 #
-# The image is built once with load:true, both test suites run against that
-# exact image, and only then is it pushed — so a red suite cannot publish a
-# tag. The push step rebuilds from the same GHA layer cache, which is a cache
-# hit for every layer, so it costs a push and not a second Rust compile.
+# ── Multi-arch ────────────────────────────────────────────────────────────────
+# The image is published for linux/amd64 AND linux/arm64 under one tag (a
+# manifest list), so a downstream image can `FROM` it on either architecture
+# and get a native build. Without the arm64 variant a build on an Apple-silicon
+# laptop silently mixes architectures: a multi-stage downstream Dockerfile
+# compiles its own extensions in an arm64 builder stage (official php images
+# are multi-arch), then COPYs them into the only variant of this image that
+# exists, amd64, where they refuse to load.
+#
+# Each architecture is built on a runner of that architecture (GitHub hosts
+# arm64 runners for public repos), not under QEMU: the Rust compile with LTO
+# would take the better part of an hour emulated, and `load: true` — which the
+# test steps need — cannot load a multi-platform result into the daemon anyway.
+# So the matrix below builds, tests and pushes each architecture BY DIGEST, and
+# the `manifest` job stitches the digests into the final tags. The per-platform
+# GHA cache scopes keep the two architectures from evicting each other's layers.
+#
+# ── Testing ───────────────────────────────────────────────────────────────────
+# On each runner the image is built once with load:true, both test suites run
+# against that exact image, and only then is it pushed — so a red suite on
+# either architecture cannot publish a tag. The push step rebuilds from the same
+# GHA layer cache, which is a cache hit for every layer, so it costs a push and
+# not a second Rust compile.
 #
 # Two suites run, and they answer different questions:
 #
@@ -23,6 +42,10 @@ name: Build and push Docker image
 # The second is the one that guards the shim: every call site wired to the node
 # database keeps a legacy path, and the suite pins both branches to the same
 # observable behaviour. See qdb/tests/quanta/_bootstrap.php.
+#
+# Running both suites on arm64 as well is not incidental: qdb mirrors PHP's
+# string hash, whose byte accumulation depends on the target's `char`
+# signedness (qdb/src/php_abi.rs), and this is where that branch gets exercised.
 
 on:
   push:
@@ -45,12 +68,27 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: Build and test (${{ matrix.platform }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-latest
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
     permissions:
       contents: read
       packages: write
 
     steps:
+      # "linux/amd64" -> "linux-amd64": artifact names cannot contain a slash.
+      - name: Platform slug
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: echo "PLATFORM_PAIR=${PLATFORM//\//-}" >> "$GITHUB_ENV"
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -67,18 +105,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels)
+      # Labels only, here: the tags are applied to the manifest list by the
+      # `manifest` job, the per-arch images are pushed by digest.
+      - name: Extract metadata (labels)
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,format=long
-            type=raw,value=latest,enable={{is_default_branch}}
 
       # Build into the local docker daemon so the suites below run against the
       # very image that will be pushed.
@@ -87,10 +120,11 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
+          platforms: ${{ matrix.platform }}
           load: true
           tags: quanta-ci:test
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ matrix.platform }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.platform }}
           provenance: false
 
       # The image drops qdb/ from the web root (see the Dockerfile), so the
@@ -112,16 +146,92 @@ jobs:
             -c 'QUANTA_ROOT=/var/www/quanta sh /tests/run-quanta-tests.sh'
 
       # Every layer is a cache hit from the build above, so this is a push, not
-      # a rebuild.
-      - name: Push image
+      # a rebuild. Pushed by digest only (no tag): the tags go on the manifest
+      # list that the `manifest` job assembles from both architectures.
+      - name: Push image by digest
+        id: push
         if: github.event_name != 'pull_request'
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          outputs: type=image,push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha,scope=${{ matrix.platform }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.platform }}
           provenance: false
+
+      # The digest travels to the manifest job as an empty file named after it.
+      - name: Export digest
+        if: github.event_name != 'pull_request'
+        env:
+          DIGEST: ${{ steps.push.outputs.digest }}
+        run: |
+          mkdir -p "${{ runner.temp }}/digests"
+          touch "${{ runner.temp }}/digests/${DIGEST#sha256:}"
+
+      - name: Upload digest
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ env.PLATFORM_PAIR }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  # Combines the per-architecture images into one manifest list per tag. Only
+  # runs when every architecture built, tested and pushed — a failure on either
+  # runner leaves the existing tags untouched.
+  manifest:
+    name: Publish multi-arch manifest
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,format=long
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create manifest list and push
+        working-directory: ${{ runner.temp }}/digests
+        run: |
+          docker buildx imagetools create \
+            $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@sha256:%s ' *)
+
+      - name: Inspect manifest list
+        run: |
+          docker buildx imagetools inspect \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
