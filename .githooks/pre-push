@@ -1,5 +1,86 @@
 #!/bin/sh
+# Block pushes that introduce PHPCS violations in changed PHP files.
 
-[ -f ./vendor/bin/phpcs ] && ./vendor/bin/phpcs -d memory_limit=-1 . || [ -f ../../vendor/bin/phpcs ] && ../../vendor/bin/phpcs -d memory_limit=-1 .
+set -eu
+
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
+
+if [ -x "$repo_root/vendor/bin/phpcs" ]; then
+  phpcs="$repo_root/vendor/bin/phpcs"
+elif [ -x "$repo_root/../../vendor/bin/phpcs" ]; then
+  phpcs="$repo_root/../../vendor/bin/phpcs"
+else
+  phpcs=""
+fi
+
+tmp_dir=$(mktemp -d "${TMPDIR:-/tmp}/quanta-pre-push.XXXXXX")
+trap 'rm -rf "$tmp_dir"' EXIT HUP INT TERM
+
+zero_sha='0000000000000000000000000000000000000000'
+remote_name=${1:-origin}
+needs_phpcs=0
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ -n "$local_sha" ] || continue
+
+  # Branch deletion: there is no PHP content to check.
+  if [ "$local_sha" = "$zero_sha" ]; then
+    continue
+  fi
+
+  if [ "$remote_sha" = "$zero_sha" ]; then
+    base_sha=""
+    for candidate in       "refs/remotes/$remote_name/HEAD"       "refs/remotes/$remote_name/main"       "refs/remotes/$remote_name/master"       "refs/remotes/upstream/main"       "refs/remotes/upstream/master"
+    do
+      if base_sha=$(git merge-base "$local_sha" "$candidate" 2>/dev/null); then
+        break
+      fi
+      base_sha=""
+    done
+
+    if [ -z "$base_sha" ]; then
+      base_sha=$(git hash-object -t tree /dev/null)
+    fi
+  else
+    base_sha="$remote_sha"
+  fi
+
+  files_file="$tmp_dir/files"
+  : > "$files_file"
+  git diff --name-only --diff-filter=ACMR -z "$base_sha" "$local_sha" -- '*.php' '*.inc' > "$files_file"
+
+  if [ ! -s "$files_file" ]; then
+    continue
+  fi
+
+  needs_phpcs=1
+  if [ -z "$phpcs" ]; then
+    echo "Quanta pre-push: PHP changes detected but PHPCS is not installed." >&2
+    echo "Run 'composer install' before pushing." >&2
+    exit 1
+  fi
+
+  export local_sha phpcs repo_root tmp_dir
+  if ! xargs -0 sh -c '
+    for path do
+      blob="$tmp_dir/current.php"
+      if ! git show "$local_sha:$path" > "$blob"; then
+        echo "Quanta pre-push: cannot read $path from $local_sha" >&2
+        exit 1
+      fi
+      if ! "$phpcs" -d memory_limit=-1 --standard="$repo_root/.phpcs.xml" --stdin-path="$path" - < "$blob"; then
+        exit 1
+      fi
+    done
+  ' quanta-phpcs < "$files_file"; then
+    echo "Quanta pre-push: push blocked by PHP coding-style errors." >&2
+    exit 1
+  fi
+done
+
+if [ "$needs_phpcs" -eq 1 ]; then
+  echo "Quanta pre-push: PHPCS passed."
+fi
 
 exit 0
