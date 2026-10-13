@@ -304,8 +304,6 @@ class Environment extends DataContainer {
     if (!is_dir($this->dir['tmp'])) {
       mkdir($this->dir['tmp']);
     }
-    $fop = fopen(CLASS_MAP_FILE, 'w+');
-
     foreach ($this->modules_loaded as $module) {
       $autoload_paths = array('Common', 'Qtags');
       foreach ($autoload_paths as $autoload_path) {
@@ -325,8 +323,14 @@ class Environment extends DataContainer {
         }
       }
     }
-    fwrite($fop, serialize($this->class_map));
-    fclose($fop);
+    // Written whole to a file of its own and renamed over the map: other
+    // processes read the map while it is rebuilt, and one rewritten in place
+    // hands a reader that catches it in between a truncated file, so no classes
+    // at all. A rename leaves every reader one complete map or the other.
+    $tmp_file = CLASS_MAP_FILE . '.' . getmypid() . '.' . bin2hex(random_bytes(4));
+    if (file_put_contents($tmp_file, serialize($this->class_map)) === FALSE || !rename($tmp_file, CLASS_MAP_FILE)) {
+      @unlink($tmp_file);
+    }
   }
 
   /**

@@ -269,13 +269,17 @@ function eq_eventually(callable $fn, $expected, string $label): void
  * The site lives under the checkout's own sites/ dir, so src/, profiles/ and
  * vendor/ are the real ones and every class under test is the shipped class.
  *
+ * @param string|null $host
+ *   The site's host name, for a test that has to prepare files under it before
+ *   the Environment boots. A fresh random one by default.
+ *
  * @return array
  *   [Environment $env, string $site_dir, string $db_dir]
  */
-function quanta_env(): array
+function quanta_env(?string $host = NULL): array
 {
     $quanta = quanta_root();
-    $host = 'qdbtest-' . bin2hex(random_bytes(4));
+    $host = $host ?? 'qdbtest-' . bin2hex(random_bytes(4));
     $site = "$quanta/sites/$host";
     $tmp = "$quanta/static/tmp/$host";
 
