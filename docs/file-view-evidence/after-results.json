@@ -1,0 +1,62 @@
+{
+  "browser": "Chromium 153.0.8010.0",
+  "node": "v24.19.0",
+  "results": [
+    {
+      "name": "Default list mode and accessible controls",
+      "status": "passed"
+    },
+    {
+      "name": "Preview selection survives a page reload",
+      "status": "passed"
+    },
+    {
+      "name": "Keyboard activation uses Enter and Space",
+      "status": "passed"
+    },
+    {
+      "name": "Shadow refresh and replacement retain the selected mode",
+      "status": "passed"
+    },
+    {
+      "name": "Unavailable localStorage keeps the mode after Shadow refresh",
+      "status": "passed"
+    },
+    {
+      "name": "A failed storage write does not restore an older preference",
+      "status": "passed"
+    },
+    {
+      "name": "An invalid saved preference falls back to list mode",
+      "status": "passed"
+    },
+    {
+      "name": "An empty file list can still switch modes",
+      "status": "passed"
+    },
+    {
+      "name": "A saved preview preference initializes each file panel",
+      "status": "passed"
+    },
+    {
+      "name": "Long filenames stay inside preview cards at 320px",
+      "status": "passed"
+    },
+    {
+      "name": "Long filenames stay inside preview cards at 375px",
+      "status": "passed"
+    },
+    {
+      "name": "Changing the mode leaves the file order intact",
+      "status": "passed"
+    },
+    {
+      "name": "Real jQuery UI dragging still reorders files in list mode",
+      "status": "passed"
+    },
+    {
+      "name": "Real jQuery UI dragging still reorders files in preview mode",
+      "status": "passed"
+    }
+  ]
+}

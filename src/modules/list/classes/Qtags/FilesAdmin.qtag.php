@@ -23,6 +23,11 @@ class FilesAdmin extends Qtag {
       $filelist->generate();
     }
 
-    return $filelist->render();
+    $switcher = '<div class="file-view-switcher" role="group" aria-label="File display mode">'
+      . '<button type="button" class="file-view-button is-active" data-file-view="list" aria-pressed="true" title="List view"><span aria-hidden="true">☷</span><span class="file-view-label">List</span></button>'
+      . '<button type="button" class="file-view-button" data-file-view="preview" aria-pressed="false" title="Icons and preview view"><span aria-hidden="true">▦</span><span class="file-view-label">Preview</span></button>'
+      . '</div>';
+
+    return '<div class="file-view-container">' . $switcher . $filelist->render() . '</div>';
   }
 }
