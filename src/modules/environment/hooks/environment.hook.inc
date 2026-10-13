@@ -17,7 +17,7 @@ function environment_complete(Environment $env, array $vars){
 /**
  * Implements hook_doctor().
  *
- * Delete the cached class map and perform other environment-related operations.
+ * Rebuild the cached class map and perform other environment-related operations.
  *
  * @param Environment $env
  *   The Environment.
@@ -25,10 +25,29 @@ function environment_complete(Environment $env, array $vars){
  *   An array of variables.
  */
 function environment_doctor(Environment $env, $vars) {
+  environment_doctor_class_map($env, $vars);
+}
+
+/**
+ * Implements hook_doctor_class_map().
+ *
+ * Rebuild the cached class map from the code this process runs.
+ *
+ * It is rebuilt rather than deleted: a request builds a missing map from ITS
+ * code, and where static/ is shared by processes running different code (the
+ * containers of a site during a rolling update) that may be one still running
+ * the previous release, whose map the others would then keep.
+ *
+ * @param Environment $env
+ *   The Environment.
+ * @param array $vars
+ *   An array of variables.
+ */
+function environment_doctor_class_map(Environment $env, $vars) {
   /** @var Doctor $doctor */
   $doctor = $vars['doctor'];
-  $doctor->op('Deleting cached Class Map file...');
-  unlink(CLASS_MAP_FILE);
+  $doctor->op('Rebuilding cached Class Map file...');
+  $env->mapClasses();
   $doctor->ok('Done!');
 }
 

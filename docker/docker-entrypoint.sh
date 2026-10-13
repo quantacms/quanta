@@ -165,8 +165,15 @@ for alias in $ALIASES; do
     fi
 done
 
-# Clear old class map to force regeneration with the site's modules.
-rm -f "$QUANTA_DIR/static/tmp/$QUANTA_SITE/class_map.dat"
+# Replace the class map with the map of this image's code. Not by deleting it:
+# static/ is shared with the containers still running the previous release, a
+# request of theirs would rebuild a missing map from THEIR code first, and this
+# container would then keep that map, without the classes its release added.
+# doctor swaps the new map in whole, so the old containers never find it missing
+# and read the new one until they stop. If doctor fails, the map is deleted and
+# the first request builds it, as before.
+(cd "$QUANTA_DIR" && php doctor "$QUANTA_SITE" class_map 2>&1) \
+    || rm -f "$QUANTA_DIR/static/tmp/$QUANTA_SITE/class_map.dat"
 
 # Install the CSS/JS bundles the image built (quanta-build-assets, see the
 # Dockerfile) into the site's tmp dir, which is where the CMS reads them from.
