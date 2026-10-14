@@ -37,6 +37,7 @@ class Facets extends Qtag {
       }
 
       $link_params = $params;
+      $link_params['facet'] = $selected;
       $link_params['facet'][$field] = $key;
       $url = '?' . http_build_query($link_params);
       $count = (int) ($bucket['doc_count'] ?? 0);
