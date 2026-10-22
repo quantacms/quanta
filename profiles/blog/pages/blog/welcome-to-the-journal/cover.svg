@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="Abstract blue journal cover">
+<defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="#0f172a"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs>
+<rect width="1200" height="675" fill="url(#g)"/><circle cx="940" cy="150" r="260" fill="#60a5fa" opacity=".22"/>
+<circle cx="1040" cy="530" r="340" fill="#93c5fd" opacity=".13"/>
+<text x="90" y="520" fill="#fff" font-size="82" font-family="Arial, sans-serif" font-weight="700">Welcome</text>
+<text x="94" y="580" fill="#bfdbfe" font-size="30" font-family="Arial, sans-serif">Quanta Journal</text></svg>
