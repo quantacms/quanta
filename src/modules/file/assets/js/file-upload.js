@@ -1,6 +1,33 @@
 var hasMultipleAttribute= true;
 var files = [];
+var FILE_VIEW_STORAGE_KEY = 'quanta-file-view-mode';
+
+function setFileView(container, mode) {
+  var normalizedMode = mode === 'icons' ? 'icons' : 'list';
+  var list = container.find('ul.file_admin').first();
+
+  list.toggleClass('file-view-icons', normalizedMode === 'icons');
+  container.find('.file-view-button').each(function () {
+    var active = $(this).data('file-view') === normalizedMode;
+    $(this).toggleClass('is-active', active).attr('aria-pressed', active ? 'true' : 'false');
+  });
+}
+
+function initFileViewSwitchers() {
+  var savedMode = 'list';
+  try {
+    savedMode = window.localStorage.getItem(FILE_VIEW_STORAGE_KEY) || 'list';
+  } catch (e) {
+    // Storage can be disabled; list view remains the safe default.
+  }
+
+  $('.file-view-container').each(function () {
+    setFileView($(this), savedMode);
+  });
+}
+
 $(function () {
+  initFileViewSwitchers();
   if (!($('.upload-files').length)) { return; }
   
   $('.drop a').click(function () {
@@ -162,6 +189,18 @@ $(function () {
 
 });
 
+$(document).on('click', '.file-view-button', function () {
+  var mode = $(this).data('file-view');
+  var container = $(this).closest('.file-view-container');
+
+  setFileView(container, mode);
+  try {
+    window.localStorage.setItem(FILE_VIEW_STORAGE_KEY, mode);
+  } catch (e) {
+    // The view still switches for this session if storage is unavailable.
+  }
+});
+
 
 // Initialize button events for file table admin.
 var refreshFileActions = function (fileElement, justView = false, deleteAction = true, thumbnailAction = true) {
@@ -252,6 +291,8 @@ var refreshThumbnail = function () {
 
 
 $(document).bind('refresh', function () {
+  initFileViewSwitchers();
+
   $('.list-item-file_admin').each(function () {
         refreshFileActions($(this),$(this).parent().hasClass('just-view'), $(this).parent().hasClass('delete-action'), $(this).parent().hasClass('thumbnail-action'));
         refreshThumbnail();
