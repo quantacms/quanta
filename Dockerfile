@@ -28,8 +28,10 @@
 #
 #     DOCKER_BUILDKIT=1 docker build -t quanta-cms-base:php8.5 quanta/
 #
-# Built against php:8.5-fpm so the compiled .so matches the production ABI
-# (non-thread-safe). Bump PHP_VERSION here and the app image inherits it.
+# Built against php:${PHP_VERSION}-fpm so the compiled .so matches the
+# production ABI (non-thread-safe). Bump PHP_VERSION here and the app image
+# inherits it. A downstream image that compiles extensions of its own must
+# build them against the same exact PHP_VERSION (see the ARG below).
 #
 # CI publishes the image for linux/amd64 and linux/arm64 under one tag, each
 # built natively on a runner of that architecture (.github/workflows/
@@ -62,7 +64,18 @@
 #   * DEBIAN_SUITE below must match the suite php:${PHP_VERSION}-fpm is built
 #     on. The build asserts this rather than producing a subtly broken image.
 
-ARG PHP_VERSION=8.5
+# The exact PHP release, not just the minor. php:8.5-fpm is a floating tag that
+# moves to each new patch release, so with it the PHP this image ships is
+# whatever the tag pointed at the day CI ran: a rebuild for an unrelated change
+# silently changes it, and a security release only reaches the image when
+# something else happens to trigger a rebuild. Pinned, a PHP update is a
+# deliberate one-line bump that rebuilds the image on its own.
+#
+# It also gives downstream images a version to match. A patch release keeps the
+# module API number but can add engine functions that inline helpers in its
+# headers call, so an extension built against a newer patch than this image runs
+# loads fine and then dies with "undefined symbol" on first use.
+ARG PHP_VERSION=8.5.12
 
 # The Debian release the runtime stage starts from. It MUST be the one
 # php:${PHP_VERSION}-fpm is built on — /usr/local is copied wholesale out of
