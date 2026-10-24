@@ -1,0 +1,5 @@
+default:
+  suites:
+    quanta:
+      paths: [features]
+      contexts: [FeatureContext]
