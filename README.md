@@ -179,6 +179,47 @@ and start customizing it.
 Detailed information about Quanta's installation process is available on the website: https://www.quanta.org/installation-instructions/
 
 
+Coding style checks
+-----------------
+Composer already includes PHP_CodeSniffer as a development dependency. Keep
+development dependencies installed when contributing; `.phpcs.xml` defines the
+project's PSR rules, line-length limits and test-directory exclusion. The existing
+Composer setup enables `.githooks` for the root repository and nested sites.
+For a checkout installed without Composer scripts, enable the root hooks with:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+The pre-push hook requires PHP and Git on `PATH`. It checks changed PHP, INC, JS
+and CSS files from each outgoing commit tip, using their committed contents even
+when the working tree differs or another branch is checked out. New branches
+exclude history already known through that remote's tracking refs; the hook does
+not require a formatting sweep of unchanged legacy files or check intermediate
+versions that have since been corrected or deleted.
+
+A PHPCS error blocks the entire push. Missing PHPCS or project rules also blocks
+a code push, with a setup message. The hook prefers `vendor/bin/phpcs` in the
+repository being pushed, then the Quanta root two levels above a nested site;
+a failed local check never falls through to the parent checker. Nested sites can
+use their own ruleset or the Quanta root's rules. Existing rules still determine
+exclusions and warning handling. No-op, deletion-only and non-code-only pushes
+do not require PHPCS. These are local Git hooks, not server-side enforcement.
+
+Run the integration tests with real Git and PHPCS:
+
+```bash
+php tests/pre_push_test.php
+# Or use an independently installed PHPCS executable/PHAR:
+php tests/pre_push_test.php /path/to/phpcs.phar
+```
+
+The tests create isolated repositories and local bare remotes, perform actual
+pushes and retain their fixtures under the printed temporary directory. They
+require no network or application installation; `TMPDIR` (Unix) or `TEMP`
+(Windows) selects the temporary location.
+
+
 Customization
 -----------------
 Once you have, you can start: 

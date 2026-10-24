@@ -1,5 +1,5 @@
 #!/bin/sh
 
-[ -f ./vendor/bin/phpcs ] && ./vendor/bin/phpcs -d memory_limit=-1 . || [ -f ../../vendor/bin/phpcs ] && ../../vendor/bin/phpcs -d memory_limit=-1 .
-
-exit 0
+# Git invokes this from the repository being pushed, including sites/<site>.
+# exec preserves the checker's failure instead of allowing the push to continue.
+exec php "$(dirname "$0")/check-style.php" "$@"
