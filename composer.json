@@ -15,7 +15,8 @@
         "behat/behat": "^4.0",
         "symfony/browser-kit": "^8.0",
         "symfony/http-client": "^8.0",
-        "symfony/css-selector": "^8.0"
+        "symfony/css-selector": "^8.0",
+        "symfony/mime": "^8.0"
     },
     "scripts": {
         "test:behat": "@php tests/behat/run.php",

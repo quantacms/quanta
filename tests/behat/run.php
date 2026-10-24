@@ -45,6 +45,7 @@ try {
     LogLevel warn
     IncludeOptional /etc/apache2/mods-enabled/*.load
     IncludeOptional /etc/apache2/mods-enabled/*.conf
+    Include /etc/apache2/conf-enabled/docker-php.conf
     User #$uid
     Group #$gid
     DocumentRoot "$root/app"
@@ -60,7 +61,9 @@ try {
     putenv('APACHE_RUN_DIR=' . $root . '/apache-run');
     putenv('APACHE_LOG_DIR=' . $root);
     putenv('APACHE_PID_FILE=' . $root . '/apache-run/apache.pid');
-    $server = proc_open(['apache2', '-f', $root . '/apache.conf', '-DFOREGROUND'],
+    // Apache signals its process group on shutdown. Give this owned server its
+    // own session so terminating it cannot terminate Composer or the test runner.
+    $server = proc_open(['setsid', 'apache2', '-f', $root . '/apache.conf', '-DFOREGROUND'],
         [0 => ['file', '/dev/null', 'r'], 1 => ['file', $root . '/server.log', 'a'],
             2 => ['file', $root . '/server.log', 'a']], $pipes, $root . '/app');
     if (!is_resource($server)) {

@@ -1,7 +1,7 @@
 FROM composer:2.10.3 AS composer
 FROM php:8.5.12-apache
 
-RUN apt-get update && apt-get install -y --no-install-recommends git unzip libpng-dev libonig-dev \
+RUN apt-get update && apt-get install -y --no-install-recommends git unzip util-linux libpng-dev libonig-dev \
     && docker-php-ext-install gd mbstring \
     && a2enmod rewrite headers \
     && rm -rf /var/lib/apt/lists/*

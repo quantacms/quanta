@@ -29,7 +29,8 @@ trees and unrelated build material out of the image. The root project's producti
 ## Run with installed development dependencies
 
 On Unix with PHP 8.5+, the required extensions and a Debian-style Apache/PHP
-installation (`/etc/apache2/mods-enabled`, PHP module, rewrite and headers), run:
+installation (`/etc/apache2/mods-enabled`, the official image's
+`conf-enabled/docker-php.conf`, rewrite and headers) and `setsid`, run:
 
 ```sh
 composer install --no-scripts --no-plugins

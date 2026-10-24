@@ -1,5 +1,6 @@
 .git
 vendor
+composer.lock
 sites
 static/tmp
 qdb
