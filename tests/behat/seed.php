@@ -40,6 +40,14 @@ $_SERVER['HTTP_HOST'] = '127.0.0.1';
 $_SERVER['REQUEST_URI'] = '/home/';
 $_SERVER['REQUEST_METHOD'] = 'GET';
 $_SESSION = [];
+// CLI has no incoming HTTP headers. This adapter is confined to fixture seeding;
+// the Apache requests under test use PHP's native getallheaders().
+if (!function_exists('getallheaders')) {
+    function getallheaders(): array
+    {
+        return [];
+    }
+}
 $env = new \Quanta\Common\Environment('127.0.0.1', '/home/', $app);
 require $app . '/src/autoload.php';
 function t($string, $replace = [])
