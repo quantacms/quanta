@@ -179,6 +179,13 @@ and start customizing it.
 Detailed information about Quanta's installation process is available on the website: https://www.quanta.org/installation-instructions/
 
 
+Behavior tests
+-----------------
+Run the Behat HTTP scenarios with `composer test:behat` in the isolated Linux
+environment described in [tests/behat/README.md](tests/behat/README.md). The suite
+covers login/logout, rendered content and node persistence using disposable data.
+
+
 Customization
 -----------------
 Once you have, you can start: 

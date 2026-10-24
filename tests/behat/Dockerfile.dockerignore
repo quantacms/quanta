@@ -1,0 +1,12 @@
+.git
+vendor
+sites
+static/tmp
+qdb
+docs
+node_modules
+secrets.php
+.env
+.env.*
+*.pem
+*.key
