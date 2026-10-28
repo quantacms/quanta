@@ -213,6 +213,38 @@ verifies that every internal link and anchor still resolves. Nothing is
 published anywhere yet — this is a local preview only.
 See [docs/site/README.md](docs/site/README.md).
 
+Coding style checks
+-----------------
+Install development dependencies with `composer install`. Composer configures
+Git to use the shared `.githooks` directory on install and update. For an existing
+checkout, the same setting can be applied with:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+The pre-push hook checks changed `.php` and `.inc` files from each pushed tip
+with the PSR-12 rules in `.phpcs.xml`. It checks committed content, so uncommitted
+edits cannot hide a style error or block a correctly styled commit. Deleted refs,
+deleted files and pushes without PHP changes do not require PHP_CodeSniffer.
+Site repositories that use the existing shared-hook symlinks use the same rules
+and Composer installation.
+
+For a new branch, fetched destination refs provide the baseline. A first push to
+a fork can use other fetched remote refs, such as `upstream`. Without any fetched
+refs, all PHP files introduced by the branch history are checked. Fetch an existing
+remote before pushing if its previous commit is missing locally.
+
+```bash
+composer cs:check -- src/path/to/changed.php
+composer cs:fix -- src/path/to/changed.php
+composer test:pre-push
+```
+
+Commit the corrected files before pushing again. `composer cs:check` without a
+path audits all of `src/`, including legacy style violations in untouched files.
+The hook checks whole changed files; it does not reformat or modify any files.
+
 Support
 -----------------
 Found any issue? Got any idea? 
