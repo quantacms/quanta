@@ -11,13 +11,28 @@
         "stripe/stripe-php": "^17.3"
     },
     "require-dev": {
-        "squizlabs/php_codesniffer": "^3.0"
+        "squizlabs/php_codesniffer": "^3.0",
+        "behat/behat": "^3.14",
+        "behat/mink": "^1.12",
+        "behat/mink-browserkit-driver": "^2.3",
+        "symfony/browser-kit": "^7.4",
+        "symfony/http-client": "^7.4",
+        "silverstripe/mink-facebook-web-driver": "^2.1",
+        "symfony/process": "^7.4",
+        "symfony/mime": "^7.4"
     },
     "scripts": {
         "post-install-cmd": [
             "git config core.hooksPath .githooks",
             "find ./sites -type d -name .git -exec dirname {} \\; | xargs -I {} rm -rf {}/.git/hooks",
             "find ./sites -type d -name .git -exec dirname {} \\; | xargs -I {} ln -s ../../../.githooks {}/.git/hooks "
-        ]
+        ],
+        "test:behat": "behat --strict",
+        "test:behat:chrome": "behat --strict --profile=chrome"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Quanta\\Tests\\Behat\\": "tests/behat/bootstrap/"
+        }
     }
 }

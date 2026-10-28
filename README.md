@@ -213,6 +213,21 @@ verifies that every internal link and anchor still resolves. Nothing is
 published anywhere yet — this is a local preview only.
 See [docs/site/README.md](docs/site/README.md).
 
+Automated testing
+-----------------
+Behat covers a fresh installation, page and Qtag rendering, authentication and
+node creation. Run the suite in a disposable Docker container:
+
+```bash
+docker build -f tests/behat/Dockerfile -t quanta-behat .
+docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges quanta-behat
+```
+
+An optional Chromium profile also tests JavaScript navigation. See
+[the Behat guide](tests/behat/README.md) for browser tests, Composer commands
+and instructions for adding scenarios. Each scenario uses a temporary site;
+existing installations are never used as fixtures.
+
 Support
 -----------------
 Found any issue? Got any idea? 

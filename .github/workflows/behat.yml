@@ -1,0 +1,24 @@
+name: CMS behavior tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  behat:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the test image
+        run: docker build -f tests/behat/Dockerfile -t quanta-behat .
+      - name: Core CMS scenarios
+        run: docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges quanta-behat
+      - name: Chromium JavaScript scenario
+        run: docker compose -f tests/behat/compose.yml up --build --abort-on-container-exit --exit-code-from tests
+      - name: Remove test containers and networks
+        if: always()
+        run: docker compose -f tests/behat/compose.yml down --volumes

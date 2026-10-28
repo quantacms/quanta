@@ -1,0 +1,12 @@
+# Only ship source and the test harness into the disposable test image.
+**
+!src
+!src/**
+!profiles
+!profiles/**
+!composer.json
+!doctor
+!behat.yml
+!tests
+!tests/behat
+!tests/behat/**
