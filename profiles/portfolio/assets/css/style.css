@@ -1,0 +1,27 @@
+body.portfolio-layout {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: #0f172a;
+  color: #f8fafc;
+  margin: 0;
+}
+.portfolio-container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+}
+.portfolio-hero {
+  text-align: center;
+  padding: 3rem 1rem;
+  border-bottom: 1px solid #1e293b;
+  margin-bottom: 2.5rem;
+}
+.portfolio-hero h1 {
+  font-size: 2.75rem;
+  color: #38bdf8;
+  margin-bottom: 0.5rem;
+}
+.portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.75rem;
+}
