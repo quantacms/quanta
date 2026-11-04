@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<ruleset name="QuantaCMS Coding Standard">
+    <description>PHP_CodeSniffer configuration for Quanta CMS.</description>
+
+    <!-- Scan core source paths -->
+    <file>src</file>
+    <file>index.php</file>
+
+    <!-- Exclude vendor and third-party assets -->
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+    <exclude-pattern>*/cache/*</exclude-pattern>
+
+    <!-- Show progress and sniff codes -->
+    <arg name="colors"/>
+    <arg value="sp"/>
+    <arg name="extensions" value="php,inc"/>
+
+    <!-- Base standard: PSR-12 -->
+    <rule ref="PSR12">
+        <exclude name="Generic.Files.LineLength"/>
+    </rule>
+
+    <!-- Generic PHP syntax and formatting guards -->
+    <rule ref="Generic.PHP.Syntax"/>
+    <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+    <rule ref="Generic.Formatting.SpaceAfterCast"/>
+</ruleset>
