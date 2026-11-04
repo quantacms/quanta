@@ -1,5 +1,21 @@
+<div class="quanta-file-view-switcher" role="toolbar" aria-label="File view mode switcher">
+    <button type="button" class="view-mode-btn active" data-view-mode="list" title="List Mode" onclick="document.querySelectorAll('.files-admin-table, .files-list-container').forEach(function(el){el.classList.remove('view-mode-icons');el.classList.add('view-mode-list');});">
+        ☰ List Mode
+    </button>
+    <button type="button" class="view-mode-btn" data-view-mode="icons" title="Icons + Preview Mode" onclick="document.querySelectorAll('.files-admin-table, .files-list-container').forEach(function(el){el.classList.remove('view-mode-list');el.classList.add('view-mode-icons');});">
+        ⊞ Icons + Preview
+    </button>
+</div>
+<style>
+.quanta-file-view-switcher { display: flex; gap: 0.5rem; justify-content: flex-end; margin-bottom: 0.75rem; }
+.quanta-file-view-switcher .view-mode-btn { padding: 0.35rem 0.75rem; border: 1px solid #cbd5e1; background: #f8fafc; cursor: pointer; border-radius: 4px; font-weight: 600; }
+.files-admin-table.view-mode-icons tbody, .files-list-container.view-mode-icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1rem; }
+.files-admin-table.view-mode-icons tr { display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid #e2e8f0; padding: 0.75rem; border-radius: 8px; }
+</style>
 [FORM|name=files:
     [INPUT|type=file|plugin=drop|name=files:files]
     [INPUT|title=thumbnail|id=edit_thumbnail|type=hidden|name=edit-thumbnail|value={ATTRIBUTE|name=thumbnail|no_qtags}:metadata-form]
 ]
-[FILES_ADMIN|file_field=files|sort=weight]
+<div class="files-list-container view-mode-list">
+    [FILES_ADMIN|file_field=files|sort=weight]
+</div>
