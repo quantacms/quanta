@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+{VARIABLE|set=Quanta Portfolio:site_name}
+<html lang="[LANGUAGE]">
+<head>
+    <meta name="theme-color" content="#0f172a">
+    [META_DATA]
+    [CSS|runlast]
+    [CSS|runlast|refresh|external:/assets/css/style.css]
+    <title>[TITLE] - {VARIABLE:site_name}</title>
+</head>
+<body class="portfolio-layout grid three-rows [BODY_CLASSES]">
+    [MESSAGES]
+    [HEADER|id=header:_header]
+    <main id="portfolio-main" class="portfolio-container">
+        <section class="portfolio-hero">
+            <h1>[TITLE]</h1>
+            <p class="portfolio-subtitle">[TEASER]</p>
+        </section>
+        [MAIN|id=grid-main|class=portfolio-grid]
+    </main>
+    [FOOTER|id=footer:_footer]
+    [JS|runlast]
+</body>
+</html>
