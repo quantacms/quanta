@@ -22,9 +22,16 @@ function file_shadow_simple_file_form(Environment $env, array $vars) {
   /** @var Shadow $shadow */
   $shadow = $vars['shadow'];
   $node = $shadow->getNode();
+  $file_field = $shadow->getData('file_field');
+
+  if (!is_string($file_field) || !preg_match('/^[A-Za-z][A-Za-z0-9_-]*$/', $file_field)) {
+    $file_field = 'files';
+  }
+  $shadow->setData('file_field', $file_field);
+
   if (NodeAccess::check($env, $env->getContext(), array('node' => $node))) {
-    $vars['shadow']->addTab('manage files', file_get_contents($env->getModulePath('file') . '/tpl/simple_upload_form.html'), 2);
-    $vars['shadow']->setTitle('[RESOLUTION_MESSAGE|min={SHADOW:min_resolution}|max={SHADOW:max_resolution}]');
+    $shadow->addTab('manage files', file_get_contents($env->getModulePath('file') . '/tpl/simple_upload_form.html'), 2);
+    $shadow->setTitle('[RESOLUTION_MESSAGE|min={SHADOW:min_resolution}|max={SHADOW:max_resolution}]');
   }
 }
 
@@ -94,7 +101,8 @@ function file_node_presave(Environment $env, array $vars) {
   /** @var Node $node */
   $node = $vars['node'];
   $data = $vars['data'];
-  $set_auto_thumbnail = isset($data['set_auto_thumbnail']) && $data['set_auto_thumbnail'] ? true : false;
+  $set_auto_thumbnail = isset($data['set_auto_thumbnail']) &&
+    !empty($data['set_auto_thumbnail']->value);
 
   $uploaded_files = [];
   $isMultiple= !isset($data['single_file']) || (isset($data['single_file']) && empty($data['single_file']->value));

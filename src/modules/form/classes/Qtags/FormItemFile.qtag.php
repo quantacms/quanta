@@ -45,7 +45,7 @@ class FormItemFile extends FormItemString {
     }
 
     $rendered_icon = '<img class="upload-icon" src="/modules/file/assets/img/icons/upload-icon.png">';
-    $rendered_input = '<input type="file" name="' . $this->getName() . '" id="' . $this->getId() . '" ' .$isMultiple .' ' .$setAsThumbnail . ' ' . $accept_values . ' data-min_resolution="' . $min_resolution . '" data-max_resolution="' . $max_resolution . ' data-max_file_size="' . $max_file_size . '"';
+    $rendered_input = '<input type="file" name="' . $this->getName() . '" id="' . $this->getId() . '" ' .$isMultiple .' ' .$setAsThumbnail . ' ' . $accept_values . ' data-min_resolution="' . $min_resolution . '" data-max_resolution="' . $max_resolution . '" data-max_file_size="' . $max_file_size . '"';
     $rendered_drop = '[TEXT|tag=drop-here-files:Drop here files]<a>[TEXT|tag=or-press-here:or press here]</a>';
     $rendered = '<input type="hidden" name="tmp_upload_dir" value="[ATTRIBUTE|name=tmp_files_dir]" />' . '<div class="upload-files"><div class="drop">';
     
