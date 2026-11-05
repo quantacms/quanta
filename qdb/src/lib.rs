@@ -22,6 +22,7 @@ mod ipc;
 mod lock;
 mod metrics;
 mod model;
+mod own;
 mod paths;
 mod php_abi;
 mod shm;
@@ -1649,7 +1650,13 @@ fn put_inner(
             })?;
             let new_path = Path::new(&f_row.path).join(name);
             // Atomic name reservation (contract §3 put): mkdir fails if taken.
-            match fs::create_dir(&new_path) {
+            // Made as the father's owner (see `own`): a node dir a root CLI
+            // created must still take the site user's documents and children.
+            let made = {
+                let _owner = own::of(Path::new(&f_row.path));
+                fs::create_dir(&new_path)
+            };
+            match made {
                 Ok(()) => {}
                 Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {
                     return Err(DbError::Exists(format!("node '{name}' already exists")))

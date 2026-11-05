@@ -106,6 +106,17 @@ Nothing in `src/` is involved in this, so a **native installation is unaffected*
 `static/tmp/<site>/files/`, which is also what a single source tree serving
 several hosts needs, as each host's `_modules` may add its own includes.
 
+php-fpm runs as `www-data`, while a `docker exec` / `kubectl exec` runs as root.
+`doctor` started as root therefore switches to the owner of the site dir
+(`www-data` once the entrypoint has run) before it does anything, so what it
+writes stays writable by php-fpm. It does that in place: the arguments, `-d`
+options, output and exit status are the same as before. Set
+`QUANTA_DOCTOR_AS_ROOT=1` to keep root on purpose, as the entrypoint and
+`quanta-build-assets` do before they fix ownership themselves. Other PHP run as
+root (`php -r …`, scripts) still writes as root, except that the `quanta_db`
+extension creates its own files as the owner of the directory they go in (see
+`qdb/docs/usage.md`).
+
 This image is meant to be used as a base: an application image `FROM`s it and
 layers on its site code only. Such an image should **not** set its own
 `ENTRYPOINT` — doing so replaces all of the above, and also resets the inherited

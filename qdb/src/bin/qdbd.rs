@@ -42,6 +42,8 @@ mod image;
 mod model;
 #[path = "../ipc.rs"]
 mod ipc;
+#[path = "../own.rs"]
+mod own;
 
 use std::collections::{HashMap, HashSet};
 use std::io;

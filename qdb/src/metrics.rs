@@ -15,6 +15,7 @@
 use std::ffi::CString;
 use std::io;
 use std::os::unix::ffi::OsStrExt;
+use std::os::unix::fs::OpenOptionsExt;
 use std::path::Path;
 use std::ptr;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -388,7 +389,18 @@ pub fn init(path: &Path, enabled: bool) {
             return None;
         }
         if let Some(dir) = path.parent() {
+            // A missing arena is created as its dir's owner (see `own`): one a
+            // root CLI created could not be mapped read-write by the site's
+            // user, and without the arena there is no coherence heartbeat, so
+            // that user's workers would serve from the fallback for good.
+            // map_file below then opens it with this process's own rights.
+            let _owner = crate::own::of(dir);
             let _ = std::fs::create_dir_all(dir);
+            let _ = std::fs::OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .mode(0o644)
+                .open(path);
         }
         match unsafe { map_file(path, true, true) } {
             Ok(p) => Some(Handle(p)),

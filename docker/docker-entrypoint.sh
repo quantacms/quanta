@@ -172,7 +172,12 @@ done
 # doctor swaps the new map in whole, so the old containers never find it missing
 # and read the new one until they stop. If doctor fails, the map is deleted and
 # the first request builds it, as before.
-(cd "$QUANTA_DIR" && php doctor "$QUANTA_SITE" class_map 2>&1) \
+#
+# Every doctor run here keeps root (QUANTA_DOCTOR_AS_ROOT=1). Started as root,
+# doctor otherwise becomes the site dir's owner, but this script runs it before
+# its ownership pass, on dirs it has only just created as root (static/tmp/<site>
+# on a fresh volume), and fixes what doctor leaves behind at the end.
+(cd "$QUANTA_DIR" && QUANTA_DOCTOR_AS_ROOT=1 php doctor "$QUANTA_SITE" class_map 2>&1) \
     || rm -f "$QUANTA_DIR/static/tmp/$QUANTA_SITE/class_map.dat"
 
 # Install the CSS/JS bundles the image built (quanta-build-assets, see the
@@ -223,14 +228,14 @@ case "${QUANTA_BOOT_CLEAR_CACHE:-1}" in
         ;;
     *)
         echo "Running Quanta doctor (clear_cache) for site '$QUANTA_SITE'..."
-        php doctor "$QUANTA_SITE" clear_cache 2>&1 || true
+        QUANTA_DOCTOR_AS_ROOT=1 php doctor "$QUANTA_SITE" clear_cache 2>&1 || true
         ;;
 esac
 
 case "${QUANTA_BOOT_CHECK:-0}" in
     true|TRUE|1|on|yes|ON|YES)
         echo "Running Quanta doctor (check) for site '$QUANTA_SITE'..."
-        php doctor "$QUANTA_SITE" check 2>&1 || true
+        QUANTA_DOCTOR_AS_ROOT=1 php doctor "$QUANTA_SITE" check 2>&1 || true
         ;;
 esac
 
