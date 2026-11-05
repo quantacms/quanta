@@ -101,6 +101,17 @@ ini_set('quanta_db.lock_timeout_ms', '800');
 fresh_env();   // in daemon mode this awaits coherence, which resolves config
 ```
 
+### Running PHP as root
+
+php-fpm runs as the site's user, and everything the extension writes (lock dir
+and lock files, metrics arena, node dirs and documents, trashbin dirs) has to
+stay usable by it. A PHP process running as root, a CLI started with `kubectl
+exec` for example, therefore creates each of these as the **owner of the
+directory it goes in**, using the Linux per-thread filesystem uid, not a chown
+afterwards. Opening, renaming and removing existing entries keep root's own
+rights. A lock file the site's user cannot open for writing, such as a root-owned
+one left by an older build, is opened read-only: `flock` locks it all the same.
+
 ### Container-level switches (not extension settings)
 
 Several environment variables in the Docker image look like extension config but

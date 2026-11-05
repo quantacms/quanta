@@ -73,6 +73,9 @@ pub fn write_doc(node_path: &Path, lang: &str, json: &str) -> Result<FileStat, D
     let final_path = node_path.join(doc_file(lang));
     let tmp = node_path.join(format!(".{}.tmp.{}", doc_file(lang), std::process::id()));
     {
+        // As the node dir's owner (see `own`): a document a root CLI rewrote
+        // stays the site user's, so whatever rewrites it in place still can.
+        let _owner = crate::own::of(node_path);
         let mut f = fs::File::create(&tmp)?;
         f.write_all(json.as_bytes())?;
         f.sync_all()?;
@@ -273,7 +276,12 @@ pub fn move_to_trash(cfg: &Config, path: &Path) -> Result<PathBuf, DbError> {
         .map(|d| d.as_secs())
         .unwrap_or(0);
     let dir = cfg.trashbin_dir.join(ts.to_string());
-    fs::create_dir_all(&dir)?;
+    {
+        // As the trashbin's owner (see `own`): a trashbin or a <ts> dir a root
+        // CLI made would refuse every later delete by the site's user.
+        let _owner = crate::own::of(&dir);
+        fs::create_dir_all(&dir)?;
+    }
     let name = path
         .file_name()
         .ok_or_else(|| DbError::Io(format!("bad node path: {}", path.display())))?;
@@ -288,7 +296,13 @@ pub fn move_to_trash(cfg: &Config, path: &Path) -> Result<PathBuf, DbError> {
     match fs::rename(path, &dest) {
         Ok(()) => Ok(dest),
         Err(e) if e.raw_os_error() == Some(libc::EXDEV) => {
-            copy_recursive(path, &dest)?;
+            {
+                // The copy is made as the trashbin's owner too, so a node
+                // recovered from it is the site user's again, like one that
+                // was renamed in.
+                let _owner = crate::own::of(&dir);
+                copy_recursive(path, &dest)?;
+            }
             fs::remove_dir_all(path)?;
             Ok(dest)
         }

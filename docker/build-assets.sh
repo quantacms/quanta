@@ -44,8 +44,11 @@ mkdir -p "$QUANTA_DIR/sites/$QUANTA_SITE" "$TMP_FILES"
 cd "$QUANTA_DIR"
 # `check` is the doctor command whose hooks aggregate and minify (page_doctor).
 # Its other job, repairing broken symlinks, has nothing to do on a build: there
-# is no site data in the image, only code.
-php doctor "$QUANTA_SITE" check
+# is no site data in the image, only code. It stays root even when an application
+# image's site dir belongs to www-data (QUANTA_DOCTOR_AS_ROOT=1): the dirs it
+# writes into were just created here as root, and nothing it writes survives
+# this script as written.
+QUANTA_DOCTOR_AS_ROOT=1 php doctor "$QUANTA_SITE" check
 
 mkdir -p "$QUANTA_ASSETS_DIR"
 for asset in css.min.css js.min.js; do

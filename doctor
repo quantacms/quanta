@@ -4,9 +4,57 @@
     die("Please enter a Quanta target / host, and a doctor command\n(i.e. doctor mysite.com check)\n");
   }
 
+  /**
+   * Started as root, become the owner of the site dir before anything is written.
+   *
+   * php-fpm runs as the site's user, and what doctor writes (the class map,
+   * caches, node documents, the quanta_db lock files) has to stay writable by
+   * it. A plain `kubectl exec` / `docker exec` runs doctor as root, and the next
+   * request that writes one of those files would then fail with EACCES. So a
+   * root doctor switches to the site dir's owner here, in place: the command
+   * line (-d options included), the output and the exit status stay those of
+   * this one process.
+   *
+   * QUANTA_DOCTOR_AS_ROOT=1 keeps root, for a caller that runs doctor as root on
+   * purpose and fixes ownership afterwards (the container entrypoint). A site
+   * dir that root owns, as in an image build, has nobody else to switch to.
+   *
+   * @param string $site_dir
+   *   The site dir doctor is about to work on.
+   */
+  function doctor_become_site_owner($site_dir) {
+    if (!function_exists('posix_geteuid') || posix_geteuid() !== 0) {
+      return;
+    }
+    if (in_array(strtolower((string) getenv('QUANTA_DOCTOR_AS_ROOT')), array('1', 'true', 'yes', 'on'), TRUE)) {
+      return;
+    }
+    $st = @stat($site_dir);
+    if ($st === FALSE || $st['uid'] === 0) {
+      return;
+    }
+    $user = posix_getpwuid($st['uid']);
+    // Group and supplementary groups first: once the uid is not root, neither
+    // can change any more. An owner with no passwd entry has no groups to set.
+    $ok = posix_setgid($st['gid'])
+      && ($user === FALSE || posix_initgroups($user['name'], $st['gid']))
+      && posix_setuid($st['uid']);
+    if (!$ok) {
+      fwrite(STDERR, "doctor: running as root and cannot switch to the owner of $site_dir ({$st['uid']}:{$st['gid']}): "
+        . posix_strerror(posix_get_last_error()) . ".\n"
+        . "Run doctor as that user, or set QUANTA_DOCTOR_AS_ROOT=1 to stay root and fix ownership afterwards.\n");
+      exit(1);
+    }
+    if ($user !== FALSE) {
+      putenv('HOME=' . $user['dir']);
+      $_SERVER['HOME'] = $user['dir'];
+    }
+  }
+
   $host = $argv[1];
   $doctor_cmd = $argv[2];
   $doctor_args = $argv;
   $request_uri = '/doctor/';
   $docroot = getcwd();
+  doctor_become_site_owner($docroot . '/sites/' . $host);
   include 'src/boot.php';

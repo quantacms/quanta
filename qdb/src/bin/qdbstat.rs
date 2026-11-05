@@ -22,6 +22,9 @@
 
 #[path = "../metrics.rs"]
 mod metrics;
+// metrics.rs creates a missing arena as its dir's owner.
+#[path = "../own.rs"]
+mod own;
 #[path = "../paths.rs"]
 mod paths;
 // shm.rs builds the segment-wide string table out of ready-made `zend_string`s
