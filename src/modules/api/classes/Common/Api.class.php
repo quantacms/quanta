@@ -26,7 +26,13 @@ class Api {
    *   Where to redirect the user.
    */
   public static function redirect($where) {
-    print '<script>window.location.href="' . $where . '";</script>';
+    $where = is_string($where) ? trim($where) : '';
+    $scheme = parse_url($where, PHP_URL_SCHEME);
+    if ($where === '' || ($scheme !== NULL && !in_array(strtolower($scheme), array('http', 'https'), TRUE))) {
+      $where = '/';
+    }
+    $encoded = json_encode($where, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+    print '<script>window.location.href=' . $encoded . ';</script>';
     exit;
   }
 
@@ -222,6 +228,44 @@ class Api {
     $file_name = implode('.', $file_arr);
     $file_name = Api::normalizePath($file_name);
     return $file_name . '.' . $file_ext;
+  }
+
+  /**
+   * Resolve a readable local file only when it is contained in an allowed root.
+   *
+   * Stream wrappers and remote URLs are deliberately rejected. realpath() also
+   * collapses traversal and symlinks before the containment check.
+   *
+   * @param string $path
+   *   Candidate file path.
+   * @param array $allowed_roots
+   *   Directories from which files may be read.
+   *
+   * @return string|false
+   *   Canonical path when allowed, FALSE otherwise.
+   */
+  public static function resolveAllowedLocalFile($path, array $allowed_roots) {
+    if (!is_string($path) || $path === '' || strpos($path, "\0") !== FALSE) {
+      return FALSE;
+    }
+    if (preg_match('/^[a-z][a-z0-9+.-]*:/i', $path)) {
+      return FALSE;
+    }
+    $real_path = realpath($path);
+    if ($real_path === FALSE || !is_file($real_path)) {
+      return FALSE;
+    }
+    foreach ($allowed_roots as $root) {
+      if (empty($root)) {
+        continue;
+      }
+      $real_root = realpath($root);
+      if ($real_root !== FALSE &&
+        ($real_path === $real_root || strpos($real_path, $real_root . DIRECTORY_SEPARATOR) === 0)) {
+        return $real_path;
+      }
+    }
+    return FALSE;
   }
 
 

@@ -70,7 +70,7 @@ class FileObject extends DataContainer {
       $this->setExtension(strtolower($exp[count($exp) - 1]));
       $this->setName (($name == NULL) ? $file_path : $name);
       $this->setType(FileObject::getFileType($this->extension));
-      $this->exists = is_file($this->getRealPath());
+      $this->exists = ($this->getRealPath() !== FALSE);
     }
   }
   /**
@@ -97,7 +97,11 @@ class FileObject extends DataContainer {
    *   The file's size.
    */
   public function getFileSize() {
-    $this->size = filesize($this->path);
+    $real_path = $this->getRealPath();
+    if ($real_path === FALSE) {
+      return 0;
+    }
+    $this->size = filesize($real_path);
     return $this->size;
   }
 
@@ -148,7 +152,15 @@ class FileObject extends DataContainer {
    *   The file full system path.
    */
   public function getRealPath() {
-    return ($this->external) ? $this->path : ($this->node->path . '/' . $this->getPath());
+    $candidate = ($this->external) ? $this->path : ($this->node->path . '/' . $this->getPath());
+    $allowed_roots = array(
+      $this->env->dir['docroot'],
+      $this->env->dir['static'],
+      $this->env->dir['modules_core'],
+      $this->env->dir['modules_custom'],
+      $this->env->dir['profiles'],
+    );
+    return Api::resolveAllowedLocalFile($candidate, $allowed_roots);
   }
 
   /**
@@ -158,8 +170,9 @@ class FileObject extends DataContainer {
    *   The full file's relative system path..
    */
   public function getRelativePath() {
-	  return str_replace($this->env->dir['src'], '', $this->getRealPath());
-	}
+    $real_path = $this->getRealPath();
+    return ($real_path === FALSE) ? '' : str_replace($this->env->dir['src'], '', $real_path);
+  }
 
   /**
    * Gets the file's extension.
@@ -437,7 +450,10 @@ class FileObject extends DataContainer {
    *
    */
   public function download(){
-    $file = $this->getNode()->getPath() . '/' . $this->getPath();
+    $file = $this->getRealPath();
+    if ($file === FALSE) {
+      return;
+    }
     header('Pragma: public');
     header('Expires: 0');
     header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
