@@ -29,3 +29,7 @@ secrets.php
 *.key
 !**/*.pub.key
 .htpasswd
+
+# Personal agent instructions for one checkout. The shared ones are AGENTS.md
+# (every tool) and CLAUDE.md, which imports it.
+CLAUDE.local.md

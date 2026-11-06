@@ -454,7 +454,7 @@ polyfill (`QUANTA_DB_*`), highest-precedence first: ini → env → default.
 
 | Key | Default | Meaning |
 |---|---|---|
-| `quanta_db.root` | *(required)* | Absolute path of the data root (the site's `db/` docroot — see §8 multi-site note) |
+| `quanta_db.root` | *(required)* | Absolute path of the data root: the site directory, `sites/<host>` (see §8 multi-site note) |
 | `quanta_db.index_path` | `<tmp>/quanta_db/<hash>/index.sqlite` (polyfill) | Polyfill index location. MUST NOT be on NFS. |
 | `quanta_db.shm_dir` | `/dev/shm/quanta_db/<hash>` (extension) | Directory of the `qdbd` data segments (`data.<epoch>.shm`). tmpfs preferred; falls back to `<tmp>/quanta_db/<hash>` |
 | `quanta_db.socket_path` | `<tmp>/quanta_db/<hash>/qdbd.sock` (extension) | `qdbd` unix socket for write notifications |

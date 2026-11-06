@@ -64,7 +64,7 @@ ini_get('quanta_db.X')  →  getenv('QUANTA_DB_X')  →  default
 
 | ini key | Env var | Default | Meaning |
 |---|---|---|---|
-| `quanta_db.root` | `QUANTA_DB_ROOT` | **required** | Data root (the site's `db/` directory). Must exist; it is canonicalized and hashed to derive everything below. |
+| `quanta_db.root` | `QUANTA_DB_ROOT` | **required** | Data root: the site directory (`sites/<host>`). Must exist; it is canonicalized and hashed to derive everything below. |
 | `quanta_db.shm_dir` | `QUANTA_DB_SHM_DIR` | `/dev/shm/quanta_db/<hash>` | Data segments (`data.<epoch>.shm`). Falls back to `<tmp>/quanta_db/<hash>` when `/dev/shm` is absent. |
 | `quanta_db.socket_path` | `QUANTA_DB_SOCKET_PATH` | `<base>/qdbd.sock` | `qdbd` write-notification socket. |
 | `quanta_db.lock_dir` | `QUANTA_DB_LOCK_DIR` | `<base>/locks` | Per-node `flock` files. |
@@ -234,9 +234,9 @@ QuantaDb::getRaw(string $name, ?string $lang = null): ?string
 
 The stored bytes, verbatim. One asymmetry worth knowing: on a document that does
 not parse, `get()`/`getObject()` throw `CORRUPT_JSON` but `getRaw()` does not —
-it is the escape hatch for inspecting one. In daemon mode it returns `''` (the
-daemon does not retain the bytes of a document it could not parse); in fallback
-mode it returns the actual bytes off disk.
+it is the escape hatch for inspecting one. It always reads the file, in daemon
+mode too (segment layout 3 keeps either a document's image or its bytes, never
+both), so it returns the actual bytes, those of a corrupt document included.
 
 ### `path()`, `exists()`, `meta()`
 
