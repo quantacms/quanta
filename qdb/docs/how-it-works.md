@@ -145,7 +145,7 @@ trusting anything:
 
 ```
    0  magic          AtomicU64   "QDBDAT1\0"
-   8  layout_version u32         = 2  (bumped when images were added)
+   8  layout_version u32         = 3  (2: images added; 3: image strings moved to a segment-wide table)
   12  _pad0          u32
   16  epoch          u64         must match the filename
   24  seg_size       u64         must match the real file size

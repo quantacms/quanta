@@ -250,7 +250,7 @@ class QuantaDb
     /** @return array{implementation: string, contract: string, nodes: int, ...} */
     public static function stats(): array {}
 
-    /** Implementation id, e.g. 'polyfill/1.1' or 'ext/1.1'. */
+    /** Implementation id, e.g. 'polyfill/1.3' or 'ext/1.3'. */
     public static function version(): string {}
 
     /**

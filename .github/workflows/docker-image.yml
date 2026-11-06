@@ -39,9 +39,10 @@ name: Build and push Docker image
 #                                      extension and without it?
 #                                      (noext + fallback + daemon modes)
 #
-# The second is the one that guards the shim: every call site wired to the node
-# database keeps a legacy path, and the suite pins both branches to the same
-# observable behaviour. See qdb/tests/quanta/_bootstrap.php.
+# The second is the one that guards the shim: every node-database method has a
+# filesystem implementation (FilesDb) behind the extension-backed one
+# (FilesDbExt), and the suite pins both to the same observable behaviour. See
+# qdb/tests/quanta/_bootstrap.php.
 #
 # Running both suites on arm64 as well is not incidental: qdb mirrors PHP's
 # string hash, whose byte accumulation depends on the target's `char`

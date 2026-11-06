@@ -47,7 +47,7 @@ switches over, and §11 for the payload-file exception.
 
 | Key | Default | |
 |---|---|---|
-| `quanta_db.root` | *(required)* | Data root (the site's `db/` directory) |
+| `quanta_db.root` | *(required)* | Data root: the site directory (`sites/<host>`) |
 | `quanta_db.shm_dir` | `/dev/shm/quanta_db/<hash>` | Data segments (`data.<epoch>.shm`); tmpfs preferred, falls back to `<tmp>/quanta_db/<hash>` |
 | `quanta_db.socket_path` | `<tmp>/quanta_db/<hash>/qdbd.sock` | `qdbd` write-notification socket |
 | `quanta_db.lock_dir` | `<tmp>/quanta_db/<hash>/locks` | Per-node lock files |
@@ -234,11 +234,11 @@ and a reader-under-churn torn-read stress test.
 ### Quanta call-site parity tests
 
 The conformance suite proves the *extension* obeys the contract.
-`tests/run-quanta-tests.sh` proves *Quanta* obeys itself: every call site wired
-to the node database keeps its original code as a fallback, and the two
-branches must be indistinguishable from the outside. It boots a real
-`Environment` against a throwaway site and runs the same assertions in **three**
-modes — `noext` (the `.so` is not loaded at all), `fallback`, and `daemon`:
+`tests/run-quanta-tests.sh` proves *Quanta* obeys itself: every node-database
+method has a filesystem implementation (`FilesDb`) behind the extension-backed
+one (`FilesDbExt`), and the two must be indistinguishable from the outside. It
+boots a real `Environment` against a throwaway site and runs the same assertions
+in **three** modes — `noext` (the `.so` is not loaded at all), `fallback`, and `daemon`:
 
 ```bash
 docker run --rm --entrypoint sh -v "$PWD/qdb/tests:/tests:ro" \

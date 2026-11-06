@@ -136,7 +136,7 @@ switches over, and §11 for the payload-file exception.</p>
 <tbody><tr>
 <td><code>quanta_db.root</code></td>
 <td><em>(required)</em></td>
-<td>Data root (the site&#39;s <code>db/</code> directory)</td>
+<td>Data root: the site directory (<code>sites/&lt;host&gt;</code>)</td>
 </tr>
 <tr>
 <td><code>quanta_db.shm_dir</code></td>
@@ -349,11 +349,11 @@ suite waits for coherence). Both must stay green. Rust unit tests
 and a reader-under-churn torn-read stress test.</p>
 <h3 id="quanta-call-site-parity-tests">Quanta call-site parity tests<a class="prose__anchor" href="#quanta-call-site-parity-tests" aria-label="Link to this section">#</a></h3>
 <p>The conformance suite proves the <em>extension</em> obeys the contract.
-<code>tests/run-quanta-tests.sh</code> proves <em>Quanta</em> obeys itself: every call site wired
-to the node database keeps its original code as a fallback, and the two
-branches must be indistinguishable from the outside. It boots a real
-<code>Environment</code> against a throwaway site and runs the same assertions in <strong>three</strong>
-modes — <code>noext</code> (the <code>.so</code> is not loaded at all), <code>fallback</code>, and <code>daemon</code>:</p>
+<code>tests/run-quanta-tests.sh</code> proves <em>Quanta</em> obeys itself: every node-database
+method has a filesystem implementation (<code>FilesDb</code>) behind the extension-backed
+one (<code>FilesDbExt</code>), and the two must be indistinguishable from the outside. It
+boots a real <code>Environment</code> against a throwaway site and runs the same assertions
+in <strong>three</strong> modes — <code>noext</code> (the <code>.so</code> is not loaded at all), <code>fallback</code>, and <code>daemon</code>:</p>
 <div class="codeblock" data-lang="bash"><button class="codeblock__copy" type="button" data-copy>Copy</button><pre><code class="language-bash">docker run --rm --entrypoint sh -v &quot;$PWD/qdb/tests:/tests:ro&quot; \
     &lt;quanta-image&gt; -c &#39;sh /tests/run-quanta-tests.sh&#39;
 # QDB_MODES=&quot;noext fallback&quot;  to restrict</code></pre></div>

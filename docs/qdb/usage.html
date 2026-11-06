@@ -127,7 +127,7 @@ built-in default:</p>
 <td><code>quanta_db.root</code></td>
 <td><code>QUANTA_DB_ROOT</code></td>
 <td><strong>required</strong></td>
-<td>Data root (the site&#39;s <code>db/</code> directory). Must exist; it is canonicalized and hashed to derive everything below.</td>
+<td>Data root: the site directory (<code>sites/&lt;host&gt;</code>). Must exist; it is canonicalized and hashed to derive everything below.</td>
 </tr>
 <tr>
 <td><code>quanta_db.shm_dir</code></td>
@@ -231,6 +231,14 @@ scripts:</p>
 <div class="codeblock" data-lang="php"><button class="codeblock__copy" type="button" data-copy>Copy</button><pre><code class="language-php">// tests/php/04_concurrency.php — this ordering is load-bearing
 ini_set(&#39;quanta_db.lock_timeout_ms&#39;, &#39;800&#39;);
 fresh_env();   // in daemon mode this awaits coherence, which resolves config</code></pre></div>
+<h3 id="running-php-as-root">Running PHP as root<a class="prose__anchor" href="#running-php-as-root" aria-label="Link to this section">#</a></h3>
+<p>php-fpm runs as the site&#39;s user, and everything the extension writes (lock dir
+and lock files, metrics arena, node dirs and documents, trashbin dirs) has to
+stay usable by it. A PHP process running as root, a CLI started with <code>kubectl exec</code> for example, therefore creates each of these as the <strong>owner of the
+directory it goes in</strong>, using the Linux per-thread filesystem uid, not a chown
+afterwards. Opening, renaming and removing existing entries keep root&#39;s own
+rights. A lock file the site&#39;s user cannot open for writing, such as a root-owned
+one left by an older build, is opened read-only: <code>flock</code> locks it all the same.</p>
 <h3 id="container-level-switches-not-extension-settings">Container-level switches (not extension settings)<a class="prose__anchor" href="#container-level-switches-not-extension-settings" aria-label="Link to this section">#</a></h3>
 <p>Several environment variables in the Docker image look like extension config but
 are not. The extension has no <code>enabled</code> key and never reads any of these:</p>
@@ -402,9 +410,9 @@ $b-&gt;title;   // &#39;T&#39; — untouched by the edits above</code></pre></di
 <div class="codeblock" data-lang="php"><button class="codeblock__copy" type="button" data-copy>Copy</button><pre><code class="language-php">QuantaDb::getRaw(string $name, ?string $lang = null): ?string</code></pre></div>
 <p>The stored bytes, verbatim. One asymmetry worth knowing: on a document that does
 not parse, <code>get()</code>/<code>getObject()</code> throw <code>CORRUPT_JSON</code> but <code>getRaw()</code> does not —
-it is the escape hatch for inspecting one. In daemon mode it returns <code>&#39;&#39;</code> (the
-daemon does not retain the bytes of a document it could not parse); in fallback
-mode it returns the actual bytes off disk.</p>
+it is the escape hatch for inspecting one. It always reads the file, in daemon
+mode too (segment layout 3 keeps either a document&#39;s image or its bytes, never
+both), so it returns the actual bytes, those of a corrupt document included.</p>
 <h3 id="path-exists-meta"><code>path()</code>, <code>exists()</code>, <code>meta()</code><a class="prose__anchor" href="#path-exists-meta" aria-label="Link to this section">#</a></h3>
 <div class="codeblock" data-lang="php"><button class="codeblock__copy" type="button" data-copy>Copy</button><pre><code class="language-php">QuantaDb::path(string $name): ?string     // absolute directory path, or null
 QuantaDb::exists(string $name): bool
@@ -1054,6 +1062,7 @@ purging and restoring the trashbin are out of scope.</li>
         <li class="docs__toc-item docs__toc-item--h2"><a href="#3-setup">3. Setup</a></li>
         <li class="docs__toc-item docs__toc-item--h3"><a href="#configuration-keys">Configuration keys</a></li>
         <li class="docs__toc-item docs__toc-item--h3"><a href="#the-one-configuration-trap">The one configuration trap</a></li>
+        <li class="docs__toc-item docs__toc-item--h3"><a href="#running-php-as-root">Running PHP as root</a></li>
         <li class="docs__toc-item docs__toc-item--h3"><a href="#container-level-switches-not-extension-settings">Container-level switches (not extension settings)</a></li>
         <li class="docs__toc-item docs__toc-item--h2"><a href="#4-the-data-model">4. The data model</a></li>
         <li class="docs__toc-item docs__toc-item--h2"><a href="#5-reading">5. Reading</a></li>
