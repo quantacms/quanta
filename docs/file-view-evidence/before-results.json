@@ -1,0 +1,66 @@
+{
+  "browser": "Chromium 153.0.8010.0",
+  "node": "v24.19.0",
+  "results": [
+    {
+      "name": "Default list mode and accessible controls",
+      "status": "passed"
+    },
+    {
+      "name": "Preview selection survives a page reload",
+      "status": "passed"
+    },
+    {
+      "name": "Keyboard activation uses Enter and Space",
+      "status": "passed"
+    },
+    {
+      "name": "Shadow refresh and replacement retain the selected mode",
+      "status": "passed"
+    },
+    {
+      "name": "Unavailable localStorage keeps the mode after Shadow refresh",
+      "status": "failed",
+      "error": "Expected values to be strictly equal:\n\n'false' !== 'true'\n"
+    },
+    {
+      "name": "A failed storage write does not restore an older preference",
+      "status": "failed",
+      "error": "Expected values to be strictly equal:\n\n'false' !== 'true'\n"
+    },
+    {
+      "name": "An invalid saved preference falls back to list mode",
+      "status": "passed"
+    },
+    {
+      "name": "An empty file list can still switch modes",
+      "status": "passed"
+    },
+    {
+      "name": "A saved preview preference initializes each file panel",
+      "status": "passed"
+    },
+    {
+      "name": "Long filenames stay inside preview cards at 320px",
+      "status": "failed",
+      "error": "Filename escapes its card: {\"rowLeft\":20,\"rowRight\":154,\"linkLeft\":-544.484375,\"linkRight\":718.484375,\"scrollWidth\":718,\"viewport\":320}"
+    },
+    {
+      "name": "Long filenames stay inside preview cards at 375px",
+      "status": "failed",
+      "error": "Filename escapes its card: {\"rowLeft\":20,\"rowRight\":181.5,\"linkLeft\":-530.734375,\"linkRight\":732.234375,\"scrollWidth\":732,\"viewport\":375}"
+    },
+    {
+      "name": "Changing the mode leaves the file order intact",
+      "status": "passed"
+    },
+    {
+      "name": "Real jQuery UI dragging still reorders files in list mode",
+      "status": "passed"
+    },
+    {
+      "name": "Real jQuery UI dragging still reorders files in preview mode",
+      "status": "passed"
+    }
+  ]
+}
