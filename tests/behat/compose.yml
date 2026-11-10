@@ -1,0 +1,22 @@
+services:
+  tests:
+    build:
+      context: ../..
+      dockerfile: tests/behat/Dockerfile
+    command: [sh, tests/behat/run-chrome.sh]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks: [browser-tests]
+  selenium:
+    image: selenium/standalone-chromium:4.38.0
+    network_mode: service:tests
+    depends_on: [tests]
+    shm_size: 1gb
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    environment:
+      SE_ENABLE_TRACING: 'false'
+      SE_START_XVFB: 'false'
+networks:
+  browser-tests:
+    internal: true

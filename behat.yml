@@ -1,0 +1,16 @@
+default:
+  suites:
+    cms:
+      paths: [tests/behat/features]
+      contexts: [Quanta\Tests\Behat\CmsContext]
+      filters:
+        tags: '~@javascript'
+
+chrome:
+  suites:
+    cms:
+      contexts:
+        - Quanta\Tests\Behat\CmsContext:
+            browser: chrome
+      filters:
+        tags: '@javascript'
