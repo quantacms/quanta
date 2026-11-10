@@ -1,5 +1,12 @@
 #!/bin/sh
 
-[ -f ./vendor/bin/phpcs ] && ./vendor/bin/phpcs -d memory_limit=-1 . || [ -f ../../vendor/bin/phpcs ] && ../../vendor/bin/phpcs -d memory_limit=-1 .
+set -eu
 
-exit 0
+# Resolve the shared hook directory, including hooks symlinked into site repos.
+hook_dir=$(CDPATH= cd -P "$(dirname "$0")" && pwd)
+if ! command -v php >/dev/null 2>&1; then
+    echo "Quanta style check requires PHP. Install PHP and run composer install." >&2
+    exit 1
+fi
+
+exec php "$hook_dir/../scripts/check-push-style.php" "$@"

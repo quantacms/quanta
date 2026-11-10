@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <ruleset name="quanta">
-    <description>quanta</description>
+    <description>Quanta PHP style: PSR-12, with a 120-character line target.</description>
+
+    <arg name="extensions" value="php,inc"/>
 
     <!-- Files to include -->
     <file>./src</file>
@@ -8,8 +10,7 @@
     <!-- Exclude specific files/folders test -->
     <exclude-pattern>*/tests/*</exclude-pattern>
 
-    <rule ref="PSR1"/>
-    <rule ref="PSR2"/>
+    <!-- PSR-12 already includes PSR-1 and PSR-2. -->
     <rule ref="PSR12"/>
 
     <rule ref="Generic.Files.LineLength">
