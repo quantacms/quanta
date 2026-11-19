@@ -14,6 +14,26 @@ class Job extends Node {
   const TYPE_UNKNOWN = 'unknown';
 
   /**
+   * Where a job's claim lock lives, relative to the directory holding the job.
+   * Dot-prefixed, so neither the node index nor any queue listing treats it
+   * as a node, and outside the job's own directory, so creating a lock file
+   * can never race a move that is deleting that directory.
+   */
+  const DIR_LOCKS = '.locks';
+
+  /**
+   * The open, flock()ed lock file while this object holds the job's claim.
+   * @var resource|null
+   */
+  private $claim_handle = NULL;
+
+  /**
+   * Path of the lock file behind $claim_handle.
+   * @var string|null
+   */
+  private $claim_path = NULL;
+
+  /**
    * Safely move a job folder, preventing race-condition nesting and duplicate folder conflicts.
    *
    * Two concurrent workers (e.g. run_jobs cron + sync-gyg-availability cron)
@@ -94,12 +114,172 @@ class Job extends Node {
   }
 
   /**
-   * Run the job.
-   * 
+   * Take the job's claim: an exclusive, non-blocking flock() on a lock file
+   * next to the job.
+   *
+   * Every runner of a job — an inline JobsFactory::runJob() in a request, a
+   * queue pass in a cron or worker — goes through this, so at most one of
+   * them executes the job at a time, also across processes and containers
+   * that share the job directories (flock is per inode and held by the
+   * kernel, so it is released when the holder dies, however it dies).
+   *
+   * On success the job is re-read from disk: what this object loaded may
+   * have been changed by the runner that held the claim before. When the
+   * job is no longer where it was loaded from, the claim is given back and
+   * FALSE returned, because the job has moved on (finished, parked, moved).
+   *
+   * Callers that change a queued job outside run() (merging new data into
+   * it) take the claim too, so they never write under a running job.
+   *
    * @return bool
-   *   TRUE if the job was successfully completed, FALSE otherwise.
+   *   TRUE if this object now holds the claim. FALSE if another runner holds
+   *   it or the job is gone.
+   */
+  public function claim() {
+    if ($this->claim_handle !== NULL) {
+      return true;
+    }
+    if (empty($this->path) || !is_dir($this->path)) {
+      return false;
+    }
+
+    $lock_dir = dirname($this->path) . '/' . self::DIR_LOCKS;
+    $lock_path = $lock_dir . '/' . basename($this->path) . '.lock';
+
+    if (!is_dir($lock_dir)) {
+      // World-writable and sticky, like /tmp: whoever creates it first (a
+      // root CLI run included), every runner must be able to add its own
+      // lock files.
+      if (@mkdir($lock_dir, 0777)) {
+        @chmod($lock_dir, 01777);
+      }
+    }
+
+    // The lock file is unlinked on release, so the file opened here can be one
+    // a releasing runner has just unlinked. Locking that orphan proves
+    // nothing; detect it (the path no longer names the inode that was locked)
+    // and start over on the file that is there now.
+    for ($try = 0; $try < 3; $try++) {
+      $handle = @fopen($lock_path, 'c');
+      if ($handle === FALSE) {
+        // The file exists but is not writable by this user. flock() works on
+        // a read-only handle too.
+        $handle = @fopen($lock_path, 'r');
+      }
+      if ($handle === FALSE) {
+        // No lock can be taken here at all. Refusing to run would stop the
+        // whole queue on a permission problem, so run unclaimed, as before
+        // claims existed, and say so.
+        Logger::get('jobs')->warning('Job {job}: cannot open its lock file {lock}, running it without a claim', array('job' => $this->getName(), 'lock' => $lock_path));
+        return $this->stillQueued();
+      }
+      if (!flock($handle, LOCK_EX | LOCK_NB)) {
+        fclose($handle);
+        Logger::get('jobs')->info('Job {job} is claimed by another runner, skipped', array('job' => $this->getName()));
+        return false;
+      }
+      clearstatcache(true, $lock_path);
+      $on_disk = @stat($lock_path);
+      $locked = fstat($handle);
+      if ($on_disk !== FALSE && $on_disk['ino'] === $locked['ino'] && $on_disk['dev'] === $locked['dev']) {
+        $this->claim_handle = $handle;
+        $this->claim_path = $lock_path;
+        break;
+      }
+      flock($handle, LOCK_UN);
+      fclose($handle);
+    }
+    if ($this->claim_handle === NULL) {
+      return false;
+    }
+
+    if (!$this->stillQueued()) {
+      $this->release();
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Give back the claim taken by claim(). Safe to call without one.
+   */
+  public function release() {
+    if ($this->claim_handle === NULL) {
+      return;
+    }
+    // Unlink while still holding the lock, so a runner that opened this file
+    // and gets the lock after us sees it was unlinked (see claim()). A failed
+    // unlink (someone else's file in the sticky dir) only leaves the file to
+    // be reused.
+    @unlink($this->claim_path);
+    flock($this->claim_handle, LOCK_UN);
+    fclose($this->claim_handle);
+    $this->claim_handle = NULL;
+    $this->claim_path = NULL;
+  }
+
+  /**
+   * A claim never outlives the object holding it.
+   */
+  public function __destruct() {
+    $this->release();
+  }
+
+  /**
+   * Whether the job is still where it was loaded from, refreshing this
+   * object's document from disk if so.
+   *
+   * Read straight from data.json, not through the node index: the previous
+   * holder of the claim may have written it from another container, whose
+   * write this container's index can still be catching up with.
+   *
+   * @return bool
+   */
+  private function stillQueued() {
+    if (!is_dir($this->path)) {
+      return false;
+    }
+    $raw = @file_get_contents($this->path . '/data.json');
+    $doc = ($raw === FALSE) ? NULL : json_decode($raw);
+    if (!is_object($doc)) {
+      // A directory without a readable document is a job half-way through a
+      // move (a copy into the next queue, then a delete). Leave it alone.
+      return false;
+    }
+    foreach (get_object_vars($doc) as $key => $value) {
+      $this->json->{$key} = $value;
+    }
+    return true;
+  }
+
+  /**
+   * Run the job, under its claim (@see Job::claim()).
+   *
+   * @return bool
+   *   TRUE if the job was successfully completed, FALSE otherwise — including
+   *   when another runner holds the claim, which is left to finish it.
    */
   public function run() {
+    $held = ($this->claim_handle !== NULL);
+    if (!$held && !$this->claim()) {
+      return false;
+    }
+    try {
+      return $this->runClaimed();
+    }
+    finally {
+      if (!$held) {
+        $this->release();
+      }
+    }
+  }
+
+  /**
+   * The body of run(), with the claim held.
+   *
+   * @return bool
+   */
+  private function runClaimed() {
     if (!is_dir($this->path)) {
       return false;
     }

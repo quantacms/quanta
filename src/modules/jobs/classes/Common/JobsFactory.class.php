@@ -95,10 +95,14 @@ class JobsFactory {
   
   /**
    * Run a specific job.
-   * 
+   *
+   * The job runs under its claim (@see Job::claim()): when another runner —
+   * a request running it inline, a queue pass elsewhere — is already
+   * executing it, this returns FALSE without running it again.
+   *
    * @param Job $job
    *   The job to run.
-   * 
+   *
    * @return bool
    *   TRUE if completed, FALSE otherwise.
    */
