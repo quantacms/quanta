@@ -412,3 +412,60 @@ ul.file_admin  li {
     width: 45px;
     margin-bottom: 1rem;
 }
+
+.file-view-switcher {
+    display: flex;
+    justify-content: flex-end;
+    gap: 4px;
+    margin: 0 0 10px;
+}
+
+.file-view-button {
+    min-width: 36px;
+    min-height: 32px;
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #f6f6f6;
+    color: #333;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.file-view-button:hover,
+.file-view-button:focus,
+.file-view-button.is-active {
+    background: #ddd;
+    border-color: #999;
+}
+
+ul.file_admin.file-view-icons {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+}
+
+ul.file_admin.file-view-icons .list-item-file_admin {
+    margin: 0;
+    min-width: 0;
+    padding: 12px;
+    text-align: center;
+}
+
+ul.file_admin.file-view-icons:has(.sort-handle) .list-item-file_admin {
+    padding: 38px 12px 12px;
+}
+
+ul.file_admin.file-view-icons .file-link-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+ul.file_admin.file-view-icons .file-preview {
+    width: 100%;
+    max-width: 150px;
+    height: 110px;
+}
