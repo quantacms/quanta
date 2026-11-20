@@ -7,12 +7,55 @@ namespace Quanta\Qtags;
  */
 class FormItemFile extends FormItemString {
   public $type = 'file';
+  protected static $uploadAssetsLoaded = false;
+
+  /**
+   * Load file-uploader Javascript only when a file input is rendered.
+   */
+  protected function loadUploadAssets() {
+    if (self::$uploadAssetsLoaded) {
+      return;
+    }
+
+    self::$uploadAssetsLoaded = true;
+    $assets = array(
+      'jquery.knob.js',
+      'jquery.iframe-transport.js',
+      'jquery.fileupload.js',
+      'file-upload.js',
+    );
+
+    // Shadow responses have no [JS|runlast] placeholder, so inline assets.
+    if (\Quanta\Common\Shadow::isOpen($this->env)) {
+      $attributes = array('file_inline' => TRUE, 'refresh' => TRUE, 'module' => 'file');
+      foreach ($assets as $asset) {
+        print new Js($this->env, $attributes, '/assets/js/' . $asset);
+      }
+      return;
+    }
+
+    $page = $this->env->getData('page');
+    if (empty($page)) {
+      return;
+    }
+
+    $loaded = (array) $page->getData('js', array());
+    foreach ($assets as $asset) {
+      $path = '/src/modules/file/assets/js/' . $asset;
+      if (!in_array($path, $loaded, TRUE)) {
+        $page->addJS($path);
+        $loaded[] = $path;
+      }
+    }
+  }
 
   /**
    * Renders the file input item.
    * @return mixed
    */
   function render() {
+    $this->loadUploadAssets();
+
     $isMultiple = $this->getAttribute('single') ? "" : "multiple";
     $setAsThumbnail = !$this->getAttribute('not-thumbnail') ? "thumbnail=true" : "thumbnail=false";
     if(!$setAsThumbnail){

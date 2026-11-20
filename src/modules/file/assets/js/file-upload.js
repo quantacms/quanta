@@ -31,7 +31,8 @@ $(function () {
           return new File([file], newName, { type: file.type });
         }
       });
-      var tmp_files_dir = ($('#tmp_files_dir').val());
+      var uploadElement = $(this);
+      var tmp_files_dir = uploadElement.prev('input[name="tmp_upload_dir"]').val() || $('#tmp_files_dir').val();
       // Access the file input element
       var fileInputElement = $(this).find('input[type="file"]').get(0);
       // Check if the file input has the 'multiple' attribute
@@ -115,7 +116,11 @@ $(function () {
       '<span class="file-qtag"></span>' +
       '</li>');
 
-    var ul = $(elementContext).closest('.shadow-content').find('ul.list');
+    var form = $(elementContext).closest('form');
+    var ul = form.nextAll('ul.list').first();
+    if (!ul.length) {
+      ul = form.closest('.shadow-content').find('ul.list').first();
+    }
 
     if (!hasMultipleAttribute) {
       ul.children().hide();
@@ -166,8 +171,13 @@ $(function () {
 // Initialize button events for file table admin.
 var refreshFileActions = function (fileElement, justView = false, deleteAction = true, thumbnailAction = true) {
   var filename = fileElement.find('.file-link').data('filename');
-  var formname = fileElement.closest('.shadow-content').find('form').attr('id');
-  var inputFileInsideForm = fileElement.closest('.shadow-content').find('form').find('input[type="file"]');
+  var fileList = fileElement.closest('ul.list');
+  var form = fileList.prevAll('form').first();
+  if (!form.length) {
+    form = fileElement.closest('.shadow-content').find('form').first();
+  }
+  var formname = form.attr('id');
+  var inputFileInsideForm = form.find('input[type="file"]').first();
   // Check if inputFileInsideForm has the 'multiple' attribute
   hasMultipleAttribute= inputFileInsideForm.attr('multiple') !== undefined;
  
@@ -270,10 +280,11 @@ $(document).bind('refresh', function () {
     });
   });
 
-  var node_name = $('#edit_path').val();
-  var tmp_files_dir = ($('#tmp_files_dir').val());
-
   $('.file-preview').each(function () {
+    var fileList = $(this).closest('ul.list');
+    var form = fileList.prevAll('form').first();
+    var node_name = fileList.data('node') || $('#edit_path').val();
+    var tmp_files_dir = form.find('input[name="tmp_upload_dir"]').val() || $('#tmp_files_dir').val();
     var filelink = $(this).parent().find('.file-link');
     var filename = filelink.data('filename');
     var tag_attr = (filelink.data('filenew') != undefined) ? ('tmp_path=' + tmp_files_dir) : ('node=' + node_name);
