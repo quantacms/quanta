@@ -20,12 +20,22 @@ class User extends Node {
   const USER_ACTION_REGISTER = "user_register";
   const USER_VALIDATE = "user_validate";
 
+  /**
+   * Submitted fields never copied into a user's JSON as extra attributes.
+   *
+   * old_password would be stored in clear text. permissions is read by
+   * Node::getPermissions(), so storing it would let the submitter set the
+   * access rules of their own user node and of everything below it.
+   */
   const USER_IGNORE_FIELDS = [
     'form_submit',
     'form',
     'form_type',
     'password_rp',
-    'after_validate'
+    'old_password',
+    'after_validate',
+    'permissions',
+    'validation_errors',
   ];
 
   /** @var array $roles */

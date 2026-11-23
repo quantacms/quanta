@@ -319,8 +319,33 @@ function user_user_form_form_validate(Environment $env, &$vars) {
   $username_field = !empty($vars['username_field']) ? $vars['username_field'] : 'username';
   $username = $form_state->getData($username_field);
   $user = UserFactory::load($env, $username);
+  $type = $form_state->getType();
 
-  $check_password = !($user->exists) || ($form_state->getType() == \Quanta\Common\User::USER_ACTION_REGISTER);
+  // Refuse a user action the current user may not perform here, so that no
+  // submit hook (core or site) runs for it. The form type is client-supplied,
+  // so this is checked for whichever user action arrives, whatever the
+  // rendered form said. Any other type is a no-op in requestAction().
+  $user_actions = array(
+    \Quanta\Common\User::USER_ACTION_REGISTER,
+    \Quanta\Common\User::USER_ACTION_EDIT,
+    \Quanta\Common\User::USER_ACTION_EDIT_OWN,
+  );
+  if (in_array($type, $user_actions, TRUE) && !UserAccess::check($env, $type, array('user' => $user))) {
+    $form_state->validationError('username', t('You are not allowed to perform this action.'));
+  }
+
+  // Password rules apply to a new account and to any submitted new password.
+  $check_password = !($user->exists) || ($type == \Quanta\Common\User::USER_ACTION_REGISTER) || !empty($form_state->getData('password'));
+
+  // Changing your own password or email needs your current password, so a
+  // hijacked session alone cannot lock the owner out of the account.
+  if ($type == \Quanta\Common\User::USER_ACTION_EDIT_OWN && $user->exists) {
+    $changes_password = !empty($form_state->getData('password'));
+    $changes_email = strtolower(trim((string) $form_state->getData('email'))) != strtolower(trim((string) $user->getEmail()));
+    if (($changes_password || $changes_email) && !UserFactory::checkPassword($user, (string) $form_state->getData('old_password'))) {
+      $form_state->validationError('old_password', t('The old password you entered is not valid. Please try again.'));
+    }
+  }
 
   // Check if some user has the same email as the current one.
   // TODO: find a better way to do the same?
@@ -353,11 +378,6 @@ function user_user_form_form_validate(Environment $env, &$vars) {
     $form_state->validationError('email', t('Please enter a valid E-mail address!'));
   }
   if(!isset($vars['skip_password'])){
-    // Checks that old password matches new.
-    if ($check_password && $user->exists && (!empty($user->getData('old_password'))) && ($user->getPassword() != UserFactory::passwordEncrypt($user->getData('old_password')))) {
-      $form_state->validationError('old_password', t('The old password you entered is not valid. Please try again.'));
-    }
-
     // Checks password length.
     // TODO: make customizable in hooks.
     if ($check_password && (strlen($form_state->getData('password')) < \Quanta\Common\User::USER_PASSWORD_MIN_LENGTH)) {
