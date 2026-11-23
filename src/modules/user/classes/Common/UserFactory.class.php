@@ -183,12 +183,18 @@ class UserFactory {
               break;
               
               default:
-                if(!in_array($key,\Quanta\Common\User::USER_IGNORE_FIELDS)){
+                // Other submitted fields are kept only on registration, as
+                // extra data of the account being created. On an edit they
+                // would let a user write arbitrary attributes, including ones
+                // a site reads as flags or entitlements, into an existing
+                // account. A site that edits more fields saves them in its own
+                // form hooks.
+                if ($action == \Quanta\Common\User::USER_ACTION_REGISTER && !in_array($key, \Quanta\Common\User::USER_IGNORE_FIELDS)) {
                   $user->setAttributeJSON($key, $value);
                 }
                 break;
             }
-          } 
+          }
 
           // Hook user presave.
           $env->hook('user_presave', $vars);
@@ -197,12 +203,14 @@ class UserFactory {
           if (!empty($form_state->getData('password'))) {
             $user->setPassword(UserFactory::passwordEncrypt($form_state->getData('password')));
           }
-          // If the newly built user object is valid, rebuild the session to keep it updated.
-          if ($user->save()) {
-            $user->rebuildSession();
-          }
-          else {
+          if (!$user->save()) {
             die("ERROR");
+          }
+          // A new registration logs the new account in. An edit never
+          // switches the session to the edited account: save() already
+          // refreshes the session when the edited account is the current user.
+          if ($action == \Quanta\Common\User::USER_ACTION_REGISTER) {
+            $user->rebuildSession();
           }
       }
     }
