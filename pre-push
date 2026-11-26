@@ -1,0 +1,25 @@
+#!/usr/bin/env sh
+# Git pre-push hook for Quanta CMS
+# Runs PHP_CodeSniffer (phpcs) before allowing git push.
+
+echo "[Quanta pre-push] Running PHP_CodeSniffer coding style checks..."
+
+if [ -x "./vendor/bin/phpcs" ]; then
+    ./vendor/bin/phpcs --standard=phpcs.xml
+    RESULT=$?
+elif command -v phpcs >/dev/null 2>&1; then
+    phpcs --standard=phpcs.xml
+    RESULT=$?
+else
+    echo "[Quanta pre-push] ERROR: PHP_CodeSniffer not found. Run 'composer install' first."
+    exit 1
+fi
+
+if [ $RESULT -ne 0 ]; then
+    echo "[Quanta pre-push] ❌ Push aborted: coding style violations detected."
+    echo "Run 'composer lint:fix' (./vendor/bin/phpcbf) to automatically fix formatting issues."
+    exit 1
+fi
+
+echo "[Quanta pre-push] ✅ Coding style check passed!"
+exit 0
