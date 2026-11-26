@@ -1,15 +1,8 @@
 <?xml version="1.0"?>
-<ruleset name="quanta">
-    <description>quanta</description>
+<ruleset name="Quanta">
+    <description>PHP coding style enforced on files changed by the pre-push hook.</description>
 
-    <!-- Files to include -->
-    <file>./src</file>
-
-    <!-- Exclude specific files/folders test -->
-    <exclude-pattern>*/tests/*</exclude-pattern>
-
-    <rule ref="PSR1"/>
-    <rule ref="PSR2"/>
+    <!-- PSR-12 already includes the relevant PSR-1 / PSR-2 rules. -->
     <rule ref="PSR12"/>
 
     <rule ref="Generic.Files.LineLength">
@@ -19,10 +12,6 @@
         </properties>
     </rule>
 
-    <!-- Ignore warnings, show only errors -->
+    <!-- Existing legacy code is migrated incrementally; warnings do not block pushes. -->
     <arg value="n"/>
-
-    <!-- Show progress -->
-    <arg value="p"/>
-
 </ruleset>
