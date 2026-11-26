@@ -1,0 +1,43 @@
+name: Behat application behaviors
+
+on:
+  push:
+    branches: [codex/behat-behaviors-r596]
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'features/**'
+      - 'tests/behat/**'
+      - 'composer.json'
+      - 'behat.yml'
+      - '.github/workflows/behat.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  behaviors:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Build isolated test runtime
+        run: docker build --file tests/behat/Dockerfile --tag quanta-behat:local .
+      - name: Real Apache HTTP behaviors without external networking
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD 'HEAD^{tree}'
+          docker run --rm --network none --entrypoint sh quanta-behat:local -c '
+            set -eu
+            php --version
+            apache2 -v
+            composer --version
+            composer show --direct
+            sha256sum composer.lock
+            vendor/bin/behat --version
+            cat /proc/net/route
+            composer test:behat
+          '
