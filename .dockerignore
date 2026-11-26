@@ -41,6 +41,7 @@ qdb/.gitignore
 # .conf is not among the extensions deny-dev-files.conf blocks.
 docs
 tests
+behat.yml
 .phpcs.xml
 package.json
 contacts.csv
