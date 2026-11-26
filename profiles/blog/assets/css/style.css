@@ -1,0 +1,24 @@
+body.blog-layout {
+  font-family: 'Georgia', 'Merriweather', serif;
+  background: #fafafa;
+  color: #1e293b;
+  line-height: 1.75;
+  margin: 0;
+}
+.blog-wrapper {
+  max-width: 1120px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 2.5rem;
+}
+@media (max-width: 768px) {
+  .blog-wrapper { grid-template-columns: 1fr; }
+}
+.blog-content {
+  background: #ffffff;
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
